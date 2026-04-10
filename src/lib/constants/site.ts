@@ -5,7 +5,7 @@ export const SITE = {
   description:
     "Engineering intelligence and research services spanning energy, standards, AI, technology scouting, market intelligence, and patent analytics.",
   url: "https://intelle.io",
-  email: "contact@intelle.io",
+  email: "hello@intelle.io",
   phone: {
     dubai: "+971 50 107 1756",
     india: "+91 97489 89201",

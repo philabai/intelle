@@ -37,7 +37,7 @@ async function sendBrevoEmail({
     body: JSON.stringify({
       sender: {
         name: "intelle.io",
-        email: process.env.ADMIN_EMAIL || "contact@intelle.io",
+        email: process.env.ADMIN_EMAIL || "hello@intelle.io",
       },
       to,
       subject,
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     }
 
     // Send admin notification email
-    const adminEmail = process.env.ADMIN_EMAIL || "contact@intelle.io";
+    const adminEmail = process.env.ADMIN_EMAIL || "hello@intelle.io";
     await sendBrevoEmail({
       to: [{ email: adminEmail, name: "intelle.io Team" }],
       subject: `New Contact: ${data.name}${data.company ? ` (${data.company})` : ""}`,
