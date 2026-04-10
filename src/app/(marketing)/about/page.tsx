@@ -84,33 +84,35 @@ const engagementProcess = [
   },
 ];
 
-const credentialCategories = [
+const founderHighlights = [
+  "Published in SAE International on Cognitive AI in engineering",
+  "CERAWeek speaker and ministerial panel moderator",
+  "SPE/AAPG and PMI conference presenter",
+  "2x President's Club recognition for enterprise impact",
+  "GE 6-Sigma Green Belt methodology trained",
+  "AI & ML (UT Austin) | MBA (IIM Kozhikode) | CS (Jadavpur University)",
+];
+
+const networkPartners = [
   {
-    category: "Publications & Speaking",
-    items: [
-      "Published Author: \"Intelligent Energy: Cognitive AI to Augment Human Knowledge\" (SAE International)",
-      "CERAWeek Speaker: \"Innovation and Problem Solving Using Cognitive AI\"",
-      "CERAWeek Ministerial Panel Moderator: \"India's Green Energy Initiatives\"",
-      "SPE/AAPG Speaker: \"Effective Knowledge Management in Energy\"",
-      "PMI Speaker: \"Leveraging Data for Cost Optimization\"",
-      "India R&D Conclave: Key Speaker on AI & Digitalization for Green Energy",
-    ],
+    title: "Implementation Delivery",
+    stat: "300+",
+    description: "Engineers available through our offshore delivery partnership for PLM/ALM integration, API development, and large-scale implementation projects.",
   },
   {
-    category: "Professional Recognition",
-    items: [
-      "2x President's Club Winner -- Top global recognition for revenue and customer impact",
-      "GE 6-Sigma Green Belt Certified",
-      "65+ enterprise customer relationships built over 11 years",
-    ],
+    title: "Domain Expert Network",
+    stat: "4",
+    description: "Industry verticals covered through our network of subject matter experts spanning energy, aerospace, medical devices, and manufacturing.",
   },
   {
-    category: "Education",
-    items: [
-      "Postgraduate AI & ML -- University of Texas at Austin",
-      "MBA -- Indian Institute of Management (IIM) Kozhikode",
-      "M.S. Computer Science -- Jadavpur University",
-    ],
+    title: "Research Reach",
+    stat: "Global",
+    description: "Access to proprietary databases, SDO publications, patent offices (USPTO, EPO, WIPO), and institutional research partnerships.",
+  },
+  {
+    title: "Standards Bodies",
+    stat: "10+",
+    description: "Deep familiarity with ISO, IEC, API, ASME, ASTM, MIL-STD, FDA, EU MDR, NACE, and national standards organizations across GCC and beyond.",
   },
 ];
 
@@ -293,45 +295,72 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Credentials */}
+      {/* Leadership */}
       <section className="py-16 border-t border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
-            label="Credentials"
-            title="Recognition & Expertise"
+            label="Leadership"
+            title="Founded by a Practitioner"
           />
-          <div className="space-y-8 max-w-3xl mx-auto">
-            {credentialCategories.map((cat) => (
-              <div key={cat.category}>
-                <h3 className="text-lg font-semibold text-heading mb-4">
-                  {cat.category}
-                </h3>
-                <div className="space-y-3">
-                  {cat.items.map((cred, i) => (
-                    <div
-                      key={i}
-                      className="flex items-start gap-3 p-4 rounded-lg bg-card-bg border border-card-border"
+          <div className="max-w-3xl mx-auto">
+            <p className="text-muted leading-relaxed mb-6">
+              intelle.io was founded by a recognized industry expert with 11+
+              years at IHS Markit / S&P Global / Accuris, bringing deep product,
+              customer, and domain expertise across engineering intelligence
+              platforms serving 6,500+ customers globally.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {founderHighlights.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-3 p-3 rounded-lg bg-card-bg border border-card-border"
+                >
+                  <div className="mt-0.5 w-5 h-5 rounded-full bg-brand-teal/10 flex items-center justify-center shrink-0">
+                    <svg
+                      className="w-3 h-3 text-brand-teal"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
                     >
-                      <div className="mt-0.5 w-6 h-6 rounded-full bg-brand-teal/10 flex items-center justify-center shrink-0">
-                        <svg
-                          className="w-3.5 h-3.5 text-brand-teal"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      </div>
-                      <p className="text-sm text-muted">{cred}</p>
-                    </div>
-                  ))}
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-muted">{item}</p>
                 </div>
-              </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Our Network */}
+      <section className="py-16 border-t border-card-border">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeading
+            label="Our Network"
+            title="Depth Beyond a Single Firm"
+          />
+          <p className="text-muted leading-relaxed mb-8 max-w-3xl mx-auto">
+            intelle.io combines senior-level advisory with a network of delivery
+            partners, domain experts, and research capabilities that allow us to
+            scale engagements without sacrificing quality.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {networkPartners.map((partner) => (
+              <Card key={partner.title} hover={false} className="p-6 text-center">
+                <p className="text-3xl font-bold gradient-text mb-2">
+                  {partner.stat}
+                </p>
+                <h3 className="text-base font-semibold text-heading mb-2">
+                  {partner.title}
+                </h3>
+                <p className="text-xs text-muted">{partner.description}</p>
+              </Card>
             ))}
           </div>
         </div>
