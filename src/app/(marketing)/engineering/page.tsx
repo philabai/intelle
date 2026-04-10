@@ -5,7 +5,7 @@ import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { ENGINEERING_SERVICES } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: "Engineering Intelligence Services",
+  title: "Implementation Services",
   description:
     "Implementation, integration, and consulting services that help engineering organizations extract maximum value from their tools and processes.",
 };
@@ -15,7 +15,7 @@ export default function EngineeringPage() {
     <section className="py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          label="Engineering Intelligence"
+          label="Implementation Services"
           title="Four Service Lines"
           description="Helping engineering organizations extract maximum value from their standards management and knowledge platforms"
         />

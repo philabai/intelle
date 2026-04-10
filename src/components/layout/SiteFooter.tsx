@@ -41,10 +41,10 @@ export function SiteFooter() {
             </ul>
           </div>
 
-          {/* Engineering Services */}
+          {/* Implementation Services */}
           <div>
             <h3 className="text-sm font-semibold text-heading uppercase tracking-wider">
-              Engineering Services
+              Implementation Services
             </h3>
             <ul className="mt-4 space-y-2">
               {FOOTER_LINKS.engineering.map((link) => (

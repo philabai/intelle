@@ -14,7 +14,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
           <nav className="flex items-center gap-2 text-sm text-muted">
             <Link href="/" className="hover:text-heading transition-colors">Home</Link>
             <span>/</span>
-            <Link href="/engineering" className="hover:text-heading transition-colors">Engineering Services</Link>
+            <Link href="/engineering" className="hover:text-heading transition-colors">Implementation Services</Link>
             <span>/</span>
             <span className="text-heading">{service.title}</span>
           </nav>
@@ -30,7 +30,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
                 <ServiceIcon name={service.icon} className="text-brand-blue" size={24} />
               </div>
               <p className="text-sm font-semibold uppercase tracking-widest text-brand-blue">
-                Engineering Service
+                Implementation Service
               </p>
             </div>
             <h1 className="text-3xl font-bold text-heading sm:text-4xl lg:text-5xl">

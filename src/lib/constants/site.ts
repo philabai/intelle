@@ -22,7 +22,7 @@ export const NAV_LINKS = [
     children: [
       { label: "Energy Research", href: "/research/energy" },
       {
-        label: "Standards & Regulatory Intelligence",
+        label: "Standards & Regulations",
         href: "/research/standards",
       },
       {
@@ -30,7 +30,7 @@ export const NAV_LINKS = [
         href: "/research/ai-digitalization",
       },
       {
-        label: "Technology Scouting & Innovation",
+        label: "Technology Scouting",
         href: "/research/technology-scouting",
       },
       {
@@ -45,23 +45,23 @@ export const NAV_LINKS = [
     ],
   },
   {
-    label: "Engineering Services",
+    label: "Implementation Services",
     href: "/engineering",
     children: [
       {
-        label: "Workbench Adoption & Value Realization",
+        label: "Adoption & Value Realization",
         href: "/engineering/workbench-adoption",
       },
       {
-        label: "PLM/ALM Integration",
+        label: "Requirements Digitalization",
         href: "/engineering/plm-integration",
       },
       {
-        label: "Knowledge Management & Semantic Search",
+        label: "Knowledge Management",
         href: "/engineering/knowledge-management",
       },
       {
-        label: "Compliance & Standards Advisory",
+        label: "Standards Advisory",
         href: "/engineering/compliance-advisory",
       },
     ],
@@ -82,21 +82,21 @@ export const CREDENTIALS = [
 export const FOOTER_LINKS = {
   research: [
     { label: "Energy Research", href: "/research/energy" },
-    { label: "Standards Intelligence", href: "/research/standards" },
+    { label: "Standards & Regulations", href: "/research/standards" },
     { label: "AI & Digital Research", href: "/research/ai-digitalization" },
-    { label: "Tech Scouting", href: "/research/technology-scouting" },
+    { label: "Technology Scouting", href: "/research/technology-scouting" },
     { label: "Market Intelligence", href: "/research/market-intelligence" },
     { label: "Patent & IP", href: "/research/patent-ip" },
   ],
   engineering: [
-    { label: "Workbench Adoption", href: "/engineering/workbench-adoption" },
-    { label: "PLM/ALM Integration", href: "/engineering/plm-integration" },
+    { label: "Adoption & Value Realization", href: "/engineering/workbench-adoption" },
+    { label: "Requirements Digitalization", href: "/engineering/plm-integration" },
     {
       label: "Knowledge Management",
       href: "/engineering/knowledge-management",
     },
     {
-      label: "Compliance Advisory",
+      label: "Standards Advisory",
       href: "/engineering/compliance-advisory",
     },
   ],

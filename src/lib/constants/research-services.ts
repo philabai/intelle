@@ -133,8 +133,8 @@ export const RESEARCH_SERVICES: ServiceCategory[] = [
   },
   {
     id: "standards",
-    title: "Standards & Regulatory Intelligence",
-    shortTitle: "Standards",
+    title: "Standards & Regulations",
+    shortTitle: "Standards & Regulations",
     description:
       "Almost every regulated industry relies on standards but lacks the internal expertise to interpret them strategically. We translate regulatory complexity into actionable business decisions.",
     href: "/research/standards",
@@ -385,8 +385,8 @@ export const RESEARCH_SERVICES: ServiceCategory[] = [
   },
   {
     id: "technology-scouting",
-    title: "Technology Scouting & Innovation Research",
-    shortTitle: "Tech Scouting",
+    title: "Technology Scouting",
+    shortTitle: "Technology Scouting",
     description:
       "Help corporates identify emerging technologies, evaluate startups, and benchmark their own innovation programs with a practitioner's eye.",
     href: "/research/technology-scouting",

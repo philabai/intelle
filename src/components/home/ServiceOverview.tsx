@@ -53,7 +53,7 @@ export function ServiceOverview() {
             </Button>
           </Card>
 
-          {/* Engineering Services */}
+          {/* Implementation Services */}
           <Card className="p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-brand-blue/10 flex items-center justify-center">
@@ -64,7 +64,7 @@ export function ServiceOverview() {
                 />
               </div>
               <h3 className="text-xl font-semibold text-heading">
-                Engineering Intelligence Services
+                Implementation Services
               </h3>
             </div>
             <p className="text-muted text-sm mb-6">
@@ -87,7 +87,7 @@ export function ServiceOverview() {
               ))}
             </div>
             <Button href="/engineering" variant="outline" size="sm">
-              View Engineering Services
+              View Implementation Services
             </Button>
           </Card>
         </div>

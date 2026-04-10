@@ -6,8 +6,8 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
   // ---------------------------------------------------------------------------
   {
     id: "workbench-adoption",
-    title: "Workbench Adoption & Value Realization",
-    shortTitle: "Workbench Adoption",
+    title: "Adoption & Value Realization",
+    shortTitle: "Adoption & Value Realization",
     description:
       "Turn your standards management investment into measurable engineering value through structured adoption programs, workflow optimization, and usage analytics. We bridge the gap between platform purchase and daily engineering usage, ensuring every license translates into real productivity gains. Drawing on 11 years inside the product organization, we know what drives adoption and what stalls it.",
     href: "/engineering/workbench-adoption",
@@ -169,8 +169,8 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
   // ---------------------------------------------------------------------------
   {
     id: "plm-integration",
-    title: "PLM/ALM Integration Services",
-    shortTitle: "PLM Integration",
+    title: "Requirements Digitalization",
+    shortTitle: "Requirements Digitalization",
     description:
       "Connect standards requirements to your product lifecycle and application lifecycle management systems with bi-directional integrations that maintain traceability from regulation through verification. We build the connectors, data mappings, and automated workflows that make compliance evidence a by-product of normal engineering work. Our integrations span Windchill, Teamcenter, DOORS, Jama, Codebeamer, and Jira.",
     href: "/engineering/plm-integration",
@@ -335,7 +335,7 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
   // ---------------------------------------------------------------------------
   {
     id: "knowledge-management",
-    title: "Knowledge Management & Semantic Search",
+    title: "Knowledge Management",
     shortTitle: "Knowledge Management",
     description:
       "Deploy AI-powered semantic search and knowledge management solutions that let engineers find answers in minutes instead of hours across millions of technical documents. We design taxonomies, configure search profiles, and connect knowledge sources so that institutional expertise is preserved and accessible. Our approach combines deep NLP expertise with practical understanding of how engineers search, discover, and reuse technical knowledge.",
@@ -505,8 +505,8 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
   // ---------------------------------------------------------------------------
   {
     id: "compliance-advisory",
-    title: "Engineering Compliance & Standards Advisory",
-    shortTitle: "Compliance Advisory",
+    title: "Standards Advisory",
+    shortTitle: "Standards Advisory",
     description:
       "Strategic advisory services for engineering compliance, standards management maturity, and digital transformation of compliance processes in regulated industries. We assess your current compliance posture, benchmark against industry peers, and build prioritized roadmaps that align remediation with business priorities. With experience spanning aerospace, oil and gas, manufacturing, and medical devices, we bring cross-industry best practices to every engagement.",
     href: "/engineering/compliance-advisory",
