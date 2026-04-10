@@ -49,7 +49,7 @@ export default async function InsightsPage() {
                   <span className={`text-xs px-2 py-1 rounded-full font-medium ${categoryColors[article.category] || categoryColors.insight}`}>
                     {article.category.replace("-", " ")}
                   </span>
-                  <h3 className="mt-3 text-lg font-semibold text-white line-clamp-2">{article.title}</h3>
+                  <h3 className="mt-3 text-lg font-semibold text-heading line-clamp-2">{article.title}</h3>
                   {article.excerpt && <p className="mt-2 text-sm text-muted line-clamp-2">{article.excerpt}</p>}
                   <p className="mt-4 text-xs text-muted/60">
                     {article.published_at ? new Date(article.published_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : ""}

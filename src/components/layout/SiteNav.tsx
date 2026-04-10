@@ -40,7 +40,7 @@ export function SiteNav() {
                         "px-3 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-1",
                         isActive
                           ? "text-brand-teal"
-                          : "text-muted hover:text-white"
+                          : "text-muted hover:text-heading"
                       )}
                     >
                       {link.label}
@@ -72,7 +72,7 @@ export function SiteNav() {
                               "block px-4 py-2.5 text-sm rounded-lg transition-colors",
                               pathname === child.href
                                 ? "text-brand-teal bg-brand-teal/10"
-                                : "text-muted hover:text-white hover:bg-white/5"
+                                : "text-muted hover:text-heading hover:bg-white/5"
                             )}
                           >
                             {child.label}
@@ -92,7 +92,7 @@ export function SiteNav() {
                     "px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                     isActive
                       ? "text-brand-teal"
-                      : "text-muted hover:text-white"
+                      : "text-muted hover:text-heading"
                   )}
                 >
                   {link.label}
@@ -109,7 +109,7 @@ export function SiteNav() {
 
           {/* Mobile hamburger */}
           <button
-            className="lg:hidden p-2 text-muted hover:text-white"
+            className="lg:hidden p-2 text-muted hover:text-heading"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -152,7 +152,7 @@ export function SiteNav() {
               <div key={link.label}>
                 <Link
                   href={link.href}
-                  className="block px-3 py-2.5 text-sm font-medium text-muted hover:text-white"
+                  className="block px-3 py-2.5 text-sm font-medium text-muted hover:text-heading"
                   onClick={() => setMobileOpen(false)}
                 >
                   {link.label}

@@ -25,7 +25,7 @@ export default function EngineeringPage() {
               <div className="w-10 h-10 rounded-lg bg-brand-blue/10 flex items-center justify-center mb-4">
                 <ServiceIcon name={service.icon} className="text-brand-blue" size={20} />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">{service.title}</h3>
+              <h3 className="text-lg font-semibold text-heading mb-2">{service.title}</h3>
               <p className="text-sm text-muted">{service.description}</p>
               <div className="mt-4 flex flex-wrap gap-1.5">
                 {service.focusAreas.slice(0, 3).map((area) => (

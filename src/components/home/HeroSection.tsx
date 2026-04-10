@@ -15,7 +15,7 @@ export function HeroSection() {
           <p className="text-sm font-semibold uppercase tracking-widest text-brand-teal mb-6">
             Engineering Intelligence & Research Services
           </p>
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+          <h1 className="text-4xl font-bold tracking-tight text-heading sm:text-5xl lg:text-6xl">
             Intelligence that drives{" "}
             <GradientText>real outcomes.</GradientText>
           </h1>

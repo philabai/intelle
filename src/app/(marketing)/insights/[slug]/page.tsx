@@ -51,9 +51,9 @@ export default async function ArticlePage({ params }: Props) {
       <div className="border-b border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
           <nav className="flex items-center gap-2 text-sm text-muted">
-            <Link href="/" className="hover:text-white">Home</Link><span>/</span>
-            <Link href="/insights" className="hover:text-white">Insights</Link><span>/</span>
-            <span className="text-white line-clamp-1">{article.title}</span>
+            <Link href="/" className="hover:text-heading">Home</Link><span>/</span>
+            <Link href="/insights" className="hover:text-heading">Insights</Link><span>/</span>
+            <span className="text-heading line-clamp-1">{article.title}</span>
           </nav>
         </div>
       </div>
@@ -64,7 +64,7 @@ export default async function ArticlePage({ params }: Props) {
             <span className="text-xs px-2 py-1 rounded-full bg-brand-teal/10 text-brand-teal font-medium">
               {article.category.replace("-", " ")}
             </span>
-            <h1 className="mt-4 text-3xl font-bold text-white sm:text-4xl">{article.title}</h1>
+            <h1 className="mt-4 text-3xl font-bold text-heading sm:text-4xl">{article.title}</h1>
             <div className="mt-4 flex items-center gap-4 text-sm text-muted">
               <span>{article.author_name}</span>
               <span>
@@ -89,7 +89,7 @@ export default async function ArticlePage({ params }: Props) {
           </div>
 
           <div className="mt-16 pt-8 border-t border-card-border text-center">
-            <h3 className="text-xl font-semibold text-white mb-4">Interested in learning more?</h3>
+            <h3 className="text-xl font-semibold text-heading mb-4">Interested in learning more?</h3>
             <Button href="/contact">Get in Touch</Button>
           </div>
         </div>

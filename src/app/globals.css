@@ -1,18 +1,42 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* ===== Light theme (default / day) ===== */
 :root {
-  --background: #0B1020;
-  --foreground: #F1F5F9;
+  --background: #FAFBFC;
+  --foreground: #0F172A;
   --brand-navy: #0B1020;
   --brand-blue: #2563FF;
   --brand-teal: #00D4C4;
   --brand-violet: #7C3AED;
   --brand-gray: #F1F5F9;
   --brand-white: #FFFFFF;
-  --card-bg: #111827;
-  --card-border: #1E293B;
-  --muted: #94A3B8;
+  --card-bg: #FFFFFF;
+  --card-border: #E2E8F0;
+  --muted: #64748B;
+  --heading: #0F172A;
+  --glass-bg: rgba(250, 251, 252, 0.85);
+  --glass-border: rgba(226, 232, 240, 0.6);
+  --scrollbar-track: #F1F5F9;
+  --scrollbar-thumb: #CBD5E1;
+  --scrollbar-thumb-hover: #94A3B8;
+}
+
+/* ===== Dark theme (night) ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0B1020;
+    --foreground: #F1F5F9;
+    --card-bg: #111827;
+    --card-border: #1E293B;
+    --muted: #94A3B8;
+    --heading: #F1F5F9;
+    --glass-bg: rgba(11, 16, 32, 0.85);
+    --glass-border: rgba(30, 41, 59, 0.5);
+    --scrollbar-track: #0B1020;
+    --scrollbar-thumb: #1E293B;
+    --scrollbar-thumb-hover: #94A3B8;
+  }
 }
 
 @theme inline {
@@ -26,6 +50,7 @@
   --color-card-bg: var(--card-bg);
   --color-card-border: var(--card-border);
   --color-muted: var(--muted);
+  --color-heading: var(--heading);
   --font-sans: var(--font-poppins);
 }
 
@@ -54,10 +79,10 @@ body {
 
 /* Glassmorphism nav */
 .glass-nav {
-  background: rgba(11, 16, 32, 0.8);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 /* Smooth scroll */
@@ -71,16 +96,16 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--brand-navy);
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--card-border);
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--muted);
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Fade-in animation */

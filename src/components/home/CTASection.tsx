@@ -6,7 +6,7 @@ export function CTASection() {
     <section className="py-20 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/10 via-transparent to-brand-teal/10 pointer-events-none" />
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl font-bold text-white sm:text-4xl">
+        <h2 className="text-3xl font-bold text-heading sm:text-4xl">
           Ready to elevate your{" "}
           <GradientText>engineering intelligence?</GradientText>
         </h2>

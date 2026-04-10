@@ -32,7 +32,7 @@ export function MethodologyPreview() {
           <p className="text-sm font-semibold uppercase tracking-widest text-brand-teal mb-3">
             Our Approach
           </p>
-          <h2 className="text-2xl font-bold text-white sm:text-3xl">
+          <h2 className="text-2xl font-bold text-heading sm:text-3xl">
             How We Deliver <GradientText>Intelligence</GradientText>
           </h2>
         </div>
@@ -45,7 +45,7 @@ export function MethodologyPreview() {
               <p className="text-4xl font-bold text-brand-teal/20 mb-3">
                 {step.num}
               </p>
-              <h3 className="text-base font-semibold text-white mb-2">
+              <h3 className="text-base font-semibold text-heading mb-2">
                 {step.title}
               </h3>
               <p className="text-sm text-muted">{step.description}</p>

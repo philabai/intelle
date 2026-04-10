@@ -52,7 +52,7 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Form */}
           <div className="lg:col-span-2">
-            <h1 className="text-3xl font-bold text-white mb-2">Get in Touch</h1>
+            <h1 className="text-3xl font-bold text-heading mb-2">Get in Touch</h1>
             <p className="text-muted mb-8">Tell us about your needs and we&apos;ll scope a bespoke engagement.</p>
 
             {status === "success" ? (
@@ -111,7 +111,7 @@ export default function ContactPage() {
           {/* Sidebar */}
           <div className="space-y-8">
             <div className="p-6 rounded-xl bg-card-bg border border-card-border">
-              <h3 className="text-lg font-semibold text-white mb-4">Contact Information</h3>
+              <h3 className="text-lg font-semibold text-heading mb-4">Contact Information</h3>
               <div className="space-y-4 text-sm">
                 <div>
                   <p className="text-muted/60 mb-1">Email</p>
@@ -132,7 +132,7 @@ export default function ContactPage() {
               </div>
             </div>
             <div className="p-6 rounded-xl bg-card-bg border border-card-border">
-              <h3 className="text-lg font-semibold text-white mb-4">How We Engage</h3>
+              <h3 className="text-lg font-semibold text-heading mb-4">How We Engage</h3>
               <div className="space-y-3 text-sm text-muted">
                 <div className="flex items-start gap-2">
                   <span className="text-brand-teal font-bold">01</span>

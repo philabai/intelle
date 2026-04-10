@@ -23,7 +23,7 @@ export function IndustriesPreview() {
                   size={24}
                 />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">
+              <h3 className="text-lg font-semibold text-heading mb-2">
                 {industry.title}
               </h3>
               <p className="text-sm text-muted line-clamp-3">

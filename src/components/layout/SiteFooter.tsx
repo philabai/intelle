@@ -4,7 +4,7 @@ import { SITE, FOOTER_LINKS } from "@/lib/constants";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-card-border bg-brand-navy">
+    <footer className="border-t border-card-border bg-card-bg">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="py-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand column */}
@@ -24,7 +24,7 @@ export function SiteFooter() {
 
           {/* Research Services */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-heading uppercase tracking-wider">
               Research Services
             </h3>
             <ul className="mt-4 space-y-2">
@@ -43,7 +43,7 @@ export function SiteFooter() {
 
           {/* Engineering Services */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-heading uppercase tracking-wider">
               Engineering Services
             </h3>
             <ul className="mt-4 space-y-2">
@@ -62,7 +62,7 @@ export function SiteFooter() {
 
           {/* Company */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-heading uppercase tracking-wider">
               Company
             </h3>
             <ul className="mt-4 space-y-2">

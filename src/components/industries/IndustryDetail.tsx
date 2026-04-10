@@ -12,11 +12,11 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
       <div className="border-b border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
           <nav className="flex items-center gap-2 text-sm text-muted">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <Link href="/" className="hover:text-heading transition-colors">Home</Link>
             <span>/</span>
-            <Link href="/industries" className="hover:text-white transition-colors">Industries</Link>
+            <Link href="/industries" className="hover:text-heading transition-colors">Industries</Link>
             <span>/</span>
-            <span className="text-white">{industry.title}</span>
+            <span className="text-heading">{industry.title}</span>
           </nav>
         </div>
       </div>
@@ -35,7 +35,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
                 </p>
               )}
             </div>
-            <h1 className="text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
+            <h1 className="text-3xl font-bold text-heading sm:text-4xl lg:text-5xl">
               {industry.title}
             </h1>
             <p className="mt-6 text-lg text-muted leading-relaxed">
@@ -68,13 +68,13 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
       {industry.challenges && industry.challenges.length > 0 && (
         <section className="py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-white mb-8">
+            <h2 className="text-2xl font-bold text-heading mb-8">
               Key <GradientText>Challenges</GradientText>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {industry.challenges.map((challenge) => (
                 <Card key={challenge.title} hover={false} className="p-6">
-                  <h3 className="text-lg font-semibold text-white mb-2">
+                  <h3 className="text-lg font-semibold text-heading mb-2">
                     {challenge.title}
                   </h3>
                   <p className="text-sm text-muted leading-relaxed">
@@ -91,7 +91,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
       {industry.trends && industry.trends.length > 0 && (
         <section className="py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-white mb-8">
+            <h2 className="text-2xl font-bold text-heading mb-8">
               Industry <GradientText>Trends</GradientText>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -102,7 +102,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-white mb-2">
+                      <h3 className="text-lg font-semibold text-heading mb-2">
                         {trend.title}
                       </h3>
                       <p className="text-sm text-muted leading-relaxed">
@@ -133,7 +133,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
       {industry.howWeHelp && industry.howWeHelp.length > 0 && (
         <section className="py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-white mb-8">
+            <h2 className="text-2xl font-bold text-heading mb-8">
               How intelle.io <GradientText>Helps</GradientText>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -142,7 +142,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
                   key={item.title}
                   className="p-6 rounded-xl bg-card-bg border border-card-border hover:border-brand-blue/30 transition-colors"
                 >
-                  <h3 className="text-lg font-semibold text-white mb-2">
+                  <h3 className="text-lg font-semibold text-heading mb-2">
                     {item.title}
                   </h3>
                   <p className="text-sm text-muted leading-relaxed mb-4">
@@ -167,7 +167,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
       {industry.useCases && industry.useCases.length > 0 && (
         <section className="py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-white mb-8">
+            <h2 className="text-2xl font-bold text-heading mb-8">
               Illustrative <GradientText>Use Cases</GradientText>
             </h2>
             <div className="space-y-6">
@@ -176,7 +176,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
                   key={useCase.title}
                   className="p-6 rounded-xl bg-card-bg border border-card-border"
                 >
-                  <h3 className="text-lg font-semibold text-white mb-2">
+                  <h3 className="text-lg font-semibold text-heading mb-2">
                     {useCase.title}
                   </h3>
                   <p className="text-sm text-muted leading-relaxed mb-4">
@@ -212,7 +212,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
       {industry.standardsDetail && industry.standardsDetail.length > 0 && (
         <section className="py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-white mb-8">
+            <h2 className="text-2xl font-bold text-heading mb-8">
               Standards We <GradientText>Cover</GradientText>
             </h2>
             <div className="space-y-3">
@@ -225,7 +225,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
                     {std.code}
                   </span>
                   <div>
-                    <p className="text-sm font-medium text-white">{std.fullName}</p>
+                    <p className="text-sm font-medium text-heading">{std.fullName}</p>
                     <p className="text-sm text-muted mt-0.5">{std.relevance}</p>
                   </div>
                 </div>
@@ -238,7 +238,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
       {/* CTA */}
       <section className="py-16 border-t border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">
+          <h2 className="text-2xl font-bold text-heading mb-4">
             Ready to discuss your {industry.title.toLowerCase()} intelligence needs?
           </h2>
           <p className="text-muted mb-8 max-w-xl mx-auto">

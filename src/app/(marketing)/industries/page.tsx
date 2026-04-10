@@ -24,7 +24,7 @@ export default function IndustriesPage() {
               <div className="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center mb-4">
                 <ServiceIcon name={industry.icon} className="text-brand-blue" size={24} />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-3">{industry.title}</h3>
+              <h3 className="text-xl font-semibold text-heading mb-3">{industry.title}</h3>
               <p className="text-muted text-sm mb-4">{industry.description}</p>
               <div className="space-y-3">
                 <div>

@@ -25,7 +25,7 @@ export function ServiceOverview() {
                   size={20}
                 />
               </div>
-              <h3 className="text-xl font-semibold text-white">
+              <h3 className="text-xl font-semibold text-heading">
                 Research & Innovation Services
               </h3>
             </div>
@@ -63,7 +63,7 @@ export function ServiceOverview() {
                   size={20}
                 />
               </div>
-              <h3 className="text-xl font-semibold text-white">
+              <h3 className="text-xl font-semibold text-heading">
                 Engineering Intelligence Services
               </h3>
             </div>

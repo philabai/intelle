@@ -124,7 +124,7 @@ export default function AboutPage() {
             <p className="text-sm font-semibold uppercase tracking-widest text-brand-teal mb-4">
               About Us
             </p>
-            <h1 className="text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
+            <h1 className="text-3xl font-bold text-heading sm:text-4xl lg:text-5xl">
               Intelligence that drives{" "}
               <GradientText>real outcomes.</GradientText>
             </h1>
@@ -171,7 +171,7 @@ export default function AboutPage() {
                 </p>
                 <p>
                   But the deeper insight was this:{" "}
-                  <span className="text-white font-medium">
+                  <span className="text-heading font-medium">
                     enterprises don&apos;t just need software -- they need
                     intelligence.
                   </span>{" "}
@@ -182,7 +182,7 @@ export default function AboutPage() {
                 </p>
                 <p>
                   intelle.io fills that gap:{" "}
-                  <span className="text-white font-medium">
+                  <span className="text-heading font-medium">
                     practitioner-led, bespoke intelligence
                   </span>{" "}
                   for organizations that need real answers, not polished slide
@@ -227,7 +227,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {values.map((v) => (
               <Card key={v.title} hover={false} className="p-6">
-                <h3 className="text-lg font-semibold text-white mb-2">
+                <h3 className="text-lg font-semibold text-heading mb-2">
                   {v.title}
                 </h3>
                 <p className="text-sm text-muted">{v.description}</p>
@@ -256,7 +256,7 @@ export default function AboutPage() {
                   </span>
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-white">
+                  <h3 className="text-base font-semibold text-heading">
                     {m.step}
                   </h3>
                   <p className="text-sm text-muted mt-1">{m.description}</p>
@@ -283,7 +283,7 @@ export default function AboutPage() {
                 <p className="text-4xl font-bold text-brand-teal/20 mb-3">
                   {p.step}
                 </p>
-                <h3 className="text-base font-semibold text-white mb-2">
+                <h3 className="text-base font-semibold text-heading mb-2">
                   {p.title}
                 </h3>
                 <p className="text-sm text-muted">{p.description}</p>
@@ -303,7 +303,7 @@ export default function AboutPage() {
           <div className="space-y-8 max-w-3xl mx-auto">
             {credentialCategories.map((cat) => (
               <div key={cat.category}>
-                <h3 className="text-lg font-semibold text-white mb-4">
+                <h3 className="text-lg font-semibold text-heading mb-4">
                   {cat.category}
                 </h3>
                 <div className="space-y-3">
@@ -364,7 +364,7 @@ export default function AboutPage() {
       {/* CTA */}
       <section className="py-16 border-t border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">
+          <h2 className="text-2xl font-bold text-heading mb-4">
             Let&apos;s work together
           </h2>
           <p className="text-muted mb-8 max-w-xl mx-auto">
