@@ -73,7 +73,7 @@ export const NAV_LINKS = [
 ] as const;
 
 export const CREDENTIALS = [
-  { value: "11+", label: "Years Domain Expertise" },
+  { value: "25+", label: "Years Domain Expertise" },
   { value: "65+", label: "Enterprise Relationships" },
   { value: "2x", label: "President's Club Winner" },
   { value: "4", label: "Industry Verticals" },

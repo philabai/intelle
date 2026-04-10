@@ -153,37 +153,38 @@ export default function AboutPage() {
             <div>
               <SectionHeading
                 label="Our Story"
-                title="From Product Builder to Intelligence Partner"
+                title="Industry. Technology. AI."
               />
               <div className="space-y-4 text-muted leading-relaxed">
                 <p>
-                  intelle.io was founded by Arnab Ghosh, who spent over 11 years
-                  at the intersection of engineering intelligence and enterprise
-                  technology -- first at IHS Markit, then through the S&P Global
-                  acquisition, and finally at Accuris (the engineering
-                  intelligence business carved out from S&P Global).
+                  intelle.io was founded by Arnab Ghosh -- a practitioner who
+                  has spent 25+ years at the intersection of industry,
+                  technology, and AI.
                 </p>
                 <p>
-                  During that time, Arnab built the product roadmap for the
-                  Engineering Workbench, defined 7 AI workflows for engineering
-                  standards management, ran customer discovery across 65+
-                  enterprise accounts, and was recognized twice with the
-                  President&apos;s Club award for revenue impact and customer
-                  adoption.
+                  From Sapient Consulting and GE Energy to Dell-EMC, IHS
+                  Markit, S&amp;P Global, and lately Accuris, Arnab has worked
+                  across the full arc of enterprise technology -- helping
+                  organizations in Energy, Aerospace &amp; Defense, and Digital
+                  Manufacturing turn complex data into decisions. He has advised
+                  Fortune 500 companies including Saudi Aramco, ADNOC, QP, KPC,
+                  Boeing, NASA, Shell, and Chevron to name a few, earning his
+                  customers&apos; trust for measurable impact.
                 </p>
                 <p>
-                  But the deeper insight was this:{" "}
+                  That experience revealed a consistent gap:{" "}
                   <span className="text-heading font-medium">
-                    enterprises don&apos;t just need software -- they need
-                    intelligence.
+                    enterprises don&apos;t just need software or data platforms
+                    -- they need intelligence.
                   </span>{" "}
-                  They need someone who understands their engineering context,
-                  can research their specific market, and deliver actionable
-                  recommendations. The big consulting firms charge too much for
-                  generic work. The niche analysts lack practitioner depth.
+                  Someone who understands their context, can research their
+                  specific needs, and deliver recommendations they can act on.
+                  The global consultancies charge a premium for generic work.
+                  The niche analysts lack practitioner depth. And the platform
+                  vendors stop at the login screen.
                 </p>
                 <p>
-                  intelle.io fills that gap:{" "}
+                  intelle.io fills that gap --{" "}
                   <span className="text-heading font-medium">
                     practitioner-led, bespoke intelligence
                   </span>{" "}
@@ -194,27 +195,27 @@ export default function AboutPage() {
             </div>
             <div className="space-y-4">
               <div className="p-6 rounded-xl bg-card-bg border border-card-border">
-                <p className="text-3xl font-bold gradient-text">11+</p>
+                <p className="text-3xl font-bold gradient-text">25+</p>
                 <p className="text-sm text-muted mt-1">
-                  Years at IHS Markit / S&P Global / Accuris
+                  Years at the intersection of industry, technology &amp; AI
                 </p>
               </div>
               <div className="p-6 rounded-xl bg-card-bg border border-card-border">
-                <p className="text-3xl font-bold gradient-text">65+</p>
+                <p className="text-3xl font-bold gradient-text">Fortune 500</p>
                 <p className="text-sm text-muted mt-1">
-                  Enterprise accounts directly served
+                  Clients advised -- Aramco, ADNOC, Boeing, NASA, Shell &amp; more
                 </p>
               </div>
               <div className="p-6 rounded-xl bg-card-bg border border-card-border">
                 <p className="text-3xl font-bold gradient-text">2x</p>
                 <p className="text-sm text-muted mt-1">
-                  President&apos;s Club Winner -- top global recognition
+                  President&apos;s Club Winner -- recognized for measurable customer impact
                 </p>
               </div>
               <div className="p-6 rounded-xl bg-card-bg border border-card-border">
-                <p className="text-3xl font-bold gradient-text">7</p>
+                <p className="text-3xl font-bold gradient-text">3</p>
                 <p className="text-sm text-muted mt-1">
-                  AI workflows defined for engineering intelligence
+                  Core domains: Energy, Aerospace &amp; Defense, Digital Manufacturing
                 </p>
               </div>
             </div>
@@ -304,10 +305,11 @@ export default function AboutPage() {
           />
           <div className="max-w-3xl mx-auto">
             <p className="text-muted leading-relaxed mb-6">
-              intelle.io was founded by a recognized industry expert with 11+
-              years at IHS Markit / S&P Global / Accuris, bringing deep product,
-              customer, and domain expertise across engineering intelligence
-              platforms serving 6,500+ customers globally.
+              Our founding team brings 25+ years of experience across Sapient,
+              GE Energy, Dell-EMC, IHS Markit, S&amp;P Global, and Accuris --
+              combining deep industry knowledge with enterprise technology and
+              AI expertise to serve clients across energy, aerospace, and
+              manufacturing.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {founderHighlights.map((item, i) => (

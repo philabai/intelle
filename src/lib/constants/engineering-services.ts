@@ -2,14 +2,14 @@ import type { ServiceCategory } from "../types";
 
 export const ENGINEERING_SERVICES: ServiceCategory[] = [
   // ---------------------------------------------------------------------------
-  // 1. Workbench Adoption & Value Realization
+  // 1. Adoption & Value Realization
   // ---------------------------------------------------------------------------
   {
     id: "workbench-adoption",
     title: "Adoption & Value Realization",
     shortTitle: "Adoption & Value Realization",
     description:
-      "Turn your standards management investment into measurable engineering value through structured adoption programs, workflow optimization, and usage analytics. We bridge the gap between platform purchase and daily engineering usage, ensuring every license translates into real productivity gains. Drawing on 11 years inside the product organization, we know what drives adoption and what stalls it.",
+      "Turn your standards management and engineering intelligence investments into measurable value through structured adoption programs, workflow optimization, and usage analytics. We bridge the gap between platform purchase and daily engineering usage, ensuring every license translates into real productivity gains.",
     href: "/engineering/workbench-adoption",
     icon: "Layers",
     deliverables: [
@@ -109,32 +109,26 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
         model: "Discovery & Assessment",
         description:
           "Focused assessment of current adoption state, usage analytics review, and prioritized recommendations for quick wins and long-term improvement.",
-        typicalDuration: "2-3 weeks ($5K-$8K)",
+        typicalDuration: "2-3 weeks",
       },
       {
         model: "Full Adoption Program",
         description:
           "End-to-end adoption engagement covering assessment, workflow redesign, training development and delivery, and ongoing optimization.",
-        typicalDuration: "3-6 months ($25K-$50K)",
+        typicalDuration: "3-6 months",
       },
       {
         model: "Monthly Retainer",
         description:
           "Ongoing optimization and support including usage monitoring, new user onboarding, workflow refinement, and quarterly business reviews.",
-        typicalDuration: "Ongoing ($3K-$5K/month)",
+        typicalDuration: "Ongoing monthly",
       },
     ],
     differentiators: [
-      "11+ years directly at Accuris/IHS Markit -- built the product roadmap and defined 7 AI workflows",
-      "2x President's Club winner for customer adoption and revenue impact",
-      "Direct relationships with 65+ enterprise customers of the platform",
-      "Understands both the technology and the organizational change management required for adoption",
-    ],
-    technologyPartners: [
-      { name: "Accuris Engineering Workbench", type: "Standards Management" },
-      { name: "SAI Global", type: "Standards Platform" },
-      { name: "SharePoint", type: "Document Management" },
-      { name: "SAP", type: "ERP Integration" },
+      "25+ years at the intersection of industry, technology, and AI -- from GE Energy and Dell-EMC to engineering intelligence platforms",
+      "2x President's Club winner for measurable customer impact and adoption outcomes",
+      "Direct experience serving 65+ enterprise engineering organizations across 4 industries",
+      "Deep understanding of both the technology and the organizational change management required for successful adoption",
     ],
     implementationTimeline: [
       {
@@ -165,14 +159,14 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
   },
 
   // ---------------------------------------------------------------------------
-  // 2. PLM/ALM Integration Services
+  // 2. Requirements Digitalization
   // ---------------------------------------------------------------------------
   {
     id: "plm-integration",
     title: "Requirements Digitalization",
     shortTitle: "Requirements Digitalization",
     description:
-      "Connect standards requirements to your product lifecycle and application lifecycle management systems with bi-directional integrations that maintain traceability from regulation through verification. We build the connectors, data mappings, and automated workflows that make compliance evidence a by-product of normal engineering work. Our integrations span Windchill, Teamcenter, DOORS, Jama, Codebeamer, and Jira.",
+      "Connect standards requirements to your product lifecycle and application lifecycle management systems with bi-directional integrations that maintain traceability from regulation through verification. We build the connectors, data mappings, and automated workflows that make compliance evidence a by-product of normal engineering work.",
     href: "/engineering/plm-integration",
     icon: "GitMerge",
     deliverables: [
@@ -246,24 +240,24 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
     ],
     sampleProjects: [
       {
-        title: "Windchill Integration for Requirements Traceability",
+        title: "PLM Integration for Requirements Traceability",
         industry: "Aerospace",
         scope:
-          "Bi-directional sync between standards extraction and PTC Windchill for a flight control system, enabling end-to-end traceability from DO-178C objectives through verification",
+          "Bi-directional sync between standards extraction and PLM for a flight control system, enabling end-to-end traceability from DO-178C objectives through verification",
         duration: "12 weeks",
       },
       {
-        title: "DOORS Integration for DO-178C Evidence",
+        title: "Requirements Management Integration",
         industry: "Aerospace",
         scope:
-          "Automated requirements flow from standards to IBM DOORS for certification evidence, including derived requirements tracking and compliance matrices",
+          "Automated requirements flow from standards to requirements management tools for certification evidence, including derived requirements tracking and compliance matrices",
         duration: "10 weeks",
       },
       {
-        title: "Jira Integration for Agile Standards Compliance",
+        title: "Agile Standards Compliance Integration",
         industry: "Software/Medical",
         scope:
-          "Mapping extracted standards requirements to Jira epics and stories for agile development teams, with automated status sync and compliance dashboards",
+          "Mapping extracted standards requirements to agile project management tools for development teams, with automated status sync and compliance dashboards",
         duration: "6 weeks",
       },
     ],
@@ -272,35 +266,26 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
         model: "Assessment & Architecture",
         description:
           "System analysis, API review, and integration architecture design with a detailed implementation roadmap and effort estimate.",
-        typicalDuration: "2-3 weeks ($8K-$12K)",
+        typicalDuration: "2-3 weeks",
       },
       {
         model: "Single System Integration",
         description:
           "Complete integration between standards management and one PLM or ALM system, including development, testing, deployment, and documentation.",
-        typicalDuration: "3-4 months ($35K-$60K)",
+        typicalDuration: "3-4 months",
       },
       {
         model: "Multi-System Integration",
         description:
           "Integration across multiple PLM, ALM, and requirements management systems with a unified traceability layer and centralized governance.",
-        typicalDuration: "4-6 months ($60K-$120K)",
+        typicalDuration: "4-6 months",
       },
     ],
     differentiators: [
-      "Deep knowledge of the data models and APIs of Accuris Thread, Windchill, Teamcenter, and DOORS",
-      "Scalable offshore delivery through engineering partner (300+ engineers) for cost-effective implementation",
-      "Practitioner who understands the compliance context, not just the API documentation",
-      "End-to-end ownership from architecture through deployment -- not just coding",
-    ],
-    technologyPartners: [
-      { name: "PTC Windchill", type: "PLM" },
-      { name: "Siemens Teamcenter", type: "PLM" },
-      { name: "Aras Innovator", type: "PLM" },
-      { name: "IBM DOORS", type: "Requirements" },
-      { name: "Jama Connect", type: "Requirements" },
-      { name: "PTC Codebeamer", type: "ALM" },
-      { name: "Atlassian Jira", type: "Project/ALM" },
+      "Deep knowledge of PLM/ALM data models and APIs across Windchill, Teamcenter, DOORS, and Jira ecosystems",
+      "Practitioner who understands the compliance context behind every integration -- not just the API documentation",
+      "End-to-end ownership from architecture through deployment and handover",
+      "Experience building requirements traceability solutions for Fortune 500 engineering organizations",
     ],
     implementationTimeline: [
       {
@@ -331,14 +316,14 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
   },
 
   // ---------------------------------------------------------------------------
-  // 3. Knowledge Management & Semantic Search
+  // 3. Knowledge Management
   // ---------------------------------------------------------------------------
   {
     id: "knowledge-management",
     title: "Knowledge Management",
     shortTitle: "Knowledge Management",
     description:
-      "Deploy AI-powered semantic search and knowledge management solutions that let engineers find answers in minutes instead of hours across millions of technical documents. We design taxonomies, configure search profiles, and connect knowledge sources so that institutional expertise is preserved and accessible. Our approach combines deep NLP expertise with practical understanding of how engineers search, discover, and reuse technical knowledge.",
+      "Deploy AI-powered semantic search and knowledge management solutions that let engineers find answers in minutes instead of hours across millions of technical documents. We design taxonomies, configure search profiles, and connect knowledge sources so that institutional expertise is preserved and accessible.",
     href: "/engineering/knowledge-management",
     icon: "Search",
     deliverables: [
@@ -415,7 +400,7 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
         title: "Enterprise Knowledge Platform",
         industry: "Oil & Gas",
         scope:
-          "Deploying semantic search across 2M+ technical documents for a global EPC firm, including integration with SharePoint, Documentum, and standards libraries",
+          "Deploying semantic search across 2M+ technical documents for a global EPC firm, including integration with document management systems and standards libraries",
         duration: "16 weeks",
       },
       {
@@ -438,33 +423,26 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
         model: "Discovery & Knowledge Audit",
         description:
           "Inventory of knowledge sources, taxonomy workshop, and information architecture recommendations with a deployment roadmap.",
-        typicalDuration: "2-3 weeks ($5K-$10K)",
+        typicalDuration: "2-3 weeks",
       },
       {
         model: "Standard Deployment",
         description:
           "Full deployment of semantic search across a single site or business unit, including connector setup, relevancy tuning, and user training.",
-        typicalDuration: "3-4 months ($20K-$40K)",
+        typicalDuration: "3-4 months",
       },
       {
         model: "Enterprise Multi-Site",
         description:
           "Enterprise-wide deployment across multiple sites and business units with unified taxonomy, federated search, and centralized governance.",
-        typicalDuration: "6-12 months ($50K-$100K)",
+        typicalDuration: "6-12 months",
       },
     ],
     differentiators: [
-      "Published author on 'Intelligent Energy: Cognitive AI to Augment Human Knowledge' (SAE International)",
-      "Built semantic search and knowledge extraction products at Accuris -- understands the technology from the inside",
-      "Combines AI/NLP expertise with deep engineering domain knowledge",
+      "Published author on Cognitive AI for engineering knowledge augmentation (SAE International)",
+      "Hands-on experience building semantic search and knowledge extraction products for enterprise engineering organizations",
+      "Combines AI/NLP expertise with deep engineering domain knowledge across 4 industries",
       "Practical taxonomy design informed by how engineers actually search, not how librarians organize",
-    ],
-    technologyPartners: [
-      { name: "Accuris Goldfire", type: "Semantic Search" },
-      { name: "Microsoft SharePoint", type: "DMS" },
-      { name: "OpenText Documentum", type: "DMS" },
-      { name: "Elasticsearch", type: "Search Infrastructure" },
-      { name: "Vector Databases", type: "AI-Powered Search" },
     ],
     implementationTimeline: [
       {
@@ -501,14 +479,14 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
   },
 
   // ---------------------------------------------------------------------------
-  // 4. Engineering Compliance & Standards Advisory
+  // 4. Standards Advisory
   // ---------------------------------------------------------------------------
   {
     id: "compliance-advisory",
     title: "Standards Advisory",
     shortTitle: "Standards Advisory",
     description:
-      "Strategic advisory services for engineering compliance, standards management maturity, and digital transformation of compliance processes in regulated industries. We assess your current compliance posture, benchmark against industry peers, and build prioritized roadmaps that align remediation with business priorities. With experience spanning aerospace, oil and gas, manufacturing, and medical devices, we bring cross-industry best practices to every engagement.",
+      "Strategic advisory services for engineering compliance, standards management maturity, and digital transformation of compliance processes in regulated industries. We assess your current compliance posture, benchmark against industry peers, and build prioritized roadmaps that align remediation with business priorities.",
     href: "/engineering/compliance-advisory",
     icon: "ShieldCheck",
     deliverables: [
@@ -567,7 +545,7 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
       {
         title: "Prioritized Remediation Roadmap",
         description:
-          "Prioritized remediation roadmap aligned with business priorities, ensuring that the highest-risk gaps are addressed first with realistic timelines and budgets.",
+          "Prioritized remediation roadmap aligned with business priorities, ensuring that the highest-risk gaps are addressed first with realistic timelines.",
       },
       {
         title: "Maturity Score with Peer Benchmarking",
@@ -608,32 +586,26 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
         model: "Advisory Day Rate",
         description:
           "Flexible advisory engagement for targeted questions, audit preparation support, or ad hoc compliance guidance on specific standards or regulations.",
-        typicalDuration: "As needed ($1,800-$2,500/day)",
+        typicalDuration: "As needed",
       },
       {
         model: "Strategic Assessment",
         description:
           "Comprehensive compliance assessment including gap analysis, maturity scoring, peer benchmarking, and a prioritized remediation roadmap.",
-        typicalDuration: "4-8 weeks ($15K-$30K)",
+        typicalDuration: "4-8 weeks",
       },
       {
         model: "Fractional Chief Standards Officer",
         description:
           "Ongoing strategic advisory as a fractional executive, providing standards management leadership, governance oversight, and continuous improvement guidance.",
-        typicalDuration: "Ongoing ($5K-$8K/month)",
+        typicalDuration: "Ongoing monthly",
       },
     ],
     differentiators: [
-      "Deep understanding of how standards bodies operate and how their publications should be applied in practice",
-      "Experience across 4 major regulated industries -- can apply lessons from one sector to another",
-      "Standards management maturity model developed from 11 years of enterprise customer engagements",
-      "Practical, implementation-focused advisory -- not academic frameworks",
-    ],
-    technologyPartners: [
-      { name: "Accuris Engineering Workbench", type: "Standards Management" },
-      { name: "SAI Global", type: "Standards Platform" },
-      { name: "MasterControl", type: "QMS" },
-      { name: "Veeva Vault", type: "Quality & Compliance" },
+      "Deep understanding of how standards bodies operate and how their publications should be applied in engineering practice",
+      "Cross-industry experience spanning oil & gas, aerospace, medical devices, and manufacturing -- applying best practices from one sector to another",
+      "Standards management maturity model developed from decades of enterprise customer engagements",
+      "Practical, implementation-focused advisory grounded in real engineering contexts -- not academic frameworks",
     ],
     implementationTimeline: [
       {

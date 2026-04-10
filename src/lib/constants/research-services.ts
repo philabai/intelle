@@ -126,7 +126,7 @@ export const RESEARCH_SERVICES: ServiceCategory[] = [
     ],
     differentiators: [
       "CERAWeek speaker and ministerial panel moderator -- embedded in the energy intelligence community",
-      "Former IHS Markit/S&P Global team member -- trained in institutional-grade research methodology",
+      "25+ years across industry, technology, and AI -- trained in institutional-grade research methodology",
       "Published author on Cognitive AI in energy (SAE International)",
       "Direct relationships with Aramco, ADNOC, Shell, and Chevron built over a decade",
     ],
@@ -237,21 +237,21 @@ export const RESEARCH_SERVICES: ServiceCategory[] = [
       {
         model: "Standards Assessment",
         description: "Focused assessment of applicable standards for a specific product, market, or regulatory question.",
-        typicalDuration: "2-4 weeks ($5K-12K)",
+        typicalDuration: "2-4 weeks",
       },
       {
         model: "Full Compliance Program",
         description: "End-to-end compliance program covering gap analysis, roadmap development, and implementation support.",
-        typicalDuration: "2-4 months ($25K-60K)",
+        typicalDuration: "2-4 months",
       },
       {
         model: "Ongoing Monitoring Retainer",
         description: "Continuous monitoring of standards revisions and regulatory changes with quarterly update reports.",
-        typicalDuration: "Quarterly updates ($3K-5K/month)",
+        typicalDuration: "Quarterly updates",
       },
     ],
     differentiators: [
-      "11 years inside the world's leading standards intelligence platform (Accuris/IHS Markit)",
+      "Deep experience inside the world's leading standards intelligence platforms -- understanding how standards bodies operate, not just what they publish",
       "Deep knowledge of how standards bodies operate -- not just what they publish",
       "Practitioner who understands the engineering context behind every standard",
       "Experience across 700+ API standards, ISO/IEC catalogs, and MIL-STD libraries",
@@ -378,7 +378,7 @@ export const RESEARCH_SERVICES: ServiceCategory[] = [
     ],
     differentiators: [
       "Published author on 'Intelligent Energy: Cognitive AI' (SAE International) -- not just researching AI, building it",
-      "Built AI workflows at Accuris including semantic search and knowledge extraction",
+      "Hands-on experience building AI workflows including semantic search and knowledge extraction for enterprise engineering platforms",
       "Focus on what actually works in industrial environments, not what sounds impressive in demos",
       "Grounded in regulated industry realities -- AI governance, auditability, and compliance",
     ],
@@ -505,7 +505,7 @@ export const RESEARCH_SERVICES: ServiceCategory[] = [
     differentiators: [
       "Practitioner network spanning corporates, startups, and research institutions across 4 industries",
       "TRL-grounded assessments, not hype-cycle positioning",
-      "Direct experience evaluating hundreds of technology vendors at Accuris/IHS Markit",
+      "Direct experience evaluating hundreds of technology vendors across enterprise engineering and energy sectors",
       "Understand both the technology and the commercial viability",
     ],
   },
