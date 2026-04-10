@@ -75,7 +75,7 @@ export const NAV_LINKS = [
 export const CREDENTIALS = [
   { value: "25+", label: "Years Domain Expertise" },
   { value: "65+", label: "Enterprise Relationships" },
-  { value: "2x", label: "President's Club Winner" },
+  { value: "6", label: "Fortune 500 Clients Served" },
   { value: "4", label: "Industry Verticals" },
 ] as const;
 

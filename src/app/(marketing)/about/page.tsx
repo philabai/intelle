@@ -88,7 +88,7 @@ const founderHighlights = [
   "Published in SAE International on Cognitive AI in engineering",
   "CERAWeek speaker and ministerial panel moderator",
   "SPE/AAPG and PMI conference presenter",
-  "2x President's Club recognition for enterprise impact",
+  "Recognized for measurable enterprise customer impact across multiple organizations",
   "GE 6-Sigma Green Belt methodology trained",
   "AI & ML (UT Austin) | MBA (IIM Kozhikode) | CS (Jadavpur University)",
 ];
@@ -207,9 +207,9 @@ export default function AboutPage() {
                 </p>
               </div>
               <div className="p-6 rounded-xl bg-card-bg border border-card-border">
-                <p className="text-3xl font-bold gradient-text">2x</p>
+                <p className="text-3xl font-bold gradient-text">65+</p>
                 <p className="text-sm text-muted mt-1">
-                  President&apos;s Club Winner -- recognized for measurable customer impact
+                  Enterprise engineering organizations directly served
                 </p>
               </div>
               <div className="p-6 rounded-xl bg-card-bg border border-card-border">

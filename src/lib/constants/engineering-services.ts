@@ -126,7 +126,7 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
     ],
     differentiators: [
       "25+ years at the intersection of industry, technology, and AI -- from GE Energy and Dell-EMC to engineering intelligence platforms",
-      "2x President's Club winner for measurable customer impact and adoption outcomes",
+      "Trusted by Fortune 500 engineering organizations for measurable adoption outcomes",
       "Direct experience serving 65+ enterprise engineering organizations across 4 industries",
       "Deep understanding of both the technology and the organizational change management required for successful adoption",
     ],

@@ -630,7 +630,7 @@ export const RESEARCH_SERVICES: ServiceCategory[] = [
     ],
     differentiators: [
       "Former enterprise sales leader -- has actually sold into these markets, not just researched them",
-      "2x President's Club winner -- understands buyer behavior from direct experience",
+      "Practitioner who has directly sold into and served these markets -- understands buyer behavior from experience",
       "Delivers at a speed and price point that Gartner, Frost & Sullivan, and McKinsey cannot match",
       "Practitioner-led analysis, not junior-analyst-produced reports",
     ],
