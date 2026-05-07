@@ -13,6 +13,10 @@ export const SITE = {
   locations: {
     primary: "Dubai, UAE",
   },
+  calcom: {
+    username: "intelle.io",
+    introCallSlug: "30min",
+  },
 } as const;
 
 export const NAV_LINKS = [

@@ -136,7 +136,9 @@ export default function ContactPage() {
               <div className="space-y-3 text-sm text-muted">
                 <div className="flex items-start gap-2">
                   <span className="text-brand-teal font-bold">01</span>
-                  <p>Free 1-hour diagnostic call to identify needs</p>
+                  <p>
+                    <a href="/book" className="text-brand-teal hover:underline">Free intro call</a> to identify needs
+                  </p>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-brand-teal font-bold">02</span>

@@ -64,7 +64,7 @@ export function SiteNav() {
 
                     {openDropdown === link.label && (
                       <div className="absolute top-full left-0 w-72 pt-2">
-                        <div className="rounded-xl border border-card-border bg-card-bg/95 backdrop-blur-xl p-2 shadow-2xl">
+                        <div className="rounded-xl border border-card-border bg-card-bg p-2 shadow-2xl">
                         {link.children.map((child) => (
                           <Link
                             key={child.href}
@@ -104,8 +104,8 @@ export function SiteNav() {
           </div>
 
           <div className="hidden lg:block">
-            <Button href="/contact" size="sm">
-              Get in Touch
+            <Button href="/book" size="sm">
+              Book a Call
             </Button>
           </div>
 
@@ -173,8 +173,8 @@ export function SiteNav() {
               </div>
             ))}
             <div className="mt-4 px-3">
-              <Button href="/contact" size="sm" className="w-full">
-                Get in Touch
+              <Button href="/book" size="sm" className="w-full">
+                Book a Call
               </Button>
             </div>
           </div>
