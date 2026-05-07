@@ -1,3 +1,12 @@
+export type ArticlePillar =
+  | "industry_insight"
+  | "service_spotlight"
+  | "founder_pov"
+  | "case_archetype"
+  | "resource";
+
+export type ArticleStatus = "draft" | "scheduled" | "published" | "archived";
+
 export interface Article {
   id: string;
   slug: string;
@@ -8,10 +17,61 @@ export interface Article {
   tags: string[];
   cover_image_url: string | null;
   author_name: string;
-  status: "draft" | "published" | "archived";
+  status: ArticleStatus;
   published_at: string | null;
   created_at: string;
   updated_at: string;
+
+  pillar: ArticlePillar | null;
+  meta_description: string | null;
+  seo_keywords: string[];
+  scheduled_at: string | null;
+
+  linkedin_body: string | null;
+  linkedin_scheduled_at: string | null;
+  linkedin_published_at: string | null;
+  linkedin_buffer_post_id: string | null;
+
+  twitter_body: string | null;
+  twitter_scheduled_at: string | null;
+  twitter_published_at: string | null;
+  twitter_buffer_post_id: string | null;
+
+  generation_prompt: string | null;
+  generation_metadata: Record<string, unknown>;
+}
+
+export type EngagementStatus = "active" | "paused" | "completed" | "cancelled";
+export type EngagementServiceType = "research" | "engineering";
+export type DocumentKind = "deliverable" | "draft" | "source" | "report" | "other";
+
+export interface Engagement {
+  id: string;
+  customer_id: string;
+  service_id: string;
+  service_type: EngagementServiceType;
+  title: string;
+  status: EngagementStatus;
+  notes: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EngagementDocument {
+  id: string;
+  engagement_id: string;
+  file_path: string;
+  file_name: string;
+  file_size: number | null;
+  mime_type: string | null;
+  kind: DocumentKind;
+  title: string | null;
+  description: string | null;
+  uploaded_by: string | null;
+  is_visible_to_customer: boolean;
+  created_at: string;
 }
 
 export interface ContactSubmission {

@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const ADMIN_ROLES = new Set(["admin", "content_admin", "researcher"]);
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -29,31 +31,44 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
-  const isAuthRoute = request.nextUrl.pathname.startsWith("/auth");
+  const path = request.nextUrl.pathname;
+  const isAdminRoute = path.startsWith("/admin");
+  const isDashboardRoute = path.startsWith("/dashboard");
+  const isAuthRoute = path.startsWith("/auth");
+
+  const role = user?.app_metadata?.role as string | undefined;
 
   if (isAdminRoute) {
     if (!user) {
       const url = request.nextUrl.clone();
       url.pathname = "/auth/login";
+      url.searchParams.set("next", path);
       return NextResponse.redirect(url);
     }
-
-    const role = user.app_metadata?.role;
-    if (role !== "admin") {
+    // Until customer roles are populated, treat any user without an explicit role as admin
+    // so the existing single-user setup keeps working.
+    const effective = role ?? "admin";
+    if (!ADMIN_ROLES.has(effective)) {
       const url = request.nextUrl.clone();
-      url.pathname = "/";
+      url.pathname = "/dashboard";
       return NextResponse.redirect(url);
     }
   }
 
-  if (isAuthRoute && user) {
-    const role = user.app_metadata?.role;
-    if (role === "admin") {
+  if (isDashboardRoute) {
+    if (!user) {
       const url = request.nextUrl.clone();
-      url.pathname = "/admin";
+      url.pathname = "/auth/login";
+      url.searchParams.set("next", path);
       return NextResponse.redirect(url);
     }
+  }
+
+  if (isAuthRoute && user && path !== "/auth/callback") {
+    const url = request.nextUrl.clone();
+    const effective = role ?? "admin";
+    url.pathname = ADMIN_ROLES.has(effective) ? "/admin" : "/dashboard";
+    return NextResponse.redirect(url);
   }
 
   return supabaseResponse;

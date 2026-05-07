@@ -16,12 +16,32 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const supabase = await createClient();
-  const { data } = await supabase.from("articles").select("title, excerpt").eq("slug", slug).eq("status", "published").single();
+  const { data } = await supabase
+    .from("articles")
+    .select("title, excerpt, meta_description, seo_keywords, cover_image_url")
+    .eq("slug", slug)
+    .eq("status", "published")
+    .single();
   if (!data) return { title: "Article Not Found" };
+  const description = data.meta_description || data.excerpt || "";
   return {
     title: data.title,
-    description: data.excerpt || "",
+    description,
+    keywords: data.seo_keywords?.length ? data.seo_keywords : undefined,
     alternates: { canonical: `/insights/${slug}` },
+    openGraph: {
+      title: data.title,
+      description,
+      type: "article",
+      url: `/insights/${slug}`,
+      images: data.cover_image_url ? [{ url: data.cover_image_url }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: data.title,
+      description,
+      images: data.cover_image_url ? [data.cover_image_url] : undefined,
+    },
   };
 }
 

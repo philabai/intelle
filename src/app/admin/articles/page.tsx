@@ -24,6 +24,7 @@ export default function ArticlesPage() {
 
   const statusColors: Record<string, string> = {
     published: "bg-brand-teal/10 text-brand-teal",
+    scheduled: "bg-brand-blue/10 text-brand-blue",
     draft: "bg-yellow-500/10 text-yellow-400",
     archived: "bg-red-500/10 text-red-400",
   };
@@ -32,7 +33,10 @@ export default function ArticlesPage() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold text-white">Articles</h1>
-        <Button href="/admin/articles/new" size="sm">New Article</Button>
+        <div className="flex gap-2">
+          <Button href="/admin/articles/generate" size="sm">Generate (AI)</Button>
+          <Button href="/admin/articles/new" size="sm" variant="outline">New (manual)</Button>
+        </div>
       </div>
 
       {loading ? (
@@ -46,7 +50,7 @@ export default function ArticlesPage() {
               <tr className="text-left text-muted">
                 <th className="px-4 py-3 font-medium">Title</th>
                 <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Category</th>
+                <th className="px-4 py-3 font-medium">Pillar</th>
                 <th className="px-4 py-3 font-medium">Date</th>
                 <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
@@ -58,8 +62,14 @@ export default function ArticlesPage() {
                   <td className="px-4 py-3">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[article.status]}`}>{article.status}</span>
                   </td>
-                  <td className="px-4 py-3 text-muted">{article.category}</td>
-                  <td className="px-4 py-3 text-muted">{article.published_at ? new Date(article.published_at).toLocaleDateString() : "-"}</td>
+                  <td className="px-4 py-3 text-muted text-xs">{article.pillar ?? article.category}</td>
+                  <td className="px-4 py-3 text-muted">
+                    {article.published_at
+                      ? new Date(article.published_at).toLocaleDateString()
+                      : article.scheduled_at
+                        ? `→ ${new Date(article.scheduled_at).toLocaleDateString()}`
+                        : "-"}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Link href={`/admin/articles/${article.id}`} className="text-brand-blue hover:text-brand-blue/80 text-sm">Edit</Link>
