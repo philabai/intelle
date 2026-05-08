@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Card } from "@/components/ui/Card";
+import { ArticleCardThumbnail } from "@/components/insights/ArticleCardThumbnail";
 import type { Article } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -62,7 +62,7 @@ export default async function InsightsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {items.map((article) => (
               <Card key={article.id} href={`/insights/${article.slug}`} className="p-0 overflow-hidden">
-                <div className="h-40 bg-gradient-to-br from-brand-blue/20 to-brand-teal/20" />
+                <ArticleCardThumbnail article={article} />
                 <div className="p-6">
                   <span className={`text-xs px-2 py-1 rounded-full font-medium ${categoryColors[article.category] || categoryColors.insight}`}>
                     {article.category.replace("-", " ")}
