@@ -4,10 +4,30 @@ import { Card } from "@/components/ui/Card";
 import { GradientText } from "@/components/ui/GradientText";
 import { Button } from "@/components/ui/Button";
 import { SITE } from "@/lib/constants";
+import { JsonLd, personSchema } from "@/lib/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: "About Us",
-  description: `${SITE.name} is a brand of ${SITE.legalEntity}, offering engineering intelligence and research services with deep domain expertise across energy, standards, AI, and engineering.`,
+  title: "About intelle.io | Senior Practitioner Engineering Research, Dubai",
+  description:
+    "intelle.io is a senior-led engineering intelligence practice. 25+ years across S&P Global, IHS Markit, GE Energy, Accuris, Sapient. SAE-published. CERAWeek-invited. Dubai-based.",
+  keywords: [
+    "engineering research practice Dubai",
+    "Arnab Ghosh founder",
+    "intelle.io about",
+    "SAE engineering author",
+    "CERAWeek speaker",
+    "KKR Accuris alumni",
+    "S&P Global IHS Markit engineering",
+  ],
+  alternates: { canonical: "/about" },
+  openGraph: {
+    title: "About intelle.io — Senior Practitioner Research",
+    description:
+      "Senior-led engineering intelligence practice. 25+ years across S&P Global, IHS Markit, GE Energy, Accuris, Sapient. Dubai-based.",
+    url: "/about",
+    type: "website",
+  },
+  twitter: { card: "summary_large_image", title: "About intelle.io — Senior Practitioner Research" },
 };
 
 const values = [
@@ -119,6 +139,33 @@ const networkPartners = [
 export default function AboutPage() {
   return (
     <>
+      <JsonLd
+        data={personSchema({
+          name: "Arnab Ghosh",
+          jobTitle: "Founder & CEO",
+          alumniOf: [
+            "S&P Global",
+            "IHS Markit",
+            "GE Energy",
+            "Accuris (KKR portfolio company)",
+            "Sapient Consulting",
+          ],
+          knowsAbout: [
+            "Industrial AI",
+            "Cognitive operations",
+            "Energy transition",
+            "Hydrogen economy",
+            "CCUS",
+            "Standards & regulations",
+            "PLM / ALM",
+            "Knowledge management",
+            "Patent intelligence",
+            "Technology scouting",
+          ],
+          description:
+            "Senior practitioner with 25+ years across S&P Global, IHS Markit, GE Energy, Accuris (a KKR portfolio company), and Sapient Consulting. SAE-published on industrial AI and cognitive operations. CERAWeek-invited speaker. Fortune 500 reference engagements with Aramco, ADNOC, Shell, Chevron, Honeywell, Baker Hughes, and GE Energy.",
+        })}
+      />
       {/* Hero */}
       <section className="py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

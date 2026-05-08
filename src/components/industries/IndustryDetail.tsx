@@ -4,10 +4,14 @@ import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { GradientText } from "@/components/ui/GradientText";
+import { TldrCallout } from "@/components/seo/TldrCallout";
+import { FAQSection } from "@/components/seo/FAQSection";
+import { JsonLd, faqSchema } from "@/lib/seo/json-ld";
 
 export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
   return (
     <>
+      {industry.faqs?.length ? <JsonLd data={faqSchema(industry.faqs)} /> : null}
       {/* Breadcrumb */}
       <div className="border-b border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
@@ -41,6 +45,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
             <p className="mt-6 text-lg text-muted leading-relaxed">
               {industry.description}
             </p>
+            {industry.tldr?.length ? <TldrCallout items={industry.tldr} /> : null}
           </div>
         </div>
       </section>
@@ -234,6 +239,15 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
           </div>
         </section>
       )}
+
+      {/* FAQs */}
+      {industry.faqs?.length ? (
+        <section className="py-8 border-t border-card-border">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+            <FAQSection faqs={industry.faqs} />
+          </div>
+        </section>
+      ) : null}
 
       {/* CTA */}
       <section className="py-16 border-t border-card-border">

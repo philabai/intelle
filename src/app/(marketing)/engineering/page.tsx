@@ -3,16 +3,44 @@ import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { ENGINEERING_SERVICES } from "@/lib/constants";
+import { JsonLd, itemListSchema } from "@/lib/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: "Implementation Services",
+  title: "Engineering Implementation Services | PLM, Standards, KM | intelle.io",
   description:
-    "Implementation, integration, and consulting services that help engineering organizations extract maximum value from their tools and processes.",
+    "Implementation services for engineering organizations: Accuris adoption, PLM/ALM (Teamcenter, Windchill, DOORS), Knowledge Management, Standards Advisory. India delivery bench.",
+  keywords: [
+    "engineering implementation services",
+    "PLM ALM consulting",
+    "Accuris Workbench adoption",
+    "Teamcenter implementation GCC",
+    "knowledge management engineering",
+    "standards advisory retainer",
+  ],
+  alternates: { canonical: "/engineering" },
+  openGraph: {
+    title: "Engineering Implementation Services",
+    description:
+      "Accuris adoption, PLM/ALM (Teamcenter, Windchill, DOORS), Knowledge Management, Standards Advisory.",
+    url: "/engineering",
+    type: "website",
+  },
+  twitter: { card: "summary_large_image", title: "Engineering Implementation Services" },
 };
 
 export default function EngineeringPage() {
   return (
-    <section className="py-16 sm:py-20">
+    <>
+      <JsonLd
+        data={itemListSchema(
+          ENGINEERING_SERVICES.map((s) => ({
+            name: s.title,
+            url: s.href,
+            description: s.description,
+          }))
+        )}
+      />
+      <section className="py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
           label="Implementation Services"
@@ -39,5 +67,6 @@ export default function EngineeringPage() {
         </div>
       </div>
     </section>
+    </>
   );
 }

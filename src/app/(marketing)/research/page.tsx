@@ -3,16 +3,43 @@ import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { RESEARCH_SERVICES } from "@/lib/constants";
+import { JsonLd, itemListSchema } from "@/lib/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: "Research & Innovation Services",
+  title: "Engineering Research Services | GCC, India & Global | intelle.io",
   description:
-    "Bespoke research intelligence across energy, standards, AI, technology scouting, market intelligence, and patent analytics.",
+    "Senior-led engineering research services across 7 specialty areas: energy, standards, AI, technology scouting, market intelligence, patent IP, strategic engagements. Practitioner-grade.",
+  keywords: [
+    "engineering research services GCC",
+    "energy research consultancy",
+    "standards research GCC",
+    "industrial AI research",
+    "technology scouting NOC",
+    "M&A diligence engineering",
+  ],
+  alternates: { canonical: "/research" },
+  openGraph: {
+    title: "Engineering Research & Innovation Services",
+    description:
+      "Senior-led research across 7 specialty areas: energy, standards, AI, technology scouting, market intel, patent IP, strategic.",
+    url: "/research",
+    type: "website",
+  },
+  twitter: { card: "summary_large_image", title: "Engineering Research & Innovation Services" },
 };
 
 export default function ResearchPage() {
   return (
     <>
+      <JsonLd
+        data={itemListSchema(
+          RESEARCH_SERVICES.map((s) => ({
+            name: s.title,
+            url: s.href,
+            description: s.description,
+          }))
+        )}
+      />
       <section className="py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading

@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import { SITE } from "@/lib/constants";
 
-export const metadata: Metadata = { title: "Cookie Policy" };
+export const metadata: Metadata = {
+  title: "Cookie Policy | intelle.io",
+  description:
+    "How intelle.io uses cookies for analytics, preference, and marketing. EU/UK consent banner. Opt-out instructions. Last updated April 2026.",
+  alternates: { canonical: "/cookies" },
+  robots: { index: true, follow: true },
+};
 
 export default function CookiesPage() {
   return (

@@ -3,15 +3,43 @@ import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { INDUSTRIES } from "@/lib/constants";
+import { JsonLd, itemListSchema } from "@/lib/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: "Industries We Serve",
-  description: "Deep domain expertise across Oil & Gas, Aerospace & Defense, Medical Devices, and Manufacturing.",
+  title: "Industries Served | Oil & Gas, Aerospace, MedDev, Manufacturing | intelle.io",
+  description:
+    "intelle.io serves Oil & Gas, Aerospace & Defense, Medical Devices, and Advanced Manufacturing across GCC, India, and global markets. Senior practitioner depth.",
+  keywords: [
+    "engineering consultant by industry",
+    "oil gas consultancy GCC",
+    "aerospace defense engineering research",
+    "medical device research",
+    "advanced manufacturing consulting",
+  ],
+  alternates: { canonical: "/industries" },
+  openGraph: {
+    title: "Industries Served by intelle.io",
+    description:
+      "Oil & Gas, Aerospace & Defense, Medical Devices, Advanced Manufacturing across GCC, India, and global markets.",
+    url: "/industries",
+    type: "website",
+  },
+  twitter: { card: "summary_large_image", title: "Industries We Serve" },
 };
 
 export default function IndustriesPage() {
   return (
-    <section className="py-16 sm:py-20">
+    <>
+      <JsonLd
+        data={itemListSchema(
+          INDUSTRIES.map((i) => ({
+            name: i.title,
+            url: i.href,
+            description: i.description,
+          }))
+        )}
+      />
+      <section className="py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
           label="Industries"
@@ -41,5 +69,6 @@ export default function IndustriesPage() {
         </div>
       </div>
     </section>
+    </>
   );
 }

@@ -87,6 +87,11 @@ export interface ContactSubmission {
   created_at: string;
 }
 
+export interface FAQ {
+  q: string;
+  a: string;
+}
+
 export interface ServiceCategory {
   id: string;
   title: string;
@@ -119,6 +124,9 @@ export interface ServiceCategory {
     duration: string;
     description: string;
   }[];
+  // SEO + content depth (from audit)
+  tldr?: string[];
+  faqs?: FAQ[];
 }
 
 export interface IndustryInfo {
@@ -159,4 +167,7 @@ export interface IndustryInfo {
     fullName: string;
     relevance: string;
   }[];
+  // SEO + content depth (from audit)
+  tldr?: string[];
+  faqs?: FAQ[];
 }

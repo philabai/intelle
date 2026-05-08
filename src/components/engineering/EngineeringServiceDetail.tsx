@@ -4,10 +4,15 @@ import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { GradientText } from "@/components/ui/GradientText";
+import { TldrCallout } from "@/components/seo/TldrCallout";
+import { FAQSection } from "@/components/seo/FAQSection";
+import { JsonLd, faqSchema, serviceSchema } from "@/lib/seo/json-ld";
 
 export function EngineeringServiceDetail({ service }: { service: ServiceCategory }) {
   return (
     <>
+      <JsonLd data={serviceSchema(service.title, service.description, service.href)} />
+      {service.faqs?.length ? <JsonLd data={faqSchema(service.faqs)} /> : null}
       {/* Breadcrumb */}
       <div className="border-b border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
@@ -39,6 +44,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
             <p className="mt-6 text-lg text-muted leading-relaxed">
               {service.description}
             </p>
+            {service.tldr?.length ? <TldrCallout items={service.tldr} /> : null}
           </div>
         </div>
       </section>
@@ -256,6 +262,15 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
           </div>
         </div>
       </section>
+
+      {/* FAQs */}
+      {service.faqs?.length ? (
+        <section className="py-8 border-t border-card-border">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+            <FAQSection faqs={service.faqs} />
+          </div>
+        </section>
+      ) : null}
 
       {/* CTA */}
       <section className="py-16 border-t border-card-border">

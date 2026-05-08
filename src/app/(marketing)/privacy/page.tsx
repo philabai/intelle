@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import { SITE } from "@/lib/constants";
 
-export const metadata: Metadata = { title: "Privacy Policy" };
+export const metadata: Metadata = {
+  title: "Privacy Policy | intelle.io",
+  description:
+    "intelle.io privacy policy: how we collect, use, and protect personal data. Compliant with GDPR, UAE PDPL, and India DPDP. Last updated April 2026.",
+  alternates: { canonical: "/privacy" },
+  robots: { index: true, follow: true },
+};
 
 export default function PrivacyPage() {
   return (

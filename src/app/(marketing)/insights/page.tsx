@@ -6,8 +6,26 @@ import { Card } from "@/components/ui/Card";
 import type { Article } from "@/lib/types";
 
 export const metadata: Metadata = {
-  title: "Insights & Research",
-  description: "Latest insights, research articles, and thought leadership from intelle.io.",
+  title: "Engineering Intelligence Insights | intelle.io Blog",
+  description:
+    "Practitioner-grade insights on industrial AI, energy transition, standards, technology scouting, and engineering research. Authored by Arnab Ghosh, SAE-published. Published weekly.",
+  keywords: [
+    "engineering intelligence blog",
+    "industrial AI insights",
+    "energy research blog",
+    "standards advisory articles",
+    "NOC innovation insights",
+    "GCC engineering research",
+  ],
+  alternates: { canonical: "/insights" },
+  openGraph: {
+    title: "Engineering Intelligence Insights",
+    description:
+      "Practitioner-grade insights on industrial AI, energy transition, standards, and engineering research.",
+    url: "/insights",
+    type: "website",
+  },
+  twitter: { card: "summary_large_image", title: "Engineering Intelligence Insights" },
 };
 
 export const dynamic = "force-dynamic";

@@ -5,6 +5,7 @@ import { SocialProof } from "@/components/home/SocialProof";
 import { MethodologyPreview } from "@/components/home/MethodologyPreview";
 import { IndustriesPreview } from "@/components/home/IndustriesPreview";
 import { CTASection } from "@/components/home/CTASection";
+import { HomeFAQs } from "@/components/home/HomeFAQs";
 
 export default function HomePage() {
   return (
@@ -15,6 +16,7 @@ export default function HomePage() {
       <SocialProof />
       <MethodologyPreview />
       <IndustriesPreview />
+      <HomeFAQs />
       <CTASection />
     </>
   );

@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import { SITE } from "@/lib/constants";
 
-export const metadata: Metadata = { title: "Terms of Service" };
+export const metadata: Metadata = {
+  title: "Terms of Service | intelle.io",
+  description:
+    "Terms of service for intelle.io engagements. Governing law: UAE. SparkLab LLC. SOWs supersede general terms. Last updated April 2026.",
+  alternates: { canonical: "/terms" },
+  robots: { index: true, follow: true },
+};
 
 export default function TermsPage() {
   return (

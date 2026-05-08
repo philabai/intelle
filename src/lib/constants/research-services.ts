@@ -130,6 +130,34 @@ export const RESEARCH_SERVICES: ServiceCategory[] = [
       "Published author on Cognitive AI in energy (SAE International)",
       "Direct relationships with Aramco, ADNOC, Shell, and Chevron built over a decade",
     ],
+    tldr: [
+      "Decision-ready energy research for GCC + India — hydrogen, CCUS, energy transition, digitalisation.",
+      "Senior practitioner depth: 25+ years across S&P Global, IHS Markit, GE Energy, Accuris.",
+      "30–50% of Tier-1 consultancy cost; 4–8 week typical engagement.",
+      "Reference engagements with Aramco, ADNOC, Shell, Chevron, Honeywell.",
+    ],
+    faqs: [
+      {
+        q: "How is intelle.io different from Tier-1 consultancies for energy research?",
+        a: "Tier-1 firms staff energy research with junior analysts using templates. We deliver senior-practitioner work end-to-end — every deliverable is led by a 25-year domain practitioner with direct NOC and EPC relationships. Output quality is comparable; cost is 30–50% lower; turnaround is a quarter of theirs.",
+      },
+      {
+        q: "Do you cover both GCC and India energy markets?",
+        a: "Yes. Our energy research covers GCC (Saudi, UAE, Qatar, Kuwait, Oman, Bahrain) and India explicitly — including hydrogen, CCUS, renewables, oil & gas digitalisation, and the energy transition. We have reference engagements across both regions.",
+      },
+      {
+        q: "What is a typical energy research engagement scope and duration?",
+        a: "Most energy engagements run 4–8 weeks: a 2-week scoping memo, 4–6 weeks of primary + secondary research with 15–25 expert interviews, and a final decision-ready briefing. Bespoke scopes (board briefings, M&A diligence) can be 2–14 weeks.",
+      },
+      {
+        q: "Can you support hydrogen and CCUS investment decisions?",
+        a: "Yes — hydrogen offtake economics, CCUS feasibility, technology vendor scouting, and standards landscape mapping (ISO/TC 197, IEC/TC 105) are core capabilities. We have published research on Cognitive AI in energy and have direct relationships with major hydrogen ecosystem players.",
+      },
+      {
+        q: "Do you serve mid-tier EPCs or only major NOCs?",
+        a: "Both. We deliberately serve mid-tier EPCs and industrial scale-ups who can't afford Tier-1 fees but need decision-grade intelligence. NOC innovation arms get the same senior-led work; the engagement shape adapts to scope.",
+      },
+    ],
   },
   {
     id: "standards",
@@ -256,6 +284,34 @@ export const RESEARCH_SERVICES: ServiceCategory[] = [
       "Practitioner who understands the engineering context behind every standard",
       "Experience across 700+ API standards, ISO/IEC catalogs, and MIL-STD libraries",
     ],
+    tldr: [
+      "Senior-led standards research: API, ASME, ISO, IEC, MIL-STD, FDA, EU MDR.",
+      "MoIAT / SASO / ESMA harmonisation for cross-jurisdiction GCC operations.",
+      "Mid-tier EPC bid support and NOC tender preparation as a regular delivery shape.",
+      "2-week Standards Landscape Scan: $15–25k. Full advisory retainer available.",
+    ],
+    faqs: [
+      {
+        q: "Which standards bodies do you cover?",
+        a: "API, ASME, ISO, IEC, MIL-STD, FDA, EU MDR, and the GCC national bodies (MoIAT in UAE, SASO in Saudi, ESMA in UAE). We also cover IEC 62304 (software-as-medical-device), DO-178C (avionics software), and AS9100 (aerospace QMS).",
+      },
+      {
+        q: "What is a Standards Landscape Scan?",
+        a: "A 2-week diagnostic that maps every standard applicable to a specific product, jurisdiction, or tender response — with revision currency, gap analysis vs. internal procedures, and procurement-ready compliance evidence. Typical fee: $15–25k.",
+      },
+      {
+        q: "Can you help with NOC tender preparation?",
+        a: "Yes. Mid-tier EPCs bidding into Aramco, ADNOC, QatarEnergy, or Adnoc Sour Gas tenders use us to translate the tender's standards requirements into a compliance matrix the bid team can act on. Typical engagement: 4–6 weeks.",
+      },
+      {
+        q: "Do you provide ongoing standards advisory?",
+        a: "Yes. Our Standards Advisory Retainer ([engineering/compliance-advisory](/engineering/compliance-advisory)) puts a senior standards architect on-call for ongoing questions, currency monitoring, and cross-functional standards governance. Pricing band: $5–15k/month.",
+      },
+      {
+        q: "How do you handle standards harmonisation across GCC + EU + US?",
+        a: "We map each product's compliance posture across jurisdictions in parallel: identify equivalent clauses, flag genuine divergences, and produce a single source-of-truth document the engineering, QA, legal, and procurement teams can all act on.",
+      },
+    ],
   },
   {
     id: "ai-digitalization",
@@ -381,6 +437,47 @@ export const RESEARCH_SERVICES: ServiceCategory[] = [
       "Hands-on experience building AI workflows including semantic search and knowledge extraction for enterprise engineering platforms",
       "Focus on what actually works in industrial environments, not what sounds impressive in demos",
       "Grounded in regulated industry realities -- AI governance, auditability, and compliance",
+    ],
+    tldr: [
+      "Senior-led industrial AI and GenAI research — corpus prep first, model second.",
+      "AI Readiness Brief: 2-week diagnostic, $20–30k. 90-Day Pilot Scope: 4-step playbook.",
+      "23-Question Industrial AI Vendor Diagnostic: lead-magnet evaluator, free.",
+      "SAE-published author on Cognitive AI in industrial operations.",
+      "We refuse scopes where a wrong answer is unbounded (sizing, structural margins, control narratives). Fluency ≠ competence.",
+    ],
+    faqs: [
+      {
+        q: "What is an AI Readiness Brief?",
+        a: "A 2-week diagnostic that assesses whether an engineering organisation can run a successful GenAI pilot. We audit corpus quality, workflow fit, success-metric clarity, and organisational readiness — then deliver a kill/scope/proceed recommendation. Typical fee: $20–30k.",
+      },
+      {
+        q: "How does your 90-day pilot scoping work?",
+        a: "Four phases: weeks 1–2 scope compression (one document class, one decision, one named user); weeks 3–6 corpus preparation (clean, chunk, tag, build evaluation set); weeks 7–10 retrieval system + thin UI inside the workflow tool; weeks 11–13 supervised pilot with 5–15 named engineers and a daily feedback loop.",
+      },
+      {
+        q: "Where does GenAI actually work in engineering?",
+        a: "Standards traceability (60–75% time-to-clause reductions when corpus is prepared correctly), engineering knowledge search and reuse, template-driven document generation (ITPs, MOCs, deviation reports), predictive-maintenance reasoning layers, and patent triage. Most other claims should be treated as marketing.",
+      },
+      {
+        q: "Where do you refuse to play?",
+        a: "Anywhere a wrong answer is unbounded — sizing relief valves, structural margins, control narratives. Plausibility is not correctness. We also decline horizontal 'AI co-pilot for engineers' scopes (too broad, no workflow to anchor adoption) and unstructured analogue corpus work (hand-drawn isometrics, marked-up 1990s drawings) until document AI matures.",
+      },
+      {
+        q: "Do I need to fix my corpus before doing AI?",
+        a: "Yes — and this is the single biggest determinant of success. GenAI pilots in engineering rise or fall on corpus quality, not model quality. A retrieval-ready corpus needs clean text extraction, semantic chunking, metadata tagging, controlled vocabulary, and an evaluation set of real engineering queries. 6–12 weeks for a 50,000-document archive.",
+      },
+      {
+        q: "Which models / vendors do you recommend?",
+        a: "Vendor-neutral. We work with Claude, GPT, Gemini, and 70B open-weights fine-tunes. The model is rarely the bottleneck — it's the corpus, the workflow integration, and the success metric. We help you evaluate vendors against your specific use case using our 23-Question Industrial AI Vendor Diagnostic.",
+      },
+      {
+        q: "How do you measure pilot success?",
+        a: "Adoption by unprompted reuse, not satisfaction surveys. If engineers are not coming back to the tool of their own accord by week three, the tool is not working — regardless of survey scores. We also track time-to-answer, citation accuracy, and decision velocity for the named user group.",
+      },
+      {
+        q: "How is this different from McKinsey/BCG industrial AI work?",
+        a: "Tier-1 firms staff industrial AI with consultants who have read about industrial AI. We staff with practitioners who have built industrial AI. The deliverable is not a slide deck — it's a corpus, a retrieval system inside your workflow tool, and an evaluation set you own forever. Cost is 30–50% of theirs.",
+      },
     ],
   },
   {
