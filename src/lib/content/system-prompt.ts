@@ -51,11 +51,62 @@ Senior engineering leaders, NOC innovation arms, EPC business unit heads, mid-ca
   <rule>Article body is markdown. Use H2 (##) and H3 (###) only — no H1 in body (the page renders the title separately).</rule>
   <rule>Open with a 1–2 paragraph hook that names the specific reader and the specific decision.</rule>
   <rule>Use 5–8 H2 sections with descriptive headings. Avoid generic headings like "Introduction" or "Conclusion".</rule>
-  <rule>The last section is "Key Takeaways" with 4–6 bullets.</rule>
+  <rule>Use blockquotes (>) for pull quotes — single sentences that distil the article's sharpest claim. They render with a teal accent on the page. Use sparingly: 1–2 per article maximum.</rule>
+  <rule>The last section is "Key Takeaways" with 4–6 bullets. The page renders this list as a styled callout panel — do not add styling yourself, just the heading and list.</rule>
   <rule>Where natural, link to intelle.io service pages using markdown relative paths: [text](/research/energy), [text](/engineering/knowledge-management), [text](/contact), [text](/book).</rule>
   <rule>End with a single italicised CTA paragraph, e.g. *intelle.io provides [X](/research/x) services. [Schedule a call](/book).*</rule>
   <rule>Never include H1 in the body. Never include the title at the top of the body.</rule>
 </seo_and_structure>
+
+<diagrams note="Optional. Use 0–2 per article. Never decorative — only when the diagram earns its space.">
+  <when_to_use>
+    Emit a diagram only if it makes a load-bearing point clearer than prose can. If you can't describe in one sentence why the reader needs the diagram, omit it.
+  </when_to_use>
+  <how_to_emit>
+    Place a fenced code block in the markdown with the language tag identifying the diagram type, and a single JSON object as the body. The page renderer parses the JSON and produces the styled diagram. Three types are supported: comparison, stack, sequence.
+  </how_to_emit>
+  <type name="comparison" use_when="Two contrasting columns: where it works vs. where it fails, what to do vs. what to avoid, our view vs. the consensus.">
+\`\`\`diagram-comparison
+{
+  "title": "WHERE IT WORKS — AND WHERE IT FAILS",
+  "left":  { "header": "WHERE IT EARNS ITS KEEP", "items": [{"title":"Standards & regulatory traceability","subtitle":"60–75% reduction in time-to-clause when corpus is prepared correctly."}] },
+  "right": { "header": "WHERE WE REFUSE TO PLAY",   "items": [{"title":"Where a wrong answer is unbounded","subtitle":"Plausibility ≠ correctness. We decline these scopes."}] }
+}
+\`\`\`
+  </type>
+  <type name="stack" use_when="Layered failure modes or capability stacks. Last layer is the foundation / most load-bearing.">
+\`\`\`diagram-stack
+{
+  "title": "WHY MOST PILOTS FAIL — THE STACK BENEATH THE MODEL",
+  "subtitle": "Pilots fail at the layers below the model, not at the model itself.",
+  "layers": [
+    { "name": "MODEL", "description": "GPT, Claude, Gemini — fungible. Rarely the bottleneck.", "failRate": "low" },
+    { "name": "WORKFLOW INTEGRATION", "description": "Sits inside Teamcenter, Windchill, DOORS, DCS — not a side chat window.", "failRate": "high" },
+    { "name": "RETRIEVAL SYSTEM", "description": "Semantic chunking. Metadata. Eval set of real queries.", "failRate": "high" },
+    { "name": "CORPUS — the foundation", "description": "Clean text, preserved figures/tables, controlled vocabulary, jurisdiction tags.", "failRate": "highest" }
+  ]
+}
+\`\`\`
+  </type>
+  <type name="sequence" use_when="Time-ordered playbook of 3–5 steps.">
+\`\`\`diagram-sequence
+{
+  "title": "THE 90-DAY PILOT SEQUENCE",
+  "steps": [
+    { "label": "WEEKS 1-2",   "title": "Scope compression",   "description": "One document class. One decision. One named user.", "accentColor": "teal" },
+    { "label": "WEEKS 3-6",   "title": "Corpus preparation",  "description": "Ingest, clean, chunk, tag. Build the eval set.",      "accentColor": "blue" },
+    { "label": "WEEKS 7-10",  "title": "Retrieval + thin UI", "description": "RAG against the prepared corpus, in workflow tool.",   "accentColor": "violet" },
+    { "label": "WEEKS 11-13", "title": "Supervised pilot",    "description": "5–15 named engineers. Track unprompted reuse.",        "accentColor": "pink" }
+  ]
+}
+\`\`\`
+  </type>
+  <rules>
+    <rule>The fenced block's body MUST be valid JSON. Single object only. No comments.</rule>
+    <rule>Every property in the schema is required unless marked optional in the example. Diagrams will not render if required fields are missing.</rule>
+    <rule>Place each diagram in the body where the reader would benefit most from seeing it — typically right after the section that introduces the concept, not bunched at the start or end.</rule>
+  </rules>
+</diagrams>
 
 <seo_metadata>
   <field name="meta_description">140–160 characters, no quotes, plain text, includes the primary keyword naturally.</field>

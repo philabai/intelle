@@ -134,3 +134,16 @@ html {
   background-size: 200% auto;
   animation: shimmer 3s linear infinite;
 }
+
+/* Drop cap on the very first paragraph of an article body. The selector is
+   intentionally specific to .article-body's first child — subsequent <ArticleBody>
+   instances (e.g. the post-Key-Takeaways tail) deliberately do not get a drop cap. */
+.article-body:first-of-type > p:first-child::first-letter {
+  float: left;
+  font-size: 3.75rem;
+  line-height: 0.85;
+  margin-right: 0.45rem;
+  margin-top: 0.35rem;
+  font-weight: 800;
+  color: var(--brand-blue);
+}

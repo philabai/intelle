@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { PILLARS } from "@/lib/content/pillars";
+import { RichEditor } from "@/components/admin/RichEditor";
+import { UnicodeFormatHelpers } from "@/components/admin/UnicodeFormatHelpers";
 import type { ArticlePillar } from "@/lib/types";
 
 const inputStyles =
@@ -55,6 +57,7 @@ export default function EditArticlePage() {
   const [twitterSentAt, setTwitterSentAt] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const linkedinRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     fetch(`/api/articles/${id}`)
@@ -195,8 +198,11 @@ export default function EditArticlePage() {
             <input name="cover_image_url" value={form.cover_image_url} onChange={handleChange} className={inputStyles} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Body (Markdown)</label>
-            <textarea name="body" value={form.body} onChange={handleChange} required rows={20} className={`${inputStyles} font-mono`} />
+            <label className="block text-sm font-medium text-foreground mb-2">Body</label>
+            <RichEditor
+              value={form.body}
+              onChange={(md) => setForm((prev) => ({ ...prev, body: md }))}
+            />
           </div>
         </section>
 
@@ -258,7 +264,12 @@ export default function EditArticlePage() {
               Posted to LinkedIn at {new Date(linkedinSentAt).toLocaleString()}
             </p>
           )}
+          <UnicodeFormatHelpers
+            textareaRef={linkedinRef}
+            onChange={(v) => setForm((prev) => ({ ...prev, linkedin_body: v }))}
+          />
           <textarea
+            ref={linkedinRef}
             name="linkedin_body"
             value={form.linkedin_body}
             onChange={handleChange}

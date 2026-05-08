@@ -14,8 +14,15 @@
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.0",
     "@tailwindcss/typography": "^0.5.19",
+    "@tiptap/extension-link": "^3.22.5",
+    "@tiptap/extension-placeholder": "^3.22.5",
+    "@tiptap/extension-underline": "^3.22.5",
+    "@tiptap/react": "^3.22.5",
+    "@tiptap/starter-kit": "^3.22.5",
+    "@types/turndown": "^5.0.6",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "marked": "^18.0.3",
     "next": "16.2.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -24,6 +31,7 @@
     "remark-gfm": "^4.0.1",
     "swr": "^2.4.1",
     "tailwind-merge": "^3.5.0",
+    "turndown": "^7.2.4",
     "zod": "^4.3.6"
   },
   "devDependencies": {
