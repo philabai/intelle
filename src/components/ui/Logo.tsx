@@ -1,64 +1,121 @@
 import Link from "next/link";
 
+/**
+ * Two SVG components that render the same hexagonal-cube mark.
+ * `Logo` includes the wordmark; `LogoMark` is the icon only.
+ *
+ * Geometry: an isometric cube viewed slightly above. The outer silhouette is
+ * a regular hexagon. Three visible faces:
+ *   - Top face          (cyan -> light blue)
+ *   - Front-left face   (violet -> indigo)
+ *   - Front-right face  (cyan -> blue)
+ * An 'i' letterform sits centered in the front of the cube.
+ */
+
+function HexCube({ size = 40, gradId }: { size?: number; gradId: string }) {
+  const top = `${gradId}-top`;
+  const left = `${gradId}-left`;
+  const right = `${gradId}-right`;
+  const stroke = `${gradId}-stroke`;
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 120 120"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="shrink-0"
+    >
+      {/* Top face — parallelogram from upper apex to centre */}
+      <path d="M60 4 L110 32.9 L60 60 L10 32.9 Z" fill={`url(#${top})`} />
+      {/* Front-left face */}
+      <path d="M10 32.9 L60 60 L60 116 L10 88.1 Z" fill={`url(#${left})`} />
+      {/* Front-right face */}
+      <path d="M110 32.9 L60 60 L60 116 L110 88.1 Z" fill={`url(#${right})`} />
+      {/* Subtle outer stroke for crispness on light backgrounds */}
+      <path
+        d="M60 4 L110 32.9 L110 88.1 L60 116 L10 88.1 L10 32.9 Z"
+        fill="none"
+        stroke={`url(#${stroke})`}
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        opacity="0.35"
+      />
+      {/* Edge highlights along the three internal seams */}
+      <path d="M60 4 L60 60" stroke="#FFFFFF" strokeWidth="0.6" opacity="0.25" />
+      <path d="M10 32.9 L60 60" stroke="#FFFFFF" strokeWidth="0.6" opacity="0.18" />
+      <path d="M110 32.9 L60 60" stroke="#FFFFFF" strokeWidth="0.6" opacity="0.18" />
+
+      {/* 'i' letterform — sits centred on the front of the cube */}
+      <circle cx="60" cy="62" r="5" fill="#FFFFFF" opacity="0.96" />
+      <rect
+        x="55.5"
+        y="73"
+        width="9"
+        height="26"
+        rx="2.5"
+        fill="#FFFFFF"
+        opacity="0.96"
+      />
+
+      <defs>
+        {/* Top face: cyan -> light blue */}
+        <linearGradient
+          id={top}
+          x1="10"
+          y1="4"
+          x2="110"
+          y2="60"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#4DE3F0" />
+          <stop offset="1" stopColor="#5DA5FF" />
+        </linearGradient>
+        {/* Left face: violet -> deep indigo */}
+        <linearGradient
+          id={left}
+          x1="10"
+          y1="32"
+          x2="60"
+          y2="116"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#7C3AED" />
+          <stop offset="1" stopColor="#3730A3" />
+        </linearGradient>
+        {/* Right face: bright cyan -> blue */}
+        <linearGradient
+          id={right}
+          x1="110"
+          y1="32"
+          x2="60"
+          y2="116"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#22D3EE" />
+          <stop offset="1" stopColor="#1D4ED8" />
+        </linearGradient>
+        {/* Outer stroke gradient */}
+        <linearGradient
+          id={stroke}
+          x1="0"
+          y1="0"
+          x2="120"
+          y2="120"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#22D3EE" />
+          <stop offset="1" stopColor="#7C3AED" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
 export function Logo({ className = "" }: { className?: string }) {
   return (
     <Link href="/" className={`flex items-center gap-3 ${className}`}>
-      <svg
-        width="40"
-        height="40"
-        viewBox="0 0 120 120"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="shrink-0"
-      >
-        {/* Outer hexagon */}
-        <path
-          d="M60 4L110 32.9V88.1L60 116L10 88.1V32.9L60 4Z"
-          fill="url(#logo-hex-bg)"
-        />
-        {/* Left facet */}
-        <path
-          d="M60 4L10 32.9V88.1L60 60V4Z"
-          fill="url(#logo-facet-left)"
-          opacity="0.9"
-        />
-        {/* Right facet */}
-        <path
-          d="M60 4L110 32.9V60L60 60V4Z"
-          fill="url(#logo-facet-right)"
-          opacity="0.85"
-        />
-        {/* Bottom facet */}
-        <path
-          d="M10 88.1L60 116L110 88.1V60L60 60L10 60V88.1Z"
-          fill="url(#logo-facet-bottom)"
-          opacity="0.8"
-        />
-        {/* Inner "i" dot */}
-        <circle cx="60" cy="38" r="5.5" fill="white" />
-        {/* Inner "i" bar */}
-        <rect x="54.5" y="50" width="11" height="28" rx="3.5" fill="white" />
-
-        <defs>
-          <linearGradient id="logo-hex-bg" x1="10" y1="4" x2="110" y2="116" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#00D4C4" />
-            <stop offset="0.5" stopColor="#2563FF" />
-            <stop offset="1" stopColor="#7C3AED" />
-          </linearGradient>
-          <linearGradient id="logo-facet-left" x1="10" y1="32" x2="60" y2="88" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#1A3A8F" />
-            <stop offset="1" stopColor="#00B4D8" />
-          </linearGradient>
-          <linearGradient id="logo-facet-right" x1="60" y1="4" x2="110" y2="60" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#00D4C4" />
-            <stop offset="1" stopColor="#2563FF" />
-          </linearGradient>
-          <linearGradient id="logo-facet-bottom" x1="10" y1="60" x2="110" y2="116" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#2563FF" />
-            <stop offset="1" stopColor="#7C3AED" />
-          </linearGradient>
-        </defs>
-      </svg>
+      <HexCube size={40} gradId="logo" />
       <div className="flex flex-col">
         <span className="text-xl font-semibold text-heading tracking-tight">
           intelle.io
@@ -69,42 +126,5 @@ export function Logo({ className = "" }: { className?: string }) {
 }
 
 export function LogoMark({ size = 32 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 120 120"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M60 4L110 32.9V88.1L60 116L10 88.1V32.9L60 4Z"
-        fill="url(#mark-hex-bg)"
-      />
-      <path d="M60 4L10 32.9V88.1L60 60V4Z" fill="url(#mark-facet-left)" opacity="0.9" />
-      <path d="M60 4L110 32.9V60L60 60V4Z" fill="url(#mark-facet-right)" opacity="0.85" />
-      <path d="M10 88.1L60 116L110 88.1V60L60 60L10 60V88.1Z" fill="url(#mark-facet-bottom)" opacity="0.8" />
-      <circle cx="60" cy="38" r="5.5" fill="white" />
-      <rect x="54.5" y="50" width="11" height="28" rx="3.5" fill="white" />
-      <defs>
-        <linearGradient id="mark-hex-bg" x1="10" y1="4" x2="110" y2="116" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#00D4C4" />
-          <stop offset="0.5" stopColor="#2563FF" />
-          <stop offset="1" stopColor="#7C3AED" />
-        </linearGradient>
-        <linearGradient id="mark-facet-left" x1="10" y1="32" x2="60" y2="88" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#1A3A8F" />
-          <stop offset="1" stopColor="#00B4D8" />
-        </linearGradient>
-        <linearGradient id="mark-facet-right" x1="60" y1="4" x2="110" y2="60" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#00D4C4" />
-          <stop offset="1" stopColor="#2563FF" />
-        </linearGradient>
-        <linearGradient id="mark-facet-bottom" x1="10" y1="60" x2="110" y2="116" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#2563FF" />
-          <stop offset="1" stopColor="#7C3AED" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
+  return <HexCube size={size} gradId={`mark-${size}`} />;
 }
