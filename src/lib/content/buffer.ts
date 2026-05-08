@@ -39,27 +39,51 @@ type BufferChannel = {
   avatar: string;
 };
 
-async function listOrganizations(): Promise<{ id: string; name: string | null }[]> {
-  // If an explicit org id is configured, query just that one (still match its name if available).
-  const explicit = process.env.BUFFER_ORGANIZATION_ID;
+export type ChannelsDebug = {
+  account_query_errors: string[];
+  account_id: string | null;
+  organizations_from_account: { id: string; name: string }[];
+  configured_org_id: string | null;
+  per_org_results: {
+    organizationId: string;
+    organizationName: string | null;
+    variable_form_channel_count: number;
+    variable_form_errors: string[];
+    inline_form_channel_count: number;
+    inline_form_errors: string[];
+  }[];
+};
+
+async function listOrganizationsWithDebug(debug: ChannelsDebug): Promise<{ id: string; name: string | null }[]> {
+  const explicit = process.env.BUFFER_ORGANIZATION_ID || null;
+  debug.configured_org_id = explicit;
+
   const result = await bufferGraphQL<{
     account: { id: string; organizations: { id: string; name: string }[] };
   }>(`query { account { id organizations { id name } } }`);
 
+  if (result.errors?.length) {
+    debug.account_query_errors = result.errors.map((e) => e.message);
+  }
+  debug.account_id = result.data?.account?.id ?? null;
   const orgs = result.data?.account?.organizations ?? [];
+  debug.organizations_from_account = orgs;
+
   if (explicit) {
     const match = orgs.find((o) => o.id === explicit);
     return [{ id: explicit, name: match?.name ?? null }];
   }
   if (orgs.length) return orgs.map((o) => ({ id: o.id, name: o.name }));
-  // Fallback: some accounts return only an id at the account level.
   const accountId = result.data?.account?.id;
   if (accountId) return [{ id: accountId, name: null }];
   return [];
 }
 
-async function channelsForOrg(orgId: string): Promise<BufferChannel[]> {
-  // Variable form first.
+async function channelsForOrgWithDebug(
+  orgId: string,
+  orgName: string | null,
+  debug: ChannelsDebug
+): Promise<BufferChannel[]> {
   const variableForm = await bufferGraphQL<{ channels: BufferChannel[] }>(
     `query GetChannels($orgId: OrganizationId!) {
       channels(input: { organizationId: $orgId }) {
@@ -68,27 +92,50 @@ async function channelsForOrg(orgId: string): Promise<BufferChannel[]> {
     }`,
     { orgId }
   );
-  if (variableForm.data?.channels?.length) return variableForm.data.channels;
+  const variableChannels = variableForm.data?.channels ?? [];
+  const variableErrors = variableForm.errors?.map((e) => e.message) ?? [];
 
-  // Inline-string fallback — Buffer's API has been seen to return empty for the variable form
-  // even when channels exist for the org. Same fallback Sathi.fit uses.
-  const inlineForm = await bufferGraphQL<{ channels: BufferChannel[] }>(
-    `query GetChannels {
-      channels(input: { organizationId: "${orgId}" }) {
-        id name displayName service avatar
-      }
-    }`
-  );
-  return inlineForm.data?.channels ?? [];
+  let inlineChannels: BufferChannel[] = [];
+  let inlineErrors: string[] = [];
+  if (!variableChannels.length) {
+    const inlineForm = await bufferGraphQL<{ channels: BufferChannel[] }>(
+      `query GetChannels {
+        channels(input: { organizationId: "${orgId}" }) {
+          id name displayName service avatar
+        }
+      }`
+    );
+    inlineChannels = inlineForm.data?.channels ?? [];
+    inlineErrors = inlineForm.errors?.map((e) => e.message) ?? [];
+  }
+
+  debug.per_org_results.push({
+    organizationId: orgId,
+    organizationName: orgName,
+    variable_form_channel_count: variableChannels.length,
+    variable_form_errors: variableErrors,
+    inline_form_channel_count: inlineChannels.length,
+    inline_form_errors: inlineErrors,
+  });
+
+  return variableChannels.length ? variableChannels : inlineChannels;
 }
 
-export async function listChannels(): Promise<BufferProfile[]> {
-  const orgs = await listOrganizations();
-  if (!orgs.length) throw new Error("Buffer organization not found");
-
+export async function listChannels(): Promise<{
+  profiles: BufferProfile[];
+  debug: ChannelsDebug;
+}> {
+  const debug: ChannelsDebug = {
+    account_query_errors: [],
+    account_id: null,
+    organizations_from_account: [],
+    configured_org_id: null,
+    per_org_results: [],
+  };
+  const orgs = await listOrganizationsWithDebug(debug);
   const all: BufferProfile[] = [];
   for (const org of orgs) {
-    const channels = await channelsForOrg(org.id);
+    const channels = await channelsForOrgWithDebug(org.id, org.name, debug);
     for (const c of channels) {
       all.push({
         id: c.id,
@@ -101,7 +148,7 @@ export async function listChannels(): Promise<BufferProfile[]> {
       });
     }
   }
-  return all;
+  return { profiles: all, debug };
 }
 
 export type SchedulePostInput = {

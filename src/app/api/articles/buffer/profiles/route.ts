@@ -18,27 +18,10 @@ export async function GET() {
   }
 
   try {
-    const profiles = await listChannels();
-    // Build a per-org breakdown for debugging — same data, grouped, plus an
-    // explicit indication of which org id is configured (if any).
-    const byOrg: Record<string, { name: string | null; channels: typeof profiles }> = {};
-    for (const p of profiles) {
-      if (!byOrg[p.organizationId]) {
-        byOrg[p.organizationId] = { name: p.organizationName, channels: [] };
-      }
-      byOrg[p.organizationId].channels.push(p);
-    }
+    const { profiles, debug } = await listChannels();
     return NextResponse.json({
       profiles,
-      diagnostics: {
-        configured_org_id: process.env.BUFFER_ORGANIZATION_ID || null,
-        organizations_seen: Object.entries(byOrg).map(([id, v]) => ({
-          id,
-          name: v.name,
-          channel_count: v.channels.length,
-        })),
-        total_channels: profiles.length,
-      },
+      diagnostics: debug,
     });
   } catch (err) {
     console.error("[buffer/profiles] error:", err);
