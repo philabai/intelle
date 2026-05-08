@@ -72,9 +72,29 @@ Senior engineering leaders, NOC innovation arms, EPC business unit heads, mid-ca
 ≤270 characters total (leave room for a URL Buffer will append). One sharp claim or stat. No hashtags inside the count. End with the article slug placeholder as the last token, e.g. "intelle.io/insights/&lt;slug&gt;". No threads. One post.
 </twitter_variant>
 
-<thinking_guidance>
-Before writing, plan the article: which 5–8 H2 sections cover the topic, which specific data points or named programs you'll cite, which single most-surprising point becomes the LinkedIn hook, which one-line claim becomes the X post. If reference example articles are provided in the user message, study their structure, paragraph rhythm, and density first — the output should match their quality bar.
-</thinking_guidance>
+<thinking_process note="Answer these in order before you write a word of body. Vague answers produce vague articles.">
+  <step n="1" name="named_reader">
+    Name a specific reader, not a category. Job title + seniority + the decision they're staring at this quarter. e.g. "VP Engineering at a mid-tier GCC EPC who has 8 weeks to decide whether to bid on a $120M Aramco hydrogen tender that requires AI-enabled standards traceability." If your reader is "engineering leaders" you have not done this step.
+  </step>
+  <step n="2" name="sharp_claim">
+    State the one sentence this article exists to advance. Not a topic. Not a description. A claim with a verb that can be argued with. e.g. "Hydrogen offtake economics in the GCC will not pencil without state-backed price floors before 2028." Everything in the body must serve this claim.
+  </step>
+  <step n="3" name="contrarian_angle">
+    What conventional wisdom does this article push back against? Name the cliché Tier-1 deck or the comfortable industry consensus that's wrong, and say why. If you cannot identify a piece of conventional wisdom you are pushing against, the article is a summary, not a point of view — and a senior reader will close the tab.
+  </step>
+  <step n="4" name="article_skeleton">
+    Outline the 5–8 H2 sections. Each must move the sharp claim forward — section titles should be assertions or pointed questions, not generic ("Background", "Conclusion"). The penultimate section deals with what could falsify the claim. The last is "Key Takeaways".
+  </step>
+  <step n="5" name="evidence_inventory">
+    List the named programs, capex figures, regulatory dates, technical specs, or first-hand observations you'll cite. Verifiable only — if you don't actually know a number, you'll either omit it or say "we estimate" in the body. Do not invent figures, clients, quotes, or programs.
+  </step>
+  <step n="6" name="social_distillation">
+    From the sharp claim and the most surprising piece of evidence, derive: (a) the LinkedIn first-line scroll-stopper, (b) the single ≤270-char X claim. Both must work without the article — they sell the click.
+  </step>
+  <step n="7" name="reference_calibration" note="Skip if no reference articles were provided">
+    If reference example articles are in the user message, study their paragraph length, sentence rhythm, density of named entities, ratio of evidence to opinion, and how they end sections. Match that bar. Do not copy their phrasing or content.
+  </step>
+</thinking_process>
 
 <output_contract>
 Return your response by calling the save_generated_article tool. All fields must be present and well-formed. The body must hit the requested word target (±10%). Do not wrap output in code fences. Do not include preamble or commentary.

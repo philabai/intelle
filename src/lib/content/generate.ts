@@ -150,11 +150,11 @@ Write a long-form article for intelle.io and the paired LinkedIn + X variants.
 </inputs>${examplesBlock}
 
 <instructions>
-1. Plan first (silently): outline the 5-8 H2 sections, identify specific data points and named programs you can cite without fabricating, decide which insight is the LinkedIn scroll-stopper, decide which one-line claim becomes the X post.
-2. Write the body in markdown using H2/H3 only. No H1. No title at the top.
+1. Run the &lt;thinking_process&gt; from the system prompt in full, in order — named_reader, sharp_claim, contrarian_angle, article_skeleton, evidence_inventory, social_distillation, reference_calibration. Do not start writing the body until all seven steps are concrete. Vague answers at this stage produce a vague article.
+2. Write the body in markdown using H2/H3 only. No H1. No title at the top. Every section advances the sharp_claim.
 3. End the body with a "## Key Takeaways" section (4-6 bullets) followed by an italicised CTA paragraph linking to a relevant service page and /book.
 4. Hit the word target (${wordTarget} ±10%).
-5. Produce LinkedIn and X variants per the system prompt's specs.
+5. Produce LinkedIn and X variants per the system prompt's specs — both derived from social_distillation, not paraphrased from the body.
 6. Call the save_generated_article tool with all required fields. Do not output anything outside the tool call.
 </instructions>`;
 }
