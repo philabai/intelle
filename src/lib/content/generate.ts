@@ -165,7 +165,10 @@ export async function generateArticle(
   const client = getAnthropic();
   const userPrompt = buildUserPrompt(input);
 
-  const response = await client.messages.create({
+  // Streaming is required by the SDK for requests that could exceed 10 minutes
+  // (which max_tokens=24000 + extended thinking can hit). finalMessage()
+  // resolves to the same Message type that messages.create() returns.
+  const stream = client.messages.stream({
     model: ARTICLE_MODEL,
     max_tokens: 24000,
     thinking: { type: "enabled", budget_tokens: 8000 },
@@ -180,6 +183,7 @@ export async function generateArticle(
     tool_choice: { type: "tool", name: SAVE_TOOL.name },
     messages: [{ role: "user", content: userPrompt }],
   });
+  const response = await stream.finalMessage();
 
   const toolUse = response.content.find(
     (b): b is Extract<typeof b, { type: "tool_use" }> => b.type === "tool_use"
