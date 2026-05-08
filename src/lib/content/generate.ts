@@ -165,15 +165,15 @@ export async function generateArticle(
   const client = getAnthropic();
   const userPrompt = buildUserPrompt(input);
 
-  // Anthropic's API forbids extended thinking + forced tool_choice together,
-  // so we use tool_choice: "auto". The user prompt makes tool-calling
-  // unambiguous; with a single tool defined Opus 4.7 calls it reliably.
-  // Streaming is required because max_tokens + thinking can cross the 10-min
-  // SDK guardrail. finalMessage() resolves to the same Message shape.
+  // Opus 4.7 uses adaptive thinking with output_config.effort instead of the
+  // older enabled+budget_tokens API. tool_choice must remain "auto" because
+  // thinking forbids forced tool use. Streaming is required because the
+  // request can cross the SDK's 10-min guardrail.
   const stream = client.messages.stream({
     model: ARTICLE_MODEL,
     max_tokens: 24000,
-    thinking: { type: "enabled", budget_tokens: 8000 },
+    thinking: { type: "adaptive" },
+    output_config: { effort: "high" },
     system: [
       {
         type: "text",
@@ -184,7 +184,7 @@ export async function generateArticle(
     tools: [SAVE_TOOL],
     tool_choice: { type: "auto" },
     messages: [{ role: "user", content: userPrompt }],
-  });
+  } as Parameters<typeof client.messages.stream>[0]);
   const response = await stream.finalMessage();
 
   const toolUse = response.content.find(
