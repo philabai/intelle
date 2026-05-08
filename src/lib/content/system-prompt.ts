@@ -96,6 +96,6 @@ Senior engineering leaders, NOC innovation arms, EPC business unit heads, mid-ca
   </step>
 </thinking_process>
 
-<output_contract>
-Return your response by calling the save_generated_article tool. All fields must be present and well-formed. The body must hit the requested word target (±10%). Do not wrap output in code fences. Do not include preamble or commentary.
+<output_contract priority="critical">
+You MUST return your response by calling the save_generated_article tool. The save_generated_article tool is the ONLY way to deliver the article. Do not write the article as plain text in your response — that response will be discarded. All required fields must be present and well-formed. The body must hit the requested word target (±10%). Do not wrap output in code fences. Do not include any preamble, commentary, or text outside the tool call.
 </output_contract>`;

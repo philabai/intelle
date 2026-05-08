@@ -155,7 +155,7 @@ Write a long-form article for intelle.io and the paired LinkedIn + X variants.
 3. End the body with a "## Key Takeaways" section (4-6 bullets) followed by an italicised CTA paragraph linking to a relevant service page and /book.
 4. Hit the word target (${wordTarget} ±10%).
 5. Produce LinkedIn and X variants per the system prompt's specs — both derived from social_distillation, not paraphrased from the body.
-6. Call the save_generated_article tool with all required fields. Do not output anything outside the tool call.
+6. Call the save_generated_article tool with all required fields. The tool call IS the deliverable — any prose written outside the tool call will be discarded. Do not output anything outside the tool call.
 </instructions>`;
 }
 
@@ -165,9 +165,11 @@ export async function generateArticle(
   const client = getAnthropic();
   const userPrompt = buildUserPrompt(input);
 
-  // Streaming is required by the SDK for requests that could exceed 10 minutes
-  // (which max_tokens=24000 + extended thinking can hit). finalMessage()
-  // resolves to the same Message type that messages.create() returns.
+  // Anthropic's API forbids extended thinking + forced tool_choice together,
+  // so we use tool_choice: "auto". The user prompt makes tool-calling
+  // unambiguous; with a single tool defined Opus 4.7 calls it reliably.
+  // Streaming is required because max_tokens + thinking can cross the 10-min
+  // SDK guardrail. finalMessage() resolves to the same Message shape.
   const stream = client.messages.stream({
     model: ARTICLE_MODEL,
     max_tokens: 24000,
@@ -180,7 +182,7 @@ export async function generateArticle(
       },
     ],
     tools: [SAVE_TOOL],
-    tool_choice: { type: "tool", name: SAVE_TOOL.name },
+    tool_choice: { type: "auto" },
     messages: [{ role: "user", content: userPrompt }],
   });
   const response = await stream.finalMessage();
@@ -189,7 +191,14 @@ export async function generateArticle(
     (b): b is Extract<typeof b, { type: "tool_use" }> => b.type === "tool_use"
   );
   if (!toolUse) {
-    throw new Error("Model did not call save_generated_article tool");
+    const textBlocks = response.content
+      .filter((b): b is Extract<typeof b, { type: "text" }> => b.type === "text")
+      .map((b) => b.text)
+      .join("\n");
+    throw new Error(
+      `Model did not call save_generated_article tool. Stop reason: ${response.stop_reason}. ` +
+        `Text response (truncated): ${textBlocks.slice(0, 500)}`
+    );
   }
   const article = toolUse.input as GeneratedArticle;
 
