@@ -14,6 +14,7 @@ const inputSchema = z.object({
   keywords: z.array(z.string()).optional(),
   wordTarget: z.number().int().min(800).max(6000).optional(),
   extraContext: z.string().optional(),
+  exampleArticles: z.array(z.string().max(40000)).max(2).optional(),
 });
 
 export async function POST(request: Request) {
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
       keywords: parsed.data.keywords,
       wordTarget: parsed.data.wordTarget,
       extraContext: parsed.data.extraContext,
+      exampleArticles: parsed.data.exampleArticles,
     });
   } catch (err) {
     console.error("[generate] Anthropic error:", err);

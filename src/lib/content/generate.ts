@@ -9,6 +9,8 @@ export type GenerateInput = {
   keywords?: string[];
   wordTarget?: number;
   extraContext?: string;
+  /** Up to 2 reference articles (full markdown) shown to the model as quality/style examples. */
+  exampleArticles?: string[];
 };
 
 export type GeneratedArticle = {
@@ -104,29 +106,57 @@ const SAVE_TOOL = {
   },
 };
 
+function buildExamplesBlock(examples: string[] | undefined): string {
+  const cleaned = (examples ?? [])
+    .map((e) => e.trim())
+    .filter((e) => e.length > 0)
+    .slice(0, 2);
+  if (!cleaned.length) return "";
+  const blocks = cleaned
+    .map(
+      (e, i) => `<example index="${i + 1}">
+${e}
+</example>`
+    )
+    .join("\n\n");
+  return `\n\n<reference_articles note="Match the structure, paragraph rhythm, density, and quality bar of these. Do NOT copy phrasing or content. Use them only as style and quality references.">
+${blocks}
+</reference_articles>`;
+}
+
 function buildUserPrompt(input: GenerateInput): string {
   const pillar = PILLARS[input.pillar];
   const wordTarget = input.wordTarget ?? 3500;
-  const keywords = input.keywords?.length
-    ? `\n- Target keywords (weave in naturally, do not stuff): ${input.keywords.join(", ")}`
+  const minWords = Math.round(wordTarget * 0.9);
+  const maxWords = Math.round(wordTarget * 1.1);
+
+  const keywordsBlock = input.keywords?.length
+    ? `\n  <keywords note="Weave in naturally. Do not stuff.">${input.keywords.join(", ")}</keywords>`
     : "";
-  const extra = input.extraContext?.trim()
-    ? `\n\n## Extra context from the founder\n${input.extraContext.trim()}`
+  const extraBlock = input.extraContext?.trim()
+    ? `\n  <extra_context>${input.extraContext.trim()}</extra_context>`
     : "";
 
-  return `Write a long-form article for intelle.io.
+  const examplesBlock = buildExamplesBlock(input.exampleArticles);
 
-## Topic
-${input.topic}
+  return `<task>
+Write a long-form article for intelle.io and the paired LinkedIn + X variants.
+</task>
 
-## Pillar
-${input.pillar} — ${pillar.label}
-${pillar.guidance}
+<inputs>
+  <topic>${input.topic}</topic>
+  <pillar key="${input.pillar}" label="${pillar.label}">${pillar.guidance}</pillar>
+  <word_target min="${minWords}" max="${maxWords}">${wordTarget}</word_target>${keywordsBlock}${extraBlock}
+</inputs>${examplesBlock}
 
-## Targets
-- Word count: ${wordTarget} words (acceptable range: ${Math.round(wordTarget * 0.9)}-${Math.round(wordTarget * 1.1)})${keywords}${extra}
-
-Now produce the article and the LinkedIn + Twitter variants by calling the save_generated_article tool. The body is markdown, H2/H3 only, ends with Key Takeaways + italicised CTA. Do not include the title in the body.`;
+<instructions>
+1. Plan first (silently): outline the 5-8 H2 sections, identify specific data points and named programs you can cite without fabricating, decide which insight is the LinkedIn scroll-stopper, decide which one-line claim becomes the X post.
+2. Write the body in markdown using H2/H3 only. No H1. No title at the top.
+3. End the body with a "## Key Takeaways" section (4-6 bullets) followed by an italicised CTA paragraph linking to a relevant service page and /book.
+4. Hit the word target (${wordTarget} ±10%).
+5. Produce LinkedIn and X variants per the system prompt's specs.
+6. Call the save_generated_article tool with all required fields. Do not output anything outside the tool call.
+</instructions>`;
 }
 
 export async function generateArticle(
@@ -137,7 +167,8 @@ export async function generateArticle(
 
   const response = await client.messages.create({
     model: ARTICLE_MODEL,
-    max_tokens: 16000,
+    max_tokens: 24000,
+    thinking: { type: "enabled", budget_tokens: 8000 },
     system: [
       {
         type: "text",

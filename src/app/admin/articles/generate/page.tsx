@@ -16,6 +16,8 @@ export default function GenerateArticlePage() {
   const [keywords, setKeywords] = useState("");
   const [wordTarget, setWordTarget] = useState(3500);
   const [extraContext, setExtraContext] = useState("");
+  const [example1, setExample1] = useState("");
+  const [example2, setExample2] = useState("");
   const [status, setStatus] = useState<
     "idle" | "generating" | "error"
   >("idle");
@@ -26,6 +28,9 @@ export default function GenerateArticlePage() {
     setStatus("generating");
     setErrorMsg(null);
     try {
+      const exampleArticles = [example1, example2]
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
       const res = await fetch("/api/articles/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -37,6 +42,7 @@ export default function GenerateArticlePage() {
             : undefined,
           wordTarget,
           extraContext: extraContext || undefined,
+          exampleArticles: exampleArticles.length ? exampleArticles : undefined,
         }),
       });
       const data = await res.json();
@@ -141,6 +147,60 @@ export default function GenerateArticlePage() {
             className={inputStyles}
             placeholder="Specific data points, recent client conversations, references to include, points of view to take, things to avoid..."
           />
+        </div>
+
+        <div className="space-y-4 pt-2">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+              Reference articles (optional)
+            </h2>
+            <p className="text-xs text-muted/60 mt-1">
+              Paste up to 2 articles whose <strong>structure, paragraph rhythm, density, and quality bar</strong> Claude should match.
+              Markdown. The model uses them as style references — it will not copy phrasing or content.
+              <br />
+              Adding even one strong reference is the single biggest lever on output quality.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Example article 1
+            </label>
+            <textarea
+              value={example1}
+              onChange={(e) => setExample1(e.target.value)}
+              rows={10}
+              className={`${inputStyles} font-mono text-xs`}
+              placeholder="Paste full article markdown here…"
+            />
+            <p className="text-xs text-muted/60 mt-1">
+              {example1.trim().length
+                ? `${example1.trim().length.toLocaleString()} chars · ~${Math.round(
+                    example1.trim().split(/\s+/).filter(Boolean).length
+                  ).toLocaleString()} words`
+                : "Empty"}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Example article 2
+            </label>
+            <textarea
+              value={example2}
+              onChange={(e) => setExample2(e.target.value)}
+              rows={10}
+              className={`${inputStyles} font-mono text-xs`}
+              placeholder="Paste full article markdown here…"
+            />
+            <p className="text-xs text-muted/60 mt-1">
+              {example2.trim().length
+                ? `${example2.trim().length.toLocaleString()} chars · ~${Math.round(
+                    example2.trim().split(/\s+/).filter(Boolean).length
+                  ).toLocaleString()} words`
+                : "Empty"}
+            </p>
+          </div>
         </div>
 
         {status === "error" && errorMsg && (
