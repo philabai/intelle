@@ -1,42 +1,33 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* ===== Light theme (default / day) ===== */
+/* The brand is dark-first throughout — hero cards, callouts, admin shell, and
+   article body all hardcode navy backgrounds with light text. Forcing dark
+   mode site-wide avoids the broken-styling pattern where a light OS preference
+   left prose-invert text rendering on a light background. */
 :root {
-  --background: #FAFBFC;
-  --foreground: #0F172A;
+  color-scheme: dark;
+
+  /* Brand tokens (constant) */
   --brand-navy: #0B1020;
   --brand-blue: #2563FF;
   --brand-teal: #00D4C4;
   --brand-violet: #7C3AED;
   --brand-gray: #F1F5F9;
   --brand-white: #FFFFFF;
-  --card-bg: #FFFFFF;
-  --card-border: #E2E8F0;
-  --muted: #64748B;
-  --heading: #0F172A;
-  --glass-bg: rgba(250, 251, 252, 0.85);
-  --glass-border: rgba(226, 232, 240, 0.6);
-  --scrollbar-track: #F1F5F9;
-  --scrollbar-thumb: #CBD5E1;
-  --scrollbar-thumb-hover: #94A3B8;
-}
 
-/* ===== Dark theme (night) ===== */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0B1020;
-    --foreground: #F1F5F9;
-    --card-bg: #111827;
-    --card-border: #1E293B;
-    --muted: #94A3B8;
-    --heading: #F1F5F9;
-    --glass-bg: rgba(11, 16, 32, 0.85);
-    --glass-border: rgba(30, 41, 59, 0.5);
-    --scrollbar-track: #0B1020;
-    --scrollbar-thumb: #1E293B;
-    --scrollbar-thumb-hover: #94A3B8;
-  }
+  /* Semantic tokens (dark theme) */
+  --background: #0B1020;
+  --foreground: #F1F5F9;
+  --card-bg: #111827;
+  --card-border: #1E293B;
+  --muted: #94A3B8;
+  --heading: #F1F5F9;
+  --glass-bg: rgba(11, 16, 32, 0.85);
+  --glass-border: rgba(30, 41, 59, 0.5);
+  --scrollbar-track: #0B1020;
+  --scrollbar-thumb: #1E293B;
+  --scrollbar-thumb-hover: #94A3B8;
 }
 
 @theme inline {
