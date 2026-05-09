@@ -230,7 +230,7 @@ export function ResearchServiceDetail({ service }: { service: ServiceCategory })
           <p className="text-muted mb-8 max-w-xl mx-auto">
             Every engagement starts with a free diagnostic call. Tell us about your research needs and we&apos;ll scope a bespoke engagement.
           </p>
-          <Button href="/contact" size="lg">Schedule a Consultation</Button>
+          <Button href="/book" size="lg">Schedule a Consultation</Button>
         </div>
       </section>
     </>

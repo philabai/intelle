@@ -281,7 +281,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
           <p className="text-muted mb-8 max-w-xl mx-auto">
             Every engagement starts with a free diagnostic call. Tell us about your engineering challenges and we&apos;ll scope a tailored solution.
           </p>
-          <Button href="/contact" size="lg">Schedule a Consultation</Button>
+          <Button href="/book" size="lg">Schedule a Consultation</Button>
         </div>
       </section>
     </>

@@ -259,7 +259,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
             Every engagement starts with a free, no-obligation diagnostic call to
             identify your needs and explore how we can help.
           </p>
-          <Button href="/contact" size="lg">
+          <Button href="/book" size="lg">
             Schedule a Consultation
           </Button>
         </div>

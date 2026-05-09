@@ -450,8 +450,8 @@ export default function AboutPage() {
             strategic intelligence -- every engagement starts with a free
             diagnostic call.
           </p>
-          <Button href="/contact" size="lg">
-            Get in Touch
+          <Button href="/book" size="lg">
+            Book a Discovery Call
           </Button>
         </div>
       </section>

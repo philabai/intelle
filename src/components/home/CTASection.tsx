@@ -15,7 +15,7 @@ export function CTASection() {
           services, or strategic advisory, we deliver outcomes that matter.
         </p>
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button href="/contact" size="lg">
+          <Button href="/book" size="lg">
             Schedule a Consultation
           </Button>
           <Button href="/about" variant="outline" size="lg">
