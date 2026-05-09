@@ -63,9 +63,6 @@ export const metadata: Metadata = {
     title: "Engineering Intelligence & Research Services for GCC + India",
     description: "Senior practitioner-led engineering research. 30-50% of Tier-1 cost.",
   },
-  icons: {
-    icon: "/favicon.ico",
-  },
   other: {
     "theme-color": "#0B1020",
   },
