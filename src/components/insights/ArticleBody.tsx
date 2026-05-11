@@ -8,10 +8,28 @@ import {
   parseDiagramSpec,
 } from "./diagrams/DiagramRouter";
 
+function isExternal(href: string | undefined): boolean {
+  if (!href) return false;
+  return /^(https?:)?\/\//.test(href) || href.startsWith("mailto:");
+}
+
 const markdownComponents = {
   blockquote: ({ children }: { children?: React.ReactNode }) => (
     <PullQuote>{children}</PullQuote>
   ),
+  // External links open in a new tab; internal (/research/..., /book, etc.)
+  // navigate in the same tab as expected.
+  a: (props: { href?: string; children?: React.ReactNode }) => {
+    const { href, children } = props;
+    if (isExternal(href)) {
+      return (
+        <a href={href} target="_blank" rel="noopener noreferrer">
+          {children}
+        </a>
+      );
+    }
+    return <a href={href}>{children}</a>;
+  },
   // ReactMarkdown's `code` renderer covers both inline and fenced-block code.
   // We intercept fenced blocks whose language is `diagram-<type>` and render
   // the matching diagram component instead of a code element.
