@@ -111,7 +111,7 @@ export function SiteNav() {
 
           {/* Mobile hamburger */}
           <button
-            className="lg:hidden p-2 text-muted hover:text-heading"
+            className="lg:hidden p-3 -mr-1 text-muted hover:text-heading"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >

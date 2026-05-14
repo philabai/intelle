@@ -40,3 +40,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local-only research reference docs (kept off the public site + repo)
+/public/A15_JCEM_Benchmarking KM.pdf
+/public/How to measure KM Maturity of your organization - 2009.pdf
+/public/KMWorld-Fall-Buyers-Guide-and-the-2017-State-of-KM-Survey_6694.pdf.pdf
+/public/Knowledge Management Assessment.pdf
+/public/Knowledge Management Framework design.pdf
+/public/Knowledge-Management-Benchmarking-Program.pdf
+/public/gcc_energy_transition_bifurcation_v3.docx

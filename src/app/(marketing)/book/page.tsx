@@ -83,7 +83,7 @@ export default function BookPage() {
             </p>
           </div>
 
-          <div className="rounded-xl border border-card-border bg-card-bg overflow-hidden h-[760px]">
+          <div className="rounded-xl border border-card-border bg-card-bg overflow-hidden h-[680px] sm:h-[760px]">
             <CalEmbed calLink={calLink} className="h-full w-full" />
           </div>
 

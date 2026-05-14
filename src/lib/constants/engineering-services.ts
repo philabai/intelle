@@ -316,15 +316,237 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
   },
 
   // ---------------------------------------------------------------------------
-  // 3. Knowledge Management
+  // 3. Knowledge Management Strategy (advisory)
   // ---------------------------------------------------------------------------
   {
-    id: "knowledge-management",
-    title: "Knowledge Management",
-    shortTitle: "Knowledge Management",
+    id: "knowledge-management-strategy",
+    title: "Knowledge Management Strategy",
+    shortTitle: "KM Strategy",
     description:
-      "Deploy AI-powered semantic search and knowledge management solutions that let engineers find answers in minutes instead of hours across millions of technical documents. We design taxonomies, configure search profiles, and connect knowledge sources so that institutional expertise is preserved and accessible.",
-    href: "/engineering/knowledge-management",
+      "Treat engineering knowledge as a board-level intangible asset. We help CKOs, VP Engineering, and Chief Innovation Officers build a defensible KM strategy across four pillars — Nonaka/SECI-based knowledge-creation design, multi-framework KM maturity evaluation, peer & sector benchmarking, and AI / GenAI strategy for KM — and hand off a funded, integrated 18–24 month roadmap that flows seamlessly into our KM Solutions Implementation practice.",
+    href: "/engineering/knowledge-management-strategy",
+    icon: "Target",
+    accentColor: "violet",
+    eyebrow: "Advisory Service",
+    seciDiagram: true,
+    tldr: [
+      "Pillar 1 — Nonaka/SECI diagnostic and \"Ba\" design across Socialization, Externalization, Combination, Internalization.",
+      "Pillar 2 — KM maturity evaluation using APQC KMCAT, Kulkarni-Freeze KMCA, and Siemens KMMM as defensible instruments.",
+      "Pillar 3 — Peer & sector benchmarking via APQC Open Standards, CII BM&M, and sector bodies (SPE, AIAA, NASA APPEL).",
+      "Pillar 4 — AI / GenAI strategy for KM: use-case portfolio, retrieval architecture, governance, KPI redesign.",
+    ],
+    deliverables: [
+      "SECI diagnostic report and tacit-knowledge-at-risk register (ranked, with owner and retention plan)",
+      "KM maturity assessment using APQC KMCAT, Kulkarni-Freeze KMCA, or Siemens KMMM — scored heatmap with evidence",
+      "Peer & sector benchmark scorecard with gap analysis and sized uplift opportunity",
+      "GenAI-KM use-case portfolio, target retrieval architecture, and governance playbook (IP, citation, red-team, audit)",
+      "Integrated 18–24 month KM transformation roadmap with KPIs, governance, and executive business case",
+      "Strategy-to-implementation handoff pack — KPI framework, target architecture, prioritised initiatives, risk register",
+    ],
+    focusAreas: [
+      "Nonaka/SECI knowledge-creation diagnostic and \"Ba\" design",
+      "KM maturity evaluation — APQC KMCAT, Kulkarni-Freeze KMCA, Siemens KMMM",
+      "Peer & sector benchmarking — APQC, CII BM&M, SPE, AIAA, NASA APPEL",
+      "AI / GenAI strategy for KM — use-case portfolio, retrieval architecture, governance",
+      "KPI redesign, governance, and KM operating model",
+      "Strategy-to-execution handoff into KM Solutions Implementation",
+    ],
+    methodology: [
+      {
+        step: "Engineering-knowledge sponsor alignment & charter",
+        description:
+          "Align with the CKO / VP Engineering / Chief Innovation Officer sponsor on scope, business outcomes, and the engineering domains in scope. Confirm guiding principles, steering cadence, and how the strategy will hand off to implementation.",
+      },
+      {
+        step: "Pillar 1 — SECI diagnostic & tacit-knowledge-at-risk register",
+        description:
+          "Map how tacit and explicit knowledge currently moves across Socialization, Externalization, Combination, and Internalization. Run 25–40 structured \"knowledge-at-risk\" interviews with senior engineers and field operators. Score critical knowledge on replication difficulty and time-to-loss. Diagnose the four \"Ba\" types — Originating, Dialoguing, Systemising, Exercising — in physical, virtual, and cognitive layers.",
+      },
+      {
+        step: "Pillar 2 — KM maturity assessment (APQC KMCAT / KMCA / KMMM)",
+        description:
+          "Baseline the organisation against a credible, externally-referenced maturity instrument — APQC KMCAT (broadest), Kulkarni & Freeze KMCA (most academically validated, strong for project-based industries), or Siemens KMMM (strongest for industrial engineering). Triangulate survey, interviews, document review, and system telemetry — survey-only assessments routinely overstate maturity by a full level.",
+      },
+      {
+        step: "Pillar 3 — Peer & sector benchmarking",
+        description:
+          "Define a 6–12 firm peer cohort. Benchmark knowledge velocity, reuse rate, expertise-location time, time-to-competence, and lessons-learned implementation rate against APQC Open Standards data, CII BM&M (for capital projects), and sector bodies — SPE for upstream, AIAA / INCOSE / NASA APPEL for aerospace, NAM for manufacturing. Produce a scorecard with cohort distributions and sized financial uplift opportunity per metric.",
+      },
+      {
+        step: "Pillar 4 — GenAI-KM use-case portfolio & architecture decisions",
+        description:
+          "Score 15–30 GenAI-KM use cases on value, feasibility, risk, and corpus dependency. Decide retrieval architecture — hybrid RAG, GraphRAG (Microsoft Research 2024), agentic retrieval, or a layered combination. Design the governance contract — citation enforcement, hallucination tolerance in safety-critical workflows, IP and data-residency rules, prompt-injection defence, audit logging — and the model-routing logic across Anthropic, OpenAI, and open-source.",
+      },
+      {
+        step: "Integrated 4×4 framework — GenAI re-scored",
+        description:
+          "Design a 4×4 framework — four enablers (people, process, technology, governance) by four knowledge activities (create, capture, share, apply). Re-score every gap from Pillars 2 and 3 through the GenAI lens: which gaps disappear under AI-augmented retrieval, and which become more acute (corpus quality, citation, governance)?",
+      },
+      {
+        step: "KPI redesign, governance & operating model",
+        description:
+          "Retire activity metrics (documents captured, portal visits). Define answer-quality, deflection, hallucination-rate, and citation-coverage KPIs. Design the governance model — KM council, domain knowledge owners, content stewards, AI-KM ethics lead, retrieval-quality engineer — and the steering rhythm.",
+      },
+      {
+        step: "Executive activation & handoff to KM Solutions Implementation",
+        description:
+          "Deliver the executive readout, secure year-one funding, and scope the first 2–3 initiatives to implementation-ready level. The KM Solutions Implementation practice inherits the KPI framework and target architecture — no re-baselining, no re-discovery between strategy and delivery.",
+      },
+    ],
+    whoItsFor: [
+      "Chief Knowledge Officers building or relaunching a KM function in an engineering organisation",
+      "VPs of Engineering concerned about retiring expertise, knowledge silos, and slow onboarding",
+      "Chief Innovation Officers tying KM to R&D productivity, reuse, and AI-augmented knowledge work",
+      "Heads of Engineering Excellence and Centers of Excellence designing operating models",
+      "CIOs / Heads of Digital whose KM platform investment has stalled and needs a GenAI-era reset",
+    ],
+    expectedOutcomes: [
+      {
+        title: "Defensible, peer-anchored maturity baseline",
+        description:
+          "An APQC- / KMCA- / KMMM-anchored maturity scorecard triangulated across survey, interview, document, and telemetry evidence — positioned against a named peer cohort. The board can act on it; it isn't a survey opinion.",
+      },
+      {
+        title: "Funded, integrated 18–24 month roadmap",
+        description:
+          "A four-pillar roadmap with named accountable executives, sized initiatives, and a business case the CFO will engage with. Typical uplift opportunity sizes at $5M–$50M for multi-billion-dollar engineering enterprises, driven by reuse, expertise-location, and lessons-learned implementation gaps.",
+      },
+      {
+        title: "GenAI-ready KM operating model",
+        description:
+          "Target retrieval architecture (hybrid RAG, GraphRAG, agentic), citation-grounding governance, KPI redesign, and the new roles required to govern AI-augmented knowledge work. The operating model survives the consulting engagement.",
+      },
+      {
+        title: "Measurable knowledge-velocity gains",
+        description:
+          "Programmes that execute typically deliver time-to-answer reductions of 40–70%, lessons-learned implementation rate uplift from 10–20% baseline to 45–60% (CII BM&M data), and onboarding time-to-productivity reductions of 25–40%.",
+      },
+    ],
+    sampleProjects: [
+      {
+        title: "Engineering-Knowledge Retention & GenAI Readiness",
+        industry: "Aerospace & Defense",
+        scope:
+          "SECI diagnostic across 4 engineering centres (2,800 engineers); APQC KMCAT maturity assessment; benchmarking against AIAA, INCOSE, and NASA APPEL data; GenAI use-case portfolio for design-rationale retrieval under ITAR constraints. Outcome: knowledge-at-risk register covering 220 critical roles, two-level maturity advance plan, sovereign-deployment GenAI architecture approved by CISO.",
+        duration: "36 weeks",
+      },
+      {
+        title: "Subsurface Lessons-Learned & GraphRAG Strategy",
+        industry: "Upstream Oil & Gas",
+        scope:
+          "SECI + CoP audit across drilling, completions, and reservoir disciplines; CII BM&M-style lessons-learned implementation benchmark; GraphRAG architecture decision over 30 years of well files and incident reports. Outcome: lessons-learned implementation rate uplift plan from 14% baseline to 50% target, GraphRAG pilot scope and governance, $18M sized annual avoidable-rework opportunity.",
+        duration: "24 weeks",
+      },
+      {
+        title: "Project-Knowledge Reuse & GenAI Productivity",
+        industry: "Global EPC Contractor",
+        scope:
+          "Kulkarni-Freeze KMCA maturity assessment; APQC + AACE benchmarking on reuse rate and time-to-competence; GenAI strategy for FEED-stage proposal authoring and design reuse with mandatory citation. Outcome: reuse-rate uplift target 22% → 45%, AI-augmented proposal workflow with citation enforcement, 18-month integrated roadmap signed by CEO and CTO.",
+        duration: "48 weeks",
+      },
+    ],
+    engagementModels: [
+      {
+        model: "KM Strategy Diagnostic",
+        description:
+          "Pillars 1 and 2 in parallel — SECI diagnostic and KM maturity assessment — plus the top three uplift opportunities sized for executive decision-making. The entry point for boards that need to know where they stand before committing to a full roadmap.",
+        typicalDuration: "6-8 weeks",
+      },
+      {
+        model: "Integrated KM Strategy & Roadmap",
+        description:
+          "All four pillars end-to-end — SECI, maturity, benchmarking, GenAI strategy — integrated into a 4×4 framework, GenAI-re-scored 18–24 month roadmap, governance and KPI model, and executive activation. The standard engagement.",
+        typicalDuration: "10-14 weeks",
+      },
+      {
+        model: "Embedded KM Advisory",
+        description:
+          "Fractional KM leadership embedded with the CKO / VP Engineering to drive roadmap execution, govern the GenAI rollout, coach knowledge owners, and report KPI progress to the steering committee. Often follows an integrated strategy engagement.",
+        typicalDuration: "6-12 months",
+      },
+    ],
+    differentiators: [
+      "Engineering-domain KM grounded in Nonaka/Takeuchi SECI theory and \"Ba\" design — not generic enterprise KM",
+      "Multi-framework rigor: APQC KMCAT, Kulkarni-Freeze KMCA, and Siemens KMMM as defensible, externally-referenced instruments",
+      "Native GenAI-strategy depth — use-case portfolios, retrieval-architecture decisions, citation governance, KPI redesign for AI-augmented knowledge work",
+      "Vendor-neutral on platforms; clean handoff into KM Solutions Implementation (Goldfire, OpenText, Sinequa, Glean, and the broader landscape)",
+    ],
+    implementationTimeline: [
+      {
+        phase: "Mobilization",
+        duration: "1-2 weeks",
+        description:
+          "Sponsor alignment, charter, stakeholder mapping, and confirmation of in-scope engineering domains and steering rhythm.",
+      },
+      {
+        phase: "Diagnose (Pillars 1 + 2)",
+        duration: "3-4 weeks",
+        description:
+          "SECI diagnostic and KM maturity assessment run in parallel — they're complementary lenses on the same organisation. Output: one integrated current-state picture with knowledge-at-risk register and maturity heatmap.",
+      },
+      {
+        phase: "Anchor & Reframe (Pillars 3 + 4)",
+        duration: "3-4 weeks",
+        description:
+          "Peer benchmarking against APQC, CII BM&M, and sector bodies — then re-score every gap through the GenAI lens. Use-case portfolio, retrieval architecture decisions, governance contract.",
+      },
+      {
+        phase: "Roadmap & Activation",
+        duration: "2-3 weeks",
+        description:
+          "Integrated 4×4 framework, KPI redesign, governance and operating model, executive readout, year-one funding, and handoff pack to KM Solutions Implementation.",
+      },
+    ],
+    faqs: [
+      {
+        q: "SECI is thirty years old. Has it held up?",
+        a: "The four-mode model has been critiqued (Gourlay 2006; Hislop 2013) as insufficiently empirically grounded for the Combination → Internalization transitions, and culturally rooted in Japanese context. But the Socialization–Externalization spiral and the \"Ba\" construct remain the most-cited frame in the engineering-KM literature, and Nonaka's later work (Nonaka, Toyama & Konno 2000; Nonaka & von Krogh 2009) substantially refined it. We use SECI as a diagnostic lens — particularly for Externalization, which is the weakest mode in most engineering enterprises — not as a prescription.",
+      },
+      {
+        q: "Which maturity framework do you use, and why?",
+        a: "Three credible, externally-referenced instruments — APQC KMCAT for breadth across twelve capability areas, Kulkarni & Freeze KMCA (Decision Support Systems, 2008) for project-based industries with strong academic validation, and Siemens KMMM (Ehms & Langen, 2002) for industrial engineering. We pick the primary instrument based on the enterprise's sector, prior assessment heritage, and which peer cohort has the most relevant benchmark distribution. We then borrow specific items from the other two where useful — most engagements use one primary plus two or three items from the others.",
+      },
+      {
+        q: "How do you benchmark, and against whom?",
+        a: "Cross-industry via APQC Open Standards Benchmarking and Conference Board KM Council data. Sector-specific via SPE (upstream oil & gas), AIAA / INCOSE / NASA APPEL (aerospace), NAM (manufacturing), and CII BM&M (capital projects — particularly hard-edged on lessons-learned implementation rate). We define a 6–12 firm named peer cohort under NDA and benchmark eight to twelve metrics including knowledge velocity, reuse rate, expertise-location time, time-to-competence, and lessons-learned implementation rate. We avoid composite-index awards in favour of metric-specific peer comparisons.",
+      },
+      {
+        q: "What does GenAI actually change about a KM strategy?",
+        a: "It collapses the cost of synthesis and retrieval, which shifts the strategic centre of gravity from \"capturing and curating documents\" to governing the corpus, the retrieval architecture, the citation discipline, and the human-in-the-loop workflows. Communities of practice shift upstream — from answering questions to curating canonical sources the LLM is allowed to cite. KPIs change too: \"documents captured\" and \"portal visits\" become near-obsolete; citation coverage, deflection rate, and hallucination rate replace them.",
+      },
+      {
+        q: "How do we handle hallucination in safety-critical engineering work?",
+        a: "Three layers. (1) Retrieval-only / extractive answering with mandatory citation in regulated workflows — no free-form generation. (2) Human-in-the-loop sign-off for any AI output entering a controlled document. (3) Red-team and out-of-distribution monitoring on production. Generative free-form answers without citation have no place in safety-case, certification, or capital-project decisions — and the governance design has to enforce this, not rely on guidance.",
+      },
+      {
+        q: "What happens to our existing KM platform investment in the GenAI era?",
+        a: "Most legacy investments retain value as the content and metadata layer — taxonomy, document management, expertise location, access control. The search and UX layer is being displaced by GenAI-native interfaces. Plan a 24-month transition; don't rip-and-replace. The strategy engagement decides which layers move and which stay.",
+      },
+      {
+        q: "When does the strategy engagement end and implementation begin?",
+        a: "When the maturity target, benchmark gaps, GenAI architecture pattern, build-vs-buy decisions, and governance model are signed off; when the roadmap is sequenced and resourced with named executives and budget; and when the first 2–3 initiatives are scoped to implementation-ready level. The trigger is typically a board or executive-committee approval of the roadmap and budget. The implementation team inherits the KPI framework defined in the strategy and reports against it from day one.",
+      },
+    ],
+    nextStep: {
+      eyebrow: "Ready to execute",
+      title: "Knowledge Management Solutions Implementation",
+      description:
+        "Once the strategy, target architecture, and governance are signed off, our KM Solutions Implementation practice picks up the same KPI framework and delivers — semantic search, GenAI / RAG, GraphRAG, and engineering-content platforms across Goldfire, OpenText, Sinequa, Glean, and the broader landscape. No re-baselining, no re-discovery.",
+      href: "/engineering/knowledge-management-implementation",
+      ctaLabel: "Explore KM Solutions Implementation →",
+    },
+  },
+
+  // ---------------------------------------------------------------------------
+  // 4. Knowledge Management Solutions Implementation
+  // ---------------------------------------------------------------------------
+  {
+    id: "knowledge-management-implementation",
+    title: "Knowledge Management Solutions Implementation",
+    shortTitle: "KM Solutions Implementation",
+    description:
+      "Deploy AI-powered semantic search, GenAI / RAG, and engineering-content platforms so engineers find answers in minutes instead of hours across millions of technical documents. Our primary delivery is on Accuris Goldfire and Goldfire Chat — the engineering-domain platform where content is semantically pre-indexed and every answer is source-traceable. We also integrate OpenText Documentum into regulated engineering workflows, and run vendor-neutral evaluation across the broader landscape (Sinequa, Coveo, Glean, Microsoft Copilot / Azure AI Search, Lucidworks, Mindbreeze, IntraFind, AlphaSense) against your corpus, security model, and TCO.",
+    href: "/engineering/knowledge-management-implementation",
     icon: "Search",
     deliverables: [
       "Knowledge source inventory and taxonomy",
@@ -339,6 +561,179 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
       "Knowledge source integration and connector development",
       "Search relevancy tuning and profile customization",
       "Institutional knowledge capture and preservation",
+      "GenAI / RAG pipeline design and grounded generation",
+      "Vendor evaluation and fit-for-purpose RFP execution",
+      "Goldfire and OpenText / Documentum delivery",
+      "GraphRAG and hybrid retrieval architecture",
+      "Domain-tuned embeddings and cross-encoder reranking",
+      "Citation grounding, access control, and answer governance",
+    ],
+    platformSpotlight: {
+      eyebrow: "Our primary platform",
+      title: "Accuris Goldfire — engineering knowledge, pre-indexed",
+      subtitle:
+        "Goldfire is where our delivery depth lives. It is the only enterprise platform that ships with engineering content already understood — standards, patents, technical literature, and your internal corpus — indexed semantically rather than as keywords.",
+      positioningStatement:
+        "Generic enterprise search and modern workplace assistants treat your engineering corpus like any other body of text. Goldfire was built for engineers: more than two decades of natural-language processing tuned to engineering syntax and terminology across oil & gas, aerospace & defense, manufacturing, and energy. Every answer is traceable to the source passage, so design decisions stay defensible — which matters when the answer drives a calculation, a safety case, or a regulatory submission.",
+      benefits: [
+        { metric: "40%", label: "Faster research time" },
+        { metric: "50%", label: "More relevant answers on complex questions" },
+        { metric: "60%", label: "Faster insight discovery" },
+        { metric: "70%", label: "Reduction in engineer analysis time" },
+        { metric: "90%", label: "Faster requirements identification (nuclear case)" },
+        { metric: "13", label: "Disconnected sources unified into one answer" },
+      ],
+      benefitsSource:
+        "Outcome ranges published by Accuris (accuristech.com). Engineers spend up to 42% of their working time searching across an average of 13 disconnected sources — Goldfire collapses that into one semantically-aware surface.",
+      capabilities: [
+        {
+          title: "Semantic engineering search, not keyword retrieval",
+          description:
+            "Goldfire understands what an engineer is asking — requirements, properties, components, technical concepts — and surfaces the precise passage rather than a list of documents to triage.",
+        },
+        {
+          title: "Pre-indexed engineering content",
+          description:
+            "Ingests internal documents, designs, and reports alongside trusted external engineering content (standards, patents, technical literature) without manual tagging or rule-building.",
+        },
+        {
+          title: "Source-traceable answers",
+          description:
+            "Every answer is backed by verified source material — preserving rationale and evidence so decisions remain explainable, repeatable, and audit-defensible.",
+        },
+        {
+          title: "Federated, multi-server reach",
+          description:
+            "Recent releases (25.1.1) extend Goldfire with federated search across multiple servers, so a single query reaches a global knowledge base while respecting per-region access controls.",
+        },
+        {
+          title: "Flexible deployment posture",
+          description:
+            "SaaS, customer-hosted, or fully on-premise — the right answer for export-controlled aerospace & defense, sovereign oil & gas, and regulated manufacturing environments.",
+        },
+        {
+          title: "Built-in connectors to engineering systems",
+          description:
+            "First-class integrations into SharePoint, document management systems, and engineering content sources mean shorter time-to-first-answer and lower integration cost than a generic-search build-out.",
+        },
+      ],
+      chat: {
+        title: "Goldfire Chat — the engineering GenAI assistant",
+        subtitle:
+          "Goldfire Chat layers generative AI on top of Goldfire's semantic engine so engineers get conversational, cited answers grounded in the organisation's own data — not the open internet, and not a generic Copilot.",
+        capabilities: [
+          {
+            title: "Grounded generation, not generic LLM",
+            description:
+              "Answers are constrained to indexed organisational knowledge through Goldfire's semantic retrieval — preventing the hallucination patterns that make generic LLMs unsafe for engineering decisions.",
+          },
+          {
+            title: "Trained on engineering data",
+            description:
+              "Twenty-plus years of engineering NLP behind every response. Understands specialised syntax and terminology across oil & gas, aerospace & defense, and manufacturing.",
+          },
+          {
+            title: "Citation-first by design",
+            description:
+              "Summarises dense test reports, answers compliance queries, and traces every claim back to the originating standard, procedure, or technical document — a hard prerequisite for regulated work.",
+          },
+          {
+            title: "API-first deployment",
+            description:
+              "The Goldfire Chat API integrates with existing engineering tools and workflows — embed it in your PLM, your standards portal, your QMS, or stand it up as a dedicated assistant.",
+          },
+        ],
+      },
+      closingNote:
+        "We evaluate every vendor in the table below. When the answer is engineering content — standards, design rationale, lessons-learned, regulatory submissions — Goldfire wins on engineering depth, on time-to-first-answer (because the content is already indexed), and on the defensibility that regulated industries require. That is where our delivery, consulting, and support is concentrated.",
+    },
+    vendorLandscape: [
+      {
+        category: "Engineering-domain semantic platforms",
+        vendors:
+          "Accuris Goldfire, Goldfire Chat, Sinequa, Coveo, Mindbreeze, IntraFind",
+        experience: "Primary delivery (Goldfire / Goldfire Chat)",
+      },
+      {
+        category: "Engineering content & document platforms",
+        vendors:
+          "OpenText Documentum, OpenText Content Cloud, OpenText Magellan",
+        experience: "Direct experience (Documentum)",
+      },
+      {
+        category: "Modern workplace search & GenAI assistants",
+        vendors:
+          "Glean, Microsoft Copilot, Azure AI Search, Lucidworks Fusion / Springboard",
+        experience: "Vendor-neutral evaluation",
+      },
+      {
+        category: "Domain-vertical insight platforms",
+        vendors: "AlphaSense (market & external research), Accuris Engineering Workbench",
+        experience: "Vendor-neutral evaluation",
+      },
+      {
+        category: "RAG & retrieval infrastructure",
+        vendors:
+          "Vector stores (pgvector, OpenSearch k-NN, Pinecone, Weaviate), reranker models (Cohere Rerank, BGE), embedding models (OpenAI, Voyage, BGE)",
+        experience: "Vendor-neutral evaluation",
+      },
+      {
+        category: "LLM and model orchestration",
+        vendors:
+          "Anthropic Claude, OpenAI GPT-class, Azure OpenAI, AWS Bedrock, model routing and policy frameworks",
+        experience: "Vendor-neutral evaluation",
+      },
+    ],
+    implementationFocus: {
+      title: "How we engage across the landscape",
+      body: "We deliver Accuris Goldfire and Goldfire Chat as our primary engineering-content platform — implementation, consulting, and ongoing support. We have also integrated OpenText Documentum into regulated engineering workflows. For every other vendor in the table below, we run a structured, vendor-neutral evaluation against your corpus, security model, geography, and TCO — and then hand off cleanly to the platform's own delivery team or to a system integrator we trust. We won't pretend to deliver platforms we haven't shipped.",
+      platforms: [
+        "Accuris Goldfire",
+        "Goldfire Chat",
+        "OpenText Documentum",
+      ],
+    },
+    ragPatterns: [
+      {
+        title: "Hybrid retrieval (BM25 + dense)",
+        description:
+          "Combine lexical (BM25) and dense vector retrieval with rank fusion so engineering queries that depend on exact part numbers, standards codes, and acronyms surface alongside semantically similar passages.",
+      },
+      {
+        title: "GraphRAG",
+        description:
+          "Layer a knowledge graph over the corpus — assets, systems, standards, suppliers, lessons — so retrieval can traverse relationships (e.g., \"which standards apply to this assembly under API 510?\") rather than relying on flat similarity.",
+      },
+      {
+        title: "Agentic RAG",
+        description:
+          "Decompose multi-step engineering questions into planned sub-queries (retrieval, calculation, comparison, citation), executed by tool-using agents with guardrails — for design-rationale lookups, failure-mode investigations, and procedure synthesis.",
+      },
+      {
+        title: "Domain-tuned embeddings",
+        description:
+          "Fine-tune or adapt embedding models on engineering-domain corpora (standards, procedures, lessons-learned) so retrieval understands oilfield, aerospace, and process-industry vocabulary that generic embeddings dilute.",
+      },
+      {
+        title: "Cross-encoder reranking",
+        description:
+          "Re-rank top-k candidates with a cross-encoder reranker (Cohere Rerank, BGE-reranker) to push the genuinely relevant passages into the top three — where answer quality lives.",
+      },
+      {
+        title: "Citation grounding",
+        description:
+          "Force the generator to cite the exact source passages used in every answer — including page numbers, standard sections, and document IDs — so engineers can verify before they act.",
+      },
+      {
+        title: "Long-context + RAG hybrid",
+        description:
+          "Use long-context models for synthesis after retrieval narrows the candidate set — combining the precision of RAG with the reasoning capacity of large-context models for complex multi-document questions.",
+      },
+      {
+        title: "Access-controlled context",
+        description:
+          "Apply identity-aware filtering at retrieval time — not just at the UI — so RAG responses respect document classification, export-control flags, project NDAs, and clearance levels.",
+      },
     ],
     methodology: [
       {
@@ -417,6 +812,27 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
           "Configuring semantic search to surface relevant standards alongside internal technical procedures, linked to active programs and design requirements",
         duration: "8 weeks",
       },
+      {
+        title: "Goldfire Chat RAG Rollout",
+        industry: "Aerospace & Defense",
+        scope:
+          "Deployed Goldfire Chat with hybrid retrieval, reranking, and citation grounding across engineering procedures, standards, and lessons-learned for a Tier-1 OEM — wired to clearance-aware access controls.",
+        duration: "14 weeks",
+      },
+      {
+        title: "GraphRAG-Enabled Knowledge Platform",
+        industry: "Oil & Gas",
+        scope:
+          "Built a GraphRAG layer over a 3M+ document corpus for a GCC NOC — linking assets, standards, suppliers, and lessons through a domain knowledge graph so agentic retrieval can answer multi-hop engineering questions.",
+        duration: "20 weeks",
+      },
+      {
+        title: "Glean + Goldfire Hybrid Search",
+        industry: "EPC / Global Engineering",
+        scope:
+          "Integrated Glean for modern workplace search with Goldfire for engineering-domain depth across a global EPC firm — unified relevancy, shared identity, and a single answer surface for engineers.",
+        duration: "18 weeks",
+      },
     ],
     engagementModels: [
       {
@@ -436,6 +852,12 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
         description:
           "Enterprise-wide deployment across multiple sites and business units with unified taxonomy, federated search, and centralized governance.",
         typicalDuration: "6-12 months",
+      },
+      {
+        model: "RAG Architecture Pilot",
+        description:
+          "Time-boxed pilot to stand up a production-grade RAG architecture against a focused engineering corpus — hybrid retrieval, domain-tuned embeddings, reranking, citation grounding, and a measured evaluation harness — to de-risk the full enterprise build.",
+        typicalDuration: "8-12 weeks",
       },
     ],
     differentiators: [
@@ -476,10 +898,18 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
           "Usage analytics monitoring, relevancy tuning based on search behavior, source expansion, and continuous improvement.",
       },
     ],
+    nextStep: {
+      eyebrow: "Need to decide before you deliver?",
+      title: "Knowledge Management Strategy",
+      description:
+        "If maturity, GenAI architecture, governance, and KPI decisions aren't yet signed off, start with our KM Strategy advisory — Nonaka/SECI diagnostic, multi-framework maturity assessment (APQC KMCAT, Kulkarni-Freeze KMCA, Siemens KMMM), peer benchmarking, and a GenAI-ready operating model.",
+      href: "/engineering/knowledge-management-strategy",
+      ctaLabel: "See KM Strategy advisory →",
+    },
   },
 
   // ---------------------------------------------------------------------------
-  // 4. Standards Advisory
+  // 5. Standards Advisory
   // ---------------------------------------------------------------------------
   {
     id: "compliance-advisory",

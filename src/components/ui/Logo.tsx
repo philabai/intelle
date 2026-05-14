@@ -16,11 +16,9 @@ export function Logo({ className = "" }: { className?: string }) {
         priority
         className="h-10 w-auto shrink-0"
       />
-      <div className="flex flex-col">
-        <span className="text-xl font-semibold text-heading tracking-tight">
-          intelle.io
-        </span>
-      </div>
+      <span className="hidden sm:inline text-xl font-semibold text-heading tracking-tight">
+        intelle.io
+      </span>
     </Link>
   );
 }

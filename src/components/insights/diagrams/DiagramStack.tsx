@@ -30,9 +30,9 @@ export function DiagramStack({ spec }: { spec: StackSpec }) {
           return (
             <div
               key={i}
-              className="grid grid-cols-[110px_1fr] gap-3 items-stretch"
+              className="grid grid-cols-1 sm:grid-cols-[110px_1fr] gap-2 sm:gap-3 items-stretch"
             >
-              <div className="flex items-center justify-end pr-2">
+              <div className="flex items-center sm:justify-end pr-0 sm:pr-2">
                 <p className="text-[10px] font-bold tracking-widest text-muted uppercase">
                   Fail rate:{" "}
                   <span className={RATE_COLORS[layer.failRate || "low"] || ""}>

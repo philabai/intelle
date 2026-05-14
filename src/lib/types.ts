@@ -127,6 +127,52 @@ export interface ServiceCategory {
   // SEO + content depth (from audit)
   tldr?: string[];
   faqs?: FAQ[];
+  // Visual variant — defaults to "blue" if absent (existing service detail visual unchanged).
+  accentColor?: "blue" | "teal" | "violet";
+  // Hero eyebrow override — defaults to "Implementation Service" / "Research Service".
+  eyebrow?: string;
+  // Vendor landscape table (rendered conditionally on Engineering Service Detail).
+  // Optional `experience` per row surfaces how deeply we deliver against that category
+  // (e.g., "Primary delivery", "Direct experience", "Vendor-neutral evaluation").
+  vendorLandscape?: { category: string; vendors: string; experience?: string }[];
+  // Callout block above the vendor table — surfaces the implementation focus
+  // (which platforms we actually deliver against) distinct from evaluation breadth.
+  implementationFocus?: {
+    title: string;
+    body: string;
+    platforms: string[];
+  };
+  // Dedicated platform-spotlight block — primary platform with quantified benefits and
+  // capabilities, plus an optional nested GenAI assistant sub-section. Rendered above
+  // the vendor landscape on the Engineering Service Detail page.
+  platformSpotlight?: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    positioningStatement: string;
+    benefits: { metric: string; label: string }[];
+    benefitsSource?: string;
+    capabilities: { title: string; description: string }[];
+    chat?: {
+      title: string;
+      subtitle: string;
+      capabilities: { title: string; description: string }[];
+    };
+    closingNote?: string;
+  };
+  // RAG architecture patterns (numbered list rendered conditionally).
+  ragPatterns?: { title: string; description: string }[];
+  // Render the bespoke SECI 2×2 knowledge-spiral diagram on this service's detail page.
+  seciDiagram?: boolean;
+  // "Next step" callout near the bottom of the page — surfaces a related service
+  // the buyer will likely move to next (e.g., Strategy → Implementation).
+  nextStep?: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    href: string;
+    ctaLabel: string;
+  };
 }
 
 export interface IndustryInfo {

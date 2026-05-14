@@ -11,6 +11,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/engineering/knowledge-management",
+        destination: "/engineering/knowledge-management-implementation",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

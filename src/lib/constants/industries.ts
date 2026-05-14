@@ -86,7 +86,7 @@ export const INDUSTRIES: IndustryInfo[] = [
         title: "Knowledge Management for Engineering",
         description:
           "We deploy semantic search and knowledge management platforms that capture and surface institutional expertise before it walks out the door.",
-        serviceHref: "/engineering/knowledge-management",
+        serviceHref: "/engineering/knowledge-management-implementation",
       },
     ],
     relevantServices: [

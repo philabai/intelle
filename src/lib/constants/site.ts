@@ -61,8 +61,12 @@ export const NAV_LINKS = [
         href: "/engineering/plm-integration",
       },
       {
-        label: "Knowledge Management",
-        href: "/engineering/knowledge-management",
+        label: "KM Strategy",
+        href: "/engineering/knowledge-management-strategy",
+      },
+      {
+        label: "KM Solutions Implementation",
+        href: "/engineering/knowledge-management-implementation",
       },
       {
         label: "Standards Advisory",
@@ -96,8 +100,12 @@ export const FOOTER_LINKS = {
     { label: "Adoption & Value Realization", href: "/engineering/workbench-adoption" },
     { label: "Requirements Digitalization", href: "/engineering/plm-integration" },
     {
-      label: "Knowledge Management",
-      href: "/engineering/knowledge-management",
+      label: "KM Strategy",
+      href: "/engineering/knowledge-management-strategy",
+    },
+    {
+      label: "KM Solutions Implementation",
+      href: "/engineering/knowledge-management-implementation",
     },
     {
       label: "Standards Advisory",

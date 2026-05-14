@@ -6,8 +6,8 @@ export function HeroSection() {
     <section className="relative overflow-hidden py-24 sm:py-32 lg:py-40">
       {/* Background gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-brand-blue/5 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] rounded-full bg-brand-teal/5 blur-3xl" />
+        <div className="absolute -top-40 -right-40 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] rounded-full bg-brand-blue/5 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] rounded-full bg-brand-teal/5 blur-3xl" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

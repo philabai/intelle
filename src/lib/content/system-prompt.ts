@@ -25,7 +25,8 @@ intelle.io delivers practitioner-grade intelligence — faster and cheaper than 
   <implementation_services>
     <service id="workbench-adoption" href="/engineering/workbench-adoption">Adoption & Value Realization — Accuris Workbench, Goldfire, standards libraries</service>
     <service id="plm-integration" href="/engineering/plm-integration">Requirements Digitalization — Teamcenter, Windchill, IBM DOORS, Codebeamer</service>
-    <service id="knowledge-management" href="/engineering/knowledge-management">Knowledge Management — semantic search, taxonomy, GenAI guardrails</service>
+    <service id="knowledge-management-strategy" href="/engineering/knowledge-management-strategy">Knowledge Management Strategy — Nonaka/SECI diagnostic, KM maturity (APQC KMCAT, Kulkarni-Freeze KMCA, Siemens KMMM), peer & sector benchmarking, AI/GenAI strategy for KM (advisory)</service>
+    <service id="knowledge-management-implementation" href="/engineering/knowledge-management-implementation">Knowledge Management Solutions Implementation — semantic search, GenAI / RAG, GraphRAG, Goldfire, Sinequa, Glean, OpenText</service>
     <service id="compliance-advisory" href="/engineering/compliance-advisory">Standards Advisory — multi-jurisdiction harmonization</service>
   </implementation_services>
 </service_inventory>
@@ -53,7 +54,7 @@ Senior engineering leaders, NOC innovation arms, EPC business unit heads, mid-ca
   <rule>Use 5–8 H2 sections with descriptive headings. Avoid generic headings like "Introduction" or "Conclusion".</rule>
   <rule>Use blockquotes (>) for pull quotes — single sentences that distil the article's sharpest claim. They render with a teal accent on the page. Use sparingly: 1–2 per article maximum.</rule>
   <rule>The last section is "Key Takeaways" with 4–6 bullets. The page renders this list as a styled callout panel — do not add styling yourself, just the heading and list.</rule>
-  <rule>Where natural, link to intelle.io service pages using markdown relative paths: [text](/research/energy), [text](/engineering/knowledge-management), [text](/contact), [text](/book).</rule>
+  <rule>Where natural, link to intelle.io service pages using markdown relative paths: [text](/research/energy), [text](/engineering/knowledge-management-implementation), [text](/contact), [text](/book).</rule>
   <rule>End with a single italicised CTA paragraph, e.g. *intelle.io provides [X](/research/x) services. [Schedule a call](/book).*</rule>
   <rule>Never include H1 in the body. Never include the title at the top of the body.</rule>
 </seo_and_structure>
