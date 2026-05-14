@@ -1,7 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
+
+const HINT_SESSION_KEY = "iris-hint-dismissed";
+const HINT_AUTO_DISMISS_MS = 10_000;
+const HINT_INITIAL_DELAY_MS = 1500;
 
 type AssistantBlock =
   | { type: "text"; text: string }
@@ -102,20 +106,52 @@ export function IrisWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [hintOpen, setHintOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    if (scrollRef.current) {
+  // Scroll to the latest message — fires on new messages, streaming start, AND
+  // on panel reopen. useLayoutEffect runs before paint so there's no visible
+  // flash of the top of the conversation when the panel mounts.
+  useLayoutEffect(() => {
+    if (isOpen && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isStreaming]);
+  }, [messages, isStreaming, isOpen]);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isOpen]);
+
+  // First-load hint: show once per browser session, after a short delay,
+  // unless the user has already dismissed it or opened the chat.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (sessionStorage.getItem(HINT_SESSION_KEY) === "1") return;
+    const t = setTimeout(() => setHintOpen(true), HINT_INITIAL_DELAY_MS);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Auto-dismiss the hint after a few seconds so it doesn't linger.
+  useEffect(() => {
+    if (!hintOpen) return;
+    const t = setTimeout(() => dismissHint(), HINT_AUTO_DISMISS_MS);
+    return () => clearTimeout(t);
+  }, [hintOpen]);
+
+  function dismissHint() {
+    setHintOpen(false);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(HINT_SESSION_KEY, "1");
+    }
+  }
+
+  function openChat() {
+    setIsOpen(true);
+    dismissHint();
+  }
 
   async function send(userText: string) {
     if (!userText.trim() || isStreaming) return;
@@ -269,15 +305,47 @@ export function IrisWidget() {
 
   return (
     <>
+      {/* First-load hint card — appears once per session above the bubble */}
+      {!isOpen && hintOpen && (
+        <div
+          className="fixed bottom-24 right-6 z-40 max-w-[260px] sm:bottom-28 sm:right-8"
+          role="status"
+        >
+          <div className="relative rounded-2xl rounded-br-sm bg-gradient-to-br from-brand-teal to-brand-blue p-4 pr-9 text-white shadow-xl shadow-brand-teal/30">
+            <button
+              onClick={dismissHint}
+              aria-label="Dismiss"
+              className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-md text-white/80 hover:bg-white/15 hover:text-white"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <p className="text-sm font-semibold leading-tight">
+              Hi! I&apos;m Iris.
+            </p>
+            <p className="mt-1 text-xs text-white/90 leading-snug">
+              Ask me about intelle.io services, or I can set up a call with our Senior Practitioner.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Floating bubble */}
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={openChat}
           aria-label="Open chat with Iris"
           className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-brand-teal to-brand-blue text-white shadow-lg shadow-brand-teal/30 transition-transform hover:scale-105 sm:bottom-8 sm:right-8"
         >
+          {hintOpen && (
+            <span
+              className="absolute inset-0 rounded-full bg-brand-teal opacity-60 animate-ping"
+              aria-hidden
+            />
+          )}
           <svg
-            className="h-7 w-7"
+            className="relative h-7 w-7"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

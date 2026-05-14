@@ -827,10 +827,10 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
         duration: "20 weeks",
       },
       {
-        title: "Glean + Goldfire Hybrid Search",
-        industry: "EPC / Global Engineering",
+        title: "50-Year Well-File Goldfire Knowledge Corpus",
+        industry: "GCC National Oil Company",
         scope:
-          "Integrated Glean for modern workplace search with Goldfire for engineering-domain depth across a global EPC firm — unified relevancy, shared identity, and a single answer surface for engineers.",
+          "Built a Goldfire-powered semantic knowledge corpus for a GCC national oil company covering 50 years of well-file data, OpenText-scanned image archives (OCR-recovered drilling reports, mud logs, well completion records), internal engineering standards, and the international standards portfolio (API, ISO, NACE). Engineers now ask natural-language questions across the full subsurface, drilling, and completions history in seconds — replacing weeks of manual filing-cabinet retrieval. Measurable ROI on well-planning cycle time, lessons-learned reuse, and avoided rework.",
         duration: "18 weeks",
       },
     ],
