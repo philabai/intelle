@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
+import { HeroBackdrop } from "@/components/ui/HeroBackdrop";
 import { INDUSTRIES } from "@/lib/constants";
 import { JsonLd, itemListSchema } from "@/lib/seo/json-ld";
 
@@ -39,11 +40,28 @@ export default function IndustriesPage() {
           }))
         )}
       />
+      <section className="relative overflow-hidden py-20 sm:py-24 lg:py-28">
+        <HeroBackdrop variant="teal" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest text-brand-teal mb-4">
+            Industries Served
+          </p>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-heading">
+            Deep domain expertise.
+          </h1>
+          <p className="mt-5 text-base sm:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
+            Published author, conference speaker, and recognised practitioner across
+            four major verticals — Oil &amp; Gas, Aerospace &amp; Defense, Medical
+            Devices, and Advanced Manufacturing — with GCC and India delivery depth.
+          </p>
+        </div>
+      </section>
+
       <section className="py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
           label="Industries"
-          title="Deep Domain Expertise"
+          title="Four Verticals We Know Deeply"
           description="Published author, conference speaker, and recognized expert across four major industry verticals"
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

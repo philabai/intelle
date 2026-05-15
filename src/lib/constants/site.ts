@@ -57,7 +57,7 @@ export const NAV_LINKS = [
         href: "/engineering/workbench-adoption",
       },
       {
-        label: "Requirements Digitalization",
+        label: "Digital Threading & Traceability",
         href: "/engineering/plm-integration",
       },
       {
@@ -98,7 +98,7 @@ export const FOOTER_LINKS = {
   ],
   engineering: [
     { label: "Adoption & Value Realization", href: "/engineering/workbench-adoption" },
-    { label: "Requirements Digitalization", href: "/engineering/plm-integration" },
+    { label: "Digital Threading & Traceability", href: "/engineering/plm-integration" },
     {
       label: "KM Strategy",
       href: "/engineering/knowledge-management-strategy",

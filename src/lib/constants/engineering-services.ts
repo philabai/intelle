@@ -159,160 +159,280 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
   },
 
   // ---------------------------------------------------------------------------
-  // 2. Requirements Digitalization
+  // 2. Digital Threading & Traceability
   // ---------------------------------------------------------------------------
   {
     id: "plm-integration",
-    title: "Requirements Digitalization",
-    shortTitle: "Requirements Digitalization",
+    title: "Digital Threading & Traceability",
+    shortTitle: "Digital Threading",
     description:
-      "Connect standards requirements to your product lifecycle and application lifecycle management systems with bi-directional integrations that maintain traceability from regulation through verification. We build the connectors, data mappings, and automated workflows that make compliance evidence a by-product of normal engineering work.",
+      "Every design decision in an engineering organisation must trace back to a governing standard, regulation, or internal requirement — and every revision of that source cascades into inspections, procedures, supplier obligations, and MOC. We deliver the digital-threading practice that makes that cascade automatic: decomposing standards into structured, traceable requirement objects and wiring them into the RM/PLM/ALM tools your engineers already run. Anywhere a clause from a standard or regulation needs to be referenced by your toolchain, we ship the integration end-to-end.",
     href: "/engineering/plm-integration",
     icon: "GitMerge",
+    digitalThreadDiagram: true,
+    tldr: [
+      "Engineering change management — when a standard, regulation, or internal requirement changes, downstream impact must be visible immediately, not at the next audit.",
+      "Digital threading — automated decomposition of standards into structured, citable requirement objects (requirements, prohibitions, guidance, engineering information) with edition history and applicability mapping.",
+      "Connector layer into your RM/PLM/ALM stack — PTC Codebeamer, PTC Windchill, Siemens Polarion, IBM DOORS, Jama Connect, Siemens Teamcenter, IBM Maximo.",
+      "Outcomes — 90% time-to-extract reduction, 92% first-pass accuracy, proactive MOC instead of reactive, continuous audit conformance.",
+    ],
     deliverables: [
-      "Integration architecture and API specification document",
-      "Custom connectors and data mapping configurations",
-      "Bi-directional sync engine between standards and PLM/ALM",
-      "Requirements traceability matrix templates",
-      "Deployment runbook and operational documentation",
+      "Engineering change-management diagnostic — how standards changes propagate today, and where they break",
+      "Standards corpus inventory and digital-thread information architecture",
+      "Configured digital-thread tenant onboarded with SDO and internal-standards content",
+      "API connectors into the customer's RM/PLM/ALM tools (REQIF / JSON / CSV exchange)",
+      "MOC change-cascade workflow with downstream-impact notifications and supplier flow-down",
+      "Operational runbook, KPI dashboard, and ongoing-support handover",
     ],
     focusAreas: [
-      "Requirements traceability across systems",
-      "Bi-directional data synchronization",
-      "Compliance evidence automation",
-      "API development and system integration",
-      "Certification-ready audit trails",
+      "Digital-thread platform implementation and support",
+      "API connector engineering for RM/PLM/ALM",
+      "Engineering change management and MOC workflow design",
+      "Standards as governed objects — edition history, applicability mapping, change events",
+      "Bidirectional traceability across the engineering lifecycle",
+      "Requirements decomposition, enrichment, similarity analysis",
     ],
     methodology: [
       {
-        step: "Requirements Gathering & System Architecture Review",
+        step: "Sponsor alignment and charter",
         description:
-          "Document integration requirements, review existing system architectures, and map data flows between standards management, PLM, and ALM systems.",
+          "Align with the VP Engineering / Head of Digital Transformation / Head of Requirements sponsor on scope, in-scope engineering domains, in-scope RM/PLM/ALM systems, and the steering rhythm.",
       },
       {
-        step: "Integration Architecture Design & API Specification",
+        step: "Engineering change-management diagnostic",
         description:
-          "Design the integration architecture, define API contracts, specify data mappings, and establish sync rules for bi-directional traceability.",
+          "Map the current-state — how a standard revision propagates today across design, procurement, fabrication, MOC, supplier flow-down, and audit. Identify the chokepoints where impact is invisible until too late, and size the cost.",
       },
       {
-        step: "Development, Unit Testing & Integration Testing",
+        step: "Standards corpus inventory",
         description:
-          "Build custom connectors, implement data transformations, and execute rigorous unit and integration testing against representative datasets.",
+          "Catalogue which SDOs are in scope (API, ISO, NACE, Mil-Specs, ASME, IEC, AIA) plus internal standards, design guides, and best practices. Map each to engineering domain, asset class, and the systems it must reach.",
       },
       {
-        step: "User Acceptance Testing & Stakeholder Sign-Off",
+        step: "Target architecture",
         description:
-          "Conduct structured UAT with engineering and compliance stakeholders, validate traceability chains, and secure formal sign-off before deployment.",
+          "Design the end-to-end target: digital-thread tenant + connector layer + downstream RM/PLM/ALM systems wired together. Confirm identity, access controls, data residency, and audit-evidence requirements.",
       },
       {
-        step: "Production Deployment, Documentation & Handover",
+        step: "Platform deployment and corpus onboarding",
         description:
-          "Deploy to production, deliver comprehensive documentation including runbooks and troubleshooting guides, and conduct knowledge transfer to the operations team.",
+          "Configure the digital-thread tenant, upload SDO and internal-standards content, validate decomposition accuracy against engineer-reviewed samples, and tune the requirement-extraction profile.",
+      },
+      {
+        step: "Connector engineering",
+        description:
+          "Build the API integrations into named RM/PLM/ALM systems (e.g., PTC Codebeamer and IBM Maximo for an O&G NOC, or IBM DOORS Next and PTC Windchill for an A&D programme). REQIF / JSON exchange contracts, change-event subscriptions, identity propagation.",
+      },
+      {
+        step: "MOC workflow and change-cascade activation",
+        description:
+          "Wire change events to downstream workflows — inspection plans, procedure updates, supplier obligations, audit evidence. Test the cascade against representative standard revisions before go-live.",
+      },
+      {
+        step: "Adoption, KPI baseline, and ongoing support",
+        description:
+          "Power-user training, KPI baseline (extraction cycle time, MOC backlog burn-down, audit-evidence completeness, requirements-rework rate), operational handover to the customer's IT and Engineering Operations teams, and ongoing platform + connector support.",
       },
     ],
     whoItsFor: [
-      "Engineering organizations needing to trace standards requirements through design and verification",
-      "PLM administrators integrating requirements management with product lifecycle tools",
-      "Compliance teams needing automated requirements traceability for certification evidence",
-      "Program managers on DO-178C, ISO 26262, or MIL-STD programs requiring formal traceability",
+      "VP / Head of Systems Engineering on complex programmes (defence primes, energy capital projects, NPI)",
+      "VP / Head of Requirements Management responsible for bidirectional traceability and configuration management",
+      "VP / Head of Process Engineering and Engineering Standards owning standards adherence",
+      "Head of Digital Transformation / Digital Innovation moving the engineering organisation from document-based to model-based (MBSE)",
+      "Asset & Integrity leaders in O&G, Nuclear, and Energy needing standards-aware MOC, inspection, and supplier flow-down",
     ],
     expectedOutcomes: [
       {
-        title: "Automated Bi-Directional Sync",
+        title: "90% time saved on requirements identification & extraction",
         description:
-          "Automated bi-directional sync between standards requirements and PLM/ALM systems, eliminating manual data entry and transcription errors.",
+          "Automated decomposition replaces weeks of manual reading, copying, and re-keying. Engineers get their time back for the engineering decisions they were hired to make.",
       },
       {
-        title: "Full Requirements Traceability",
+        title: "92% first-pass accuracy on extracted requirements",
         description:
-          "Full requirements traceability from regulation through design, implementation, and verification -- visible in a single pane of glass.",
+          "Versus a ~70% manual industry baseline. Fewer missed clauses, fewer mis-transcribed values, fewer late-stage change orders driven by requirements errors caught after design.",
       },
       {
-        title: "Reduced Manual Compliance Effort",
+        title: "Proactive MOC and continuous audit conformance",
         description:
-          "Reduced manual effort in compliance evidence generation, turning weeks of audit preparation into hours of automated report generation.",
+          "When a governing standard revises, the change propagates automatically to inspection plans, procedures, work instructions, and supplier obligations. Non-compliance avoidance is significant — published industry data places the cost of non-compliance at roughly 3× the cost of maintaining compliance.",
       },
       {
-        title: "Audit-Ready Traceability Matrices",
+        title: "End-to-end traceability across the toolchain",
         description:
-          "Audit-ready traceability matrices generated on demand, satisfying DER, notified body, and customer audit requirements.",
-      },
-    ],
-    sampleProjects: [
-      {
-        title: "PLM Integration for Requirements Traceability",
-        industry: "Aerospace",
-        scope:
-          "Bi-directional sync between standards extraction and PLM for a flight control system, enabling end-to-end traceability from DO-178C objectives through verification",
-        duration: "12 weeks",
-      },
-      {
-        title: "Requirements Management Integration",
-        industry: "Aerospace",
-        scope:
-          "Automated requirements flow from standards to requirements management tools for certification evidence, including derived requirements tracking and compliance matrices",
-        duration: "10 weeks",
-      },
-      {
-        title: "Agile Standards Compliance Integration",
-        industry: "Software/Medical",
-        scope:
-          "Mapping extracted standards requirements to agile project management tools for development teams, with automated status sync and compliance dashboards",
-        duration: "6 weeks",
+          "From a clause in API 510, ISO 14224, or your internal design guide, all the way down to an inspection plan, a work order, a CAD assembly, or a supplier qualification record — visible, queryable, and audit-defensible across your RM, PLM, and ALM systems.",
       },
     ],
     engagementModels: [
       {
-        model: "Assessment & Architecture",
+        model: "Discovery & Architecture",
         description:
-          "System analysis, API review, and integration architecture design with a detailed implementation roadmap and effort estimate.",
-        typicalDuration: "2-3 weeks",
+          "Engineering change-management diagnostic + standards corpus inventory + target-architecture blueprint + sized business case. The right entry point before committing to full implementation.",
+        typicalDuration: "4-6 weeks",
       },
       {
-        model: "Single System Integration",
+        model: "Digital-Thread Implementation",
         description:
-          "Complete integration between standards management and one PLM or ALM system, including development, testing, deployment, and documentation.",
-        typicalDuration: "3-4 months",
-      },
-      {
-        model: "Multi-System Integration",
-        description:
-          "Integration across multiple PLM, ALM, and requirements management systems with a unified traceability layer and centralized governance.",
+          "Full platform tenant + connector layer into named RM/PLM/ALM systems + MOC and change-cascade workflows + adoption. The standard end-to-end engagement.",
         typicalDuration: "4-6 months",
+      },
+      {
+        model: "Embedded Advisory & Connector Factory",
+        description:
+          "Fractional practice leadership embedded with engineering operations, additional connector builds for newly-in-scope systems, KPI reporting, and Tier-2/Tier-3 customer-success bridging.",
+        typicalDuration: "6-12 months",
       },
     ],
     differentiators: [
-      "Deep knowledge of PLM/ALM data models and APIs across Windchill, Teamcenter, DOORS, and Jira ecosystems",
-      "Practitioner who understands the compliance context behind every integration -- not just the API documentation",
-      "End-to-end ownership from architecture through deployment and handover",
-      "Experience building requirements traceability solutions for Fortune 500 engineering organizations",
+      "Senior-practitioner-led digital-thread delivery practice — end-to-end from change-management diagnostic through connector engineering and operational handover. Not a generalist SI.",
+      "Deep API integration practice into PTC Codebeamer, PTC Windchill, Siemens Polarion, Siemens Teamcenter, IBM DOORS, Jama Connect, and IBM Maximo — the RM/PLM/ALM tools our customers actually run.",
+      "Engineering-change-management framing — we don't just ship connectors, we redesign the MOC and traceability operating model around them.",
+      "Published author on Cognitive AI for engineering knowledge augmentation (SAE International). Vertical depth in Aerospace & Defense, Oil & Gas, Nuclear, and Energy.",
     ],
     implementationTimeline: [
       {
-        phase: "Requirements & Architecture",
-        duration: "2-3 weeks",
+        phase: "Mobilisation",
+        duration: "1-2 weeks",
         description:
-          "System analysis, API review, data model mapping, and integration architecture design.",
+          "Sponsor alignment, charter, in-scope engineering domains and RM/PLM/ALM systems confirmed, steering rhythm agreed.",
       },
       {
-        phase: "Development",
-        duration: "6-8 weeks",
+        phase: "Diagnose & Architect",
+        duration: "3-4 weeks",
         description:
-          "API development, data mapping implementation, custom connector build, and sync engine configuration.",
+          "Engineering change-management diagnostic, standards corpus inventory, target architecture, and integration security model.",
       },
       {
-        phase: "Testing & UAT",
-        duration: "2-3 weeks",
+        phase: "Deploy & Integrate",
+        duration: "10-14 weeks",
         description:
-          "Integration testing, user acceptance testing, performance validation, and edge case verification.",
+          "Platform tenant configured and corpus onboarded; first two connectors engineered and integration-tested; MOC change-cascade workflow wired and validated against representative standard revisions.",
       },
       {
-        phase: "Deployment & Training",
-        duration: "2 weeks",
+        phase: "Activate & Sustain",
+        duration: "2-3 weeks + ongoing",
         description:
-          "Production deployment, operational documentation, runbook delivery, and user training.",
+          "Power-user training, KPI baseline, operational handover, and ongoing platform + connector support.",
       },
     ],
+    faqs: [
+      {
+        q: "Isn't this just another requirements management system?",
+        a: "No. The digital-thread layer sits **upstream** of your RMS. It decomposes standards, regulations, and internal engineering content into structured requirement objects and threads them INTO your existing DOORS, Jama, Polarion, or Codebeamer — it never replaces them. The RMS you've already invested in continues to be the system of record for project requirements; the thread is what brings external and internal source requirements into it cleanly, with provenance preserved.",
+      },
+      {
+        q: "What does \"standards as governed objects\" actually mean?",
+        a: "Each standard, regulation, or internal design guide is registered as a versioned object with edition history, ICS codes, applicability mappings (asset class, site, supplier, project), traceability relationships, and change events. When a standard revises — say API 510 issues a new edition — your downstream systems are notified of exactly what's affected and where. Inspection plans, MOC workflows, procedures, and supplier obligations update accordingly. No more scrambling to find every reference before the next audit.",
+      },
+      {
+        q: "Which RM/PLM/ALM tools do you build connectors for?",
+        a: "Direct API integration experience with PTC Codebeamer, PTC Windchill, IBM DOORS, IBM DOORS Next, Jama Connect, Siemens Polarion, Siemens Teamcenter, and IBM Maximo. We evaluate other platforms (Dassault Systèmes ENOVIA, Aras Innovator, SAP PLM/EAM, Hexagon EAM, AVEVA APM, Bentley AssetWise) vendor-neutrally and partner with the platform's own delivery team or a trusted system integrator where it makes sense.",
+      },
+      {
+        q: "Does this work for safety-critical and certification-heavy programmes (DO-178C, ISO 26262, IEC 61508, ASME, NRC)?",
+        a: "Yes. Structured requirement objects, bidirectional traceability, and a continuous audit-evidence harness are exactly the patterns these certification regimes already demand. The digital thread doesn't replace your certification process — it makes the artefacts continuous rather than reconstructed under audit pressure. Several of our reference engagements are in DO-178C / DO-254 and nuclear regulatory environments.",
+      },
+      {
+        q: "Can we thread our internal standards, design guides, and best practices — not just public SDO content?",
+        a: "Yes. The decomposition engine works on internal documents alongside SDO content (Mil-Specs, AIA, ASME, ISO, API, NACE, IEC, regulator publications) with the same accuracy guarantees. For many enterprises, the highest-value corpus is internal — design guides, lessons-learned, and operator standards that no one else has indexed.",
+      },
+      {
+        q: "Which platform do you deliver against?",
+        a: "Our primary delivery platform is named in the Platform section above (with the full capability set, benefit numbers, and the connector layer we engineer on top). For the rest of this page we describe the *capability* — digital threading — because the value lives in the thread, not the brand. If you'd like a direct conversation about platform fit for your toolchain, the discovery call is the right next step.",
+      },
+      {
+        q: "How do we measure success?",
+        a: "Cycle time on requirements extraction, MOC backlog burn-down, supplier-flow-down adherence, audit-evidence completeness, requirements-rework rate at design and verification stages, and the platform-published metrics (90% time-to-extract reduction, 92% first-pass accuracy). The KPI dashboard is baselined during Discovery and reported through go-live and steady-state operations.",
+      },
+    ],
+    platformSpotlight: {
+      eyebrow: "Our primary platform",
+      title: "The digital-threading platform we deliver",
+      subtitle:
+        "Decompose. Enrich. Thread. Every engineering decision back to its governing standard, every revision propagated forward.",
+      positioningStatement:
+        "Our delivery is anchored on Accuris Thread — the engineering-domain platform that decomposes standards, regulations, and internal engineering content into structured requirement objects and threads them into the toolchain you already run. We sell, implement, and support it end to end, including the API connector layer that makes those requirements first-class citizens inside your PLM, RMS, and ALM. For the rest of this page, we describe the capability rather than the platform — because what matters to your engineers is the thread, not the brand.",
+      benefits: [
+        { metric: "90%", label: "Time saved on requirements identification and extraction" },
+        { metric: "92%", label: "First-pass accuracy (vs ~70% manual baseline)" },
+        { metric: "$M", label: "Saved annually in time, error avoidance, and capital exposure" },
+        { metric: "3×", label: "Cost asymmetry — non-compliance vs maintaining compliance" },
+        { metric: "80%", label: "Of large-scale incidents driven by disconnected MOC" },
+        { metric: "5 min", label: "Saved per requirement, customer-cited" },
+      ],
+      benefitsSource:
+        "Outcome ranges published by the platform vendor; mapped to intelle.io delivery on representative engagements across A&D, O&G, Nuclear, and Energy.",
+      capabilities: [
+        {
+          title: "Decompose unstructured content into structured objects",
+          description:
+            "Standards, codes, regulations, design guides, and handbooks are decomposed into four object types — requirements, prohibitions, guidance, engineering information — each enriched with metadata and addressable individually.",
+        },
+        {
+          title: "Smart-search Requirement Viewer",
+          description:
+            "Semantic search across the decomposed corpus, with automatic detection of normative language (\"should\", \"must\", \"shall\") and direct linkback to the source passage. Engineers verify in context, not in a guessed-at section number.",
+        },
+        {
+          title: "Similarity Analysis across documents",
+          description:
+            "Compare requirements between versions of a standard, or between entirely separate documents, with up to five documents viewed side-by-side. The fastest way to understand what a revision has actually changed.",
+        },
+        {
+          title: "Requirements Library + API",
+          description:
+            "All requirement objects live in a searchable, filterable library, with bulk export in CSV, REQIF, and JSON formats and an API for integration into downstream systems.",
+        },
+        {
+          title: "Engineering-domain NLP",
+          description:
+            "Two-plus decades of natural-language processing tuned to engineering syntax — technical terminology across oil & gas, aerospace & defence, manufacturing, and energy. Generic enterprise NLP misses this depth.",
+        },
+        {
+          title: "Customer-hosted, access-controlled deployment",
+          description:
+            "SaaS, customer-hosted, or fully on-premise — designed around export-control, ITAR, sovereign-deployment, and clearance requirements that real engineering programmes face.",
+        },
+      ],
+      addon: {
+        badge: "Integration Layer",
+        title: "The connector layer — standards as live, governed objects",
+        subtitle:
+          "Where decomposition becomes integration. The layer intelle.io engineers on top of the platform, into the engineering toolchain your teams already run.",
+        capabilities: [
+          {
+            title: "Standards as governed objects",
+            description:
+              "Each standard or regulation registered as a versioned object with edition history, ICS codes, applicability mapping (asset class, site, supplier, project), and traceability relationships.",
+          },
+          {
+            title: "Automated change propagation",
+            description:
+              "When a governing standard revises, the change event propagates through the connector layer into PLM, RMS, EAM, and MOC workflows. Affected equipment records, inspection plans, procedures, and supplier obligations surface for review before the change becomes a safety event.",
+          },
+          {
+            title: "Supplier flow-down via traceability, not PDFs",
+            description:
+              "Requirements flow to suppliers as structured objects with provenance, not as document attachments. Compliance gaps surface at the design stage, not at delivery or audit.",
+          },
+          {
+            title: "Audit conformance as a system state",
+            description:
+              "Audit-readiness is continuously maintained by the toolchain, not reconstructed under deadline pressure before a regulator inspection. The cost-of-non-compliance asymmetry (roughly 3×) is the business case in one number.",
+          },
+        ],
+      },
+      closingNote:
+        "Digital threading is the capability. Our job is to land it inside the engineering toolchain your teams already run — PTC Codebeamer, PTC Windchill, Siemens Polarion, Siemens Teamcenter, IBM DOORS, Jama Connect, IBM Maximo — which is where the value lives.",
+    },
+    nextStep: {
+      eyebrow: "Pair with the knowledge layer",
+      title: "Knowledge Management Solutions Implementation",
+      description:
+        "Once the digital thread is in place, the requirements-rich content corpus it produces is the highest-value input for engineering knowledge search. Our KM Solutions Implementation practice picks up the same corpus and makes it AI-searchable with grounded, cited GenAI — no re-baselining required.",
+      href: "/engineering/knowledge-management-implementation",
+      ctaLabel: "Explore KM Solutions Implementation →",
+    },
   },
 
   // ---------------------------------------------------------------------------
@@ -617,7 +737,8 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
             "First-class integrations into SharePoint, document management systems, and engineering content sources mean shorter time-to-first-answer and lower integration cost than a generic-search build-out.",
         },
       ],
-      chat: {
+      addon: {
+        badge: "GenAI Layer",
         title: "Goldfire Chat — the engineering GenAI assistant",
         subtitle:
           "Goldfire Chat layers generative AI on top of Goldfire's semantic engine so engineers get conversational, cited answers grounded in the organisation's own data — not the open internet, and not a generic Copilot.",
@@ -918,7 +1039,7 @@ export const ENGINEERING_SERVICES: ServiceCategory[] = [
     description:
       "Strategic advisory services for engineering compliance, standards management maturity, and digital transformation of compliance processes in regulated industries. We assess your current compliance posture, benchmark against industry peers, and build prioritized roadmaps that align remediation with business priorities.",
     href: "/engineering/compliance-advisory",
-    icon: "ShieldCheck",
+    icon: "Shield",
     deliverables: [
       "Standards portfolio assessment and gap analysis report",
       "Compliance maturity scorecard with peer benchmarking",

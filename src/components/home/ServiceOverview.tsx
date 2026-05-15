@@ -71,7 +71,7 @@ export function ServiceOverview() {
               Implementation, integration, and consulting services that help
               engineering organizations extract maximum value from their tools.
             </p>
-            <div className="grid grid-cols-1 gap-3 mb-6">
+            <div className="grid grid-cols-2 gap-3 mb-6">
               {ENGINEERING_SERVICES.map((service) => (
                 <div
                   key={service.id}

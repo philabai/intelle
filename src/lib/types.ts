@@ -143,8 +143,9 @@ export interface ServiceCategory {
     platforms: string[];
   };
   // Dedicated platform-spotlight block — primary platform with quantified benefits and
-  // capabilities, plus an optional nested GenAI assistant sub-section. Rendered above
-  // the vendor landscape on the Engineering Service Detail page.
+  // capabilities, plus an optional nested sub-section (the "addon" — e.g., a GenAI
+  // assistant on KM, or a connector layer on Requirements Digitalization). Rendered
+  // above the vendor landscape on the Engineering Service Detail page.
   platformSpotlight?: {
     eyebrow: string;
     title: string;
@@ -153,7 +154,8 @@ export interface ServiceCategory {
     benefits: { metric: string; label: string }[];
     benefitsSource?: string;
     capabilities: { title: string; description: string }[];
-    chat?: {
+    addon?: {
+      badge?: string; // e.g. "GenAI Layer", "Integration Layer". Defaults to "Add-on".
       title: string;
       subtitle: string;
       capabilities: { title: string; description: string }[];
@@ -164,6 +166,9 @@ export interface ServiceCategory {
   ragPatterns?: { title: string; description: string }[];
   // Render the bespoke SECI 2×2 knowledge-spiral diagram on this service's detail page.
   seciDiagram?: boolean;
+  // Render the bespoke 3-layer Digital Thread architecture diagram (Requirements
+  // Digitalization service).
+  digitalThreadDiagram?: boolean;
   // "Next step" callout near the bottom of the page — surfaces a related service
   // the buyer will likely move to next (e.g., Strategy → Implementation).
   nextStep?: {

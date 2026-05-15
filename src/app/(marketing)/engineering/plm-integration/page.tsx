@@ -4,27 +4,43 @@ import { EngineeringServiceDetail } from "@/components/engineering/EngineeringSe
 
 const service = ENGINEERING_SERVICES[1];
 export const metadata: Metadata = {
-  title: "PLM/ALM Implementation | Teamcenter, Windchill, DOORS | intelle.io",
+  title:
+    "Digital Threading & Traceability — Engineering Change Management, RM/PLM/ALM Connectors | intelle.io",
   description:
-    "End-to-end PLM/ALM integration for engineering organizations: Siemens Teamcenter, PTC Windchill, IBM DOORS, Codebeamer. Aerospace, MedDev, EPC delivery. India bench.",
+    "Decompose standards and regulations into structured, traceable requirement objects and thread them into your engineering toolchain. API connectors into PTC Codebeamer, PTC Windchill, IBM DOORS, Jama Connect, Siemens Polarion, Siemens Teamcenter, and IBM Maximo. Engineering change management, MOC, and audit-ready traceability — delivered end to end.",
   keywords: [
-    "PLM ALM consulting GCC",
-    "Teamcenter implementation",
-    "Windchill integration",
-    "IBM DOORS migration",
-    "Codebeamer consulting",
-    "MedDev DHF PLM",
+    "digital threading",
+    "digital thread implementation",
+    "requirements traceability and threading",
     "requirements traceability",
+    "engineering change management",
+    "MOC management of change",
+    "PTC Codebeamer integration",
+    "PTC Windchill integration",
+    "IBM DOORS integration",
+    "Jama Connect integration",
+    "Siemens Polarion integration",
+    "Siemens Teamcenter integration",
+    "IBM Maximo standards integration",
+    "requirements decomposition",
+    "MBSE",
+    "model-based systems engineering",
+    "Accuris Thread",
   ],
   alternates: { canonical: service.href },
   openGraph: {
-    title: "PLM/ALM Implementation & Requirements Digitalization",
+    title:
+      "Digital Threading & Traceability — Engineering Change Management, RM/PLM/ALM Connectors",
     description:
-      "Siemens Teamcenter, PTC Windchill, IBM DOORS, Codebeamer integration. Aerospace, MedDev, EPC delivery.",
+      "Decompose standards into structured requirement objects and thread them into PTC, IBM, Siemens, and Jama toolchains. Engineering change management and audit-ready traceability, delivered end to end.",
     url: service.href,
     type: "website",
   },
-  twitter: { card: "summary_large_image", title: "PLM/ALM Implementation & Requirements Digitalization" },
+  twitter: {
+    card: "summary_large_image",
+    title:
+      "Digital Threading & Traceability — Engineering Change Management",
+  },
 };
 
 export default function PLMIntegrationPage() {

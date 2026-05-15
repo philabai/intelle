@@ -8,7 +8,9 @@ import { TldrCallout } from "@/components/seo/TldrCallout";
 import { FAQSection } from "@/components/seo/FAQSection";
 import { JsonLd, faqSchema, serviceSchema } from "@/lib/seo/json-ld";
 import { SECIDiagram } from "@/components/engineering/SECIDiagram";
+import { DigitalThreadDiagram } from "@/components/engineering/DigitalThreadDiagram";
 import { PlatformSpotlight } from "@/components/engineering/PlatformSpotlight";
+import { HeroBackdrop } from "@/components/ui/HeroBackdrop";
 
 type AccentKey = "blue" | "teal" | "violet";
 
@@ -77,8 +79,9 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
       </div>
 
       {/* Hero */}
-      <section className="py-16 sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden py-16 sm:py-20">
+        <HeroBackdrop variant="detail" accent={(service.accentColor ?? "blue") as "blue" | "teal" | "violet"} />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <div className="flex items-center gap-3 mb-6">
               <div className={`w-12 h-12 rounded-xl ${accent.bg} flex items-center justify-center`}>
@@ -101,6 +104,9 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
 
       {/* SECI Knowledge Spiral — Pillar 1 visual anchor (KM Strategy only) */}
       {service.seciDiagram ? <SECIDiagram /> : null}
+
+      {/* Digital Thread architecture — visual anchor for Requirements Digitalization */}
+      {service.digitalThreadDiagram ? <DigitalThreadDiagram /> : null}
 
       {/* Differentiators Strip */}
       {service.differentiators && service.differentiators.length > 0 && (

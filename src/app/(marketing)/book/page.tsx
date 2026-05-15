@@ -70,19 +70,6 @@ export default function BookPage() {
             </p>
           </div>
 
-          {/* Trust bar */}
-          <div className="mb-8 rounded-xl border border-brand-teal/20 bg-brand-teal/5 p-4 sm:p-5">
-            <p className="text-xs font-bold tracking-[0.18em] text-brand-teal mb-2">
-              FORTUNE 500 REFERENCE ENGAGEMENTS
-            </p>
-            <p className="text-sm text-foreground/85 leading-relaxed">
-              Aramco · ADNOC · Shell · Chevron · Honeywell · Baker Hughes · GE Energy
-            </p>
-            <p className="text-xs text-muted/70 mt-2">
-              No procurement gate. SOW within 48 hours of the call. Senior practitioner-led, end to end.
-            </p>
-          </div>
-
           <div className="rounded-xl border border-card-border bg-card-bg overflow-hidden h-[680px] sm:h-[760px]">
             <CalEmbed calLink={calLink} className="h-full w-full" />
           </div>

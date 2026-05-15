@@ -24,7 +24,7 @@ intelle.io delivers practitioner-grade intelligence — faster and cheaper than 
   </research_services>
   <implementation_services>
     <service id="workbench-adoption" href="/engineering/workbench-adoption">Adoption & Value Realization — Accuris Workbench, Goldfire, standards libraries</service>
-    <service id="plm-integration" href="/engineering/plm-integration">Requirements Digitalization — Teamcenter, Windchill, IBM DOORS, Codebeamer</service>
+    <service id="plm-integration" href="/engineering/plm-integration">Digital Threading & Traceability — engineering change management, standards-to-RM/PLM/ALM API connectors, MOC workflows; integrations into PTC Codebeamer, PTC Windchill, Siemens Polarion, Siemens Teamcenter, IBM DOORS, Jama Connect, IBM Maximo</service>
     <service id="knowledge-management-strategy" href="/engineering/knowledge-management-strategy">Knowledge Management Strategy — Nonaka/SECI diagnostic, KM maturity (APQC KMCAT, Kulkarni-Freeze KMCA, Siemens KMMM), peer & sector benchmarking, AI/GenAI strategy for KM (advisory)</service>
     <service id="knowledge-management-implementation" href="/engineering/knowledge-management-implementation">Knowledge Management Solutions Implementation — semantic search, GenAI / RAG, GraphRAG, Goldfire, Sinequa, Glean, OpenText</service>
     <service id="compliance-advisory" href="/engineering/compliance-advisory">Standards Advisory — multi-jurisdiction harmonization</service>

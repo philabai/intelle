@@ -138,3 +138,72 @@ html {
   font-weight: 800;
   color: var(--brand-blue);
 }
+
+/* --- HeroBackdrop animations ---
+   Three layers of motion:
+     1. Orb drift + breathing scale (visible at 20–35s cycles)
+     2. Aurora conic-gradient rotation (continuous 30s rotation)
+     3. Signal-trace dashoffset (continuous left-to-right draw, home only)
+   All transform/stroke-only — runs on the compositor thread.
+   Mobile reduces amplitude; prefers-reduced-motion disables all. */
+
+/* 1. Drift + breathing — translate AND scale combined so orbs feel alive */
+@keyframes hero-drift-slow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(80px, -60px) scale(1.12); }
+}
+@keyframes hero-drift-mid {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-95px, 70px) scale(1.1); }
+}
+@keyframes hero-drift-mid-r {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(85px, 80px) scale(1.08); }
+}
+@keyframes hero-drift-slow-r {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-70px, -90px) scale(1.14); }
+}
+.hero-drift-slow   { animation: hero-drift-slow   28s ease-in-out infinite; }
+.hero-drift-mid    { animation: hero-drift-mid    22s ease-in-out infinite; }
+.hero-drift-mid-r  { animation: hero-drift-mid-r  25s ease-in-out infinite; }
+.hero-drift-slow-r { animation: hero-drift-slow-r 30s ease-in-out infinite; }
+
+/* 2. Aurora rotation — for the slow rotating conic gradient layer */
+@keyframes hero-aurora-spin {
+  to { transform: rotate(360deg); }
+}
+.hero-aurora {
+  animation: hero-aurora-spin 32s linear infinite;
+}
+
+/* 3. Signal-trace draw — left-to-right "oscilloscope" sweep */
+@keyframes hero-trace-draw {
+  0%   { stroke-dashoffset: 1200; }
+  100% { stroke-dashoffset: 0; }
+}
+.hero-trace {
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  animation: hero-trace-draw 6s linear infinite;
+}
+
+@media (max-width: 639px) {
+  /* Reduce amplitude on phones — keeps animations alive but lowers GPU load
+     and eliminates horizontal-overflow risk on narrow viewports. */
+  @keyframes hero-drift-slow   { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(35px, -25px) scale(1.08); } }
+  @keyframes hero-drift-mid    { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-40px, 30px) scale(1.06); } }
+  @keyframes hero-drift-mid-r  { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(38px, 35px) scale(1.05); } }
+  @keyframes hero-drift-slow-r { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-30px, -38px) scale(1.08); } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-drift-slow,
+  .hero-drift-mid,
+  .hero-drift-mid-r,
+  .hero-drift-slow-r,
+  .hero-aurora,
+  .hero-trace {
+    animation: none;
+  }
+}

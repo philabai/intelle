@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Card } from "@/components/ui/Card";
+import { HeroBackdrop } from "@/components/ui/HeroBackdrop";
 import { ArticleCardThumbnail } from "@/components/insights/ArticleCardThumbnail";
 import type { Article } from "@/lib/types";
 
@@ -48,7 +49,25 @@ export default async function InsightsPage() {
   };
 
   return (
-    <section className="py-16 sm:py-20">
+    <>
+      <section className="relative overflow-hidden py-20 sm:py-24 lg:py-28">
+        <HeroBackdrop variant="teal" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest text-brand-teal mb-4">
+            Insights
+          </p>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-heading">
+            Practitioner-grade thinking.
+          </h1>
+          <p className="mt-5 text-base sm:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
+            Industrial AI, energy transition, standards, technology scouting, and the
+            mechanics of engineering research — written for the people who have to act
+            on it.
+          </p>
+        </div>
+      </section>
+
+      <section className="py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
           label="Insights"
@@ -79,5 +98,6 @@ export default async function InsightsPage() {
         )}
       </div>
     </section>
+    </>
   );
 }

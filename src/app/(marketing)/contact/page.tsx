@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { HeroBackdrop } from "@/components/ui/HeroBackdrop";
 import { SITE, RESEARCH_SERVICES, ENGINEERING_SERVICES } from "@/lib/constants";
 
 export default function ContactPage() {
@@ -47,13 +48,28 @@ export default function ContactPage() {
   const inputStyles = "w-full rounded-lg border border-card-border bg-card-bg px-4 py-3 text-sm text-foreground placeholder:text-muted/50 focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue";
 
   return (
+    <>
+    <section className="relative overflow-hidden py-20 sm:py-24 lg:py-28">
+      <HeroBackdrop variant="blue" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+        <p className="text-sm font-semibold uppercase tracking-widest text-brand-blue mb-4">
+          Contact
+        </p>
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-heading">
+          Get in touch.
+        </h1>
+        <p className="mt-5 text-base sm:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
+          Tell us about your needs and we&apos;ll scope a bespoke engagement. Senior
+          practitioner-led, end to end.
+        </p>
+      </div>
+    </section>
+
     <section className="py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Form */}
           <div className="lg:col-span-2">
-            <h1 className="text-3xl font-bold text-heading mb-2">Get in Touch</h1>
-            <p className="text-muted mb-8">Tell us about your needs and we&apos;ll scope a bespoke engagement.</p>
 
             {status === "success" ? (
               <div className="p-6 rounded-xl bg-brand-teal/10 border border-brand-teal/20 text-center">
@@ -158,5 +174,6 @@ export default function ContactPage() {
         </div>
       </div>
     </section>
+    </>
   );
 }

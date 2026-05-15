@@ -3,6 +3,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Card } from "@/components/ui/Card";
 import { GradientText } from "@/components/ui/GradientText";
 import { Button } from "@/components/ui/Button";
+import { HeroBackdrop } from "@/components/ui/HeroBackdrop";
 import { SITE } from "@/lib/constants";
 import { JsonLd, personSchema } from "@/lib/seo/json-ld";
 
@@ -167,8 +168,9 @@ export default function AboutPage() {
         })}
       />
       {/* Hero */}
-      <section className="py-16 sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden py-16 sm:py-20">
+        <HeroBackdrop variant="teal" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-widest text-brand-teal mb-4">
               About Us

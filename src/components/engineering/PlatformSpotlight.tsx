@@ -69,20 +69,21 @@ export function PlatformSpotlight({ spotlight }: { spotlight: Spotlight }) {
         </div>
       )}
 
-      {/* Goldfire Chat sub-section */}
-      {spotlight.chat && (
+      {/* Optional addon sub-section (e.g., GenAI Layer on KM, Integration Layer on
+          Requirements Digitalization). Badge label is per-service. */}
+      {spotlight.addon && (
         <div className="mt-10 pt-8 border-t border-brand-teal/20">
           <div className="flex items-center gap-2 mb-3">
             <span className="inline-flex h-6 px-2 items-center justify-center rounded-full bg-brand-blue/20 text-brand-blue text-[10px] font-bold uppercase tracking-wider">
-              GenAI Layer
+              {spotlight.addon.badge ?? "Add-on"}
             </span>
           </div>
           <h4 className="text-xl sm:text-2xl font-bold text-heading mb-2">
-            {spotlight.chat.title}
+            {spotlight.addon.title}
           </h4>
-          <p className="text-foreground/90 mb-5">{spotlight.chat.subtitle}</p>
+          <p className="text-foreground/90 mb-5">{spotlight.addon.subtitle}</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {spotlight.chat.capabilities.map((cap) => (
+            {spotlight.addon.capabilities.map((cap) => (
               <div
                 key={cap.title}
                 className="rounded-xl border border-card-border bg-card-bg/60 p-5"

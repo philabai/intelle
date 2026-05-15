@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { GradientText } from "@/components/ui/GradientText";
 import { TldrCallout } from "@/components/seo/TldrCallout";
 import { FAQSection } from "@/components/seo/FAQSection";
+import { HeroBackdrop } from "@/components/ui/HeroBackdrop";
 import { JsonLd, faqSchema, serviceSchema } from "@/lib/seo/json-ld";
 
 export function ResearchServiceDetail({ service }: { service: ServiceCategory }) {
@@ -27,8 +28,9 @@ export function ResearchServiceDetail({ service }: { service: ServiceCategory })
       </div>
 
       {/* Hero */}
-      <section className="py-16 sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden py-16 sm:py-20">
+        <HeroBackdrop variant="detail" accent="teal" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-xl bg-brand-teal/10 flex items-center justify-center">
