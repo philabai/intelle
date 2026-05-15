@@ -148,12 +148,9 @@ export function DigitalThreadDiagram() {
           </div>
         </div>
 
-        {/* Down arrow to Layer 3 — labelled as the integrator layer */}
+        {/* Down arrow to Layer 3 */}
         <div className="flex flex-col items-center my-4" aria-hidden>
           <Arrow className="h-6 w-6 text-brand-blue/60" />
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-blue mt-2">
-            The connector layer · engineered by intelle.io
-          </p>
         </div>
 
         {/* Layer 3 — Destination engineering systems */}
