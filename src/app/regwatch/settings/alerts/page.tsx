@@ -43,7 +43,10 @@ export default async function AlertsPage() {
           </p>
         </header>
 
-        <AlertPrefsForm initial={initial} />
+        <AlertPrefsForm
+          initial={initial}
+          vapidPublicKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null}
+        />
       </div>
     </RegwatchAppShell>
   );

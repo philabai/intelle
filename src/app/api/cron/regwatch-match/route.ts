@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { runMatchPipeline } from "@/lib/regwatch/match-pipeline";
+import { runPushPipeline } from "@/lib/regwatch/push-pipeline";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,6 +32,12 @@ export async function GET(request: Request) {
   );
   const footprintId = url.searchParams.get("footprint") ?? undefined;
 
-  const result = await runMatchPipeline({ itemsSinceDays, footprintId });
-  return NextResponse.json({ ok: true, ...result });
+  const matchResult = await runMatchPipeline({ itemsSinceDays, footprintId });
+
+  // After matching, run the push fanout for any new critical matches. Silent
+  // no-op when VAPID isn't configured; never let push failures fail the
+  // match cron itself.
+  const pushResult = await runPushPipeline();
+
+  return NextResponse.json({ ok: true, match: matchResult, push: pushResult });
 }

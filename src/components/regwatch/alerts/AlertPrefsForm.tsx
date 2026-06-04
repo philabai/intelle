@@ -3,12 +3,14 @@
 import { useState, useTransition } from "react";
 import { saveAlertPrefs, sendTestDigestNow } from "@/lib/regwatch/alerts-actions";
 import type { UserAlertPrefs } from "@/lib/regwatch/alerts";
+import { WebPushSubscribe } from "./WebPushSubscribe";
 
 interface Props {
   initial: UserAlertPrefs;
+  vapidPublicKey: string | null;
 }
 
-export function AlertPrefsForm({ initial }: Props) {
+export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
   const [emailFrequency, setEmailFrequency] = useState(initial.emailFrequency);
   const [emailCriticalOnly, setEmailCriticalOnly] = useState(initial.emailCriticalOnly);
   const [webPushEnabled, setWebPushEnabled] = useState(initial.webPushEnabled);
@@ -165,21 +167,17 @@ export function AlertPrefsForm({ initial }: Props) {
       </section>
 
       <section className="rounded-xl border border-card-border bg-card-bg/40 p-5 sm:p-6">
-        <header className="flex items-baseline justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">
-              Web push
-            </h2>
-            <p className="mt-1 text-xs text-muted">
-              Browser notifications for critical-severity matches. Capped at 3 per 24h
-              to prevent fatigue. Phase 1.7 wires the actual service worker; for now
-              this toggle just records your intent.
-            </p>
-          </div>
-          <span className="rounded-full bg-muted/20 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-muted">
-            Coming Phase 1.7
-          </span>
+        <header>
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            Web push
+          </h2>
+          <p className="mt-1 text-xs text-muted">
+            Browser notifications for critical-severity matches. Capped at 3 per 24h
+            to prevent fatigue. Subscribe per browser — the same account can be
+            subscribed on multiple devices.
+          </p>
         </header>
+
         <label className="mt-4 flex cursor-pointer items-start gap-2 rounded-lg border border-card-border bg-card-bg p-3">
           <input
             type="checkbox"
@@ -189,14 +187,19 @@ export function AlertPrefsForm({ initial }: Props) {
           />
           <div>
             <p className="text-sm font-medium text-foreground">
-              Enable web-push (CRITICAL only)
+              I want browser pushes for CRITICAL matches
             </p>
             <p className="text-xs text-muted">
-              Saves the preference. We&apos;ll prompt for browser permission when
-              Phase 1.7 ships.
+              Saves the preference. Use the Subscribe button below to grant browser
+              permission and register this device. The match cron fans out pushes
+              automatically when new critical items land.
             </p>
           </div>
         </label>
+
+        <div className="mt-4 border-t border-card-border pt-4">
+          <WebPushSubscribe vapidPublicKey={vapidPublicKey} />
+        </div>
       </section>
 
       <section className="rounded-xl border border-card-border bg-card-bg/40 p-5 sm:p-6">
