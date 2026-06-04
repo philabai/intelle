@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { RegwatchLogo } from "./Logo";
+import { NotificationBell } from "./NotificationBell";
 
 /**
  * RegWatch's internal app nav — distinct from the main intelle.io SiteNav
  * which renders on marketing pages. Four global affordances per A.3 IA:
- * Browse / Search / Feed / Saved + account menu. Notification bell and Iris
- * launcher land in Phase 1.
+ * Browse / Search / Feed / Saved + Footprint + bell + account button.
  */
 export function RegwatchNav({ authed }: { authed: boolean }) {
   return (
@@ -30,6 +30,7 @@ export function RegwatchNav({ authed }: { authed: boolean }) {
           >
             ← intelle.io
           </Link>
+          {authed && <NotificationBell authed={authed} />}
           {authed ? (
             <Link
               href="/regwatch/settings/account"
