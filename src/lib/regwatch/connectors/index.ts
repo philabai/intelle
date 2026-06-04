@@ -2,7 +2,7 @@ import type { Connector } from "./types";
 import { FEDERAL_REGISTER_CONNECTORS } from "./federal-register";
 import { EUR_LEX_CONNECTORS } from "./eur-lex";
 import { GOVUK_CONNECTORS } from "./govuk-scraper";
-import { IMO_SCRAPER } from "./imo-scraper";
+import { IMO_CONNECTORS } from "./imo-scraper";
 
 /**
  * Registry of every connector RegWatch knows about. The crawl orchestrator
@@ -21,7 +21,7 @@ export const REGWATCH_CONNECTORS: Connector[] = [
   ...FEDERAL_REGISTER_CONNECTORS,
   ...EUR_LEX_CONNECTORS,
   ...GOVUK_CONNECTORS,
-  IMO_SCRAPER,
+  ...IMO_CONNECTORS,
 ];
 
 export function findConnector(id: string): Connector | undefined {
