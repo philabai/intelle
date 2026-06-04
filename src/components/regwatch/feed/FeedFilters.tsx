@@ -38,6 +38,7 @@ export function FeedFilters({ counts }: Props) {
   const sort = params.get("sort") ?? "score";
   const severity = params.get("severity") ?? "";
   const showResolved = params.get("show_resolved") === "1";
+  const assignedToMe = params.get("assigned_to_me") === "1";
 
   function update(key: string, value: string) {
     const next = new URLSearchParams(params.toString());
@@ -53,6 +54,7 @@ export function FeedFilters({ counts }: Props) {
         <Pill label="High" count={counts.high} active={severity === "high"} onClick={() => update("severity", severity === "high" ? "" : "high")} tone="high" />
         <Pill label="Normal" count={counts.normal} active={severity === "normal"} onClick={() => update("severity", severity === "normal" ? "" : "normal")} tone="normal" />
         <Pill label="Resolved" count={counts.resolved} active={showResolved} onClick={() => update("show_resolved", showResolved ? "" : "1")} tone="muted" />
+        <Pill label="Assigned to me" count={null} active={assignedToMe} onClick={() => update("assigned_to_me", assignedToMe ? "" : "1")} tone="normal" />
       </div>
       <div className="flex items-center gap-2">
         <label className="flex items-center gap-2 text-xs text-muted">
@@ -96,7 +98,7 @@ function Pill({
   tone,
 }: {
   label: string;
-  count: number;
+  count: number | null;
   active: boolean;
   onClick: () => void;
   tone: "critical" | "high" | "normal" | "muted";
@@ -118,7 +120,9 @@ function Pill({
       }`}
     >
       <span>{label}</span>
-      <span className="font-mono text-[10px] text-muted">{count}</span>
+      {count !== null && (
+        <span className="font-mono text-[10px] text-muted">{count}</span>
+      )}
     </button>
   );
 }

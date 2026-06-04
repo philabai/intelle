@@ -8,15 +8,22 @@ import type { FeedItem } from "@/lib/regwatch/feed-queries";
 import { markSeen, markResolved, undoResolved } from "@/lib/regwatch/feed-actions";
 import { generateBriefing } from "@/lib/regwatch/briefing-actions";
 import { FootprintScoreChip } from "./FootprintScoreChip";
+import { AssigneeSelect } from "./AssigneeSelect";
 import { StatusChip } from "@/components/regwatch/StatusChip";
 import { InstrumentTypeBadge } from "@/components/regwatch/InstrumentTypeBadge";
 import { topicLabel } from "@/lib/regwatch/taxonomy";
 
-interface Props {
-  feedItem: FeedItem;
+interface AssigneeOption {
+  userId: string;
+  displayName: string;
 }
 
-export function FeedRow({ feedItem: f }: Props) {
+interface Props {
+  feedItem: FeedItem;
+  assigneeOptions?: AssigneeOption[];
+}
+
+export function FeedRow({ feedItem: f, assigneeOptions = [] }: Props) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const [seenAt, setSeenAt] = useState(f.seen_at);
@@ -164,6 +171,15 @@ export function FeedRow({ feedItem: f }: Props) {
                   <li key={idx}>· {w}</li>
                 ))}
               </ul>
+            </div>
+          )}
+          {assigneeOptions.length > 0 && (
+            <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+              <AssigneeSelect
+                matchId={f.match_id}
+                options={assigneeOptions}
+                initialAssigneeId={f.assigned_to}
+              />
             </div>
           )}
           <div className="mt-4 flex flex-wrap gap-2">

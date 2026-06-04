@@ -8,6 +8,7 @@ import {
   listApproachingDeadlines,
   type FeedSort,
 } from "@/lib/regwatch/feed-queries";
+import { listAssigneeOptions } from "@/lib/regwatch/members";
 import type { Severity } from "@/lib/regwatch/match";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { DeadlineStrip } from "@/components/regwatch/feed/DeadlineStrip";
@@ -39,6 +40,7 @@ export default async function FeedPage({ searchParams }: Props) {
   const sort = (pick(raw, "sort") as FeedSort) ?? "score";
   const severity = (pick(raw, "severity") as Severity) ?? undefined;
   const showResolved = pick(raw, "show_resolved") === "1";
+  const assignedToMe = pick(raw, "assigned_to_me") === "1";
 
   const supabase = await createClient();
   const {
@@ -46,18 +48,21 @@ export default async function FeedPage({ searchParams }: Props) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/regwatch/login?next=/regwatch/feed");
 
-  const [org, footprint, counts, items, deadlineItems] = await Promise.all([
-    getMyOrganization(),
-    getMyFootprint(),
-    getMyFeedCounts(),
-    listMyFeed({
-      sort: VALID_SORTS.includes(sort) ? sort : "score",
-      severity: severity && VALID_SEVERITIES.includes(severity) ? severity : undefined,
-      hideResolved: !showResolved,
-      limit: 100,
-    }),
-    listApproachingDeadlines(),
-  ]);
+  const [org, footprint, counts, items, deadlineItems, assigneeOptions] =
+    await Promise.all([
+      getMyOrganization(),
+      getMyFootprint(),
+      getMyFeedCounts(),
+      listMyFeed({
+        sort: VALID_SORTS.includes(sort) ? sort : "score",
+        severity: severity && VALID_SEVERITIES.includes(severity) ? severity : undefined,
+        hideResolved: !showResolved,
+        assignedToMe,
+        limit: 100,
+      }),
+      listApproachingDeadlines(),
+      listAssigneeOptions(),
+    ]);
 
   const hasFootprint = !!footprint?.is_configured;
   const today = new Date().toLocaleDateString("en-GB", {
@@ -106,7 +111,13 @@ export default async function FeedPage({ searchParams }: Props) {
                 toggle Resolved.
               </p>
             ) : (
-              items.map((item) => <FeedRow key={item.match_id} feedItem={item} />)
+              items.map((item) => (
+                <FeedRow
+                  key={item.match_id}
+                  feedItem={item}
+                  assigneeOptions={assigneeOptions}
+                />
+              ))
             )}
           </div>
         )}

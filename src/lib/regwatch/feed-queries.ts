@@ -52,6 +52,10 @@ export interface FeedQueryFilters {
   sort?: FeedSort;
   severity?: Severity;
   hideResolved?: boolean;
+  /** When set, restricts to matches assigned to this user_id. */
+  assignedToUserId?: string;
+  /** Shortcut — restricts to matches assigned to the calling user. */
+  assignedToMe?: boolean;
   limit?: number;
 }
 
@@ -67,6 +71,15 @@ export async function listMyFeed(
 
   if (filters.severity) query = query.eq("severity", filters.severity);
   if (filters.hideResolved !== false) query = query.is("resolved_at", null);
+
+  if (filters.assignedToMe) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) query = query.eq("assigned_to", user.id);
+  } else if (filters.assignedToUserId) {
+    query = query.eq("assigned_to", filters.assignedToUserId);
+  }
 
   switch (filters.sort ?? "score") {
     case "score":
