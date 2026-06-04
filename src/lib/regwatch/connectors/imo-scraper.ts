@@ -7,6 +7,14 @@ import type {
 import { citationSlug } from "./types";
 
 /**
+ * PARTIALLY WORKING — deferred polish for Phase 1.5. The IMO MEPC index page
+ * appears partly client-side rendered; the static HTML we fetch surfaces only
+ * ~1 resolution match, so the INT corpus column is stuck near the seed count.
+ *
+ * Fix planned: scrape an older static XML index if one exists, otherwise add
+ * a tiny headless renderer for this single page. See project memory
+ * `regwatch-phase15-eurlex-imo-fix`.
+ *
  * IMO MEPC + MSC Resolutions screen scraper.
  *
  * The IMO does not publish a REST API for resolutions. This connector hits the

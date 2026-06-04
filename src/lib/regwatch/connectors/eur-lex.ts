@@ -8,6 +8,15 @@ import type {
 import { citationSlug } from "./types";
 
 /**
+ * KNOWN BROKEN — deferred for Phase 1.5 fix. The Atom URL assembled below
+ * returns malformed XML from eur-lex.europa.eu, so the parser extracts 0
+ * entries. EU column on /regwatch/browse stuck at the 6 seed items.
+ *
+ * Fix planned: migrate to the CELLAR SPARQL endpoint at
+ * https://publications.europa.eu/webapi/rdf/sparql (keyless JSON, supports
+ * topic + date filters cleanly). ~80 lines per connector. See project memory
+ * `regwatch-phase15-eurlex-imo-fix`.
+ *
  * EUR-Lex connector — uses the EUR-Lex public search webservice (Atom feed)
  * to discover recent CELEX-numbered acts under selected EuroVoc topics.
  *

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { saveFootprint, updateMyRole } from "@/lib/regwatch/footprint-actions";
+import { rematchMyFootprint } from "@/lib/regwatch/feed-actions";
 import { RolePicker } from "./RolePicker";
 import { GeographyPicker } from "./GeographyPicker";
 import { ActivitiesPicker } from "./ActivitiesPicker";
@@ -77,7 +78,13 @@ export function FootprintForm({
         setMessage({ kind: "error", text: res.error ?? "Could not save" });
         return;
       }
-      setMessage({ kind: "ok", text: "Saved." });
+      setMessage({ kind: "ok", text: "Saved. Rescoring your Feed…" });
+      // Fire-and-forget — the user shouldn't wait for the matcher to finish
+      // before being redirected. The Feed page revalidates server-side once
+      // the action completes, so a subsequent navigation shows fresh matches.
+      rematchMyFootprint().catch(() => {
+        /* non-fatal — the next match cron will pick it up */
+      });
       router.push(redirectTo);
       router.refresh();
     });
