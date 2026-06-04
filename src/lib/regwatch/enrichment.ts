@@ -1,0 +1,163 @@
+import { z } from "zod";
+import { getAnthropic } from "@/lib/anthropic/client";
+import { ENRICHMENT_MODEL } from "@/lib/regwatch/anthropic/models";
+import { createServiceClient } from "@/lib/regwatch/supabase/service";
+import { TOPIC_TAXONOMY } from "@/lib/regwatch/taxonomy";
+
+/**
+ * Claude Haiku enrichment. Reads `enrichment_status = 'pending'` rows in
+ * batches, asks Claude to extract topics / substances / NAICS codes / a clean
+ * summary from the regulator-emitted title + body, then writes back and
+ * flips status to 'enriched'.
+ *
+ * Voyage AI embeddings come in a separate pass (Phase 1.3.x) since they
+ * require API key separately from Anthropic. The embedding column is left
+ * NULL until then; FTS keeps the Search surface honest in the meantime.
+ */
+
+const TOPIC_VALUES = TOPIC_TAXONOMY.map((t) => t.value);
+
+const enrichmentResultSchema = z.object({
+  topics: z.array(z.enum(TOPIC_VALUES as [string, ...string[]])).max(8),
+  substances_cas: z
+    .array(z.string().regex(/^\d{1,7}-\d{2}-\d$/))
+    .max(20),
+  naics_codes: z.array(z.string().regex(/^\d{2,6}$/)).max(20),
+  clean_summary: z.string().max(800),
+});
+
+type EnrichmentResult = z.infer<typeof enrichmentResultSchema>;
+
+const SYSTEM_PROMPT = `You enrich regulatory item metadata for intelle.io RegWatch.
+
+Given a regulator-published regulation's title + body, extract:
+- topics: the most relevant RegWatch topic tags (max 5 from the allowed list)
+- substances_cas: CAS numbers explicitly mentioned (verbatim, no inference)
+- naics_codes: NAICS-2022 codes that obviously apply (max 8, 2-6 digit codes)
+- clean_summary: a single plain-English paragraph (max 600 chars) summarising the regulation
+
+Be conservative. Do not invent CAS numbers or NAICS codes. If the body is sparse, return short lists.
+
+Allowed topic values: ${TOPIC_VALUES.join(", ")}.
+
+Respond with ONLY a JSON object matching this schema (no markdown, no preamble):
+{
+  "topics": string[],
+  "substances_cas": string[],
+  "naics_codes": string[],
+  "clean_summary": string
+}`;
+
+export interface EnrichmentRunResult {
+  considered: number;
+  enriched: number;
+  failed: number;
+  errors: string[];
+}
+
+export async function runEnrichmentBatch(
+  batchSize = 8,
+): Promise<EnrichmentRunResult> {
+  const result: EnrichmentRunResult = {
+    considered: 0,
+    enriched: 0,
+    failed: 0,
+    errors: [],
+  };
+  const supabase = createServiceClient();
+
+  const { data: pending, error } = await supabase
+    .from("regulatory_items")
+    .select("id, title, citation, summary, body_text, jurisdiction_code")
+    .eq("enrichment_status", "pending")
+    .order("ingested_at", { ascending: true })
+    .limit(batchSize);
+
+  if (error) {
+    result.errors.push(`pending query: ${error.message}`);
+    return result;
+  }
+  const rows = pending ?? [];
+  result.considered = rows.length;
+  if (rows.length === 0) return result;
+
+  const anthropic = getAnthropic();
+
+  for (const row of rows) {
+    try {
+      const userMessage = `Title: ${row.title}
+Citation: ${row.citation}
+Jurisdiction: ${row.jurisdiction_code}
+Existing summary: ${row.summary ?? "(none)"}
+Body excerpt:
+${(row.body_text ?? "").slice(0, 4000)}`;
+
+      const message = await anthropic.messages.create({
+        model: ENRICHMENT_MODEL,
+        max_tokens: 600,
+        system: [
+          {
+            type: "text",
+            text: SYSTEM_PROMPT,
+            cache_control: { type: "ephemeral" },
+          },
+        ],
+        messages: [{ role: "user", content: userMessage }],
+      });
+
+      const text =
+        message.content[0]?.type === "text" ? message.content[0].text : "";
+      let parsed: EnrichmentResult;
+      try {
+        const obj = JSON.parse(text);
+        parsed = enrichmentResultSchema.parse(obj);
+      } catch (e) {
+        result.failed += 1;
+        result.errors.push(
+          `parse ${row.citation}: ${(e as Error).message}`,
+        );
+        await markFailed(supabase, row.id);
+        continue;
+      }
+
+      const { error: updateError } = await supabase
+        .from("regulatory_items")
+        .update({
+          topics: parsed.topics,
+          substances_cas: parsed.substances_cas,
+          naics_codes: parsed.naics_codes,
+          summary: parsed.clean_summary || row.summary,
+          enrichment_status: "enriched",
+          enrichment_metadata: {
+            model: ENRICHMENT_MODEL,
+            enriched_at: new Date().toISOString(),
+            input_usage: message.usage,
+          },
+        })
+        .eq("id", row.id);
+
+      if (updateError) {
+        result.failed += 1;
+        result.errors.push(`update ${row.citation}: ${updateError.message}`);
+        continue;
+      }
+      result.enriched += 1;
+    } catch (e) {
+      result.failed += 1;
+      result.errors.push(`anthropic ${row.citation}: ${(e as Error).message}`);
+      await markFailed(supabase, row.id);
+    }
+  }
+
+  return result;
+}
+
+async function markFailed(
+  supabase: ReturnType<typeof createServiceClient>,
+  id: string,
+) {
+  await supabase
+    .from("regulatory_items")
+    .update({ enrichment_status: "failed" })
+    .eq("id", id);
+}

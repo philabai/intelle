@@ -4,6 +4,7 @@ import { getAnthropic } from "@/lib/anthropic/client";
 import { buildSystemPrompt } from "@/lib/chat/system-prompt";
 import { IRIS_TOOLS, type CaptureEmailInput } from "@/lib/chat/tools";
 import { createServiceClient } from "@/lib/supabase/service";
+import { sendBrevoEmail } from "@/lib/email/brevo";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -79,60 +80,42 @@ async function notifySeniorPractitionerOfLead(
   }
 
   // Leg 2 — notify via Brevo (NON-fatal on failure; lead is already saved)
-  const brevoKey = process.env.BREVO_API_KEY;
-  if (!brevoKey) {
-    console.warn("[iris] BREVO_API_KEY not set — lead saved but no email sent");
-    return;
-  }
-
   const adminEmail =
     process.env.ADMIN_EMAIL?.trim() || "arnab@intelle.io";
   const senderEmail =
     process.env.BREVO_SENDER_EMAIL?.trim() || adminEmail;
 
-  const subject = `New Iris lead: ${input.email}`;
-  const html = `
-    <h2>New lead from Iris (intelle.io chat)</h2>
-    <p><strong>Email:</strong> <a href="mailto:${input.email}">${input.email}</a></p>
-    ${input.name ? `<p><strong>Name:</strong> ${input.name}</p>` : ""}
-    ${input.company ? `<p><strong>Company:</strong> ${input.company}</p>` : ""}
-    <p><strong>Context:</strong> ${input.context}</p>
-    ${sourceUrl ? `<p><strong>From page:</strong> ${sourceUrl}</p>` : ""}
-    <hr/>
-    <p style="color:#666;font-size:12px;">Also in /admin/contacts. Reply directly to the visitor by clicking the email link above.</p>
-  `;
+  const result = await sendBrevoEmail({
+    to: [{ email: adminEmail }],
+    sender: { name: "intelle.io · Iris", email: senderEmail },
+    replyTo: { email: input.email, name: input.name ?? "Iris lead" },
+    subject: `New Iris lead: ${input.email}`,
+    htmlContent: `
+      <h2>New lead from Iris (intelle.io chat)</h2>
+      <p><strong>Email:</strong> <a href="mailto:${input.email}">${input.email}</a></p>
+      ${input.name ? `<p><strong>Name:</strong> ${input.name}</p>` : ""}
+      ${input.company ? `<p><strong>Company:</strong> ${input.company}</p>` : ""}
+      <p><strong>Context:</strong> ${input.context}</p>
+      ${sourceUrl ? `<p><strong>From page:</strong> ${sourceUrl}</p>` : ""}
+      <hr/>
+      <p style="color:#666;font-size:12px;">Also in /admin/contacts. Reply directly to the visitor by clicking the email link above.</p>
+    `,
+  });
 
-  try {
-    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
-      method: "POST",
-      headers: {
-        "api-key": brevoKey,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        sender: { name: "intelle.io · Iris", email: senderEmail },
-        replyTo: { email: input.email, name: input.name ?? "Iris lead" },
-        to: [{ email: adminEmail }],
-        subject,
-        htmlContent: html,
-      }),
-    });
-
-    if (!res.ok) {
-      const body = await res.text();
+  // Don't throw on Brevo failure — lead is already saved.
+  if (!result.ok) {
+    if (result.reason === "no-api-key") {
+      console.warn("[iris] BREVO_API_KEY not set — lead saved but no email sent");
+    } else if (result.reason === "http-error") {
       console.error("[iris] Brevo API error:", {
-        status: res.status,
-        statusText: res.statusText,
-        body,
+        status: result.status,
+        body: result.body,
         sender: senderEmail,
         recipient: adminEmail,
       });
-      // Don't throw — lead is already saved.
+    } else {
+      console.error("[iris] Brevo fetch threw:", result.error);
     }
-  } catch (e) {
-    console.error("[iris] Brevo fetch threw:", e);
-    // Don't throw — lead is already saved.
   }
 }
 

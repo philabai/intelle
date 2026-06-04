@@ -3,6 +3,24 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const ADMIN_ROLES = new Set(["admin", "content_admin", "researcher"]);
 
+// RegWatch-protected subpaths. Everything else under /regwatch/* (including
+// /regwatch itself, /regwatch/browse, /regwatch/search, /regwatch/r/*,
+// /regwatch/regulator/*, /regwatch/topic/*, /regwatch/examples, /regwatch/recap,
+// /regwatch/checkup, /regwatch/login, /regwatch/signup) is public.
+const REGWATCH_PROTECTED_PREFIXES = [
+  "/regwatch/feed",
+  "/regwatch/saved",
+  "/regwatch/onboarding",
+  "/regwatch/settings",
+  "/regwatch/briefing",
+];
+
+function isRegwatchProtected(pathname: string): boolean {
+  return REGWATCH_PROTECTED_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -35,6 +53,9 @@ export async function updateSession(request: NextRequest) {
   const isAdminRoute = path.startsWith("/admin");
   const isDashboardRoute = path.startsWith("/dashboard");
   const isAuthRoute = path.startsWith("/auth");
+  const isRegwatchAuthRoute =
+    path === "/regwatch/login" || path === "/regwatch/signup";
+  const isRegwatchProtectedRoute = isRegwatchProtected(path);
 
   const role = user?.app_metadata?.role as string | undefined;
 
@@ -68,6 +89,21 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     const effective = role ?? "admin";
     url.pathname = ADMIN_ROLES.has(effective) ? "/admin" : "/dashboard";
+    return NextResponse.redirect(url);
+  }
+
+  // RegWatch — protected subpaths require any authenticated user
+  if (isRegwatchProtectedRoute && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/regwatch/login";
+    url.searchParams.set("next", path);
+    return NextResponse.redirect(url);
+  }
+
+  // RegWatch — authed users on /regwatch/login or /regwatch/signup go to /regwatch/feed
+  if (isRegwatchAuthRoute && user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/regwatch/feed";
     return NextResponse.redirect(url);
   }
 

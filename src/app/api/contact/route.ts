@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createServiceClient } from "@/lib/supabase/service";
+import { sendBrevoEmail } from "@/lib/email/brevo";
 
 const contactSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -12,43 +13,17 @@ const contactSchema = z.object({
   source_page: z.string().optional(),
 });
 
-async function sendBrevoEmail({
-  to,
-  subject,
-  htmlContent,
-}: {
-  to: { email: string; name?: string }[];
-  subject: string;
-  htmlContent: string;
-}) {
-  const apiKey = process.env.BREVO_API_KEY;
-  if (!apiKey) {
-    console.warn("BREVO_API_KEY not set — skipping email");
+function logBrevoResult(label: string, result: Awaited<ReturnType<typeof sendBrevoEmail>>) {
+  if (result.ok) return;
+  if (result.reason === "no-api-key") {
+    console.warn(`[${label}] BREVO_API_KEY not set — skipping email`);
     return;
   }
-
-  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
-    method: "POST",
-    headers: {
-      "api-key": apiKey,
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify({
-      sender: {
-        name: "intelle.io",
-        email: process.env.ADMIN_EMAIL || "hello@intelle.io",
-      },
-      to,
-      subject,
-      htmlContent,
-    }),
-  });
-
-  if (!res.ok) {
-    const errorBody = await res.text();
-    console.error("Brevo API error:", res.status, errorBody);
+  if (result.reason === "http-error") {
+    console.error(`[${label}] Brevo API error:`, result.status, result.body);
+    return;
   }
+  console.error(`[${label}] Brevo fetch threw:`, result.error);
 }
 
 export async function POST(request: Request) {
@@ -81,7 +56,7 @@ export async function POST(request: Request) {
 
     // Send admin notification email
     const adminEmail = process.env.ADMIN_EMAIL || "hello@intelle.io";
-    await sendBrevoEmail({
+    const adminResult = await sendBrevoEmail({
       to: [{ email: adminEmail, name: "intelle.io Team" }],
       subject: `New Contact: ${data.name}${data.company ? ` (${data.company})` : ""}`,
       htmlContent: `
@@ -97,9 +72,10 @@ export async function POST(request: Request) {
         <p style="margin-top: 16px; color: #666; font-size: 12px;">Submitted from ${data.source_page || "contact page"}</p>
       `,
     });
+    logBrevoResult("contact:admin", adminResult);
 
     // Send confirmation to the submitter
-    await sendBrevoEmail({
+    const confirmResult = await sendBrevoEmail({
       to: [{ email: data.email, name: data.name }],
       subject: "Thank you for contacting intelle.io",
       htmlContent: `
@@ -110,6 +86,7 @@ export async function POST(request: Request) {
         <p>Best regards,<br><strong>intelle.io Team</strong><br>SparkLab LLC | Dubai, UAE</p>
       `,
     });
+    logBrevoResult("contact:confirm", confirmResult);
 
     return NextResponse.json({ success: true });
   } catch (err) {

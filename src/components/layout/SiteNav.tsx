@@ -103,7 +103,10 @@ export function SiteNav() {
             })}
           </div>
 
-          <div className="hidden lg:block">
+          <div className="hidden lg:flex items-center gap-2">
+            <Button href="/regwatch" size="sm" variant="outline">
+              RegWatch
+            </Button>
             <Button href="/book" size="sm">
               Book a Call
             </Button>
@@ -172,7 +175,10 @@ export function SiteNav() {
                   ))}
               </div>
             ))}
-            <div className="mt-4 px-3">
+            <div className="mt-4 px-3 flex flex-col gap-2">
+              <Button href="/regwatch" size="sm" variant="outline" className="w-full">
+                RegWatch
+              </Button>
               <Button href="/book" size="sm" className="w-full">
                 Book a Call
               </Button>
