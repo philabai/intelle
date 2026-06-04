@@ -17,6 +17,11 @@ export function RegwatchNav({ authed }: { authed: boolean }) {
           <RegwatchNavLink href="/regwatch/search">Search</RegwatchNavLink>
           {authed && <RegwatchNavLink href="/regwatch/feed">My Feed</RegwatchNavLink>}
           {authed && <RegwatchNavLink href="/regwatch/saved">Saved</RegwatchNavLink>}
+          {authed && (
+            <RegwatchNavLink href="/regwatch/settings/footprint">
+              Footprint
+            </RegwatchNavLink>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <Link

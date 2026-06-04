@@ -91,8 +91,8 @@ export default async function FootprintSettingsPage() {
               (r as unknown as { jurisdiction_code: string }).jurisdiction_code,
             region: (r as unknown as { region: string }).region,
           }))}
-          submitLabel="Save footprint"
-          redirectTo="/regwatch/settings/footprint"
+          submitLabel="Save and view my Feed →"
+          redirectTo="/regwatch/feed"
         />
       </div>
     </RegwatchAppShell>
