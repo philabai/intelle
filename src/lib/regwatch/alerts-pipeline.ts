@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/regwatch/supabase/service";
-import { sendBrevoEmail } from "@/lib/email/brevo";
-import { buildDigest, type DigestMatch } from "./alerts-digest";
+import { createClient } from "@/lib/regwatch/supabase/server";
+import { sendBrevoEmail, type SendBrevoEmailResult } from "@/lib/email/brevo";
+import { buildDigest, type DigestMatch, type DigestPayload } from "./alerts-digest";
 import type { Severity } from "./match";
 
 /**
@@ -263,4 +264,336 @@ export async function runAlertDigest(
 
   result.duration_ms = Date.now() - started;
   return result;
+}
+
+// ============================================================================
+// Single-user helpers — used by the alerts page Preview + Send-test buttons
+// so users can validate end-to-end without waiting for the scheduled cron.
+// ============================================================================
+
+interface SingleUserPullResult {
+  digest: DigestPayload | null;
+  matchCount: number;
+  /** Item ids included in the digest; used by the test-send to write deliveries. */
+  itemIds: string[];
+  diagnostics: {
+    pulled: number;
+    afterCriticalGate: number;
+    afterDedup: number;
+    capped: number;
+  };
+}
+
+interface SingleUserPullOptions {
+  mode: DigestMode;
+  /** When true, applies user's critical_only pref (or critical=true default). */
+  applyCriticalOnly?: boolean;
+  /** When true, drops items the user has already received via email. */
+  dedupAgainstDeliveries: boolean;
+}
+
+/**
+ * Pulls the digest payload for the SSR-authed user. Used by both the Preview
+ * (no send) and the Send-test buttons. Bypasses RLS via the service-role
+ * client AFTER the SSR client has confirmed which user is calling.
+ */
+async function pullDigestForCurrentUser(
+  options: SingleUserPullOptions,
+): Promise<SingleUserPullResult> {
+  const diagnostics = {
+    pulled: 0,
+    afterCriticalGate: 0,
+    afterDedup: 0,
+    capped: 0,
+  };
+  const empty: SingleUserPullResult = {
+    digest: null,
+    matchCount: 0,
+    itemIds: [],
+    diagnostics,
+  };
+
+  const ssr = await createClient();
+  const {
+    data: { user },
+  } = await ssr.auth.getUser();
+  if (!user) return empty;
+
+  // Find the user's org via RLS (one row visible).
+  const { data: membership } = await ssr
+    .from("organization_members")
+    .select("organization_id")
+    .limit(1)
+    .maybeSingle();
+  if (!membership) return empty;
+  const organizationId = membership.organization_id as string;
+
+  // Read pref so the critical-only gate respects the user's choice. Missing
+  // row = default (critical_only=true) which matches the form default.
+  let criticalOnly = true;
+  if (options.applyCriticalOnly !== false) {
+    const { data: pref } = await ssr
+      .from("alert_preferences")
+      .select("critical_only")
+      .eq("channel", "email")
+      .is("saved_view_id", null)
+      .maybeSingle();
+    if (pref) criticalOnly = Boolean(pref.critical_only);
+  } else {
+    criticalOnly = false;
+  }
+
+  const sinceMs =
+    options.mode === "daily" ? 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
+  const sinceIso = new Date(Date.now() - sinceMs).toISOString();
+
+  const svc = createServiceClient();
+
+  const { data: matchRows } = await svc
+    .from("footprint_matches")
+    .select(
+      `id, regulatory_item_id, score, severity, matched_at, organization_id,
+       item:regulatory_items!inner (
+         citation, title, slug, summary, jurisdiction_code,
+         regulator:regulators!inner ( name, short_name )
+       )`,
+    )
+    .eq("organization_id", organizationId)
+    .gte("matched_at", sinceIso)
+    .is("resolved_at", null);
+
+  diagnostics.pulled = matchRows?.length ?? 0;
+
+  let candidates = (matchRows ?? []).map((row) => {
+    const item = Array.isArray(row.item) ? row.item[0] : row.item;
+    const reg = Array.isArray(item.regulator)
+      ? item.regulator[0]
+      : item.regulator;
+    return {
+      matchId: row.id as string,
+      regulatoryItemId: row.regulatory_item_id as string,
+      score: row.score as number,
+      severity: row.severity as Severity,
+      jurisdictionCode: item.jurisdiction_code as string,
+      citation: item.citation as string,
+      title: item.title as string,
+      slug: item.slug as string,
+      summary: (item.summary as string) ?? null,
+      regulatorName: reg.name as string,
+      regulatorShortName: (reg.short_name as string) ?? null,
+      matchedAt: row.matched_at as string,
+    };
+  });
+
+  if (criticalOnly) {
+    candidates = candidates.filter((c) => c.severity === "critical");
+  }
+  diagnostics.afterCriticalGate = candidates.length;
+
+  if (options.dedupAgainstDeliveries) {
+    const { data: priorDeliveries } = await svc
+      .from("alert_deliveries")
+      .select("regulatory_item_id")
+      .eq("user_id", user.id)
+      .eq("channel", "email");
+    const deliveredItemIds = new Set<string>(
+      (priorDeliveries ?? []).map((d) => d.regulatory_item_id as string),
+    );
+    candidates = candidates.filter((c) => !deliveredItemIds.has(c.regulatoryItemId));
+  }
+  diagnostics.afterDedup = candidates.length;
+
+  candidates = candidates
+    .sort(
+      (a, b) =>
+        SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] || b.score - a.score,
+    )
+    .slice(0, 25);
+  diagnostics.capped = candidates.length;
+
+  if (candidates.length === 0) {
+    return { digest: null, matchCount: 0, itemIds: [], diagnostics };
+  }
+
+  // Look up org name for the subject line.
+  const { data: org } = await svc
+    .from("organizations")
+    .select("name")
+    .eq("id", organizationId)
+    .maybeSingle();
+
+  const recipientName =
+    (user.user_metadata?.full_name as string | undefined) ?? null;
+
+  const digestMatches: DigestMatch[] = candidates.map((c) => ({
+    matchId: c.matchId,
+    score: c.score,
+    severity: c.severity,
+    jurisdictionCode: c.jurisdictionCode,
+    citation: c.citation,
+    title: c.title,
+    slug: c.slug,
+    summary: c.summary,
+    regulatorName: c.regulatorName,
+    regulatorShortName: c.regulatorShortName,
+    matchedAt: c.matchedAt,
+  }));
+
+  const digest = buildDigest({
+    matches: digestMatches,
+    window: options.mode,
+    recipientName,
+    baseUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://intelle.io",
+    orgName: (org?.name as string) ?? null,
+  });
+
+  return {
+    digest,
+    matchCount: candidates.length,
+    itemIds: candidates.map((c) => c.regulatoryItemId),
+    diagnostics,
+  };
+}
+
+export interface PreviewDigestResult {
+  ok: boolean;
+  error?: string;
+  /** Rendered HTML for the digest. Null when nothing eligible. */
+  html?: string | null;
+  /** Inline subject the email would use. */
+  subject?: string;
+  matchCount: number;
+  diagnostics: SingleUserPullResult["diagnostics"];
+}
+
+/**
+ * Build the digest HTML for the calling user WITHOUT sending or writing
+ * deliveries. Uses no dedup and ignores the critical-only gate so the
+ * preview always shows something if any matches exist in the window.
+ */
+export async function previewMyDigest(
+  mode: DigestMode = "daily",
+): Promise<PreviewDigestResult> {
+  try {
+    const pulled = await pullDigestForCurrentUser({
+      mode,
+      applyCriticalOnly: false,
+      dedupAgainstDeliveries: false,
+    });
+    return {
+      ok: true,
+      html: pulled.digest?.htmlContent ?? null,
+      subject: pulled.digest?.subject,
+      matchCount: pulled.matchCount,
+      diagnostics: pulled.diagnostics,
+    };
+  } catch (e) {
+    return {
+      ok: false,
+      error: (e as Error).message,
+      matchCount: 0,
+      diagnostics: { pulled: 0, afterCriticalGate: 0, afterDedup: 0, capped: 0 },
+    };
+  }
+}
+
+export interface SendTestDigestResult {
+  ok: boolean;
+  error?: string;
+  sent?: boolean;
+  matchCount: number;
+  diagnostics: SingleUserPullResult["diagnostics"];
+}
+
+/**
+ * Real send to the calling user — full flow including dedup and delivery
+ * write. The dedup means repeated test sends only deliver new matches;
+ * matches already sent stay out (correct behavior for production parity).
+ */
+export async function sendTestDigestToMe(
+  mode: DigestMode = "daily",
+): Promise<SendTestDigestResult> {
+  try {
+    const pulled = await pullDigestForCurrentUser({
+      mode,
+      applyCriticalOnly: true,
+      dedupAgainstDeliveries: true,
+    });
+    if (!pulled.digest) {
+      return {
+        ok: true,
+        sent: false,
+        matchCount: 0,
+        diagnostics: pulled.diagnostics,
+      };
+    }
+
+    const ssr = await createClient();
+    const {
+      data: { user },
+    } = await ssr.auth.getUser();
+    if (!user || !user.email) {
+      return {
+        ok: false,
+        error: "Not authenticated",
+        matchCount: 0,
+        diagnostics: pulled.diagnostics,
+      };
+    }
+
+    const sendResult: SendBrevoEmailResult = await sendBrevoEmail({
+      to: [{ email: user.email }],
+      subject: `[TEST] ${pulled.digest.subject}`,
+      htmlContent: pulled.digest.htmlContent,
+    });
+    if (!sendResult.ok) {
+      const reason =
+        sendResult.reason === "http-error"
+          ? `Brevo ${sendResult.status}: ${sendResult.body.slice(0, 240)}`
+          : sendResult.reason === "no-api-key"
+            ? "BREVO_API_KEY not set"
+            : "Brevo network error";
+      return {
+        ok: false,
+        error: reason,
+        matchCount: pulled.matchCount,
+        diagnostics: pulled.diagnostics,
+      };
+    }
+
+    // Write deliveries so the same items don't re-send next time.
+    const svc = createServiceClient();
+    const { data: org } = await svc
+      .from("organization_members")
+      .select("organization_id")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
+    if (org) {
+      await svc.from("alert_deliveries").insert(
+        pulled.itemIds.map((regulatoryItemId) => ({
+          organization_id: org.organization_id as string,
+          user_id: user.id,
+          regulatory_item_id: regulatoryItemId,
+          channel: "email",
+          delivery_status: "sent",
+          delivery_metadata: { mode, test: true, subject: pulled.digest!.subject },
+        })),
+      );
+    }
+
+    return {
+      ok: true,
+      sent: true,
+      matchCount: pulled.matchCount,
+      diagnostics: pulled.diagnostics,
+    };
+  } catch (e) {
+    return {
+      ok: false,
+      error: (e as Error).message,
+      matchCount: 0,
+      diagnostics: { pulled: 0, afterCriticalGate: 0, afterDedup: 0, capped: 0 },
+    };
+  }
 }

@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "./supabase/server";
 import { getMyOrganization } from "./footprint";
+import {
+  sendTestDigestToMe as sendTestDigestImpl,
+  type DigestMode,
+  type SendTestDigestResult,
+} from "./alerts-pipeline";
 
 /**
  * User-facing alert mutations. Writes go through the SSR-authed client so
@@ -80,6 +85,25 @@ export async function saveAlertPrefs(
 
   revalidatePath("/regwatch/settings/alerts");
   return { ok: true };
+}
+
+const sendTestSchema = z.object({
+  mode: z.enum(["daily", "weekly"]).default("daily"),
+});
+
+/**
+ * Run the digest pipeline scoped to the calling user only — actually sends via
+ * Brevo (so requires Brevo credentials + IP authorization configured). Surfaces
+ * the same error message the cron logs, so a failed test gives the user a
+ * concrete fix path.
+ */
+export async function sendTestDigestNow(
+  input: unknown,
+): Promise<SendTestDigestResult> {
+  const parsed = sendTestSchema.safeParse(input);
+  const mode: DigestMode = parsed.success ? parsed.data.mode : "daily";
+  const result = await sendTestDigestImpl(mode);
+  return result;
 }
 
 /**
