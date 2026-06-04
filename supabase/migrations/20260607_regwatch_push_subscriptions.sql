@@ -39,12 +39,22 @@ create policy push_subs_self_insert
   to authenticated
   with check (user_id = auth.uid() and regwatch.is_org_member(organization_id));
 
+-- UPDATE policy needed so the action's upsert (ON CONFLICT DO UPDATE) is
+-- allowed to take the update branch when the same browser re-subscribes.
+create policy push_subs_self_update
+  on regwatch.push_subscriptions for update
+  to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid() and regwatch.is_org_member(organization_id));
+
 create policy push_subs_self_delete
   on regwatch.push_subscriptions for delete
   to authenticated
   using (user_id = auth.uid());
 
-grant select, insert, delete on regwatch.push_subscriptions to authenticated;
+-- UPDATE grant is mandatory for upsert even when no conflict fires;
+-- Postgres checks the privilege ahead of detecting the conflict.
+grant select, insert, update, delete on regwatch.push_subscriptions to authenticated;
 grant all on regwatch.push_subscriptions to service_role;
 
 -- ===========================================================================
