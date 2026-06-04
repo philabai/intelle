@@ -121,11 +121,16 @@ function makeConnector(args: {
       result.fetched = json.results.length;
 
       for (const doc of json.results) {
-        if (!doc.citation) continue; // skip documents without a stable FR citation
+        // The "89 FR 16280" style cite is null for some doc types (Presidential
+        // Documents, certain Notices). document_number is always present and
+        // unique within FR, so we fall back to it. Display retains the FR cite
+        // when available so users see the human-readable form.
+        if (!doc.document_number) continue;
+        const citation = doc.citation || `FR-${doc.document_number}`;
         const item: NormalisedItem = {
           regulator_slug: args.regulator_slug,
-          citation: doc.citation,
-          slug: citationSlug(doc.citation),
+          citation,
+          slug: citationSlug(citation),
           title: doc.title,
           instrument_type: instrumentTypeFor(doc.document_type),
           status: statusFor(doc, ctx.now),
