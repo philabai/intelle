@@ -52,20 +52,30 @@ export default async function RegulationDetailPage({ params }: Props) {
   return (
     <RegwatchAppShell authed={!!user}>
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <nav className="text-xs text-muted">
-          <Link href="/regwatch/browse" className="hover:text-foreground">
-            Browse
-          </Link>
-          <span className="mx-2">/</span>
-          <Link
-            href={`/regwatch/browse/${item.jurisdiction_code.toLowerCase()}`}
-            className="hover:text-foreground"
-          >
-            {item.regulator.jurisdiction_name}
-          </Link>
-          <span className="mx-2">/</span>
-          <span className="text-foreground">{item.citation}</span>
-        </nav>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <nav className="text-xs text-muted">
+            <Link href="/regwatch/browse" className="hover:text-foreground">
+              Browse
+            </Link>
+            <span className="mx-2">/</span>
+            <Link
+              href={`/regwatch/browse/${item.jurisdiction_code.toLowerCase()}`}
+              className="hover:text-foreground"
+            >
+              {item.regulator.jurisdiction_name}
+            </Link>
+            <span className="mx-2">/</span>
+            <span className="text-foreground">{item.citation}</span>
+          </nav>
+          {user && (
+            <Link
+              href="/regwatch/feed"
+              className="rounded-md border border-card-border bg-card-bg px-2.5 py-1 text-[11px] text-muted hover:border-brand-teal hover:text-foreground"
+            >
+              ← Back to My Feed
+            </Link>
+          )}
+        </div>
 
         <header className="mt-4">
           <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted">
