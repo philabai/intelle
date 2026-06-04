@@ -65,9 +65,22 @@ export function WebPushSubscribe({ vapidPublicKey }: Props) {
   }, [vapidPublicKey]);
 
   async function ensureRegistration(): Promise<ServiceWorkerRegistration> {
+    // Register if missing — register() resolves with the registration but the
+    // service worker itself may still be "installing" at that point.
     const existing = await navigator.serviceWorker.getRegistration("/regwatch/sw.js");
-    if (existing) return existing;
-    return navigator.serviceWorker.register("/regwatch/sw.js", { scope: "/regwatch/" });
+    if (!existing) {
+      await navigator.serviceWorker.register("/regwatch/sw.js", {
+        scope: "/regwatch/",
+      });
+    }
+
+    // CRITICAL: pushManager.subscribe() requires reg.active to exist. On a
+    // first-time subscribe the worker is mid-install when register() returns,
+    // which is exactly what produces "Subscription failed - no active Service
+    // Worker". `navigator.serviceWorker.ready` resolves only when there is an
+    // active SW whose scope covers the current page, so awaiting it bridges
+    // the install -> activate transition for us.
+    return navigator.serviceWorker.ready;
   }
 
   async function onSubscribe() {
