@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/regwatch/supabase/server";
-import { getMyFootprint } from "@/lib/regwatch/footprint";
+import { getMyFootprint, getMyOrganization } from "@/lib/regwatch/footprint";
 import { roleLabel } from "@/lib/regwatch/reference/roles";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { RegwatchSignOutButton } from "./SignOutButton";
@@ -13,7 +13,10 @@ export default async function AccountPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const footprint = await getMyFootprint();
+  const [footprint, org] = await Promise.all([
+    getMyFootprint(),
+    getMyOrganization(),
+  ]);
   const functionalRole =
     (user?.user_metadata?.functional_role as string | undefined) ?? null;
 
@@ -64,14 +67,26 @@ export default async function AccountPage() {
         </section>
 
         <section className="rounded-lg border border-card-border bg-card-bg p-6">
-          <h2 className="text-sm font-medium uppercase tracking-wider text-muted">
-            Plan
-          </h2>
-          <p className="mt-2 text-lg text-foreground">Free</p>
-          <p className="mt-1 text-sm text-muted">
-            Stripe Billing wires up in Phase 1.9 — Pro, Team, and Enterprise tiers will be
-            available then.
-          </p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-sm font-medium uppercase tracking-wider text-muted">
+                Plan
+              </h2>
+              <p className="mt-2 text-lg capitalize text-foreground">
+                {org?.organization.tier ?? "Free"}
+              </p>
+              <p className="mt-1 text-xs text-muted">
+                Upgrade for unlimited Iris Q&amp;A, email digests, web push, and
+                the assignment workflow.
+              </p>
+            </div>
+            <Link
+              href="/regwatch/settings/billing"
+              className="shrink-0 rounded-md border border-brand-teal/40 bg-brand-teal/10 px-3 py-1.5 text-xs text-brand-teal hover:bg-brand-teal/20"
+            >
+              Manage billing →
+            </Link>
+          </div>
         </section>
 
         <RegwatchSignOutButton />
