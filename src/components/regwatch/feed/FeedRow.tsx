@@ -2,9 +2,11 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import type { FeedItem } from "@/lib/regwatch/feed-queries";
 import { markSeen, markResolved, undoResolved } from "@/lib/regwatch/feed-actions";
+import { generateBriefing } from "@/lib/regwatch/briefing-actions";
 import { FootprintScoreChip } from "./FootprintScoreChip";
 import { StatusChip } from "@/components/regwatch/StatusChip";
 import { InstrumentTypeBadge } from "@/components/regwatch/InstrumentTypeBadge";
@@ -15,9 +17,12 @@ interface Props {
 }
 
 export function FeedRow({ feedItem: f }: Props) {
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const [seenAt, setSeenAt] = useState(f.seen_at);
   const [resolvedAt, setResolvedAt] = useState(f.resolved_at);
+  const [briefingPending, setBriefingPending] = useState(false);
+  const [briefingError, setBriefingError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
   const href = `/regwatch/r/${f.item.jurisdiction_code.toLowerCase()}/${f.item.slug}`;
@@ -76,6 +81,25 @@ export function FeedRow({ feedItem: f }: Props) {
         setResolvedAt(new Date().toISOString()),
       );
     });
+  }
+
+  async function onGenerateBriefing(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (briefingPending) return;
+    setBriefingError(null);
+    setBriefingPending(true);
+    try {
+      const res = await generateBriefing({ matchId: f.match_id });
+      if (res.ok && res.briefingId) {
+        router.push(`/regwatch/briefing/${res.briefingId}`);
+      } else {
+        setBriefingError(res.error ?? "Briefing failed");
+        setBriefingPending(false);
+      }
+    } catch (err) {
+      setBriefingError((err as Error).message);
+      setBriefingPending(false);
+    }
   }
 
   return (
@@ -168,13 +192,16 @@ export function FeedRow({ feedItem: f }: Props) {
             )}
             <button
               type="button"
-              disabled
-              title="Briefings unlock in Phase 1.5"
-              className="rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-muted/60 cursor-not-allowed"
+              onClick={onGenerateBriefing}
+              disabled={briefingPending}
+              className="rounded-md border border-brand-violet/40 bg-brand-violet/10 px-3 py-1.5 text-xs text-brand-violet hover:bg-brand-violet/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Generate impact briefing (1.5)
+              {briefingPending ? "Generating briefing…" : "Generate impact briefing"}
             </button>
           </div>
+          {briefingError && (
+            <p className="mt-2 text-xs text-red-400">{briefingError}</p>
+          )}
         </div>
       )}
     </div>
