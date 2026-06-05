@@ -66,6 +66,7 @@ const createDocSchema = z.object({
   description: z.string().trim().max(4000).nullable().optional(),
   effectiveDate: z.string().date().nullable().optional(),
   nextReviewDate: z.string().date().nullable().optional(),
+  folderId: z.string().uuid().nullable().optional(),
 });
 
 export async function createDocument(input: unknown): Promise<ActionResult> {
@@ -89,6 +90,18 @@ export async function createDocument(input: unknown): Promise<ActionResult> {
     if (!peer) return { ok: false, error: "Owner isn't a member of your org" };
   }
 
+  // Sanity: folder (if any) must belong to caller's org.
+  if (parsed.data.folderId) {
+    const { data: folder } = await svc
+      .from("internal_document_folders")
+      .select("id, organization_id")
+      .eq("id", parsed.data.folderId)
+      .maybeSingle();
+    if (!folder || folder.organization_id !== ctx.organizationId) {
+      return { ok: false, error: "Folder not found in your org" };
+    }
+  }
+
   const { data, error } = await svc
     .from("internal_documents")
     .insert({
@@ -102,6 +115,7 @@ export async function createDocument(input: unknown): Promise<ActionResult> {
       description: parsed.data.description ?? null,
       effective_date: parsed.data.effectiveDate ?? null,
       next_review_date: parsed.data.nextReviewDate ?? null,
+      folder_id: parsed.data.folderId ?? null,
       created_by: ctx.userId,
     })
     .select("id")

@@ -8,12 +8,19 @@ import {
   DOCUMENT_KIND_LABEL,
 } from "@/lib/regwatch/internal-documents";
 import { listAssets, getHierarchyConfig } from "@/lib/regwatch/assets";
+import {
+  listFolders,
+  buildFolderTree,
+  getFolderBreadcrumb,
+  getFolder,
+} from "@/lib/regwatch/document-folders";
 import { getMyOrganization } from "@/lib/regwatch/footprint";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
 import { UploadFileForm } from "@/components/regwatch/documents/UploadFileForm";
 import { LinkRegulationForm } from "@/components/regwatch/documents/LinkRegulationForm";
 import { LinkAssetsPanel } from "@/components/regwatch/documents/LinkAssetsPanel";
+import { MoveDocumentMenu } from "@/components/regwatch/documents/MoveDocumentMenu";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -45,13 +52,19 @@ export default async function DocumentDetailPage({ params }: Props) {
   const doc = await getDocument(id);
   if (!doc) notFound();
 
-  const [membership, org, allAssets] = await Promise.all([
+  const [membership, org, allAssets, folders] = await Promise.all([
     getMyMembership(),
     getMyOrganization(),
     listAssets(),
+    listFolders(),
   ]);
   const canEdit =
     membership?.role === "owner" || membership?.role === "admin";
+  const folderTree = buildFolderTree(folders);
+  const folderBreadcrumb = doc.folderId
+    ? await getFolderBreadcrumb(doc.folderId)
+    : [];
+  const currentFolder = doc.folderId ? await getFolder(doc.folderId) : null;
   const config = await getHierarchyConfig(org?.organization.id ?? "");
   const levelLabels: Record<2 | 3 | 4 | 5 | 6, string> = {
     2: config.level2Label,
@@ -68,6 +81,28 @@ export default async function DocumentDetailPage({ params }: Props) {
           <Link href="/regwatch/documents" className="hover:text-foreground">
             Internal documents
           </Link>
+          {folderBreadcrumb.map((f) => (
+            <span key={f.id}>
+              <span className="mx-2">/</span>
+              <Link
+                href={`/regwatch/documents?folder=${f.id}`}
+                className="hover:text-foreground"
+              >
+                {f.name}
+              </Link>
+            </span>
+          ))}
+          {currentFolder && (
+            <>
+              <span className="mx-2">/</span>
+              <Link
+                href={`/regwatch/documents?folder=${currentFolder.id}`}
+                className="hover:text-foreground"
+              >
+                {currentFolder.name}
+              </Link>
+            </>
+          )}
           <span className="mx-2">/</span>
           <span className="text-foreground">{doc.title}</span>
         </nav>
@@ -197,6 +232,23 @@ export default async function DocumentDetailPage({ params }: Props) {
                   />
                 </div>
               )}
+            </section>
+
+            <section className="rounded-xl border border-card-border bg-card-bg/40 p-4">
+              <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
+                Folder
+              </h2>
+              <div className="flex items-center justify-between gap-2">
+                <p className="min-w-0 truncate text-xs text-foreground">
+                  {currentFolder ? currentFolder.name : "Unfiled"}
+                </p>
+                <MoveDocumentMenu
+                  documentId={doc.id}
+                  currentFolderId={doc.folderId}
+                  folderRoots={folderTree}
+                  label="Move"
+                />
+              </div>
             </section>
 
             <section className="rounded-xl border border-card-border bg-card-bg/40 p-4">

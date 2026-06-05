@@ -10,6 +10,10 @@ import {
 } from "@/lib/regwatch/assets-actions";
 import type { AssetTreeNode } from "@/lib/regwatch/assets";
 import { STARTER_PACK_LIST } from "@/lib/regwatch/asset-starter-packs";
+import {
+  usePromptDialog,
+  useConfirmDialog,
+} from "@/components/regwatch/PromptDialog";
 
 interface Props {
   initialFlat: {
@@ -98,6 +102,8 @@ export function AssetTreeBuilder({
   const selected = selectedId ? flatById.get(selectedId) ?? null : null;
 
   const maxLevel = level6Enabled ? 6 : 5;
+  const { ask: askPrompt, dialog: promptDialog } = usePromptDialog();
+  const { ask: askConfirm, dialog: confirmDialog } = useConfirmDialog();
 
   function refresh() {
     router.refresh();
@@ -108,32 +114,36 @@ export function AssetTreeBuilder({
     if (kind === "ok") setTimeout(() => setMessage(null), 3000);
   }
 
-  function handleAdd(parentId: string | null, level: 2 | 3 | 4 | 5 | 6) {
-    const name = window.prompt(
-      `New ${levelLabels[level]} name?`,
-      "",
-    );
-    if (!name || !name.trim()) return;
+  async function handleAdd(
+    parentId: string | null,
+    level: 2 | 3 | 4 | 5 | 6,
+  ) {
+    const name = await askPrompt({
+      title: `New ${levelLabels[level]}`,
+      placeholder: `${levelLabels[level]} name`,
+      confirmLabel: "Add",
+    });
+    if (!name) return;
     startTransition(async () => {
-      const res = await createAsset({
-        parentId,
-        level,
-        name: name.trim(),
-      });
+      const res = await createAsset({ parentId, level, name });
       if (!res.ok) {
         notify("error", res.error ?? "Could not create asset");
         return;
       }
-      notify("ok", `Added ${levelLabels[level]} "${name.trim()}"`);
+      notify("ok", `Added ${levelLabels[level]} "${name}"`);
       refresh();
     });
   }
 
-  function handleRename(id: string, currentName: string) {
-    const name = window.prompt("Rename to:", currentName);
-    if (!name || !name.trim() || name.trim() === currentName) return;
+  async function handleRename(id: string, currentName: string) {
+    const name = await askPrompt({
+      title: "Rename",
+      defaultValue: currentName,
+      confirmLabel: "Rename",
+    });
+    if (!name || name === currentName) return;
     startTransition(async () => {
-      const res = await updateAsset({ id, name: name.trim() });
+      const res = await updateAsset({ id, name });
       if (!res.ok) {
         notify("error", res.error ?? "Could not rename");
         return;
@@ -143,10 +153,14 @@ export function AssetTreeBuilder({
     });
   }
 
-  function handleArchive(id: string, name: string) {
-    if (!window.confirm(`Archive "${name}"? This hides it from the tree but preserves obligations.`)) {
-      return;
-    }
+  async function handleArchive(id: string, name: string) {
+    const ok = await askConfirm({
+      title: "Archive asset",
+      description: `Archive "${name}"? This hides it from the tree but preserves obligations attached to it.`,
+      confirmLabel: "Archive",
+      danger: true,
+    });
+    if (!ok) return;
     startTransition(async () => {
       const res = await archiveAsset({ id });
       if (!res.ok) {
@@ -159,16 +173,21 @@ export function AssetTreeBuilder({
     });
   }
 
-  function handleSeedPack(starterPack: string) {
-    const sites = tree.filter((t) => t.level === 2).map((s) => ({ id: s.id, name: s.name }));
+  async function handleSeedPack(starterPack: string) {
+    const sites = tree
+      .filter((t) => t.level === 2)
+      .map((s) => ({ id: s.id, name: s.name }));
     if (sites.length === 0) {
       notify("error", `Add at least one ${levelLabels[2]} first`);
       return;
     }
-    const choice = window.prompt(
-      `Seed "${starterPack}" under which ${levelLabels[2]}? Type a comma-separated list of names. Available: ${sites.map((s) => s.name).join(", ")}`,
-      sites.map((s) => s.name).join(", "),
-    );
+    const choice = await askPrompt({
+      title: `Seed "${starterPack}"`,
+      description: `Type a comma-separated list of ${levelLabels[2]} names to seed under. Available: ${sites.map((s) => s.name).join(", ")}`,
+      defaultValue: sites.map((s) => s.name).join(", "),
+      confirmLabel: "Seed",
+      multiline: true,
+    });
     if (!choice) return;
     const names = choice
       .split(",")
@@ -187,7 +206,10 @@ export function AssetTreeBuilder({
         notify("error", res.error ?? "Could not seed starter pack");
         return;
       }
-      notify("ok", `Seeded ${starterPack} under ${siteIds.length} ${levelLabels[2]}(s)`);
+      notify(
+        "ok",
+        `Seeded ${starterPack} under ${siteIds.length} ${levelLabels[2]}(s)`,
+      );
       refresh();
     });
   }
@@ -302,6 +324,8 @@ export function AssetTreeBuilder({
           </section>
         )}
       </aside>
+      {promptDialog}
+      {confirmDialog}
     </div>
   );
 }

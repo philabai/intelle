@@ -50,6 +50,7 @@ export interface InternalDocumentListItem {
   assetLinkCount: number;
   filePath: string | null;
   fileName: string | null;
+  folderId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -88,7 +89,15 @@ export interface InternalDocumentAssetLink {
 }
 
 export async function listDocuments(
-  options: { includeRetired?: boolean } = {},
+  options: {
+    includeRetired?: boolean;
+    /**
+     * Folder filter. Pass a UUID to fetch docs in that folder,
+     * "unfiled" to fetch folder_id IS NULL,
+     * or undefined to fetch every doc regardless of folder.
+     */
+    folderId?: string | "unfiled";
+  } = {},
 ): Promise<InternalDocumentListItem[]> {
   const supabase = await createClient();
   let q = supabase
@@ -96,11 +105,16 @@ export async function listDocuments(
     .select(
       `id, organization_id, title, doc_kind, internal_code, version, owner_user_id,
        status, effective_date, next_review_date, file_path, file_name,
-       created_at, updated_at`,
+       folder_id, created_at, updated_at`,
     )
     .order("updated_at", { ascending: false });
   if (!options.includeRetired) {
     q = q.not("status", "eq", "retired");
+  }
+  if (options.folderId === "unfiled") {
+    q = q.is("folder_id", null);
+  } else if (options.folderId) {
+    q = q.eq("folder_id", options.folderId);
   }
   const { data, error } = await q;
   if (error || !data) {
@@ -175,6 +189,7 @@ export async function listDocuments(
       nextReviewDate: (row.next_review_date as string | null) ?? null,
       linkCount: linksByDoc.get(row.id as string) ?? 0,
       assetLinkCount: assetLinksByDoc.get(row.id as string) ?? 0,
+      folderId: (row.folder_id as string | null) ?? null,
       filePath: (row.file_path as string | null) ?? null,
       fileName: (row.file_name as string | null) ?? null,
       createdAt: row.created_at as string,
@@ -193,7 +208,7 @@ export async function getDocument(
       `id, organization_id, title, doc_kind, internal_code, version,
        owner_user_id, owner_role, description, file_path, file_name,
        file_size, mime_type, status, effective_date, next_review_date,
-       created_at, updated_at`,
+       folder_id, created_at, updated_at`,
     )
     .eq("id", id)
     .maybeSingle();
@@ -305,6 +320,7 @@ export async function getDocument(
     nextReviewDate: (data.next_review_date as string | null) ?? null,
     linkCount: links.filter((l) => !l.supersededAt).length,
     assetLinkCount: assetLinks.length,
+    folderId: (data.folder_id as string | null) ?? null,
     filePath: (data.file_path as string | null) ?? null,
     fileName: (data.file_name as string | null) ?? null,
     fileSize: (data.file_size as number | null) ?? null,

@@ -8,6 +8,7 @@ import {
 } from "@/lib/regwatch/evidence-actions";
 import type { EvidenceFileRecord } from "@/lib/regwatch/evidence";
 import { FindingsPanel } from "./FindingsPanel";
+import { useConfirmDialog } from "@/components/regwatch/PromptDialog";
 
 interface Props {
   file: EvidenceFileRecord;
@@ -58,6 +59,7 @@ export function EvidenceFileCard({
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [signing, setSigning] = useState(false);
   const [showImage, setShowImage] = useState(false);
+  const { ask: askConfirm, dialog: confirmDialog } = useConfirmDialog();
 
   const statusLabel =
     file.analysisStatus === "completed"
@@ -105,9 +107,14 @@ export function EvidenceFileCard({
     });
   }
 
-  function onDelete() {
-    if (!window.confirm(`Delete ${file.fileName}? This can't be undone.`))
-      return;
+  async function onDelete() {
+    const ok = await askConfirm({
+      title: "Delete evidence file",
+      description: `Delete ${file.fileName}? This can't be undone. The file and its AI analysis will be removed permanently.`,
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     startTransition(async () => {
       const res = await deleteEvidence({ evidenceFileId: file.id });
       if (res.ok) onChanged?.();
@@ -274,6 +281,7 @@ export function EvidenceFileCard({
           {file.analysisError}
         </p>
       )}
+      {confirmDialog}
     </article>
   );
 }

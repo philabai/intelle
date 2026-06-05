@@ -15,7 +15,11 @@ const KIND_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-export function CreateDocumentForm() {
+export function CreateDocumentForm({
+  defaultFolderId,
+}: {
+  defaultFolderId?: string | null;
+} = {}) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [docKind, setDocKind] = useState("sop");
@@ -35,6 +39,7 @@ export function CreateDocumentForm() {
         internalCode: internalCode.trim() || null,
         version: version.trim() || null,
         ownerRole: ownerRole.trim() || null,
+        folderId: defaultFolderId ?? null,
       });
       if (!res.ok || !res.id) {
         setError(res.error ?? "Could not create document");
