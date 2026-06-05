@@ -9,6 +9,7 @@ import {
   type FeedSort,
 } from "@/lib/regwatch/feed-queries";
 import { listAssigneeOptions } from "@/lib/regwatch/members";
+import { checkFeatureGate } from "@/lib/regwatch/tier";
 import type { Severity } from "@/lib/regwatch/match";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { DeadlineStrip } from "@/components/regwatch/feed/DeadlineStrip";
@@ -16,6 +17,7 @@ import { FeedRow } from "@/components/regwatch/feed/FeedRow";
 import { FeedFilters } from "@/components/regwatch/feed/FeedFilters";
 import { BulkTriageBar } from "@/components/regwatch/feed/BulkTriageBar";
 import { EmptyFeed } from "@/components/regwatch/feed/EmptyFeed";
+import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
 
 export const metadata = { title: "Relevance Feed" };
 export const dynamic = "force-dynamic";
@@ -48,6 +50,19 @@ export default async function FeedPage({ searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/regwatch/login?next=/regwatch/feed");
+
+  const gate = await checkFeatureGate("relevance_feed");
+  if (!gate.allowed) {
+    return (
+      <RegwatchAppShell authed>
+        <PaywallScreen
+          feature="relevance_feed"
+          currentTier={gate.currentTier}
+          requiredTier={gate.requiredTier}
+        />
+      </RegwatchAppShell>
+    );
+  }
 
   const [org, footprint, counts, items, deadlineItems, assigneeOptions] =
     await Promise.all([

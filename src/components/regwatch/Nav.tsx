@@ -15,6 +15,7 @@ export function RegwatchNav({ authed }: { authed: boolean }) {
         <div className="hidden items-center gap-1 md:flex">
           <RegwatchNavLink href="/regwatch/browse">Browse</RegwatchNavLink>
           <RegwatchNavLink href="/regwatch/regulators">Regulators</RegwatchNavLink>
+          <RegwatchNavLink href="/regwatch/topics">Topics</RegwatchNavLink>
           <RegwatchNavLink href="/regwatch/search">Search</RegwatchNavLink>
           {authed && <RegwatchNavLink href="/regwatch/feed">My Feed</RegwatchNavLink>}
           {authed && (

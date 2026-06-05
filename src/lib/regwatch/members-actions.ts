@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createClient } from "./supabase/server";
 import { createServiceClient } from "./supabase/service";
 import { getMyMembership, isAdminRole, type AdminRole } from "./members";
+import { checkFeatureGate, type GatedFeature } from "./tier";
 
 /**
  * Member-management server actions. Only owners/admins of the calling user's
@@ -32,7 +33,9 @@ export interface MemberActionResult {
   error?: string;
 }
 
-async function ensureAdmin(): Promise<
+async function ensureAdmin(
+  feature: GatedFeature = "members",
+): Promise<
   | { ok: true; organizationId: string; userId: string }
   | { ok: false; error: string }
 > {
@@ -46,20 +49,36 @@ async function ensureAdmin(): Promise<
   if (membership.role !== "owner" && membership.role !== "admin") {
     return { ok: false, error: "Only owners and admins can manage members" };
   }
+  const gate = await checkFeatureGate(feature);
+  if (!gate.allowed) {
+    return {
+      ok: false,
+      error: `This feature requires the ${gate.requiredTier} plan. You are on ${gate.currentTier}.`,
+    };
+  }
   return { ok: true, organizationId: membership.organizationId, userId: user.id };
 }
 
 /**
- * Add an existing user to the calling user's org by their email. We do NOT
- * send invitation emails in v1 — the invitee must already have an intelle.io
- * account. A future slice can add Supabase's inviteUserByEmail flow.
+ * Add (or invite) a user to the calling user's org by their email.
  *
- * Defensive: checks if the membership already exists and returns a clean
- * "already a member" error rather than a constraint violation.
+ * - If the email matches an existing intelle.io account, they are added to
+ *   the org immediately (no email sent).
+ * - If no account exists, we call Supabase admin `inviteUserByEmail`, which
+ *   sends a magic-link signup email. We also write a `pending_invites` row so
+ *   admins can see the pending invitation, and we stash
+ *   `regwatch_invite_org_id` / `regwatch_invite_role` in the user metadata so
+ *   the signup trigger joins the new user to this org (instead of creating a
+ *   personal one). See migration 20260608_regwatch_pending_invites.sql.
  */
 export async function addMemberByEmail(
   input: unknown,
-): Promise<MemberActionResult> {
+): Promise<
+  MemberActionResult & {
+    /** Whether the email was sent (true) or the user was added directly (false). */
+    invited?: boolean;
+  }
+> {
   const parsed = addByEmailSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid email" };
@@ -68,6 +87,7 @@ export async function addMemberByEmail(
   if (!auth.ok) return auth;
 
   const svc = createServiceClient();
+  const emailLower = parsed.data.email.toLowerCase();
 
   // Find the target user by email (auth admin API).
   const { data: list, error: listErr } = await svc.auth.admin.listUsers({
@@ -76,32 +96,145 @@ export async function addMemberByEmail(
   });
   if (listErr) return { ok: false, error: listErr.message };
   const target = list.users.find(
-    (u) => (u.email ?? "").toLowerCase() === parsed.data.email.toLowerCase(),
+    (u) => (u.email ?? "").toLowerCase() === emailLower,
   );
-  if (!target) {
+
+  if (target) {
+    // Already in this org?
+    const { data: existing } = await svc
+      .from("organization_members")
+      .select("id")
+      .eq("organization_id", auth.organizationId)
+      .eq("user_id", target.id)
+      .maybeSingle();
+    if (existing) {
+      return { ok: false, error: "That account is already a member of your org" };
+    }
+
+    const { error: insErr } = await svc
+      .from("organization_members")
+      .insert({
+        organization_id: auth.organizationId,
+        user_id: target.id,
+        role: parsed.data.role,
+      });
+    if (insErr) return { ok: false, error: insErr.message };
+
+    revalidatePath("/regwatch/settings/members");
+    return { ok: true, invited: false };
+  }
+
+  // ---- No account yet — send Supabase invite + record pending invite ------
+  const { data: existingInvite } = await svc
+    .from("pending_invites")
+    .select("id")
+    .eq("organization_id", auth.organizationId)
+    .is("accepted_at", null)
+    .is("revoked_at", null)
+    .ilike("email", emailLower)
+    .maybeSingle();
+  if (existingInvite) {
     return {
       ok: false,
-      error: `No intelle.io account found for ${parsed.data.email}. They must sign up first; we'll add Supabase invite emails in a later release.`,
+      error: `${parsed.data.email} already has a pending invite. Resend or revoke it from the Members page.`,
     };
   }
 
-  // Already in this org?
-  const { data: existing } = await svc
-    .from("organization_members")
-    .select("id")
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://intelle.io";
+
+  const { error: inviteErr } = await svc.auth.admin.inviteUserByEmail(
+    parsed.data.email,
+    {
+      data: {
+        regwatch_invite_org_id: auth.organizationId,
+        regwatch_invite_role: parsed.data.role,
+        regwatch_invited_by: auth.userId,
+      },
+      redirectTo: `${siteUrl}/regwatch/feed`,
+    },
+  );
+  if (inviteErr) return { ok: false, error: inviteErr.message };
+
+  const { error: pendingErr } = await svc
+    .from("pending_invites")
+    .insert({
+      organization_id: auth.organizationId,
+      email: parsed.data.email,
+      role: parsed.data.role,
+      invited_by: auth.userId,
+    });
+  if (pendingErr) return { ok: false, error: pendingErr.message };
+
+  revalidatePath("/regwatch/settings/members");
+  return { ok: true, invited: true };
+}
+
+// ---------------------------------------------------------------------------
+// Pending invite management
+// ---------------------------------------------------------------------------
+
+const revokeInviteSchema = z.object({
+  inviteId: z.string().uuid(),
+});
+
+export async function revokeInvite(
+  input: unknown,
+): Promise<MemberActionResult> {
+  const parsed = revokeInviteSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid input" };
+  const auth = await ensureAdmin();
+  if (!auth.ok) return auth;
+
+  const svc = createServiceClient();
+  const { error } = await svc
+    .from("pending_invites")
+    .update({ revoked_at: new Date().toISOString() })
+    .eq("id", parsed.data.inviteId)
     .eq("organization_id", auth.organizationId)
-    .eq("user_id", target.id)
+    .is("accepted_at", null);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/regwatch/settings/members");
+  return { ok: true };
+}
+
+export async function resendInvite(
+  input: unknown,
+): Promise<MemberActionResult> {
+  const parsed = revokeInviteSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid input" };
+  const auth = await ensureAdmin();
+  if (!auth.ok) return auth;
+
+  const svc = createServiceClient();
+  const { data: invite, error: invErr } = await svc
+    .from("pending_invites")
+    .select("email, role")
+    .eq("id", parsed.data.inviteId)
+    .eq("organization_id", auth.organizationId)
+    .is("accepted_at", null)
+    .is("revoked_at", null)
     .maybeSingle();
-  if (existing) {
-    return { ok: false, error: "That account is already a member of your org" };
+  if (invErr || !invite) {
+    return { ok: false, error: "Invite not found or already resolved" };
   }
 
-  const { error: insErr } = await svc.from("organization_members").insert({
-    organization_id: auth.organizationId,
-    user_id: target.id,
-    role: parsed.data.role,
-  });
-  if (insErr) return { ok: false, error: insErr.message };
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://intelle.io";
+
+  const { error: sendErr } = await svc.auth.admin.inviteUserByEmail(
+    invite.email,
+    {
+      data: {
+        regwatch_invite_org_id: auth.organizationId,
+        regwatch_invite_role: invite.role,
+        regwatch_invited_by: auth.userId,
+      },
+      redirectTo: `${siteUrl}/regwatch/feed`,
+    },
+  );
+  if (sendErr) return { ok: false, error: sendErr.message };
 
   revalidatePath("/regwatch/settings/members");
   return { ok: true };
@@ -220,6 +353,14 @@ export async function assignMatch(input: unknown): Promise<MemberActionResult> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Not authenticated" };
+
+  const gate = await checkFeatureGate("assignment");
+  if (!gate.allowed) {
+    return {
+      ok: false,
+      error: `Match assignment requires the ${gate.requiredTier} plan. You are on ${gate.currentTier}.`,
+    };
+  }
 
   // Validate that the assignee (if any) is in the calling user's org.
   if (parsed.data.assigneeUserId) {

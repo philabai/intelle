@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { getMyFootprint, getMyOrganization } from "@/lib/regwatch/footprint";
 import { listMonitorableRegulators } from "@/lib/regwatch/footprint-actions";
+import { checkFeatureGate } from "@/lib/regwatch/tier";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { FootprintForm } from "@/components/regwatch/footprint/FootprintForm";
+import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
 
 export const metadata = { title: "Welcome to RegWatch" };
 export const dynamic = "force-dynamic";
@@ -15,6 +17,20 @@ export default async function OnboardingPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/regwatch/login?next=/regwatch/onboarding");
+
+  const gate = await checkFeatureGate("footprint");
+  if (!gate.allowed) {
+    return (
+      <RegwatchAppShell authed>
+        <PaywallScreen
+          feature="footprint"
+          currentTier={gate.currentTier}
+          requiredTier={gate.requiredTier}
+          extra="Onboarding lives inside the footprint configurator, which is Team+ only. Sign up for free, upgrade when you're ready to set up your footprint."
+        />
+      </RegwatchAppShell>
+    );
+  }
 
   const [org, footprint, regulators] = await Promise.all([
     getMyOrganization(),

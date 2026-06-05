@@ -60,13 +60,12 @@ export const TIERS: Record<Tier, TierDefinition> = {
   free: {
     tier: "free",
     label: "Free",
-    tagline: "Browse the corpus + Iris Q&A with daily limit.",
+    tagline: "Browse the corpus + ask Iris with a daily limit.",
     priceLabel: "$0",
     features: [
       "Global Regulations Browser (full corpus)",
+      "Topic + Regulator profiles",
       "Search + Iris Q&A (5 queries/day)",
-      "Footprint configurator",
-      "Relevance Feed",
       "In-app notification bell",
     ],
     stripePriceId: null,
@@ -75,14 +74,13 @@ export const TIERS: Record<Tier, TierDefinition> = {
   pro: {
     tier: "pro",
     label: "Pro",
-    tagline: "Individual practitioner. Unlimited Iris + email digests + impact briefings.",
+    tagline: "For individual practitioners. Unlimited Iris + alerts.",
     priceLabel: "$99 / month",
     features: [
       "Everything in Free",
       "Unlimited Iris Q&A queries",
       "Daily / weekly email digests",
       "Web push for critical matches",
-      "Unlimited impact briefings",
       "Priority email support",
     ],
     stripePriceId: process.env.STRIPE_PRICE_PRO_MONTHLY ?? null,
@@ -91,10 +89,13 @@ export const TIERS: Record<Tier, TierDefinition> = {
   team: {
     tier: "team",
     label: "Team",
-    tagline: "For teams of 2-10. Adds members + assignment + Slack/Teams export (1.x).",
+    tagline: "Footprint-scored Feed + assignment for teams of 2-10.",
     priceLabel: "$249 / month",
     features: [
       "Everything in Pro",
+      "Footprint configurator",
+      "Relevance Feed (footprint-scored)",
+      "Unlimited impact briefings",
       "Up to 10 team members",
       "Per-match assignment workflow",
       "Custom topic taxonomy",

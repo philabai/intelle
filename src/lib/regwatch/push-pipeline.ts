@@ -6,6 +6,8 @@ import {
   recordPushDelivery,
   type PushPayload,
 } from "./push";
+import { canUseFeature } from "./tier";
+import type { Tier } from "./stripe";
 
 /**
  * Post-match push fanout. Runs after every match cron tick to deliver
@@ -77,7 +79,26 @@ export async function runPushPipeline(): Promise<PushPipelineResult> {
     result.duration_ms = Date.now() - started;
     return result;
   }
-  const prefs = (prefRows ?? []) as PrefRow[];
+  let prefs = (prefRows ?? []) as PrefRow[];
+
+  // 1a. Tier gate — web push is Pro+. Drop prefs whose org is on Free.
+  if (prefs.length > 0) {
+    const orgIds = Array.from(new Set(prefs.map((p) => p.organization_id)));
+    const { data: orgTierRows } = await supabase
+      .from("organizations")
+      .select("id, tier")
+      .in("id", orgIds);
+    const tierByOrgId = new Map<string, Tier>(
+      (orgTierRows ?? []).map((o) => [
+        o.id as string,
+        (o.tier as Tier) ?? "free",
+      ]),
+    );
+    prefs = prefs.filter((p) =>
+      canUseFeature(tierByOrgId.get(p.organization_id) ?? "free", "web_push"),
+    );
+  }
+
   result.users_considered = prefs.length;
   if (prefs.length === 0) {
     result.duration_ms = Date.now() - started;

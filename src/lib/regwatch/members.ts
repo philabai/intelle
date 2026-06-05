@@ -127,3 +127,52 @@ export async function getMyMembership(): Promise<{
     role: isAdminRole(data.role as string) ? (data.role as AdminRole) : "member",
   };
 }
+
+export interface PendingInvite {
+  id: string;
+  email: string;
+  role: "admin" | "member";
+  invitedBy: string;
+  invitedByEmail: string | null;
+  createdAt: string;
+}
+
+export async function listMyPendingInvites(): Promise<PendingInvite[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data: rows, error } = await supabase
+    .from("pending_invites")
+    .select("id, email, role, invited_by, created_at")
+    .is("accepted_at", null)
+    .is("revoked_at", null)
+    .order("created_at", { ascending: false });
+
+  if (error || !rows) return [];
+
+  const svc = createServiceClient();
+  const out: PendingInvite[] = [];
+  for (const r of rows) {
+    let invitedByEmail: string | null = null;
+    try {
+      const { data: u } = await svc.auth.admin.getUserById(
+        r.invited_by as string,
+      );
+      invitedByEmail = u.user?.email ?? null;
+    } catch {
+      // best-effort enrichment; missing inviter doesn't block the list
+    }
+    out.push({
+      id: r.id as string,
+      email: r.email as string,
+      role: r.role as "admin" | "member",
+      invitedBy: r.invited_by as string,
+      invitedByEmail,
+      createdAt: r.created_at as string,
+    });
+  }
+  return out;
+}

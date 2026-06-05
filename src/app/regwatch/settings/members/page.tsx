@@ -1,11 +1,18 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
-import { listMyOrgMembers, getMyMembership } from "@/lib/regwatch/members";
+import {
+  listMyOrgMembers,
+  getMyMembership,
+  listMyPendingInvites,
+} from "@/lib/regwatch/members";
 import { getMyOrganization } from "@/lib/regwatch/footprint";
+import { checkFeatureGate } from "@/lib/regwatch/tier";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { MembersTable } from "@/components/regwatch/members/MembersTable";
 import { AddMemberForm } from "@/components/regwatch/members/AddMemberForm";
+import { PendingInvitesTable } from "@/components/regwatch/members/PendingInvitesTable";
+import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
 
 export const metadata = { title: "Team Members" };
 export const dynamic = "force-dynamic";
@@ -17,10 +24,24 @@ export default async function MembersPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/regwatch/login?next=/regwatch/settings/members");
 
-  const [members, membership, org] = await Promise.all([
+  const gate = await checkFeatureGate("members");
+  if (!gate.allowed) {
+    return (
+      <RegwatchAppShell authed>
+        <PaywallScreen
+          feature="members"
+          currentTier={gate.currentTier}
+          requiredTier={gate.requiredTier}
+        />
+      </RegwatchAppShell>
+    );
+  }
+
+  const [members, membership, org, invites] = await Promise.all([
     listMyOrgMembers(),
     getMyMembership(),
     getMyOrganization(),
+    listMyPendingInvites(),
   ]);
 
   const canManage =
@@ -45,8 +66,11 @@ export default async function MembersPage() {
             Team members
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted">
-            {members.length} {members.length === 1 ? "member" : "members"} ·
-            Admin roles control who can manage the org and invite others.
+            {members.length} {members.length === 1 ? "member" : "members"}
+            {invites.length > 0
+              ? ` · ${invites.length} pending invite${invites.length === 1 ? "" : "s"}`
+              : ""}
+            . Admin roles control who can manage the org and invite others.
             Functional roles (CCO / EHS Manager / Legal Counsel / ESG Lead /
             Gov Affairs) live on each user&apos;s Footprint and drive their
             Feed defaults.
@@ -60,16 +84,10 @@ export default async function MembersPage() {
                 Add a member
               </h2>
               <p className="mt-1 text-xs text-muted">
-                The person must already have an intelle.io account. We&apos;ll
-                add a Supabase invite-by-email flow in a later slice — for now,
-                ask them to sign up at{" "}
-                <a
-                  href="https://intelle.io/regwatch/signup"
-                  className="text-brand-teal hover:underline"
-                >
-                  /regwatch/signup
-                </a>{" "}
-                first.
+                If the email matches an existing intelle.io account they&apos;re
+                added immediately. Otherwise Supabase sends a magic-link signup
+                email; once they accept, they&apos;re joined to your org with
+                the role you pick below.
               </p>
             </header>
             <div className="mt-4">
@@ -78,7 +96,11 @@ export default async function MembersPage() {
           </section>
         )}
 
-        <MembersTable members={members} callerCanManage={canManage} />
+        <PendingInvitesTable invites={invites} callerCanManage={canManage} />
+
+        <div className="mt-6">
+          <MembersTable members={members} callerCanManage={canManage} />
+        </div>
 
         {!canManage && (
           <p className="mt-4 text-xs text-muted">

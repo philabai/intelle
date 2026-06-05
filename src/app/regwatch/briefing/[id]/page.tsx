@@ -10,6 +10,8 @@ import { InstrumentTypeBadge } from "@/components/regwatch/InstrumentTypeBadge";
 import { TrustMarker } from "@/components/regwatch/briefing/TrustMarker";
 import { BriefingBody } from "@/components/regwatch/briefing/BriefingBody";
 import { RegwatchChatWidget } from "@/components/regwatch/chat/RegwatchChatWidget";
+import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
+import { checkFeatureGate } from "@/lib/regwatch/tier";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -36,6 +38,19 @@ export default async function BriefingDetailPage({ params }: Props) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const gate = await checkFeatureGate("impact_briefings");
+  if (!gate.allowed) {
+    return (
+      <RegwatchAppShell authed={!!user}>
+        <PaywallScreen
+          feature="impact_briefings"
+          currentTier={gate.currentTier}
+          requiredTier={gate.requiredTier}
+        />
+      </RegwatchAppShell>
+    );
+  }
 
   const generatedAgo = formatDistanceToNowStrict(new Date(briefing.generated_at), {
     addSuffix: true,

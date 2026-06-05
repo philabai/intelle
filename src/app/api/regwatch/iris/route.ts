@@ -2,6 +2,9 @@ import { z } from "zod";
 import { getAnthropic } from "@/lib/anthropic/client";
 import { IRIS_MODEL } from "@/lib/regwatch/anthropic/models";
 import { createClient } from "@/lib/regwatch/supabase/server";
+import { createServiceClient } from "@/lib/regwatch/supabase/service";
+import { FREE_IRIS_DAILY_CAP, canUseFeature } from "@/lib/regwatch/tier";
+import type { Tier } from "@/lib/regwatch/stripe";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -105,6 +108,48 @@ export async function POST(request: Request) {
   }
 
   const supabase = await createClient();
+
+  // ---- Tier gate: Free tier is capped at FREE_IRIS_DAILY_CAP queries/day ---
+  // Resolve the caller's tier + (for non-Free) skip the cap check entirely.
+  // Anonymous users (no session) are treated as Free.
+  const {
+    data: { user: irisUser },
+  } = await supabase.auth.getUser();
+
+  let tier: Tier = "free";
+  let organizationId: string | null = null;
+  if (irisUser) {
+    const { data: membership } = await supabase
+      .from("organization_members")
+      .select("organization_id, organization:organizations!inner(tier)")
+      .eq("user_id", irisUser.id)
+      .limit(1)
+      .maybeSingle();
+    if (membership) {
+      organizationId = membership.organization_id as string;
+      const orgTier = Array.isArray(membership.organization)
+        ? (membership.organization[0]?.tier as Tier | undefined)
+        : ((membership.organization as { tier?: Tier } | null)?.tier);
+      if (orgTier) tier = orgTier;
+    }
+  }
+
+  if (!canUseFeature(tier, "unlimited_iris")) {
+    // Count Iris queries by this user (or anon IP) in the last 24h.
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const svc = createServiceClient();
+    const { count } = await svc
+      .from("audit_log")
+      .select("id", { count: "exact", head: true })
+      .eq("action", "iris_query")
+      .eq("user_id", irisUser?.id ?? "00000000-0000-0000-0000-000000000000")
+      .gte("created_at", since);
+    if ((count ?? 0) >= FREE_IRIS_DAILY_CAP) {
+      return sseErrorResponse(
+        `Free plan is capped at ${FREE_IRIS_DAILY_CAP} Iris queries per 24h. Upgrade to Pro at /regwatch/settings/billing for unlimited Q&A.`,
+      );
+    }
+  }
 
   // Retrieve corpus excerpts. When scoped, hit the one item directly.
   // Otherwise FTS the latest user message.
@@ -223,6 +268,27 @@ export async function POST(request: Request) {
           }
         }
         send({ type: "done" });
+
+        // Record the query for the daily-cap counter (fire-and-forget).
+        if (irisUser) {
+          try {
+            const svc = createServiceClient();
+            await svc.from("audit_log").insert({
+              organization_id: organizationId,
+              user_id: irisUser.id,
+              action: "iris_query",
+              entity_type: scopedItemId ? "regulatory_item" : null,
+              entity_id: scopedItemId ?? null,
+              metadata: {
+                tier,
+                scoped: Boolean(scopedItemId),
+                source_count: sources.length,
+              },
+            });
+          } catch (err) {
+            console.error("[regwatch] iris audit_log insert failed:", err);
+          }
+        }
       } catch (e) {
         send({
           type: "error",

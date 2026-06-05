@@ -20,7 +20,12 @@ export function AddMemberForm() {
         setMessage({ kind: "error", text: res.error ?? "Could not add member" });
         return;
       }
-      setMessage({ kind: "ok", text: `Added ${email} to your organization.` });
+      setMessage({
+        kind: "ok",
+        text: res.invited
+          ? `Sent a signup invite to ${email}. They'll appear here once they accept.`
+          : `Added ${email} to your organization.`,
+      });
       setEmail("");
     });
   }

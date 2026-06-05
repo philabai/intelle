@@ -3,6 +3,8 @@ import { createClient } from "@/lib/regwatch/supabase/server";
 import { sendBrevoEmail, type SendBrevoEmailResult } from "@/lib/email/brevo";
 import { buildDigest, type DigestMatch, type DigestPayload } from "./alerts-digest";
 import type { Severity } from "./match";
+import { canUseFeature } from "./tier";
+import type { Tier } from "./stripe";
 
 /**
  * Alert digest orchestrator. Runs on a cron; can also be invoked manually
@@ -78,7 +80,26 @@ export async function runAlertDigest(
     result.duration_ms = Date.now() - started;
     return result;
   }
-  const prefs = (prefRows ?? []) as PrefRow[];
+  let prefs = (prefRows ?? []) as PrefRow[];
+
+  // 1a. Tier gate — email digests are Pro+. Drop prefs whose org is on Free.
+  if (prefs.length > 0) {
+    const orgIds = Array.from(new Set(prefs.map((p) => p.organization_id)));
+    const { data: orgTierRows } = await supabase
+      .from("organizations")
+      .select("id, tier")
+      .in("id", orgIds);
+    const tierByOrgId = new Map<string, Tier>(
+      (orgTierRows ?? []).map((o) => [
+        o.id as string,
+        (o.tier as Tier) ?? "free",
+      ]),
+    );
+    prefs = prefs.filter((p) =>
+      canUseFeature(tierByOrgId.get(p.organization_id) ?? "free", "email_digests"),
+    );
+  }
+
   result.users_considered = prefs.length;
   if (prefs.length === 0) {
     result.duration_ms = Date.now() - started;
@@ -475,6 +496,28 @@ export async function previewMyDigest(
   mode: DigestMode = "daily",
 ): Promise<PreviewDigestResult> {
   try {
+    const ssrPreview = await createClient();
+    const { data: membershipTier } = await ssrPreview
+      .from("organization_members")
+      .select("organization:organizations!inner(tier)")
+      .limit(1)
+      .maybeSingle();
+    const tier: Tier = membershipTier
+      ? (Array.isArray(membershipTier.organization)
+          ? (membershipTier.organization[0]?.tier as Tier | undefined)
+          : ((membershipTier.organization as { tier?: Tier } | null)?.tier)) ??
+        "free"
+      : "free";
+    if (!canUseFeature(tier, "email_digests")) {
+      return {
+        ok: false,
+        error:
+          "Email digests require the Pro plan. Upgrade at /regwatch/settings/billing.",
+        matchCount: 0,
+        diagnostics: { pulled: 0, afterCriticalGate: 0, afterDedup: 0, capped: 0 },
+      };
+    }
+
     const pulled = await pullDigestForCurrentUser({
       mode,
       applyCriticalOnly: false,
@@ -514,6 +557,28 @@ export async function sendTestDigestToMe(
   mode: DigestMode = "daily",
 ): Promise<SendTestDigestResult> {
   try {
+    const ssrTier = await createClient();
+    const { data: membershipTier } = await ssrTier
+      .from("organization_members")
+      .select("organization:organizations!inner(tier)")
+      .limit(1)
+      .maybeSingle();
+    const tier: Tier = membershipTier
+      ? (Array.isArray(membershipTier.organization)
+          ? (membershipTier.organization[0]?.tier as Tier | undefined)
+          : ((membershipTier.organization as { tier?: Tier } | null)?.tier)) ??
+        "free"
+      : "free";
+    if (!canUseFeature(tier, "email_digests")) {
+      return {
+        ok: false,
+        error:
+          "Email digests require the Pro plan. Upgrade at /regwatch/settings/billing.",
+        matchCount: 0,
+        diagnostics: { pulled: 0, afterCriticalGate: 0, afterDedup: 0, capped: 0 },
+      };
+    }
+
     const pulled = await pullDigestForCurrentUser({
       mode,
       applyCriticalOnly: true,

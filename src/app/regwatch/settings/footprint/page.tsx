@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { getMyFootprint, getMyOrganization } from "@/lib/regwatch/footprint";
 import { listMonitorableRegulators } from "@/lib/regwatch/footprint-actions";
+import { checkFeatureGate } from "@/lib/regwatch/tier";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { FootprintForm } from "@/components/regwatch/footprint/FootprintForm";
+import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
 import { roleLabel } from "@/lib/regwatch/reference/roles";
 
 export const metadata = { title: "Footprint" };
@@ -16,6 +18,19 @@ export default async function FootprintSettingsPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/regwatch/login?next=/regwatch/settings/footprint");
+
+  const gate = await checkFeatureGate("footprint");
+  if (!gate.allowed) {
+    return (
+      <RegwatchAppShell authed>
+        <PaywallScreen
+          feature="footprint"
+          currentTier={gate.currentTier}
+          requiredTier={gate.requiredTier}
+        />
+      </RegwatchAppShell>
+    );
+  }
 
   const [org, footprint, regulators] = await Promise.all([
     getMyOrganization(),
