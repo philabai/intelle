@@ -29,6 +29,7 @@ export function LinkRegulationForm({ documentId, existingLinks }: Props) {
   const router = useRouter();
   const [picked, setPicked] = useState<RegulationPickerResult | null>(null);
   const [clauseAnchor, setClauseAnchor] = useState("");
+  const [clauseText, setClauseText] = useState("");
   const [rationale, setRationale] = useState("");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -41,11 +42,20 @@ export function LinkRegulationForm({ documentId, existingLinks }: Props) {
       return;
     }
     startTransition(async () => {
+      // If the user picked a clause from the viewer but didn't write
+      // their own rationale, fold the clause text into the rationale so
+      // the link record carries the evidence text.
+      const effectiveRationale =
+        rationale.trim().length > 0
+          ? rationale.trim()
+          : clauseText.trim().length > 0
+            ? clauseText.trim()
+            : null;
       const res = await linkDocumentToRegulation({
         internalDocumentId: documentId,
         regulatoryItemId: picked.id,
         clauseAnchor: clauseAnchor.trim() || null,
-        linkRationale: rationale.trim() || null,
+        linkRationale: effectiveRationale,
       });
       if (!res.ok) {
         setError(res.error ?? "Could not link");
@@ -53,6 +63,7 @@ export function LinkRegulationForm({ documentId, existingLinks }: Props) {
       }
       setPicked(null);
       setClauseAnchor("");
+      setClauseText("");
       setRationale("");
       router.refresh();
     });
@@ -126,6 +137,8 @@ export function LinkRegulationForm({ documentId, existingLinks }: Props) {
           onChange={setPicked}
           clauseAnchor={clauseAnchor}
           onClauseAnchorChange={setClauseAnchor}
+          clauseText={clauseText}
+          onClauseTextChange={setClauseText}
           showClauseField
         />
         <textarea

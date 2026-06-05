@@ -128,23 +128,12 @@ export function CreateObligationForm({
             onChange={setRegulation}
             clauseAnchor={clauseAnchor}
             onClauseAnchorChange={setClauseAnchor}
+            clauseText={clauseText}
+            onClauseTextChange={setClauseText}
             showClauseField
           />
         </div>
       </div>
-
-      <label className="block">
-        <span className="text-xs font-medium uppercase tracking-wider text-muted">
-          Clause text snippet (optional)
-        </span>
-        <textarea
-          value={clauseText}
-          onChange={(e) => setClauseText(e.target.value)}
-          rows={3}
-          placeholder="Paste the specific clause text the obligation applies to, so the reviewer can read it without opening the source."
-          className="mt-1 w-full rounded-md border border-card-border bg-card-bg px-3 py-2 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
-        />
-      </label>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
