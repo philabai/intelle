@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import {
+  fetchRegulationBodyFromSource,
   getRegulationBody,
   type RegulationBody,
   type BodyParagraph,
@@ -36,6 +37,8 @@ export function RegulationViewer({
 }: Props) {
   const [body, setBody] = useState<RegulationBody | null>(null);
   const [pending, startTransition] = useTransition();
+  const [fetching, startFetching] = useTransition();
+  const [fetchMessage, setFetchMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [anchor, setAnchor] = useState(initialClauseAnchor);
   const [clauseText, setClauseText] = useState(initialClauseText);
@@ -71,6 +74,24 @@ export function RegulationViewer({
     setAnchor(a);
     setClauseText(p.text);
   }
+
+  function fetchFromSource() {
+    setFetchMessage(null);
+    setError(null);
+    startFetching(async () => {
+      const res = await fetchRegulationBodyFromSource({ id: regulationId });
+      if (!res.ok || !res.body) {
+        setError(res.error ?? "Could not load body from source");
+        return;
+      }
+      setBody(res.body);
+      setFetchMessage(
+        `Loaded ${res.extractedChars?.toLocaleString() ?? "?"} chars from source · ${res.body.paragraphs.length} paragraphs`,
+      );
+    });
+  }
+
+  const isThin = !!body && (body.summaryOnly || body.paragraphs.length <= 2);
 
   function apply() {
     onApply({
@@ -168,11 +189,42 @@ export function RegulationViewer({
                 clause text below.
               </p>
             )}
-            {body && body.summaryOnly && body.paragraphs.length > 0 && (
-              <p className="mb-3 rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-[11px] text-amber-200">
-                Only a summary is available — the full source body wasn&apos;t
-                ingested. For exact clauses, open the Source link.
-              </p>
+            {body && isThin && (
+              <div className="mb-3 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-200">
+                <p className="font-medium text-amber-200">
+                  Only the regulator&apos;s short summary was ingested.
+                </p>
+                <p className="mt-1 text-amber-200/80">
+                  The connectors only capture metadata — not the full body —
+                  for this source today. Click below to fetch the full text
+                  from <span className="font-mono">{body.sourceUrl}</span>,
+                  parse it, and cache it on this row so subsequent views
+                  load instantly.
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={fetchFromSource}
+                    disabled={fetching}
+                    className="rounded-md bg-amber-500 px-3 py-1.5 text-[11px] font-medium text-background hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {fetching ? "Fetching…" : "Load full text from source"}
+                  </button>
+                  <a
+                    href={body.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-md border border-amber-500/40 px-3 py-1.5 text-[11px] text-amber-200 hover:bg-amber-500/10"
+                  >
+                    Open source ↗
+                  </a>
+                  {fetchMessage && (
+                    <span className="text-[11px] text-amber-200/80">
+                      {fetchMessage}
+                    </span>
+                  )}
+                </div>
+              </div>
             )}
             <ol className="space-y-3">
               {body?.paragraphs.map((p) => (
