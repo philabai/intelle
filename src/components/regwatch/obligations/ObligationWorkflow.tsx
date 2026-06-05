@@ -227,7 +227,12 @@ export function ObligationWorkflow({
   }
 
   // ---- Render --------------------------------------------------------------
-  const actions: { label: string; onClick: () => void; danger?: boolean }[] = [];
+  const actions: {
+    label: string;
+    onClick: () => void;
+    danger?: boolean;
+    secondary?: boolean;
+  }[] = [];
 
   if (reviewStatus === "awaiting-triage" && (isReviewer || isAdmin)) {
     actions.push({ label: "Start review", onClick: handleClaim });
@@ -291,6 +296,23 @@ export function ObligationWorkflow({
     });
   }
 
+  // "Save and come back later" — surfaces whenever the reviewer or admin is
+  // mid-flight on a non-terminal obligation. Evidence + acknowledgements +
+  // notes auto-save as the reviewer works, so the button is purely
+  // navigational: it returns to the obligations list with a clean slate so
+  // the user can come back when the AI analysis has finished or when they
+  // have time to keep going.
+  if (
+    (isReviewer || isAdmin) &&
+    !["closed", "not-applicable"].includes(reviewStatus)
+  ) {
+    actions.push({
+      label: "Save and come back later",
+      onClick: () => router.push("/regwatch/obligations"),
+      secondary: true,
+    });
+  }
+
   return (
     <div className="space-y-4">
       {actions.length > 0 && (
@@ -304,7 +326,9 @@ export function ObligationWorkflow({
               className={`rounded-md px-3 py-1.5 text-xs font-medium disabled:opacity-50 ${
                 a.danger
                   ? "border border-red-500/40 bg-transparent text-red-300 hover:border-red-500 hover:bg-red-500/10"
-                  : "bg-brand-blue text-white hover:bg-brand-blue/90"
+                  : a.secondary
+                    ? "border border-card-border bg-card-bg text-muted hover:border-brand-blue hover:text-foreground"
+                    : "bg-brand-blue text-white hover:bg-brand-blue/90"
               }`}
             >
               {a.label}
