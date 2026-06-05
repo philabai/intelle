@@ -79,10 +79,13 @@ export function EvidenceFileCard({
     return null;
   }
 
-  // For images, auto-load the preview when the card mounts (so admin doesn't
-  // have to click into each photo separately).
+  // For images + videos, auto-load the preview when the card mounts so the
+  // admin sees the actual media without an extra click per file.
   useEffect(() => {
-    if (file.fileKind === "image" && file.analysisStatus !== "pending") {
+    if (
+      (file.fileKind === "image" || file.fileKind === "video") &&
+      file.analysisStatus !== "pending"
+    ) {
       void fetchSignedUrl().then((url) => {
         if (url) setShowImage(true);
       });
@@ -195,12 +198,49 @@ export function EvidenceFileCard({
         </div>
       )}
 
+      {showImage && signedUrl && file.fileKind === "video" && (
+        <div className="mt-3 overflow-hidden rounded-md border border-card-border bg-black">
+          <video
+            src={signedUrl}
+            controls
+            preload="metadata"
+            className="max-h-[480px] w-full"
+          >
+            Your browser does not support inline video. Use Open file ↗ above.
+          </video>
+        </div>
+      )}
+
+      {file.fileKind === "video" &&
+        file.analysisStatus === "completed" &&
+        (file.analysisKeyframeCount != null ||
+          file.analysisVideoDurationSec != null) && (
+          <p className="mt-2 text-[10px] uppercase tracking-wider text-muted">
+            {file.analysisVideoDurationSec != null
+              ? `Video ${formatDuration(file.analysisVideoDurationSec)}`
+              : "Video"}
+            {file.analysisKeyframeCount != null
+              ? ` · ${file.analysisKeyframeCount} keyframes analysed`
+              : ""}
+          </p>
+        )}
+
       {file.analysisStatus === "completed" && (
         <div className="mt-3 space-y-3">
           {file.analysisSummary && (
             <p className="rounded-md border border-card-border bg-card-bg/30 p-2.5 text-xs text-foreground/90">
               {file.analysisSummary}
             </p>
+          )}
+          {file.fileKind === "video" && file.analysisTranscript && (
+            <details className="rounded-md border border-card-border bg-card-bg/30">
+              <summary className="cursor-pointer select-none px-2.5 py-1.5 text-[11px] font-medium text-foreground/90 hover:text-brand-teal">
+                Audio transcript
+              </summary>
+              <pre className="max-h-72 overflow-auto whitespace-pre-wrap border-t border-card-border bg-background px-2.5 py-2 font-mono text-[11px] leading-relaxed text-foreground/90">
+                {file.analysisTranscript}
+              </pre>
+            </details>
           )}
           <FindingsPanel
             evidenceFileId={file.id}
@@ -236,4 +276,11 @@ export function EvidenceFileCard({
       )}
     </article>
   );
+}
+
+function formatDuration(totalSec: number): string {
+  const safe = Math.max(0, Math.floor(totalSec));
+  const m = Math.floor(safe / 60);
+  const s = safe % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
 }

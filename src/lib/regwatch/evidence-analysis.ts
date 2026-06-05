@@ -148,6 +148,12 @@ export interface AnalysisResult {
   model: string;
   tokenUsage?: Record<string, unknown>;
   error?: string;
+  /** Video-only: Whisper transcript persisted to analysis_transcript. */
+  transcript?: string;
+  /** Video-only: frames sampled. */
+  keyframeCount?: number;
+  /** Video-only: source video duration in seconds. */
+  videoDurationSec?: number;
 }
 
 export interface EvidenceJobInput {
@@ -220,13 +226,42 @@ export async function analyseOneEvidenceFile(
 
   // 3. Route by file_kind.
   if (job.fileKind === "video") {
-    // Phase C will wire video. For now: skip with a marker.
+    const { analyseVideoEvidence } = await import("./evidence-video-analysis");
+    const videoResult = await analyseVideoEvidence({
+      blob: dl,
+      fileName: job.fileName,
+      organizationId: job.organizationId,
+      regulationContext,
+      clauseContext,
+      // The video module reuses our Claude tool-use call so the schema
+      // stays in lockstep with the doc/image path.
+      recordFindings: async ({ anthropic, content }) => {
+        const r = await runClaudeAnalysis({
+          anthropic,
+          regulationContext,
+          clauseContext,
+          fileLabel: job.fileName,
+          content: content as unknown[],
+        });
+        return {
+          ok: r.ok,
+          status: r.status === "skipped" ? "failed" : r.status,
+          payload: r.payload,
+          tokenUsage: r.tokenUsage,
+          error: r.error,
+        };
+      },
+    });
     return {
-      ok: true,
-      status: "skipped",
-      model: EVIDENCE_ANALYSIS_MODEL,
-      error:
-        "Video analysis ships in Phase C of the AI evidence rollout (Enterprise tier).",
+      ok: videoResult.ok,
+      status: videoResult.status,
+      payload: videoResult.payload as RecordFindings | undefined,
+      model: videoResult.model,
+      tokenUsage: videoResult.tokenUsage,
+      error: videoResult.error,
+      transcript: videoResult.transcript,
+      keyframeCount: videoResult.keyframeCount,
+      videoDurationSec: videoResult.videoDurationSec,
     };
   }
 
@@ -645,6 +680,13 @@ export async function runEvidenceAnalysisBatch(
           analysis_confidence: analysis.payload.overall_confidence,
           analysis_token_usage: analysis.tokenUsage ?? {},
           analysis_error: null,
+          // Video-only fields — undefined for docs/images is fine.
+          analysis_transcript: analysis.transcript ?? null,
+          analysis_keyframe_count: analysis.keyframeCount ?? null,
+          analysis_video_duration_sec:
+            analysis.videoDurationSec != null
+              ? Math.round(analysis.videoDurationSec)
+              : null,
         })
         .eq("id", r.id);
       result.completed += 1;
