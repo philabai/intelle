@@ -154,7 +154,7 @@ function scoreRegulator(
   return { matched: false, via: null };
 }
 
-function severityFor(score: number): Severity {
+export function severityFor(score: number): Severity {
   if (score >= 80) return "critical";
   if (score >= 60) return "high";
   if (score >= 40) return "normal";

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/regwatch/supabase/server";
-import { listRegulations } from "@/lib/regwatch/queries";
+import { listRegulationsHybrid } from "@/lib/regwatch/queries";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { SearchInput } from "@/components/regwatch/search/SearchInput";
 import { IrisAnswer } from "@/components/regwatch/search/IrisAnswer";
@@ -32,7 +32,7 @@ export default async function SearchPage({ searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const items = query ? await listRegulations({ q: query }, 25) : [];
+  const items = query ? await listRegulationsHybrid(query, 25) : [];
 
   return (
     <RegwatchAppShell authed={!!user}>
@@ -47,8 +47,9 @@ export default async function SearchPage({ searchParams }: Props) {
           <p className="mt-2 max-w-3xl text-sm text-muted">
             Type a question, paste a legal citation, or run a keyword search. Iris
             synthesises a grounded answer from the matching corpus excerpts; the ranked
-            list below is the same Postgres FTS the Browser uses. Semantic vector search
-            joins this surface when Phase 1.3 enrichment populates embeddings.
+            list below is hybrid retrieval — voyage-3-large vector similarity blended
+            with Postgres FTS, so paraphrases (&ldquo;ammonia&rdquo; finds &ldquo;NH3&rdquo;) surface alongside
+            exact-keyword matches.
           </p>
         </header>
 
@@ -77,7 +78,7 @@ export default async function SearchPage({ searchParams }: Props) {
 
             <section>
               <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
-                {items.length} keyword {items.length === 1 ? "match" : "matches"} in the
+                {items.length} hybrid {items.length === 1 ? "match" : "matches"} in the
                 corpus
               </p>
               {items.length === 0 ? (

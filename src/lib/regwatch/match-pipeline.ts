@@ -4,6 +4,10 @@ import {
   dispatchImmediateCriticalAlerts,
   type CriticalAlertCandidate,
 } from "./critical-alerts";
+import {
+  computeSemanticMatches,
+  type SemanticFootprint,
+} from "./semantic-match";
 
 /**
  * Matcher orchestrator. For each configured footprint, scores every
@@ -35,6 +39,8 @@ export interface MatchPipelineResult {
   critical_alerts_dispatched: number;
   critical_emails_sent: number;
   critical_pushes_sent: number;
+  /** Fresh items surfaced ONLY via semantic similarity (no token overlap). */
+  semantic_matches_added: number;
   errors: string[];
   duration_ms: number;
 }
@@ -53,6 +59,7 @@ export async function runMatchPipeline(
     critical_alerts_dispatched: 0,
     critical_emails_sent: 0,
     critical_pushes_sent: 0,
+    semantic_matches_added: 0,
     errors: [],
     duration_ms: 0,
   };
@@ -166,6 +173,42 @@ export async function runMatchPipeline(
         matched_at: now,
       });
     }
+  }
+
+  // 3a. Semantic lane — for each configured footprint, embed its query text,
+  // ask the match_regulatory_items RPC for top-K by vector similarity, and
+  // append fresh hits (items the token-overlap pass surfaced nothing for in
+  // this footprint) as capped-severity matches. Skipped silently when
+  // VOYAGE_API_KEY is unset.
+  const semanticInput: SemanticFootprint[] = footprints.map((f) => ({
+    id: f.id as string,
+    organization_id: f.organization_id as string,
+    geographies: (f.geographies as string[]) ?? [],
+    activities_naics: (f.activities_naics as string[]) ?? [],
+    monitored_regulator_slugs: (f.monitored_regulator_slugs as string[]) ?? [],
+    monitored_topics: (f.monitored_topics as string[]) ?? [],
+    substances_cas: (f.substances_cas as string[]) ?? [],
+  }));
+  // Pre-deduplicate against pairs already in upsertRows so the semantic lane
+  // never overwrites a higher-score token-overlap match. The RPC also dedupes
+  // against persisted rows, but in-memory pairs added this run aren't
+  // persisted yet — handle them here.
+  const overlapPairs = new Set(
+    upsertRows.map((r) => `${r.footprint_id}|${r.regulatory_item_id}`),
+  );
+  try {
+    const semantic = await computeSemanticMatches(semanticInput);
+    for (const row of semantic.rows) {
+      const key = `${row.footprint_id}|${row.regulatory_item_id}`;
+      if (overlapPairs.has(key)) continue;
+      upsertRows.push(row);
+      result.semantic_matches_added += 1;
+    }
+    if (semantic.stats.errors.length > 0) {
+      result.errors.push(...semantic.stats.errors);
+    }
+  } catch (e) {
+    result.errors.push(`semantic: ${(e as Error).message}`);
   }
 
   // 4. Chunked upsert. The (footprint_id, regulatory_item_id) unique

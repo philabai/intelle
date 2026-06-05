@@ -1,4 +1,9 @@
 import { createClient } from "./supabase/server";
+import {
+  embedOne,
+  isVoyageConfigured,
+  toPgVectorLiteral,
+} from "./voyage";
 
 /**
  * Server-side data access for the Browser + Detail surfaces. Every helper
@@ -149,6 +154,83 @@ export async function listRegulations(
   return (data ?? []).map((row) => ({
     ...row,
     regulator: Array.isArray(row.regulator) ? row.regulator[0] : row.regulator,
+  })) as RegulationListItem[];
+}
+
+/**
+ * Hybrid (vector + FTS) retrieval for the Search surface. Behaves like
+ * listRegulations but ranks via the regwatch.match_regulatory_items RPC
+ * which blends voyage-3-large cosine similarity with normalised FTS rank.
+ *
+ * The RPC falls back transparently to pure FTS when either the embedding or
+ * tsquery lane is unavailable — so this is safe to call before Voyage is
+ * configured (results just match the old FTS behaviour).
+ *
+ * Returns rows in the same RegulationListItem shape as listRegulations.
+ */
+export async function listRegulationsHybrid(
+  query: string,
+  limit = 25,
+  alpha = 0.65,
+): Promise<RegulationListItem[]> {
+  if (!query || query.trim().length === 0) return [];
+  const supabase = await createClient();
+
+  let qvecLiteral: string | null = null;
+  if (isVoyageConfigured()) {
+    try {
+      const qvec = await embedOne(query, { inputType: "query" });
+      qvecLiteral = toPgVectorLiteral(qvec);
+    } catch (e) {
+      console.error("[regwatch] search embed failed:", e);
+    }
+  }
+
+  const { data, error } = await supabase.rpc("match_regulatory_items", {
+    query_embedding: qvecLiteral,
+    query_text: query,
+    match_limit: limit,
+    alpha,
+  });
+  if (error) {
+    console.error("[regwatch] listRegulationsHybrid rpc error:", error);
+    return [];
+  }
+  // The RPC returns flat columns; reshape to RegulationListItem so the
+  // existing RegulationRow component can render without changes.
+  type Row = {
+    id: string;
+    citation: string;
+    slug: string;
+    title: string;
+    summary: string | null;
+    instrument_type: string;
+    status: string;
+    effective_date: string | null;
+    last_changed_at: string;
+    jurisdiction_code: string;
+    topics: string[] | null;
+    regulator_slug: string;
+    regulator_name: string;
+    regulator_short: string | null;
+  };
+  return (data ?? []).map((row: Row) => ({
+    id: row.id,
+    citation: row.citation,
+    slug: row.slug,
+    title: row.title,
+    summary: row.summary,
+    instrument_type: row.instrument_type,
+    status: row.status,
+    effective_date: row.effective_date,
+    last_changed_at: row.last_changed_at,
+    jurisdiction_code: row.jurisdiction_code,
+    topics: row.topics ?? [],
+    regulator: {
+      slug: row.regulator_slug,
+      name: row.regulator_name,
+      short_name: row.regulator_short,
+    },
   })) as RegulationListItem[];
 }
 
