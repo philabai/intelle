@@ -22,6 +22,8 @@ export const FEATURE_REQUIRED_TIER = {
 
   members: "team",
   assignment: "team",
+  compliance_obligations: "team",
+  internal_documents: "team",
 
   sso: "enterprise",
   custom_connectors: "enterprise",
@@ -98,6 +100,14 @@ export const FEATURE_DESCRIPTIONS: Record<GatedFeature, { name: string; why: str
   assignment: {
     name: "Match assignment",
     why: "Assign individual Feed items to specific teammates with org-scoped routing.",
+  },
+  compliance_obligations: {
+    name: "Compliance obligations",
+    why: "Asset hierarchy + reviewer workflow for assigning regulations (or clauses) to specific assets with admin-locked severity and sign-off.",
+  },
+  internal_documents: {
+    name: "Internal documents",
+    why: "Upload SOPs, policies, and permits; link them to external regulations and get notified the moment a linked regulation changes.",
   },
   sso: {
     name: "SSO (SAML / OIDC)",
