@@ -1,22 +1,21 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
 import { RegwatchLogo } from "./Logo";
 import { NotificationBell } from "./NotificationBell";
+import { NavDropdown, NavLink } from "./NavInteractive";
 
 /**
- * RegWatch's internal app nav. Compressed into two grouped dropdowns:
+ * RegWatch's internal app nav. Server Component — NotificationBell needs
+ * to be server-renderable because its dependency chain reaches
+ * supabase/server which uses next/headers. The interactive dropdowns +
+ * active-link styling live in NavInteractive.tsx ("use client") so the
+ * server tree stays clean.
  *
- *   Discover ▾  (Browse, Regulators, Topics)   — corpus exploration
- *   Search                                      — the workhorse, kept flat
- *   My Feed                                     — personal activity
- *   Workspace ▾ (Assets, Obligations, Documents, Footprint) — org-private
- *   Account ▾ (Account, Billing, Members, Alerts, Footprint)
- *
- * The dropdown root highlights when the current route is under it, so
- * users can still see where they are at a glance.
+ * Compressed into grouped dropdowns:
+ *   Discover ▾   (Browse, Regulators, Topics)
+ *   Search                 standalone
+ *   My Feed                standalone
+ *   Workspace ▾  (Assets, Obligations, Documents, Footprint)
+ *   Account ▾    (Account, Billing, Members, Alerts, Footprint)
  */
 export function RegwatchNav({ authed }: { authed: boolean }) {
   return (
@@ -60,6 +59,7 @@ export function RegwatchNav({ authed }: { authed: boolean }) {
             <NavDropdown
               label="Account"
               align="right"
+              triggerClassName="flex items-center gap-1 rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-sm text-foreground hover:border-brand-blue/60"
               items={[
                 { href: "/regwatch/settings/account", label: "Account" },
                 { href: "/regwatch/settings/billing", label: "Billing" },
@@ -67,7 +67,6 @@ export function RegwatchNav({ authed }: { authed: boolean }) {
                 { href: "/regwatch/settings/alerts", label: "Alerts" },
                 { href: "/regwatch/settings/footprint", label: "Footprint" },
               ]}
-              triggerClassName="rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-sm text-foreground hover:border-brand-blue/60"
             />
           ) : (
             <>
@@ -88,134 +87,5 @@ export function RegwatchNav({ authed }: { authed: boolean }) {
         </div>
       </div>
     </nav>
-  );
-}
-
-function NavLink({
-  href,
-  children,
-}: {
-  href: string;
-  children: React.ReactNode;
-}) {
-  const pathname = usePathname();
-  const active = pathname === href || pathname.startsWith(href + "/");
-  return (
-    <Link
-      href={href}
-      className={`rounded-md px-3 py-1.5 text-sm transition ${
-        active
-          ? "bg-card-bg text-foreground"
-          : "text-muted hover:bg-card-bg hover:text-foreground"
-      }`}
-    >
-      {children}
-    </Link>
-  );
-}
-
-interface DropdownItem {
-  href: string;
-  label: string;
-}
-
-function NavDropdown({
-  label,
-  items,
-  align = "left",
-  triggerClassName,
-}: {
-  label: string;
-  items: DropdownItem[];
-  align?: "left" | "right";
-  triggerClassName?: string;
-}) {
-  const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  const activeIdx = items.findIndex(
-    (it) => pathname === it.href || pathname.startsWith(it.href + "/"),
-  );
-  const sectionActive = activeIdx !== -1;
-
-  useEffect(() => {
-    function onClickOutside(e: MouseEvent) {
-      if (!ref.current) return;
-      if (!ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    if (open) {
-      window.addEventListener("click", onClickOutside);
-      window.addEventListener("keydown", onKey);
-    }
-    return () => {
-      window.removeEventListener("click", onClickOutside);
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
-  // Close on route change.
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        className={
-          triggerClassName ??
-          `flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition ${
-            sectionActive
-              ? "bg-card-bg text-foreground"
-              : "text-muted hover:bg-card-bg hover:text-foreground"
-          }`
-        }
-      >
-        <span>{label}</span>
-        <span
-          aria-hidden
-          className={`text-[10px] text-muted transition ${open ? "rotate-180" : ""}`}
-        >
-          ▾
-        </span>
-      </button>
-      {open && (
-        <div
-          role="menu"
-          className={`absolute top-full mt-1 w-56 overflow-hidden rounded-md border border-card-border bg-card-bg shadow-xl ${
-            align === "right" ? "right-0" : "left-0"
-          }`}
-        >
-          <ul className="py-1">
-            {items.map((it) => {
-              const active =
-                pathname === it.href || pathname.startsWith(it.href + "/");
-              return (
-                <li key={it.href}>
-                  <Link
-                    href={it.href}
-                    role="menuitem"
-                    className={`block px-3 py-1.5 text-sm transition ${
-                      active
-                        ? "bg-brand-teal/10 text-brand-teal"
-                        : "text-foreground hover:bg-brand-navy/40"
-                    }`}
-                  >
-                    {it.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
-    </div>
   );
 }

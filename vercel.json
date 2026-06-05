@@ -6,6 +6,7 @@
     { "path": "/api/cron/regwatch-crawl",   "schedule": "*/15 * * * *" },
     { "path": "/api/cron/regwatch-enrich",  "schedule": "5,20,35,50 * * * *" },
     { "path": "/api/cron/regwatch-match",   "schedule": "10,25,40,55 * * * *" },
+    { "path": "/api/cron/regwatch-body-enrich", "schedule": "13,43 * * * *" },
     { "path": "/api/cron/regwatch-alerts",  "schedule": "0 6 * * *" }
   ]
 }
