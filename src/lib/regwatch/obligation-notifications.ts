@@ -38,7 +38,9 @@ type Kind =
   | "regulation_changed_for_doc"
   | "obligation_pending_approval"
   | "obligation_signed_off"
-  | "obligation_kicked_back";
+  | "obligation_kicked_back"
+  | "evidence_analysis_completed"
+  | "evidence_analysis_flagged_discrepancy";
 
 interface QueueRow {
   id: string;
@@ -482,6 +484,10 @@ function renderTemplate(input: RenderInput): RenderedNotification | null {
       return renderObligationSignedOff(input);
     case "obligation_kicked_back":
       return renderObligationKickedBack(input);
+    case "evidence_analysis_completed":
+      return renderEvidenceAnalysisCompleted(input);
+    case "evidence_analysis_flagged_discrepancy":
+      return renderEvidenceAnalysisFlaggedDiscrepancy(input);
   }
 }
 
@@ -656,6 +662,71 @@ function renderObligationKickedBack(
     severity: "high",
   };
   return { subject, html, push };
+}
+
+function renderEvidenceAnalysisCompleted(
+  input: RenderInput,
+): RenderedNotification | null {
+  const o = input.subjects.obligation;
+  if (!o) return null;
+  const reg = input.subjects.reg;
+  const fileName = stringFromPayload(input.payload.file_name);
+  const summary = stringFromPayload(input.payload.summary);
+  const subject = `[Analysed] ${fileName ? fileName : "Evidence"} — no discrepancies`;
+  const url = `${input.baseUrl}/regwatch/obligations/${o.id}`;
+  const html = layout({
+    hello: helloLine(input.recipientName),
+    orgName: input.orgName,
+    eyebrow: "Evidence analysed",
+    headline: fileName
+      ? `${escape(fileName)} — AI analysis complete`
+      : "Evidence analysis complete",
+    body: `<p>The AI analysis of your evidence ${reg ? `against <strong>${escape(reg.citation)}</strong>` : ""} returned no discrepancies. You can proceed to submit for approval.</p>${summary ? `<p style="margin-top:12px;padding:8px;border-left:3px solid #00d4c4;background:#0b1220;color:#cbd5e1;"><span style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#94a3b8;">Summary</span><br/>${escape(summary)}</p>` : ""}`,
+    cta: { label: "Open the obligation →", url },
+  });
+  const push: PushPayload = {
+    title: `Evidence OK · ${reg?.citation ?? "Obligation"}`,
+    body: "No discrepancies flagged",
+    url: `/regwatch/obligations/${o.id}`,
+    severity: "low",
+  };
+  return { subject, html, push };
+}
+
+function renderEvidenceAnalysisFlaggedDiscrepancy(
+  input: RenderInput,
+): RenderedNotification | null {
+  const o = input.subjects.obligation;
+  if (!o) return null;
+  const reg = input.subjects.reg;
+  const fileName = stringFromPayload(input.payload.file_name);
+  const summary = stringFromPayload(input.payload.summary);
+  const overallSignal = stringFromPayload(input.payload.overall_signal);
+  const findingsCountRaw = input.payload.findings_count;
+  const findingsCount =
+    typeof findingsCountRaw === "number" ? findingsCountRaw : 0;
+  const plural = findingsCount === 1 ? "discrepancy" : "discrepancies";
+  const subject = `[Discrepancy] ${fileName ? fileName : "Evidence"} — ${findingsCount} ${plural} flagged`;
+  const url = `${input.baseUrl}/regwatch/obligations/${o.id}`;
+  const html = layout({
+    hello: helloLine(input.recipientName),
+    orgName: input.orgName,
+    eyebrow: "Evidence discrepancy",
+    headline: `${findingsCount} ${plural} flagged on ${escape(fileName ?? "your evidence")}`,
+    body: `<p>The AI analysis of your evidence ${reg ? `against <strong>${escape(reg.citation)}</strong>` : ""} flagged ${findingsCount} potential ${plural}${overallSignal ? ` (overall read: <strong>${escape(overallSignal.replace("-", " "))}</strong>)` : ""}. Open the obligation to review each finding, address them, or acknowledge them before submitting for sign-off.</p>${summary ? `<p style="margin-top:12px;padding:8px;border-left:3px solid #fcd34d;background:#0b1220;color:#cbd5e1;"><span style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#94a3b8;">AI summary</span><br/>${escape(summary)}</p>` : ""}`,
+    cta: { label: "Review the findings →", url },
+  });
+  const push: PushPayload = {
+    title: `${findingsCount} ${plural} · ${reg?.citation ?? "Obligation"}`,
+    body: summary ? summary.slice(0, 100) : "Review AI findings",
+    url: `/regwatch/obligations/${o.id}`,
+    severity: "high",
+  };
+  return { subject, html, push };
+}
+
+function stringFromPayload(v: unknown): string | null {
+  return typeof v === "string" && v.length > 0 ? v : null;
 }
 
 // ---------------------------------------------------------------------------

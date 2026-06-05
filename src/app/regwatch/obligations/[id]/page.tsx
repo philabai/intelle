@@ -82,6 +82,25 @@ export default async function ObligationDetailPage({ params }: Props) {
   const isReviewer = obligation.assignedReviewerUserId === user.id;
   const canManageEvidence = isAdmin || isReviewer;
 
+  // Compute unacknowledged HIGH or CRITICAL findings across all evidence
+  // files — used by the sign-off dialog acknowledgement gate. Flat list so
+  // the dialog can render each one as its own line.
+  const unacknowledgedHighSeverityFindings = evidenceFiles.flatMap((ef) =>
+    ef.analysisFindings
+      .filter(
+        (f) =>
+          (f.severity === "high" || f.severity === "critical") &&
+          !f.acknowledged_at,
+      )
+      .map((f) => ({
+        evidenceFileId: ef.id,
+        fileName: ef.fileName,
+        findingId: f.id,
+        title: f.title,
+        severity: f.severity,
+      })),
+  );
+
   const config = await getHierarchyConfig(org?.organization.id ?? "");
   const levelLabel =
     (config[`level${obligation.assetLevel}Label` as keyof typeof config] as string | undefined) ??
@@ -181,6 +200,7 @@ export default async function ObligationDetailPage({ params }: Props) {
                 currentUserId={user.id}
                 isAdmin={isAdmin}
                 assignees={assignees}
+                unacknowledgedHighSeverityFindings={unacknowledgedHighSeverityFindings}
               />
             </section>
 

@@ -1,9 +1,10 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   rerunEvidenceAnalysis,
   deleteEvidence,
+  getEvidenceFileSignedUrl,
 } from "@/lib/regwatch/evidence-actions";
 import type { EvidenceFileRecord } from "@/lib/regwatch/evidence";
 import { FindingsPanel } from "./FindingsPanel";
@@ -54,11 +55,45 @@ export function EvidenceFileCard({
   onChanged,
 }: Props) {
   const [pending, startTransition] = useTransition();
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [signing, setSigning] = useState(false);
+  const [showImage, setShowImage] = useState(false);
 
   const statusLabel =
     file.analysisStatus === "completed"
       ? `${file.analysisFindings.length} finding${file.analysisFindings.length === 1 ? "" : "s"}`
       : STATUS_COPY[file.analysisStatus];
+
+  // Fetch signed URL on demand. Cached per-card and refreshed when expired.
+  async function fetchSignedUrl(): Promise<string | null> {
+    if (signedUrl) return signedUrl;
+    setSigning(true);
+    const res = await getEvidenceFileSignedUrl({ evidenceFileId: file.id });
+    setSigning(false);
+    if (res.ok && res.url) {
+      setSignedUrl(res.url);
+      // 60s TTL — invalidate after 55s so the next click re-fetches.
+      setTimeout(() => setSignedUrl(null), 55_000);
+      return res.url;
+    }
+    return null;
+  }
+
+  // For images, auto-load the preview when the card mounts (so admin doesn't
+  // have to click into each photo separately).
+  useEffect(() => {
+    if (file.fileKind === "image" && file.analysisStatus !== "pending") {
+      void fetchSignedUrl().then((url) => {
+        if (url) setShowImage(true);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [file.id, file.fileKind]);
+
+  async function onOpenFile() {
+    const url = await fetchSignedUrl();
+    if (url) window.open(url, "_blank", "noopener,noreferrer");
+  }
 
   function onRerun() {
     startTransition(async () => {
@@ -117,6 +152,14 @@ export function EvidenceFileCard({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={onOpenFile}
+            disabled={signing}
+            className="rounded-md border border-card-border bg-card-bg px-2 py-1 text-[10px] text-foreground hover:border-brand-teal disabled:opacity-50"
+          >
+            {signing ? "Loading…" : "Open file ↗"}
+          </button>
           {canManage && file.analysisStatus !== "pending" &&
             file.analysisStatus !== "processing" && (
               <button
@@ -140,6 +183,17 @@ export function EvidenceFileCard({
           )}
         </div>
       </header>
+
+      {showImage && signedUrl && file.fileKind === "image" && (
+        <div className="mt-3 overflow-hidden rounded-md border border-card-border bg-background">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={signedUrl}
+            alt={file.fileName}
+            className="max-h-[480px] w-full object-contain"
+          />
+        </div>
+      )}
 
       {file.analysisStatus === "completed" && (
         <div className="mt-3 space-y-3">

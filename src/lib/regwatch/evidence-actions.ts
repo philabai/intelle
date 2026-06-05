@@ -237,6 +237,39 @@ export async function rerunEvidenceAnalysis(
 }
 
 // ---------------------------------------------------------------------------
+// Signed-URL fetcher — client components call this to get a short-lived
+// download URL when the user clicks "Open file" or to load an inline image.
+// ---------------------------------------------------------------------------
+
+const signedUrlSchema = z.object({ evidenceFileId: z.string().uuid() });
+
+export async function getEvidenceFileSignedUrl(
+  input: unknown,
+): Promise<{ ok: boolean; url?: string; error?: string }> {
+  const parsed = signedUrlSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid input" };
+  const ctx = await ensureEvidenceContext();
+  if (!ctx.ok) return ctx;
+
+  const svc = createServiceClient();
+  const { data: row } = await svc
+    .from("obligation_evidence_files")
+    .select("id, organization_id, file_path")
+    .eq("id", parsed.data.evidenceFileId)
+    .maybeSingle();
+  if (!row || row.organization_id !== ctx.organizationId) {
+    return { ok: false, error: "Evidence file not found in your org" };
+  }
+  const { data, error } = await svc.storage
+    .from("regwatch-documents")
+    .createSignedUrl(row.file_path as string, 60);
+  if (error || !data) {
+    return { ok: false, error: error?.message ?? "Could not sign URL" };
+  }
+  return { ok: true, url: data.signedUrl };
+}
+
+// ---------------------------------------------------------------------------
 // Delete evidence — admin only
 // ---------------------------------------------------------------------------
 

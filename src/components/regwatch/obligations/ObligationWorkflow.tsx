@@ -19,6 +19,14 @@ interface AssigneeOption {
   displayName: string;
 }
 
+interface UnacknowledgedFindingDigest {
+  evidenceFileId: string;
+  fileName: string;
+  findingId: string;
+  title: string;
+  severity: "info" | "low" | "medium" | "high" | "critical";
+}
+
 interface Props {
   obligationId: string;
   reviewStatus: ObligationReviewStatus;
@@ -31,6 +39,9 @@ interface Props {
   currentUserId: string;
   isAdmin: boolean;
   assignees: AssigneeOption[];
+  /** Per-file unacknowledged HIGH or CRITICAL findings — surfaced in the
+   *  sign-off dialog so the admin must acknowledge them before verifying. */
+  unacknowledgedHighSeverityFindings: UnacknowledgedFindingDigest[];
 }
 
 type DialogKind =
@@ -74,6 +85,7 @@ export function ObligationWorkflow({
   currentUserId,
   isAdmin,
   assignees,
+  unacknowledgedHighSeverityFindings,
 }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -83,12 +95,14 @@ export function ObligationWorkflow({
   // form state shared across dialogs
   const [notes, setNotes] = useState("");
   const [rationale, setRationale] = useState("");
+  const [signoffAcknowledged, setSignoffAcknowledged] = useState(false);
 
   const isReviewer = assignedReviewerUserId === currentUserId;
 
   function reset() {
     setNotes("");
     setRationale("");
+    setSignoffAcknowledged(false);
     setError(null);
   }
 
@@ -143,6 +157,15 @@ export function ObligationWorkflow({
   function handleSignOff() {
     if (!rationale.trim()) {
       setError("Sign-off rationale is required");
+      return;
+    }
+    if (
+      unacknowledgedHighSeverityFindings.length > 0 &&
+      !signoffAcknowledged
+    ) {
+      setError(
+        "Tick the acknowledgement box to confirm you've reviewed the AI-flagged discrepancies",
+      );
       return;
     }
     fire({
@@ -459,6 +482,51 @@ export function ObligationWorkflow({
                 The rationale is stored on the obligation and in the audit
                 history.
               </p>
+              {unacknowledgedHighSeverityFindings.length > 0 && (
+                <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
+                  <p className="text-[11px] font-medium text-amber-200">
+                    {unacknowledgedHighSeverityFindings.length} AI-flagged{" "}
+                    {unacknowledgedHighSeverityFindings.length === 1
+                      ? "discrepancy"
+                      : "discrepancies"}{" "}
+                    not yet acknowledged
+                  </p>
+                  <ul className="mt-2 space-y-1 text-[11px] text-amber-100/90">
+                    {unacknowledgedHighSeverityFindings.map((f) => (
+                      <li key={`${f.evidenceFileId}-${f.findingId}`}>
+                        <span
+                          className={`mr-1.5 rounded px-1 py-0.5 text-[9px] font-medium uppercase tracking-wider ${
+                            f.severity === "critical"
+                              ? "bg-red-600/40 text-red-100"
+                              : "bg-amber-500/30 text-amber-100"
+                          }`}
+                        >
+                          {f.severity}
+                        </span>
+                        <span className="font-medium">{f.title}</span>
+                        <span className="ml-1 text-amber-200/70">
+                          ({f.fileName})
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <label className="mt-3 flex items-start gap-2 text-[11px] text-amber-100">
+                    <input
+                      type="checkbox"
+                      checked={signoffAcknowledged}
+                      onChange={(e) =>
+                        setSignoffAcknowledged(e.target.checked)
+                      }
+                      className="mt-0.5 h-3 w-3"
+                    />
+                    <span>
+                      I have reviewed these AI-flagged discrepancies and am
+                      proceeding with sign-off despite them being
+                      unacknowledged.
+                    </span>
+                  </label>
+                </div>
+              )}
               <textarea
                 value={rationale}
                 onChange={(e) => setRationale(e.target.value)}
