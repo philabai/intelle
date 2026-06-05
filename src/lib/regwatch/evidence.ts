@@ -69,6 +69,12 @@ export interface EvidenceFileRecord {
   analysisTokenUsage: Record<string, unknown>;
   analysisError: string | null;
   analysisAttemptCount: number;
+  /** Whisper transcript for video evidence (null for docs / images). */
+  analysisTranscript: string | null;
+  /** Frames sampled for video analysis. */
+  analysisKeyframeCount: number | null;
+  /** Total video duration in seconds (best-effort from ffprobe). */
+  analysisVideoDurationSec: number | null;
 }
 
 type Row = {
@@ -93,6 +99,9 @@ type Row = {
   analysis_token_usage: Record<string, unknown> | null;
   analysis_error: string | null;
   analysis_attempt_count: number;
+  analysis_transcript: string | null;
+  analysis_keyframe_count: number | null;
+  analysis_video_duration_sec: number | null;
 };
 
 function rowToRecord(
@@ -125,6 +134,9 @@ function rowToRecord(
     analysisTokenUsage: r.analysis_token_usage ?? {},
     analysisError: r.analysis_error,
     analysisAttemptCount: r.analysis_attempt_count,
+    analysisTranscript: r.analysis_transcript,
+    analysisKeyframeCount: r.analysis_keyframe_count,
+    analysisVideoDurationSec: r.analysis_video_duration_sec,
   };
 }
 

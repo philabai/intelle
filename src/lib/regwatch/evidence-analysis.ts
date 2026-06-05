@@ -26,19 +26,28 @@ import type {
 // Structured output schema
 // ---------------------------------------------------------------------------
 
+// Truncating string parsers — Claude routinely exceeds tight caps when it
+// has more to say. We accept generous upper bounds but still cap so a
+// runaway response can't blow the DB column or the UI render. Transforms
+// run AFTER validation so over-cap strings get silently trimmed instead
+// of rejected — the prior failure mode was an entire analysis throwing
+// away because `summary` exceeded an arbitrary 800-char limit.
+const cappedString = (max: number) =>
+  z.string().transform((s) => (s.length > max ? s.slice(0, max) : s));
+
 const findingSchema = z.object({
   id: z.string(),
-  title: z.string().max(200),
+  title: cappedString(400),
   severity: z.enum(["info", "low", "medium", "high", "critical"]),
   confidence: z.number().min(0).max(1),
-  anchor: z.string().nullable().optional(),
-  regulation_citation_anchor: z.string().nullable().optional(),
-  explanation: z.string().max(2000),
-  suggested_action: z.string().max(500).nullable().optional(),
+  anchor: cappedString(600).nullable().optional(),
+  regulation_citation_anchor: cappedString(300).nullable().optional(),
+  explanation: cappedString(4000),
+  suggested_action: cappedString(1000).nullable().optional(),
 });
 
 const recordFindingsSchema = z.object({
-  summary: z.string().max(800),
+  summary: cappedString(4000),
   overall_signal: z.enum([
     "looks-compliant",
     "concerns",
@@ -46,7 +55,7 @@ const recordFindingsSchema = z.object({
     "inconclusive",
   ]),
   overall_confidence: z.number().min(0).max(1),
-  findings: z.array(findingSchema).max(20),
+  findings: z.array(findingSchema).max(30),
 });
 
 type RecordFindings = z.infer<typeof recordFindingsSchema>;
@@ -62,7 +71,7 @@ const RECORD_FINDINGS_TOOL = {
       summary: {
         type: "string" as const,
         description:
-          "One-paragraph (≤800 chars) plain-English summary of what the evidence shows and how well it supports compliance with the regulation.",
+          "Plain-English summary of what the evidence shows and how well it supports compliance with the regulation. Aim for 1-2 paragraphs (around 400-1500 chars); the parser truncates above 4000.",
       },
       overall_signal: {
         type: "string" as const,
@@ -96,7 +105,7 @@ const RECORD_FINDINGS_TOOL = {
               type: "string" as const,
               description: "Short slug like 'f-001'.",
             },
-            title: { type: "string" as const, maxLength: 200 },
+            title: { type: "string" as const, maxLength: 400 },
             severity: {
               type: "string" as const,
               enum: ["info", "low", "medium", "high", "critical"],
@@ -114,11 +123,11 @@ const RECORD_FINDINGS_TOOL = {
             },
             explanation: {
               type: "string" as const,
-              maxLength: 2000,
+              maxLength: 4000,
             },
             suggested_action: {
               type: ["string", "null"] as const,
-              maxLength: 500,
+              maxLength: 1000,
             },
           },
         },
