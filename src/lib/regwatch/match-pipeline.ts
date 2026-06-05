@@ -1,5 +1,9 @@
 import { createServiceClient } from "@/lib/regwatch/supabase/service";
 import { scoreItem, type FootprintInput, type ItemInput } from "./match";
+import {
+  dispatchImmediateCriticalAlerts,
+  type CriticalAlertCandidate,
+} from "./critical-alerts";
 
 /**
  * Matcher orchestrator. For each configured footprint, scores every
@@ -27,6 +31,10 @@ export interface MatchPipelineResult {
   items_considered: number;
   pairs_scored: number;
   matches_upserted: number;
+  /** Critical matches that fired immediate alerts (subset of upserted). */
+  critical_alerts_dispatched: number;
+  critical_emails_sent: number;
+  critical_pushes_sent: number;
   errors: string[];
   duration_ms: number;
 }
@@ -42,6 +50,9 @@ export async function runMatchPipeline(
     items_considered: 0,
     pairs_scored: 0,
     matches_upserted: 0,
+    critical_alerts_dispatched: 0,
+    critical_emails_sent: 0,
+    critical_pushes_sent: 0,
     errors: [],
     duration_ms: 0,
   };
@@ -173,6 +184,47 @@ export async function runMatchPipeline(
       continue;
     }
     result.matches_upserted += count ?? chunk.length;
+  }
+
+  // 5. Immediate critical-alert fanout. We pass every critical-severity
+  // upsert; dispatchImmediateCriticalAlerts dedups against alert_deliveries
+  // so re-runs of a previously-delivered critical don't spam.
+  //
+  // We need each candidate's persisted matchId — re-read just the newly-
+  // upserted criticals (cheaper than threading id back from upsert).
+  const criticalUpserts = upsertRows.filter((r) => r.severity === "critical");
+  if (criticalUpserts.length > 0) {
+    const itemIds = Array.from(
+      new Set(criticalUpserts.map((r) => r.regulatory_item_id)),
+    );
+    const footprintIds = Array.from(
+      new Set(criticalUpserts.map((r) => r.footprint_id)),
+    );
+    const { data: persisted, error: lookupErr } = await supabase
+      .from("footprint_matches")
+      .select("id, organization_id, footprint_id, regulatory_item_id, score, severity")
+      .in("footprint_id", footprintIds)
+      .in("regulatory_item_id", itemIds)
+      .eq("severity", "critical");
+    if (lookupErr) {
+      result.errors.push(`critical lookup: ${lookupErr.message}`);
+    } else {
+      const candidates: CriticalAlertCandidate[] = (persisted ?? []).map((r) => ({
+        matchId: r.id as string,
+        regulatoryItemId: r.regulatory_item_id as string,
+        organizationId: r.organization_id as string,
+        score: r.score as number,
+      }));
+      try {
+        const dispatch = await dispatchImmediateCriticalAlerts(candidates);
+        result.critical_alerts_dispatched = dispatch.candidates;
+        result.critical_emails_sent = dispatch.emails_sent;
+        result.critical_pushes_sent = dispatch.pushes_sent;
+        result.errors.push(...dispatch.errors);
+      } catch (e) {
+        result.errors.push(`dispatch: ${(e as Error).message}`);
+      }
+    }
   }
 
   result.duration_ms = Date.now() - started;

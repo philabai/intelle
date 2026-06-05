@@ -3,16 +3,24 @@ import { getAnthropic } from "@/lib/anthropic/client";
 import { ENRICHMENT_MODEL } from "@/lib/regwatch/anthropic/models";
 import { createServiceClient } from "@/lib/regwatch/supabase/service";
 import { TOPIC_TAXONOMY } from "@/lib/regwatch/taxonomy";
+import {
+  buildDocumentText,
+  embedOne,
+  isVoyageConfigured,
+  toPgVectorLiteral,
+} from "./voyage";
 
 /**
  * Claude Haiku enrichment. Reads `enrichment_status = 'pending'` rows in
  * batches, asks Claude to extract topics / substances / NAICS codes / a clean
  * summary from the regulator-emitted title + body, then writes back and
- * flips status to 'enriched'.
+ * flips status to 'enriched'. The same pass also generates a Voyage-3-large
+ * 1024-dim embedding from regulator + title + summary so the row is ready
+ * for vector retrieval as soon as it's enriched.
  *
- * Voyage AI embeddings come in a separate pass (Phase 1.3.x) since they
- * require API key separately from Anthropic. The embedding column is left
- * NULL until then; FTS keeps the Search surface honest in the meantime.
+ * Embeddings are best-effort: if Voyage is unconfigured or transient errors
+ * occur, we still mark the row enriched (the embedding can be backfilled by
+ * scripts/regwatch-voyage-backfill.mjs).
  */
 
 const TOPIC_VALUES = TOPIC_TAXONOMY.map((t) => t.value);
@@ -68,7 +76,10 @@ export async function runEnrichmentBatch(
 
   const { data: pending, error } = await supabase
     .from("regulatory_items")
-    .select("id, title, citation, summary, body_text, jurisdiction_code")
+    .select(
+      `id, title, citation, summary, body_text, jurisdiction_code,
+       regulator:regulators!inner ( name, short_name )`,
+    )
     .eq("enrichment_status", "pending")
     .order("ingested_at", { ascending: true })
     .limit(batchSize);
@@ -120,20 +131,53 @@ ${(row.body_text ?? "").slice(0, 4000)}`;
         continue;
       }
 
+      // Best-effort Voyage embedding from the freshly-cleaned text. If Voyage
+      // is unconfigured or transient errors hit, we still mark the row
+      // enriched and let the backfill script catch up later.
+      const cleanSummary = parsed.clean_summary || row.summary;
+      let embeddingLiteral: string | null = null;
+      const reg = Array.isArray(row.regulator) ? row.regulator[0] : row.regulator;
+      if (isVoyageConfigured()) {
+        try {
+          const docText = buildDocumentText({
+            regulatorName:
+              (reg?.short_name as string | null) ??
+              (reg?.name as string | null) ??
+              "Unknown regulator",
+            jurisdictionCode: row.jurisdiction_code as string,
+            title: row.title as string,
+            summary: cleanSummary,
+            citation: row.citation as string,
+          });
+          const vec = await embedOne(docText, { inputType: "document" });
+          embeddingLiteral = toPgVectorLiteral(vec);
+        } catch (e) {
+          result.errors.push(
+            `voyage ${row.citation}: ${(e as Error).message}`,
+          );
+        }
+      }
+
+      const updatePayload: Record<string, unknown> = {
+        topics: parsed.topics,
+        substances_cas: parsed.substances_cas,
+        naics_codes: parsed.naics_codes,
+        summary: cleanSummary,
+        enrichment_status: "enriched",
+        enrichment_metadata: {
+          model: ENRICHMENT_MODEL,
+          enriched_at: new Date().toISOString(),
+          input_usage: message.usage,
+          embedded: embeddingLiteral !== null,
+        },
+      };
+      if (embeddingLiteral !== null) {
+        updatePayload.embedding = embeddingLiteral;
+      }
+
       const { error: updateError } = await supabase
         .from("regulatory_items")
-        .update({
-          topics: parsed.topics,
-          substances_cas: parsed.substances_cas,
-          naics_codes: parsed.naics_codes,
-          summary: parsed.clean_summary || row.summary,
-          enrichment_status: "enriched",
-          enrichment_metadata: {
-            model: ENRICHMENT_MODEL,
-            enriched_at: new Date().toISOString(),
-            input_usage: message.usage,
-          },
-        })
+        .update(updatePayload)
         .eq("id", row.id);
 
       if (updateError) {

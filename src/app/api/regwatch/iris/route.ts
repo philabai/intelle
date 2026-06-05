@@ -5,6 +5,11 @@ import { createClient } from "@/lib/regwatch/supabase/server";
 import { createServiceClient } from "@/lib/regwatch/supabase/service";
 import { FREE_IRIS_DAILY_CAP, canUseFeature } from "@/lib/regwatch/tier";
 import type { Tier } from "@/lib/regwatch/stripe";
+import {
+  embedOne,
+  isVoyageConfigured,
+  toPgVectorLiteral,
+} from "@/lib/regwatch/voyage";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -183,22 +188,42 @@ export async function POST(request: Request) {
       regulator: Array.isArray(row.regulator) ? row.regulator[0] : row.regulator,
     })) as typeof hits;
   } else {
-    const { data, error } = await supabase
-      .from("regulatory_items")
-      .select(
-        `id, citation, slug, title, summary, instrument_type, status,
-         effective_date, jurisdiction_code, source_url, body_text,
-         regulator:regulators!inner ( name, short_name )`,
-      )
-      .textSearch("body_search", latestUser.content, {
-        type: "websearch",
-        config: "english",
-      })
-      .limit(6);
+    // Hybrid retrieval — embed the query, hit the RPC that blends vector
+    // similarity with FTS rank. Falls back to FTS-only when Voyage isn't
+    // configured or the embed call fails.
+    let queryEmbeddingLiteral: string | null = null;
+    if (isVoyageConfigured()) {
+      try {
+        const qvec = await embedOne(latestUser.content, { inputType: "query" });
+        queryEmbeddingLiteral = toPgVectorLiteral(qvec);
+      } catch (e) {
+        console.error("[regwatch] iris query embed failed:", e);
+      }
+    }
+
+    const { data, error } = await supabase.rpc("match_regulatory_items", {
+      query_embedding: queryEmbeddingLiteral,
+      query_text: latestUser.content,
+      match_limit: 6,
+      alpha: 0.65,
+    });
     if (error) return sseErrorResponse(`Corpus query failed: ${error.message}`);
-    hits = (data ?? []).map((row) => ({
-      ...row,
-      regulator: Array.isArray(row.regulator) ? row.regulator[0] : row.regulator,
+    hits = (data ?? []).map((row: Record<string, unknown>) => ({
+      id: row.id as string,
+      citation: row.citation as string,
+      title: row.title as string,
+      slug: row.slug as string,
+      summary: (row.summary as string) ?? null,
+      instrument_type: row.instrument_type as string,
+      status: row.status as string,
+      effective_date: (row.effective_date as string) ?? null,
+      jurisdiction_code: row.jurisdiction_code as string,
+      source_url: row.source_url as string,
+      body_text: (row.body_text as string) ?? null,
+      regulator: {
+        name: row.regulator_name as string,
+        short_name: (row.regulator_short as string) ?? null,
+      },
     })) as typeof hits;
   }
 
