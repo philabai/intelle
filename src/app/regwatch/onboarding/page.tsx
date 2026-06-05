@@ -26,7 +26,7 @@ export default async function OnboardingPage() {
           feature="footprint"
           currentTier={gate.currentTier}
           requiredTier={gate.requiredTier}
-          extra="Onboarding lives inside the footprint configurator, which is Team+ only. Sign up for free, upgrade when you're ready to set up your footprint."
+          extra="Onboarding lives inside the footprint configurator, which is Pro+ only. Sign up for free, upgrade when you're ready to set up your footprint."
         />
       </RegwatchAppShell>
     );

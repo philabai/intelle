@@ -7,23 +7,21 @@ import { getMyOrganization } from "./footprint";
  * than duplicating the rank comparison everywhere.
  *
  * Tier model (as of 2026-06-05):
- *   Free      browse, search, basic Iris (5/day), bell
- *   Pro       + unlimited Iris, email digests, web push
- *   Team      + footprint, Feed, briefings, members, assignment
+ *   Free       browse, search, basic Iris (5/day), bell
+ *   Pro        + footprint, Feed, briefings, unlimited Iris, email digests, web push (single user)
+ *   Team       + up to 10 members, per-match assignment workflow
  *   Enterprise + SSO, custom connectors
  */
 export const FEATURE_REQUIRED_TIER = {
   unlimited_iris: "pro",
   email_digests: "pro",
   web_push: "pro",
+  footprint: "pro",
+  relevance_feed: "pro",
+  impact_briefings: "pro",
 
-  footprint: "team",
-  relevance_feed: "team",
-  impact_briefings: "team",
   members: "team",
   assignment: "team",
-  custom_taxonomy: "team",
-  csv_export: "team",
 
   sso: "enterprise",
   custom_connectors: "enterprise",
@@ -100,14 +98,6 @@ export const FEATURE_DESCRIPTIONS: Record<GatedFeature, { name: string; why: str
   assignment: {
     name: "Match assignment",
     why: "Assign individual Feed items to specific teammates with org-scoped routing.",
-  },
-  custom_taxonomy: {
-    name: "Custom topic taxonomy",
-    why: "Extend the topic vocabulary with org-specific terms (e.g. internal program codes).",
-  },
-  csv_export: {
-    name: "CSV export",
-    why: "Bulk export Feed items + briefings for downstream BI tools.",
   },
   sso: {
     name: "SSO (SAML / OIDC)",
