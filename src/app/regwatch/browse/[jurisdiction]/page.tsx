@@ -5,6 +5,7 @@ import { createClient } from "@/lib/regwatch/supabase/server";
 import {
   getJurisdictionSummaries,
   listRegulations,
+  listRegulators,
   type BrowseFilters as BrowseFiltersInput,
 } from "@/lib/regwatch/queries";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
@@ -40,17 +41,24 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
       data: { user },
     },
     summaries,
-  ] = await Promise.all([supabase.auth.getUser(), getJurisdictionSummaries()]);
+    regulators,
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    getJurisdictionSummaries(),
+    listRegulators(),
+  ]);
 
   const summary = summaries.find((s) => s.jurisdiction_code === jurisdictionCode);
   if (!summary) notFound();
 
   const filters: BrowseFiltersInput = {
     jurisdiction: jurisdictionCode,
+    regulator: pickFilter(raw, "regulator"),
     topic: pickFilter(raw, "topic"),
     instrument_type: pickFilter(raw, "instrument_type"),
     status: pickFilter(raw, "status"),
     q: pickFilter(raw, "q"),
+    hideNews: pickFilter(raw, "hide_news") !== "0",
   };
 
   const items = await listRegulations(filters, 100);
@@ -60,6 +68,15 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
     name: s.jurisdiction_name,
     count: Number(s.item_count),
   }));
+  const regulatorOptions = regulators
+    .filter((r) => r.jurisdiction_code === jurisdictionCode)
+    .map((r) => ({
+      slug: r.slug,
+      name: r.name,
+      short_name: r.short_name,
+      jurisdiction_code: r.jurisdiction_code,
+      count: r.item_count,
+    }));
 
   return (
     <RegwatchAppShell authed={!!user}>
@@ -94,6 +111,7 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
         <Suspense fallback={null}>
           <BrowseFilters
             jurisdictions={jurisdictionOptions}
+            regulators={regulatorOptions}
             lockedJurisdiction={jurisdictionCode}
           />
         </Suspense>

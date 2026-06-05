@@ -210,11 +210,34 @@ export function FeedRow({ feedItem: f, assigneeOptions = [] }: Props) {
               type="button"
               onClick={onGenerateBriefing}
               disabled={briefingPending}
-              className="rounded-md border border-brand-violet/40 bg-brand-violet/10 px-3 py-1.5 text-xs text-brand-violet hover:bg-brand-violet/20 disabled:cursor-not-allowed disabled:opacity-60"
+              aria-busy={briefingPending}
+              className="inline-flex items-center gap-2 rounded-md border border-brand-violet/40 bg-brand-violet/10 px-3 py-1.5 text-xs text-brand-violet hover:bg-brand-violet/20 disabled:cursor-not-allowed disabled:opacity-80"
             >
-              {briefingPending ? "Generating briefing…" : "Generate impact briefing"}
+              {briefingPending && (
+                <svg
+                  aria-hidden
+                  viewBox="0 0 24 24"
+                  className="h-3.5 w-3.5 animate-spin"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                >
+                  <circle cx="12" cy="12" r="9" opacity="0.25" />
+                  <path d="M21 12a9 9 0 0 0-9-9" />
+                </svg>
+              )}
+              {briefingPending
+                ? "Generating impact briefing… (~10–20s)"
+                : "Generate impact briefing"}
             </button>
           </div>
+          {briefingPending && (
+            <p className="mt-2 text-[11px] text-muted">
+              Claude Opus is reading the regulation + your footprint to write a
+              4-section briefing. Don&apos;t close this row until it lands.
+            </p>
+          )}
           {briefingError && (
             <p className="mt-2 text-xs text-red-400">{briefingError}</p>
           )}

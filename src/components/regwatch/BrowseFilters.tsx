@@ -14,10 +14,21 @@ interface JurisdictionOption {
   count: number;
 }
 
+interface RegulatorOption {
+  slug: string;
+  name: string;
+  short_name: string | null;
+  jurisdiction_code: string;
+  count: number;
+}
+
 interface Props {
   jurisdictions: JurisdictionOption[];
+  regulators?: RegulatorOption[];
   /** When set, the jurisdiction facet is hidden (already scoped by route). */
   lockedJurisdiction?: string;
+  /** When set, the regulator facet is hidden (already scoped by route). */
+  lockedRegulator?: string;
 }
 
 /**
@@ -25,7 +36,12 @@ interface Props {
  * server re-renders the result list — no client-side fetching, matches the
  * GOV.UK / EUR-Lex pattern of facet-as-link.
  */
-export function BrowseFilters({ jurisdictions, lockedJurisdiction }: Props) {
+export function BrowseFilters({
+  jurisdictions,
+  regulators = [],
+  lockedJurisdiction,
+  lockedRegulator,
+}: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -47,11 +63,26 @@ export function BrowseFilters({ jurisdictions, lockedJurisdiction }: Props) {
   }
 
   const activeJurisdiction = params.get("jurisdiction") ?? "";
+  const activeRegulator = params.get("regulator") ?? "";
   const activeTopic = params.get("topic") ?? "";
   const activeInstrument = params.get("instrument_type") ?? "";
   const activeStatus = params.get("status") ?? "";
+  // hide_news defaults to ON. The query string carries "0" to opt-IN to news.
+  const hideNews = params.get("hide_news") !== "0";
+
   const hasActive =
-    !!activeJurisdiction || !!activeTopic || !!activeInstrument || !!activeStatus || !!params.get("q");
+    !!activeJurisdiction ||
+    !!activeRegulator ||
+    !!activeTopic ||
+    !!activeInstrument ||
+    !!activeStatus ||
+    !!params.get("q") ||
+    !hideNews;
+
+  // When jurisdiction filter is active, narrow the regulator list to that jur.
+  const filteredRegulators = activeJurisdiction
+    ? regulators.filter((r) => r.jurisdiction_code === activeJurisdiction)
+    : regulators;
 
   return (
     <aside className="space-y-5">
@@ -69,6 +100,23 @@ export function BrowseFilters({ jurisdictions, lockedJurisdiction }: Props) {
         )}
       </div>
 
+      {/* Hide-news toggle — surfaced at the top because it changes the
+          composition of every result, not just narrows it. */}
+      <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-card-border bg-card-bg p-2.5 text-xs">
+        <input
+          type="checkbox"
+          checked={hideNews}
+          onChange={(e) => updateParam("hide_news", e.target.checked ? "" : "0")}
+          className="mt-0.5 h-3.5 w-3.5 rounded border-card-border bg-card-bg text-brand-blue focus:ring-brand-blue"
+        />
+        <span>
+          <span className="font-medium text-foreground">Hide news</span>
+          <span className="block text-[11px] text-muted">
+            Excludes regulator press releases. On by default.
+          </span>
+        </span>
+      </label>
+
       {!lockedJurisdiction && (
         <FacetSelect
           label="Jurisdiction"
@@ -77,6 +125,17 @@ export function BrowseFilters({ jurisdictions, lockedJurisdiction }: Props) {
           options={jurisdictions.map((j) => ({
             value: j.code,
             label: `${j.name} (${j.count})`,
+          }))}
+        />
+      )}
+      {!lockedRegulator && filteredRegulators.length > 0 && (
+        <FacetSelect
+          label="Regulator"
+          value={activeRegulator}
+          onChange={(v) => updateParam("regulator", v)}
+          options={filteredRegulators.map((r) => ({
+            value: r.slug,
+            label: `${r.short_name ?? r.name} (${r.count})`,
           }))}
         />
       )}

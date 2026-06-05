@@ -3,6 +3,7 @@ import { createClient } from "@/lib/regwatch/supabase/server";
 import {
   getJurisdictionSummaries,
   listRegulations,
+  listRegulators,
   type BrowseFilters as BrowseFiltersInput,
 } from "@/lib/regwatch/queries";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
@@ -30,22 +31,36 @@ function pickFilter(
 
 export default async function BrowsePage({ searchParams }: Props) {
   const raw = await searchParams;
+  const hideNewsParam = pickFilter(raw, "hide_news");
+  // hide_news defaults to ON; pass "0" to include news/notices.
+  const hideNews = hideNewsParam !== "0";
   const filters: BrowseFiltersInput = {
     jurisdiction: pickFilter(raw, "jurisdiction"),
+    regulator: pickFilter(raw, "regulator"),
     topic: pickFilter(raw, "topic"),
     instrument_type: pickFilter(raw, "instrument_type"),
     status: pickFilter(raw, "status"),
     q: pickFilter(raw, "q"),
+    hideNews,
   };
-  const hasActiveFilters = Object.values(filters).some(Boolean);
+  // Active means the user has any narrowing filter. hide_news is a default-on
+  // toggle so it doesn't count as "active".
+  const hasActiveFilters =
+    !!filters.jurisdiction ||
+    !!filters.regulator ||
+    !!filters.topic ||
+    !!filters.instrument_type ||
+    !!filters.status ||
+    !!filters.q;
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [summaries, items] = await Promise.all([
+  const [summaries, regulators, items] = await Promise.all([
     getJurisdictionSummaries(),
+    listRegulators(),
     hasActiveFilters ? listRegulations(filters) : Promise.resolve([]),
   ]);
 
@@ -57,6 +72,14 @@ export default async function BrowsePage({ searchParams }: Props) {
     code: s.jurisdiction_code,
     name: s.jurisdiction_name,
     count: Number(s.item_count),
+  }));
+
+  const regulatorOptions = regulators.map((r) => ({
+    slug: r.slug,
+    name: r.name,
+    short_name: r.short_name,
+    jurisdiction_code: r.jurisdiction_code,
+    count: r.item_count,
   }));
 
   return (
@@ -84,7 +107,10 @@ export default async function BrowsePage({ searchParams }: Props) {
 
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[220px_1fr]">
         <Suspense fallback={null}>
-          <BrowseFilters jurisdictions={jurisdictionOptions} />
+          <BrowseFilters
+            jurisdictions={jurisdictionOptions}
+            regulators={regulatorOptions}
+          />
         </Suspense>
 
         <section>

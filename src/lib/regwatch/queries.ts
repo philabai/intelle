@@ -62,10 +62,14 @@ export interface RegulationDetail extends RegulationListItem {
 
 export interface BrowseFilters {
   jurisdiction?: string;
+  /** Regulator slug (e.g., "us-epa", "eu-dg-clima"). */
+  regulator?: string;
   topic?: string;
   instrument_type?: string;
   status?: string;
   q?: string;
+  /** When true, excludes items with instrument_type='notice' (press releases). */
+  hideNews?: boolean;
 }
 
 const ITEM_LIST_COLUMNS = `
@@ -112,11 +116,17 @@ export async function listRegulations(
   if (filters.jurisdiction) {
     query = query.eq("jurisdiction_code", filters.jurisdiction.toUpperCase());
   }
+  if (filters.regulator) {
+    query = query.eq("regulator.slug", filters.regulator);
+  }
   if (filters.status) {
     query = query.eq("status", filters.status);
   }
   if (filters.instrument_type) {
     query = query.eq("instrument_type", filters.instrument_type);
+  }
+  if (filters.hideNews) {
+    query = query.neq("instrument_type", "notice");
   }
   if (filters.topic) {
     query = query.contains("topics", [filters.topic]);
@@ -162,6 +172,126 @@ export async function getRegulation(
 
   const regulator = Array.isArray(data.regulator) ? data.regulator[0] : data.regulator;
   return { ...data, regulator } as RegulationDetail;
+}
+
+/**
+ * Full regulator catalog with item counts. Drives the Regulators index page,
+ * the Browse "Regulator" filter dropdown, and any other surface that needs a
+ * complete list of monitored regulators.
+ *
+ * We do the item-count aggregation client-side instead of via a SQL view to
+ * avoid another migration; the regulator catalog is small (~30 rows) and the
+ * item count grows linearly with corpus size, so the join is cheap.
+ */
+export interface RegulatorSummary {
+  id: string;
+  slug: string;
+  name: string;
+  short_name: string | null;
+  jurisdiction_code: string;
+  jurisdiction_name: string;
+  region: string;
+  regulator_type: string;
+  canonical_url: string | null;
+  description: string | null;
+  topic_domains: string[];
+  item_count: number;
+  recent_item_count: number;
+}
+
+export async function listRegulators(): Promise<RegulatorSummary[]> {
+  const supabase = await createClient();
+  const { data: regulators, error: regError } = await supabase
+    .from("regulators")
+    .select(
+      "id, slug, name, short_name, jurisdiction_code, jurisdiction_name, region, regulator_type, canonical_url, description, topic_domains",
+    )
+    .eq("is_active", true)
+    .order("region", { ascending: true })
+    .order("name", { ascending: true });
+
+  if (regError || !regulators) {
+    console.error("[regwatch] listRegulators error:", regError);
+    return [];
+  }
+
+  // Pull item counts in two queries (total + recent-30d). Cheaper than running
+  // count(*) per-regulator round trips.
+  const { data: itemRows, error: itemErr } = await supabase
+    .from("regulatory_items")
+    .select("regulator_id, last_changed_at");
+
+  if (itemErr) {
+    return regulators.map((r) => shapeRegulator(r, 0, 0));
+  }
+
+  const dayMs = 24 * 60 * 60 * 1000;
+  const recentCutoff = Date.now() - 30 * dayMs;
+  const total = new Map<string, number>();
+  const recent = new Map<string, number>();
+  for (const row of itemRows ?? []) {
+    const rid = row.regulator_id as string;
+    total.set(rid, (total.get(rid) ?? 0) + 1);
+    const changed = new Date(row.last_changed_at as string).getTime();
+    if (isFinite(changed) && changed >= recentCutoff) {
+      recent.set(rid, (recent.get(rid) ?? 0) + 1);
+    }
+  }
+
+  return regulators.map((r) =>
+    shapeRegulator(r, total.get(r.id) ?? 0, recent.get(r.id) ?? 0),
+  );
+}
+
+function shapeRegulator(
+  r: Record<string, unknown>,
+  total: number,
+  recent30d: number,
+): RegulatorSummary {
+  return {
+    id: r.id as string,
+    slug: r.slug as string,
+    name: r.name as string,
+    short_name: (r.short_name as string) ?? null,
+    jurisdiction_code: r.jurisdiction_code as string,
+    jurisdiction_name: r.jurisdiction_name as string,
+    region: r.region as string,
+    regulator_type: r.regulator_type as string,
+    canonical_url: (r.canonical_url as string) ?? null,
+    description: (r.description as string) ?? null,
+    topic_domains: ((r.topic_domains as string[]) ?? []) as string[],
+    item_count: total,
+    recent_item_count: recent30d,
+  };
+}
+
+export async function getRegulatorBySlug(
+  slug: string,
+): Promise<RegulatorSummary | null> {
+  const all = await listRegulators();
+  return all.find((r) => r.slug === slug) ?? null;
+}
+
+export async function listRegulationsByRegulator(
+  regulatorSlug: string,
+  limit = 100,
+): Promise<RegulationListItem[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("regulatory_items")
+    .select(ITEM_LIST_COLUMNS)
+    .eq("regulator.slug", regulatorSlug)
+    .order("last_changed_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("[regwatch] listRegulationsByRegulator error:", error);
+    return [];
+  }
+  return (data ?? []).map((row) => ({
+    ...row,
+    regulator: Array.isArray(row.regulator) ? row.regulator[0] : row.regulator,
+  })) as RegulationListItem[];
 }
 
 export async function getRelatedRegulations(
