@@ -12,6 +12,7 @@ import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { StatusChip } from "@/components/regwatch/StatusChip";
 import { InstrumentTypeBadge } from "@/components/regwatch/InstrumentTypeBadge";
 import { RegulationRow } from "@/components/regwatch/RegulationRow";
+import { RegwatchChatWidget } from "@/components/regwatch/chat/RegwatchChatWidget";
 
 interface Props {
   params: Promise<{ jurisdiction: string; slug: string }>;
@@ -50,7 +51,11 @@ export default async function RegulationDetailPage({ params }: Props) {
   });
 
   return (
-    <RegwatchAppShell authed={!!user}>
+    <RegwatchAppShell authed={!!user} suppressChatWidget>
+      <RegwatchChatWidget
+        scopedItemId={item.id}
+        scopedItemCitation={item.citation}
+      />
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <nav className="text-xs text-muted">

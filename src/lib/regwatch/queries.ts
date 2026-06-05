@@ -294,6 +294,65 @@ export async function listRegulationsByRegulator(
   })) as RegulationListItem[];
 }
 
+export async function listRegulationsByTopic(
+  topic: string,
+  limit = 100,
+): Promise<RegulationListItem[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("regulatory_items")
+    .select(ITEM_LIST_COLUMNS)
+    .contains("topics", [topic])
+    .order("last_changed_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("[regwatch] listRegulationsByTopic error:", error);
+    return [];
+  }
+  return (data ?? []).map((row) => ({
+    ...row,
+    regulator: Array.isArray(row.regulator) ? row.regulator[0] : row.regulator,
+  })) as RegulationListItem[];
+}
+
+export interface TopicStats {
+  topic: string;
+  total: number;
+  recent30d: number;
+  byJurisdiction: { jurisdiction_code: string; count: number }[];
+}
+
+export async function getTopicStats(topic: string): Promise<TopicStats> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("regulatory_items")
+    .select("jurisdiction_code, last_changed_at")
+    .contains("topics", [topic]);
+
+  const stats: TopicStats = {
+    topic,
+    total: 0,
+    recent30d: 0,
+    byJurisdiction: [],
+  };
+  if (!data) return stats;
+
+  const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const perJur = new Map<string, number>();
+  for (const row of data) {
+    stats.total += 1;
+    const ts = new Date(row.last_changed_at as string).getTime();
+    if (isFinite(ts) && ts >= cutoff) stats.recent30d += 1;
+    const j = row.jurisdiction_code as string;
+    perJur.set(j, (perJur.get(j) ?? 0) + 1);
+  }
+  stats.byJurisdiction = Array.from(perJur.entries())
+    .map(([jurisdiction_code, count]) => ({ jurisdiction_code, count }))
+    .sort((a, b) => b.count - a.count);
+  return stats;
+}
+
 export async function getRelatedRegulations(
   jurisdictionCode: string,
   excludeId: string,

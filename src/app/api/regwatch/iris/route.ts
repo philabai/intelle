@@ -6,9 +6,33 @@ import { createClient } from "@/lib/regwatch/supabase/server";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const requestSchema = z.object({
-  query: z.string().min(2).max(1500),
+/**
+ * Iris Q&A endpoint — supports both the dedicated Search page (single-turn
+ * via `query`) and the floating chatbot widget (multi-turn via `messages` +
+ * optional `scopedItemId`).
+ *
+ * Behaviour:
+ *   - Backwards-compatible: a body with just `query` still works.
+ *   - Multi-turn: `messages` is the full conversation (user/assistant alternating).
+ *     Only the latest user message drives the FTS retrieval; the rest is
+ *     passed to Claude as conversation history so follow-ups have context.
+ *   - Scoped: `scopedItemId` (a regulatory_items row id) forces retrieval to
+ *     that one item — used by the in-context "Ask about this regulation"
+ *     launcher on detail / briefing pages.
+ */
+
+const messageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string().min(1).max(4000),
 });
+
+const requestSchema = z.union([
+  z.object({ query: z.string().min(2).max(1500) }),
+  z.object({
+    messages: z.array(messageSchema).min(1).max(20),
+    scopedItemId: z.string().uuid().optional(),
+  }),
+]);
 
 interface CitationSource {
   id: string;
@@ -30,7 +54,7 @@ function sse(event: StreamEvent): string {
   return `data: ${JSON.stringify(event)}\n\n`;
 }
 
-const SYSTEM_PROMPT = `You are Iris, the AI concierge for intelle.io RegWatch — a regulatory monitoring product for compliance, EHS, legal, ESG, and government-affairs teams.
+const SYSTEM_PROMPT_BASE = `You are Iris, the AI concierge for intelle.io RegWatch — a regulatory monitoring product for compliance, EHS, legal, ESG, and government-affairs teams.
 
 ANSWERING RULES:
 1. Ground every substantive claim in the corpus excerpts you are given below. Reference each claim with a [n] token where n is the 1-based index of the source.
@@ -39,6 +63,7 @@ ANSWERING RULES:
 4. Use plain English. Define jargon on first use.
 5. Never claim "hallucination-free" or omit citations to sound confident.
 6. Do not output markdown code fences, headings beyond ## level, or HTML.
+7. In multi-turn conversations, remember what the user has already asked — don't restate context they have, but DO re-cite [n] tokens each time you reference a specific claim (citations don't carry across turns automatically).
 
 STRUCTURE:
 - Direct answer first (1-3 sentences).
@@ -60,55 +85,112 @@ export async function POST(request: Request) {
     });
   }
 
-  const supabase = await createClient();
-
-  // Retrieve corpus excerpts via FTS — pgvector semantic retrieval comes
-  // online once Phase 1.3 enrichment populates the embedding column.
-  const { data: hits, error: ftsError } = await supabase
-    .from("regulatory_items")
-    .select(
-      `id, citation, slug, title, summary, instrument_type, status,
-       effective_date, jurisdiction_code, source_url, body_text,
-       regulator:regulators!inner ( name, short_name )`,
-    )
-    .textSearch("body_search", parsed.query, {
-      type: "websearch",
-      config: "english",
-    })
-    .limit(6);
-
-  if (ftsError) {
-    return sseErrorResponse(`Corpus query failed: ${ftsError.message}`);
+  // Normalise to {messages, scopedItemId} shape.
+  let messages: { role: "user" | "assistant"; content: string }[];
+  let scopedItemId: string | undefined;
+  if ("query" in parsed) {
+    messages = [{ role: "user", content: parsed.query }];
+  } else {
+    messages = parsed.messages;
+    scopedItemId = parsed.scopedItemId;
   }
 
-  const sources: CitationSource[] = (hits ?? []).map((row) => {
-    const reg = Array.isArray(row.regulator) ? row.regulator[0] : row.regulator;
-    return {
-      id: row.id,
-      citation: row.citation,
-      title: row.title,
-      jurisdiction_code: row.jurisdiction_code,
-      slug: row.slug,
-      regulator: reg?.short_name ?? reg?.name ?? "Unknown regulator",
-      source_url: row.source_url,
-    };
-  });
+  // Latest user message drives retrieval.
+  const latestUser = [...messages].reverse().find((m) => m.role === "user");
+  if (!latestUser) {
+    return new Response(JSON.stringify({ error: "No user message" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
-  // Build the corpus block fed into Claude. Each excerpt is numbered so the
-  // model can reference it as [n]. body_text is truncated to keep token cost
-  // bounded; the full body lives at the detail page the user can click into.
-  const corpusBlock = (hits ?? [])
+  const supabase = await createClient();
+
+  // Retrieve corpus excerpts. When scoped, hit the one item directly.
+  // Otherwise FTS the latest user message.
+  let hits: Array<{
+    id: string;
+    citation: string;
+    title: string;
+    jurisdiction_code: string;
+    slug: string;
+    source_url: string;
+    summary: string | null;
+    body_text: string | null;
+    status: string;
+    effective_date: string | null;
+    regulator: { name: string; short_name: string | null };
+  }> = [];
+
+  if (scopedItemId) {
+    const { data, error } = await supabase
+      .from("regulatory_items")
+      .select(
+        `id, citation, slug, title, summary, instrument_type, status,
+         effective_date, jurisdiction_code, source_url, body_text,
+         regulator:regulators!inner ( name, short_name )`,
+      )
+      .eq("id", scopedItemId)
+      .limit(1);
+    if (error) return sseErrorResponse(`Corpus query failed: ${error.message}`);
+    hits = (data ?? []).map((row) => ({
+      ...row,
+      regulator: Array.isArray(row.regulator) ? row.regulator[0] : row.regulator,
+    })) as typeof hits;
+  } else {
+    const { data, error } = await supabase
+      .from("regulatory_items")
+      .select(
+        `id, citation, slug, title, summary, instrument_type, status,
+         effective_date, jurisdiction_code, source_url, body_text,
+         regulator:regulators!inner ( name, short_name )`,
+      )
+      .textSearch("body_search", latestUser.content, {
+        type: "websearch",
+        config: "english",
+      })
+      .limit(6);
+    if (error) return sseErrorResponse(`Corpus query failed: ${error.message}`);
+    hits = (data ?? []).map((row) => ({
+      ...row,
+      regulator: Array.isArray(row.regulator) ? row.regulator[0] : row.regulator,
+    })) as typeof hits;
+  }
+
+  const sources: CitationSource[] = hits.map((row) => ({
+    id: row.id,
+    citation: row.citation,
+    title: row.title,
+    jurisdiction_code: row.jurisdiction_code,
+    slug: row.slug,
+    regulator: row.regulator?.short_name ?? row.regulator?.name ?? "Unknown regulator",
+    source_url: row.source_url,
+  }));
+
+  const corpusBlock = hits
     .map((row, i) => {
-      const reg = Array.isArray(row.regulator) ? row.regulator[0] : row.regulator;
       const excerpt = (row.body_text ?? row.summary ?? "").slice(0, 800);
-      return `[${i + 1}] ${reg?.name ?? ""} — ${row.title} (${row.citation}, ${row.jurisdiction_code}, ${row.status})\nEffective: ${row.effective_date ?? "n/a"}\n${excerpt}`;
+      return `[${i + 1}] ${row.regulator?.name ?? ""} — ${row.title} (${row.citation}, ${row.jurisdiction_code}, ${row.status})\nEffective: ${row.effective_date ?? "n/a"}\n${excerpt}`;
     })
     .join("\n\n---\n\n");
 
-  const userMessage =
-    sources.length === 0
-      ? `The user asked: "${parsed.query}". The corpus returned no matching excerpts. Tell the user honestly that no items matched, and suggest they broaden the query or browse by jurisdiction. Do NOT fabricate citations.`
-      : `The user asked: "${parsed.query}".\n\nCorpus excerpts (cite as [n]):\n\n${corpusBlock}`;
+  // Inject retrieved corpus as a system-style trailer on the LAST user message
+  // so Claude sees the right context for its next reply. Earlier turns retain
+  // their original content — we do NOT re-feed old corpus excerpts because the
+  // model's previous responses already encode that context.
+  const augmentedMessages = messages.map((m, idx) => {
+    const isLastUser =
+      m.role === "user" && idx === messages.findLastIndex((mm) => mm.role === "user");
+    if (!isLastUser) return m;
+    const scopedNote = scopedItemId
+      ? "\n\n[Scope: this question is about the single regulation excerpted below.]"
+      : "";
+    const noResultsNote =
+      sources.length === 0
+        ? "\n\n[Note: the corpus search returned no matches for this question. Tell the user honestly, suggest broadening the query, do NOT fabricate citations.]"
+        : `\n\nCorpus excerpts (cite as [n]):\n\n${corpusBlock}`;
+    return { ...m, content: m.content + scopedNote + noResultsNote };
+  });
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -119,20 +201,17 @@ export async function POST(request: Request) {
 
       try {
         const anthropic = getAnthropic();
-        // NOTE: do NOT await this — `messages.stream` returns a MessageStream
-        // synchronously. Awaiting it collapses to the final message and the
-        // for-await loop runs after generation is done, defeating SSE.
         const apiStream = anthropic.messages.stream({
           model: IRIS_MODEL,
           max_tokens: 1024,
           system: [
             {
               type: "text",
-              text: SYSTEM_PROMPT,
+              text: SYSTEM_PROMPT_BASE,
               cache_control: { type: "ephemeral" },
             },
           ],
-          messages: [{ role: "user", content: userMessage }],
+          messages: augmentedMessages,
         });
 
         for await (const event of apiStream) {

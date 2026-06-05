@@ -1,17 +1,26 @@
 import { RegwatchNav } from "./Nav";
+import { RegwatchChatWidget } from "./chat/RegwatchChatWidget";
 
 /**
  * Shell wrapping every /regwatch/* surface. The main intelle.io SiteNav is
  * deliberately NOT rendered here — RegWatch surfaces feel like a focused
  * sub-app with their own four-affordance nav. The header keeps an
  * "← intelle.io" link so users can navigate back to the marketing site.
+ *
+ * The Iris chat widget is mounted at the shell level so it floats over every
+ * /regwatch/* page (anon + authed). Pages that need to scope it to a single
+ * regulation render their own <RegwatchChatWidget scopedItemId=... /> in
+ * place of the global one — see /regwatch/r/[j]/[s]/page.tsx for an example.
  */
 export function RegwatchAppShell({
   authed,
   children,
+  /** When set, the floating Iris chat is omitted (the page provides its own scoped one). */
+  suppressChatWidget,
 }: {
   authed: boolean;
   children: React.ReactNode;
+  suppressChatWidget?: boolean;
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -20,6 +29,7 @@ export function RegwatchAppShell({
       <footer className="border-t border-card-border bg-card-bg/40 py-6 text-center text-xs text-muted">
         intelle.io RegWatch — pull-model regulatory monitoring · SparkLab LLC · Dubai
       </footer>
+      {!suppressChatWidget && <RegwatchChatWidget />}
     </div>
   );
 }

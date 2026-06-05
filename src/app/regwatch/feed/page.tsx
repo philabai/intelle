@@ -14,6 +14,7 @@ import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { DeadlineStrip } from "@/components/regwatch/feed/DeadlineStrip";
 import { FeedRow } from "@/components/regwatch/feed/FeedRow";
 import { FeedFilters } from "@/components/regwatch/feed/FeedFilters";
+import { BulkTriageBar } from "@/components/regwatch/feed/BulkTriageBar";
 import { EmptyFeed } from "@/components/regwatch/feed/EmptyFeed";
 
 export const metadata = { title: "Relevance Feed" };
@@ -102,6 +103,11 @@ export default async function FeedPage({ searchParams }: Props) {
           <EmptyFeed hasFootprint={hasFootprint} />
         ) : (
           <div className="overflow-hidden rounded-xl border border-card-border bg-background">
+            <BulkTriageBar
+              totalUnseen={
+                counts.critical + counts.high + counts.normal + counts.low
+              }
+            />
             <Suspense fallback={null}>
               <FeedFilters counts={counts} />
             </Suspense>

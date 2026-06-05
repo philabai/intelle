@@ -9,6 +9,7 @@ import { StatusChip } from "@/components/regwatch/StatusChip";
 import { InstrumentTypeBadge } from "@/components/regwatch/InstrumentTypeBadge";
 import { TrustMarker } from "@/components/regwatch/briefing/TrustMarker";
 import { BriefingBody } from "@/components/regwatch/briefing/BriefingBody";
+import { RegwatchChatWidget } from "@/components/regwatch/chat/RegwatchChatWidget";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -41,7 +42,11 @@ export default async function BriefingDetailPage({ params }: Props) {
   });
 
   return (
-    <RegwatchAppShell authed={!!user}>
+    <RegwatchAppShell authed={!!user} suppressChatWidget>
+      <RegwatchChatWidget
+        scopedItemId={briefing.item.id}
+        scopedItemCitation={briefing.item.citation}
+      />
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/feed" className="hover:text-foreground">
