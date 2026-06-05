@@ -19,6 +19,7 @@ export function RegwatchNav({ authed }: { authed: boolean }) {
           <RegwatchNavLink href="/regwatch/search">Search</RegwatchNavLink>
           {authed && <RegwatchNavLink href="/regwatch/feed">My Feed</RegwatchNavLink>}
           {authed && <RegwatchNavLink href="/regwatch/assets">Assets</RegwatchNavLink>}
+          {authed && <RegwatchNavLink href="/regwatch/obligations">Obligations</RegwatchNavLink>}
           {authed && <RegwatchNavLink href="/regwatch/documents">Documents</RegwatchNavLink>}
           {authed && (
             <RegwatchNavLink href="/regwatch/settings/footprint">

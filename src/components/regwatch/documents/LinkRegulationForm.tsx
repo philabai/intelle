@@ -6,6 +6,8 @@ import {
   linkDocumentToRegulation,
   unlinkDocumentFromRegulation,
 } from "@/lib/regwatch/internal-documents-actions";
+import { RegulationPicker } from "@/components/regwatch/RegulationPicker";
+import type { RegulationPickerResult } from "@/lib/regwatch/regulation-picker-actions";
 
 interface ExistingLink {
   id: string;
@@ -25,7 +27,7 @@ interface Props {
 
 export function LinkRegulationForm({ documentId, existingLinks }: Props) {
   const router = useRouter();
-  const [regulatoryItemId, setRegulatoryItemId] = useState("");
+  const [picked, setPicked] = useState<RegulationPickerResult | null>(null);
   const [clauseAnchor, setClauseAnchor] = useState("");
   const [rationale, setRationale] = useState("");
   const [pending, startTransition] = useTransition();
@@ -34,10 +36,14 @@ export function LinkRegulationForm({ documentId, existingLinks }: Props) {
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!picked) {
+      setError("Pick a regulation first");
+      return;
+    }
     startTransition(async () => {
       const res = await linkDocumentToRegulation({
         internalDocumentId: documentId,
-        regulatoryItemId: regulatoryItemId.trim(),
+        regulatoryItemId: picked.id,
         clauseAnchor: clauseAnchor.trim() || null,
         linkRationale: rationale.trim() || null,
       });
@@ -45,7 +51,7 @@ export function LinkRegulationForm({ documentId, existingLinks }: Props) {
         setError(res.error ?? "Could not link");
         return;
       }
-      setRegulatoryItemId("");
+      setPicked(null);
       setClauseAnchor("");
       setRationale("");
       router.refresh();
@@ -110,48 +116,36 @@ export function LinkRegulationForm({ documentId, existingLinks }: Props) {
 
       <form
         onSubmit={onSubmit}
-        className="rounded-lg border border-card-border bg-card-bg/40 p-3"
+        className="space-y-3 rounded-lg border border-card-border bg-card-bg/40 p-3"
       >
-        <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted">
+        <p className="text-xs font-medium uppercase tracking-wider text-muted">
           Link a regulation
         </p>
-        <div className="grid gap-2 sm:grid-cols-3">
-          <input
-            value={regulatoryItemId}
-            onChange={(e) => setRegulatoryItemId(e.target.value)}
-            placeholder="Regulation UUID"
-            className="rounded-md border border-card-border bg-card-bg px-2 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none sm:col-span-2"
-            required
-          />
-          <input
-            value={clauseAnchor}
-            onChange={(e) => setClauseAnchor(e.target.value)}
-            placeholder="Clause (optional)"
-            className="rounded-md border border-card-border bg-card-bg px-2 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
-          />
-        </div>
+        <RegulationPicker
+          value={picked}
+          onChange={setPicked}
+          clauseAnchor={clauseAnchor}
+          onClauseAnchorChange={setClauseAnchor}
+          showClauseField
+        />
         <textarea
           value={rationale}
           onChange={(e) => setRationale(e.target.value)}
           placeholder="Why is this doc linked? (optional)"
           rows={2}
-          className="mt-2 w-full rounded-md border border-card-border bg-card-bg px-2 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
+          className="w-full rounded-md border border-card-border bg-card-bg px-2 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
         />
-        <div className="mt-2 flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           {error && <p className="text-xs text-red-400">{error}</p>}
           <button
             type="submit"
-            disabled={pending || !regulatoryItemId.trim()}
+            disabled={pending || !picked}
             className="ml-auto rounded-md bg-brand-blue px-3 py-1.5 text-xs text-white hover:bg-brand-blue/90 disabled:opacity-50"
           >
             {pending ? "Linking…" : "Link"}
           </button>
         </div>
       </form>
-      <p className="text-[10px] text-muted">
-        UUID look-up will become a search picker in the next slice — for now,
-        paste the regulation&apos;s id from its detail page URL.
-      </p>
     </div>
   );
 }

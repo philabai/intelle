@@ -10,6 +10,7 @@ import type {
   ObligationSeverity,
   ObligationComplianceStatus,
   ObligationReviewCadence,
+  ObligationReviewStatus,
 } from "./obligations";
 
 /**
@@ -275,6 +276,361 @@ export async function updateObligationGrade(
   if (error) return { ok: false, error: error.message };
   revalidatePath("/regwatch/obligations");
   return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// State machine — enforces the table from the plan:
+//
+//   open                → awaiting-triage    (system, on assignment)
+//   awaiting-triage     → in-review          (reviewer claims)
+//   awaiting-triage     → not-applicable     (reviewer + rationale)
+//   in-review           → pending-approval   (reviewer + evidence + notes)
+//   in-review           → not-applicable     (reviewer + rationale)
+//   pending-approval    → in-review          (admin kick-back with notes)
+//   pending-approval    → verified           (admin + signoff_rationale)
+//   verified            → closed             (admin)
+//   any                 → open               (admin only, "unlock" escape hatch)
+//
+// Audit trail flows through the AFTER-UPDATE trigger in
+// 20260616_regwatch_obligation_state_history.sql which records the
+// transition with from/to + actor.
+// ---------------------------------------------------------------------------
+
+type Role = "reviewer" | "admin" | "any";
+
+const TRANSITIONS: Record<
+  ObligationReviewStatus,
+  Partial<Record<ObligationReviewStatus, Role>>
+> = {
+  open: { "awaiting-triage": "any" },
+  "awaiting-triage": {
+    "in-review": "reviewer",
+    "not-applicable": "reviewer",
+  },
+  "in-review": {
+    "pending-approval": "reviewer",
+    "not-applicable": "reviewer",
+  },
+  "pending-approval": {
+    "in-review": "admin",
+    verified: "admin",
+  },
+  verified: { closed: "admin" },
+  closed: {},
+  "not-applicable": {},
+};
+
+function canTransition(
+  from: ObligationReviewStatus,
+  to: ObligationReviewStatus,
+  isAdmin: boolean,
+  isReviewer: boolean,
+): { ok: true } | { ok: false; reason: string } {
+  // Admin escape hatch — re-open any non-open state (audit captured by trigger).
+  if (to === "open" && isAdmin) return { ok: true };
+  const allowed = TRANSITIONS[from][to];
+  if (!allowed) {
+    return {
+      ok: false,
+      reason: `Cannot transition from "${from}" to "${to}"`,
+    };
+  }
+  if (allowed === "admin" && !isAdmin) {
+    return { ok: false, reason: "Only owners or admins can do this" };
+  }
+  if (allowed === "reviewer" && !isReviewer && !isAdmin) {
+    return {
+      ok: false,
+      reason: "Only the assigned reviewer (or an admin) can do this",
+    };
+  }
+  return { ok: true };
+}
+
+const reviewStatusValues = [
+  "open",
+  "awaiting-triage",
+  "in-review",
+  "pending-approval",
+  "verified",
+  "closed",
+  "not-applicable",
+] as const satisfies readonly ObligationReviewStatus[];
+
+const transitionSchema = z.object({
+  id: z.string().uuid(),
+  toStatus: z.enum(reviewStatusValues),
+  /** N/A rationale, kick-back notes, sign-off rationale, etc. */
+  notes: z.string().trim().max(2000).optional(),
+  /** Required when toStatus === "pending-approval": storage path of evidence. */
+  evidenceFilePath: z.string().max(500).optional(),
+  /** Required when toStatus === "verified": admin sign-off rationale. */
+  signoffRationale: z.string().trim().max(1000).optional(),
+});
+
+/**
+ * Single entry-point for all state transitions. Looks up the obligation,
+ * confirms the caller has the required role, enforces transition rules,
+ * applies the side-effects (review_completed_at / sign-off timestamps /
+ * evidence path / notes), and writes the audit history via the trigger.
+ */
+export async function transitionObligationState(
+  input: unknown,
+): Promise<ActionResult> {
+  const parsed = transitionSchema.safeParse(input);
+  if (!parsed.success)
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  const ctx = await ensureObligationContext();
+  if (!ctx.ok) return ctx;
+
+  const svc = createServiceClient();
+  const { data: obligation, error: getErr } = await svc
+    .from("compliance_obligations")
+    .select(
+      "id, organization_id, review_status, assigned_reviewer_user_id, evidence_file_path, review_notes",
+    )
+    .eq("id", parsed.data.id)
+    .eq("organization_id", ctx.organizationId)
+    .maybeSingle();
+  if (getErr || !obligation) {
+    return { ok: false, error: "Obligation not found in your org" };
+  }
+  const fromStatus = obligation.review_status as ObligationReviewStatus;
+  const isReviewer = obligation.assigned_reviewer_user_id === ctx.userId;
+
+  const gate = canTransition(fromStatus, parsed.data.toStatus, ctx.isAdmin, isReviewer);
+  if (!gate.ok) return { ok: false, error: gate.reason };
+
+  // Pre-conditions per target state.
+  if (parsed.data.toStatus === "pending-approval") {
+    const path = parsed.data.evidenceFilePath ?? (obligation.evidence_file_path as string | null);
+    if (!path) {
+      return {
+        ok: false,
+        error: "Evidence file is required to mark review complete",
+      };
+    }
+  }
+  if (parsed.data.toStatus === "verified" && !parsed.data.signoffRationale?.trim()) {
+    return { ok: false, error: "Sign-off rationale is required" };
+  }
+  if (parsed.data.toStatus === "not-applicable" && !parsed.data.notes?.trim()) {
+    return {
+      ok: false,
+      error: "Provide a rationale when marking the obligation Not Applicable",
+    };
+  }
+  if (
+    parsed.data.toStatus === "in-review" &&
+    fromStatus === "pending-approval" &&
+    !parsed.data.notes?.trim()
+  ) {
+    return {
+      ok: false,
+      error: "Provide notes explaining the kick-back so the reviewer knows what to fix",
+    };
+  }
+
+  // Tag the actor on the connection so the state-history trigger picks it up.
+  // We use a plain SET LOCAL via supabase.rpc('set_config', ...) — supabase-js
+  // doesn't expose SET so we leave actor resolution to auth.uid() in the
+  // trigger. The trigger falls back to auth.uid() — but service-role calls
+  // have no auth.uid(), so we patch the actor in via a separate column path:
+  // for service-role callers we INSERT the actor explicitly into the history
+  // row after the update.
+  const patch: Record<string, unknown> = {
+    review_status: parsed.data.toStatus,
+  };
+
+  if (parsed.data.toStatus === "in-review" && fromStatus === "awaiting-triage") {
+    // Self-claim — also re-stamps the assignee if absent so the audit reads
+    // as "Jane took this on".
+    if (!obligation.assigned_reviewer_user_id) {
+      patch.assigned_reviewer_user_id = ctx.userId;
+    }
+  }
+
+  if (parsed.data.toStatus === "pending-approval") {
+    patch.review_completed_at = new Date().toISOString();
+    if (parsed.data.evidenceFilePath !== undefined) {
+      patch.evidence_file_path = parsed.data.evidenceFilePath;
+    }
+    // Append notes to the structured review_notes blob.
+    const existing = (obligation.review_notes as Record<string, unknown>) ?? {};
+    patch.review_notes = {
+      ...existing,
+      review_complete_notes: parsed.data.notes ?? null,
+      review_complete_at: new Date().toISOString(),
+    };
+  }
+
+  if (parsed.data.toStatus === "verified") {
+    patch.admin_signed_off_at = new Date().toISOString();
+    patch.admin_signed_off_by = ctx.userId;
+    patch.signoff_rationale = parsed.data.signoffRationale ?? "";
+  }
+
+  if (parsed.data.toStatus === "in-review" && fromStatus === "pending-approval") {
+    // Kick-back: clear the prior sign-off attempt + write the kick-back note.
+    patch.review_completed_at = null;
+    const existing = (obligation.review_notes as Record<string, unknown>) ?? {};
+    patch.review_notes = {
+      ...existing,
+      kickback_at: new Date().toISOString(),
+      kickback_notes: parsed.data.notes ?? null,
+    };
+  }
+
+  if (parsed.data.toStatus === "not-applicable") {
+    const existing = (obligation.review_notes as Record<string, unknown>) ?? {};
+    patch.review_notes = {
+      ...existing,
+      not_applicable_rationale: parsed.data.notes,
+      not_applicable_at: new Date().toISOString(),
+    };
+  }
+
+  const { error: upErr } = await svc
+    .from("compliance_obligations")
+    .update(patch)
+    .eq("id", parsed.data.id)
+    .eq("organization_id", ctx.organizationId);
+  if (upErr) return { ok: false, error: upErr.message };
+
+  // Patch the actor + notes on the history row the trigger just inserted.
+  // We find the latest history row for this obligation that has no actor and
+  // backfill it. The trigger uses auth.uid() which for service-role is null.
+  const { data: latest } = await svc
+    .from("obligation_state_history")
+    .select("id, actor_user_id, notes")
+    .eq("obligation_id", parsed.data.id)
+    .eq("to_status", parsed.data.toStatus)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (latest && (!latest.actor_user_id || !latest.notes)) {
+    const patchHist: Record<string, unknown> = {};
+    if (!latest.actor_user_id) patchHist.actor_user_id = ctx.userId;
+    if (!latest.notes) {
+      const noteText =
+        parsed.data.signoffRationale ?? parsed.data.notes ?? null;
+      if (noteText) patchHist.notes = noteText;
+    }
+    if (Object.keys(patchHist).length > 0) {
+      await svc
+        .from("obligation_state_history")
+        .update(patchHist)
+        .eq("id", latest.id);
+    }
+  }
+
+  revalidatePath("/regwatch/obligations");
+  revalidatePath(`/regwatch/obligations/${parsed.data.id}`);
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Reviewer side-edits — notes/evidence updates that do NOT change state.
+// ---------------------------------------------------------------------------
+
+const reviewUpdateSchema = z.object({
+  id: z.string().uuid(),
+  notes: z.string().trim().max(4000).optional(),
+  evidenceFilePath: z.string().max(500).optional(),
+});
+
+export async function updateObligationReview(
+  input: unknown,
+): Promise<ActionResult> {
+  const parsed = reviewUpdateSchema.safeParse(input);
+  if (!parsed.success)
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  const ctx = await ensureObligationContext();
+  if (!ctx.ok) return ctx;
+
+  const svc = createServiceClient();
+  const { data: obligation } = await svc
+    .from("compliance_obligations")
+    .select("id, organization_id, assigned_reviewer_user_id, review_notes")
+    .eq("id", parsed.data.id)
+    .eq("organization_id", ctx.organizationId)
+    .maybeSingle();
+  if (!obligation)
+    return { ok: false, error: "Obligation not found in your org" };
+  const isReviewer = obligation.assigned_reviewer_user_id === ctx.userId;
+  if (!isReviewer && !ctx.isAdmin) {
+    return { ok: false, error: "Only the assigned reviewer or admins can edit review fields" };
+  }
+
+  // Strip locked fields defensively — the trigger will raise too, but this
+  // gives the user a clean error path.
+  const patch: Record<string, unknown> = {};
+  if (parsed.data.notes !== undefined) {
+    const existing = (obligation.review_notes as Record<string, unknown>) ?? {};
+    patch.review_notes = { ...existing, working_notes: parsed.data.notes };
+  }
+  if (parsed.data.evidenceFilePath !== undefined) {
+    patch.evidence_file_path = parsed.data.evidenceFilePath;
+  }
+  if (Object.keys(patch).length === 0)
+    return { ok: false, error: "Nothing to update" };
+
+  const { error } = await svc
+    .from("compliance_obligations")
+    .update(patch)
+    .eq("id", parsed.data.id)
+    .eq("organization_id", ctx.organizationId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath(`/regwatch/obligations/${parsed.data.id}`);
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Evidence upload — reviewer writes to regwatch-documents under
+// <org_id>/obligations/<obligation_id>/<uuid>-<filename>. Returns the path
+// that the caller then passes into transitionObligationState() as the
+// evidenceFilePath, completing the review.
+// ---------------------------------------------------------------------------
+
+export async function uploadObligationEvidence(
+  formData: FormData,
+): Promise<ActionResult & { filePath?: string }> {
+  const ctx = await ensureObligationContext();
+  if (!ctx.ok) return ctx;
+  const obligationId = formData.get("obligationId");
+  const file = formData.get("file");
+  if (typeof obligationId !== "string" || !(file instanceof File)) {
+    return { ok: false, error: "Missing obligationId or file" };
+  }
+  const MAX_SIZE = 50 * 1024 * 1024;
+  if (file.size > MAX_SIZE)
+    return { ok: false, error: `File exceeds the 50MB limit (${file.size} bytes)` };
+
+  const svc = createServiceClient();
+  const { data: obligation } = await svc
+    .from("compliance_obligations")
+    .select("id, organization_id, assigned_reviewer_user_id")
+    .eq("id", obligationId)
+    .maybeSingle();
+  if (!obligation || obligation.organization_id !== ctx.organizationId) {
+    return { ok: false, error: "Obligation not found in your org" };
+  }
+  const isReviewer = obligation.assigned_reviewer_user_id === ctx.userId;
+  if (!isReviewer && !ctx.isAdmin) {
+    return { ok: false, error: "Only the assigned reviewer or admins can upload evidence" };
+  }
+
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-").slice(0, 200);
+  const path = `${ctx.organizationId}/obligations/${obligationId}/${crypto.randomUUID()}-${safeName}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const { error: upErr } = await svc.storage
+    .from("regwatch-documents")
+    .upload(path, buffer, {
+      contentType: file.type || "application/octet-stream",
+      upsert: false,
+    });
+  if (upErr) return { ok: false, error: upErr.message };
+  return { ok: true, filePath: path };
 }
 
 const assignObligationSchema = z.object({
