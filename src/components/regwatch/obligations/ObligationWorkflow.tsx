@@ -6,7 +6,6 @@ import {
   transitionObligationState,
   updateObligationGrade,
   assignObligation,
-  uploadObligationEvidence,
 } from "@/lib/regwatch/obligations-actions";
 import type {
   ObligationReviewStatus,
@@ -84,14 +83,12 @@ export function ObligationWorkflow({
   // form state shared across dialogs
   const [notes, setNotes] = useState("");
   const [rationale, setRationale] = useState("");
-  const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
 
   const isReviewer = assignedReviewerUserId === currentUserId;
 
   function reset() {
     setNotes("");
     setRationale("");
-    setEvidenceFile(null);
     setError(null);
   }
 
@@ -116,25 +113,16 @@ export function ObligationWorkflow({
     fire({ id: obligationId, toStatus: "closed" });
   }
   function handleCompleteReview() {
-    if (!evidenceFile) {
-      setError("Attach an evidence file to complete the review");
-      return;
-    }
     setError(null);
+    // Evidence files are now uploaded via the multi-file dropzone in the
+    // "Evidence" section above the workflow. The dialog just collects the
+    // optional notes and submits the transition; the server-side
+    // precondition checks that at least one evidence row exists.
     startTransition(async () => {
-      const formData = new FormData();
-      formData.set("obligationId", obligationId);
-      formData.set("file", evidenceFile);
-      const up = await uploadObligationEvidence(formData);
-      if (!up.ok || !up.filePath) {
-        setError(up.error ?? "Evidence upload failed");
-        return;
-      }
       const res = await transitionObligationState({
         id: obligationId,
         toStatus: "pending-approval",
         notes: notes.trim() || undefined,
-        evidenceFilePath: up.filePath,
       });
       if (!res.ok) {
         setError(res.error ?? "Could not submit for approval");
@@ -415,12 +403,6 @@ export function ObligationWorkflow({
         </section>
       )}
 
-      {evidenceFilePath && (
-        <p className="text-[11px] text-muted">
-          Current evidence file:{" "}
-          <span className="font-mono text-foreground">{evidenceFilePath}</span>
-        </p>
-      )}
       {error && <p className="text-xs text-red-400">{error}</p>}
 
       {dialog && (
@@ -428,16 +410,11 @@ export function ObligationWorkflow({
           {dialog.kind === "complete-review" && (
             <div className="space-y-3">
               <p className="text-xs text-muted">
-                Attach evidence (PDF, image, doc) and add review notes. The
-                obligation moves to <strong>pending-approval</strong>; an admin
-                signs off to verify.
+                The obligation moves to <strong>pending-approval</strong>; an
+                admin signs off to verify. Evidence files are managed in the
+                <em> Evidence</em> section above &mdash; make sure at least
+                one file is uploaded before submitting.
               </p>
-              <input
-                type="file"
-                onChange={(e) => setEvidenceFile(e.target.files?.[0] ?? null)}
-                disabled={pending}
-                className="block w-full text-xs text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-brand-blue file:px-3 file:py-1.5 file:text-xs file:text-white"
-              />
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}

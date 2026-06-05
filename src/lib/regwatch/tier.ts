@@ -27,6 +27,7 @@ export const FEATURE_REQUIRED_TIER = {
 
   sso: "enterprise",
   custom_connectors: "enterprise",
+  evidence_video_analysis: "enterprise",
 } satisfies Record<string, Tier>;
 
 export type GatedFeature = keyof typeof FEATURE_REQUIRED_TIER;
@@ -116,5 +117,9 @@ export const FEATURE_DESCRIPTIONS: Record<GatedFeature, { name: string; why: str
   custom_connectors: {
     name: "Custom regulator connectors",
     why: "Bespoke scraping for regulators not in the default catalog.",
+  },
+  evidence_video_analysis: {
+    name: "Video evidence AI analysis",
+    why: "Frame-by-frame Claude vision + Whisper transcription analysis of mobile-recorded evidence videos, with timestamped discrepancy callouts.",
   },
 };

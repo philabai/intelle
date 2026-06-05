@@ -11,6 +11,8 @@ import { getMyOrganization } from "@/lib/regwatch/footprint";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
 import { ObligationWorkflow } from "@/components/regwatch/obligations/ObligationWorkflow";
+import { EvidenceDropzone } from "@/components/regwatch/obligations/EvidenceDropzone";
+import { listEvidenceForObligation } from "@/lib/regwatch/evidence";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -67,15 +69,18 @@ export default async function ObligationDetailPage({ params }: Props) {
   const obligation = await getObligation(id);
   if (!obligation) notFound();
 
-  const [membership, org, history, asset, assignees] = await Promise.all([
+  const [membership, org, history, asset, assignees, evidenceFiles] = await Promise.all([
     getMyMembership(),
     getMyOrganization(),
     listObligationStateHistory(id),
     getAsset(obligation.assetId),
     listAssigneeOptions(),
+    listEvidenceForObligation(id),
   ]);
   const isAdmin =
     membership?.role === "owner" || membership?.role === "admin";
+  const isReviewer = obligation.assignedReviewerUserId === user.id;
+  const canManageEvidence = isAdmin || isReviewer;
 
   const config = await getHierarchyConfig(org?.organization.id ?? "");
   const levelLabel =
@@ -141,6 +146,24 @@ export default async function ObligationDetailPage({ params }: Props) {
                 </p>
               </section>
             )}
+
+            <section className="rounded-xl border border-card-border bg-card-bg/40 p-5">
+              <h2 className="mb-1 text-xs font-medium uppercase tracking-wider text-brand-teal">
+                Evidence
+              </h2>
+              <p className="mb-3 text-[11px] text-muted">
+                Upload one or more files supporting your review.
+                Each file is analysed by AI against the regulation and any
+                discrepancies appear inline. You can address them or
+                acknowledge them before submitting for approval.
+              </p>
+              <EvidenceDropzone
+                obligationId={obligation.id}
+                initialFiles={evidenceFiles}
+                canManage={canManageEvidence}
+                canDelete={isAdmin}
+              />
+            </section>
 
             <section className="rounded-xl border border-card-border bg-card-bg/40 p-5">
               <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-brand-teal">

@@ -8,6 +8,7 @@
     { "path": "/api/cron/regwatch-match",   "schedule": "10,25,40,55 * * * *" },
     { "path": "/api/cron/regwatch-body-enrich", "schedule": "13,43 * * * *" },
     { "path": "/api/cron/regwatch-notify-obligations", "schedule": "*/10 * * * *" },
+    { "path": "/api/cron/regwatch-analyse-evidence", "schedule": "*/3 * * * *" },
     { "path": "/api/cron/regwatch-alerts",  "schedule": "0 6 * * *" }
   ]
 }

@@ -403,8 +403,21 @@ export async function transitionObligationState(
 
   // Pre-conditions per target state.
   if (parsed.data.toStatus === "pending-approval") {
-    const path = parsed.data.evidenceFilePath ?? (obligation.evidence_file_path as string | null);
-    if (!path) {
+    // Either the legacy single-path is set OR there's at least one row in
+    // the new junction. The new dropzone writes to both for backward-compat,
+    // but pure-API callers can still use just one.
+    const legacyPath =
+      parsed.data.evidenceFilePath ??
+      (obligation.evidence_file_path as string | null);
+    let hasEvidence = !!legacyPath;
+    if (!hasEvidence) {
+      const { count } = await svc
+        .from("obligation_evidence_files")
+        .select("id", { count: "exact", head: true })
+        .eq("obligation_id", parsed.data.id);
+      hasEvidence = (count ?? 0) > 0;
+    }
+    if (!hasEvidence) {
       return {
         ok: false,
         error: "Evidence file is required to mark review complete",
