@@ -308,3 +308,145 @@ export async function unlinkDocumentFromRegulation(
   revalidatePath("/regwatch/documents");
   return { ok: true };
 }
+
+// ---------------------------------------------------------------------------
+// Asset linking — multi-select. The doc-detail page passes the full set of
+// asset_ids selected in the AssetCheckboxTree; we compute the delta against
+// existing links and apply it (add new, drop deselected). Any org member can
+// link.
+// ---------------------------------------------------------------------------
+
+const linkAssetsSchema = z.object({
+  internalDocumentId: z.string().uuid(),
+  assetIds: z.array(z.string().uuid()).max(500),
+  linkRationale: z.string().trim().max(1000).nullable().optional(),
+});
+
+export async function setDocumentAssetLinks(
+  input: unknown,
+): Promise<ActionResult & { added: number; removed: number }> {
+  const parsed = linkAssetsSchema.safeParse(input);
+  if (!parsed.success)
+    return {
+      ok: false,
+      added: 0,
+      removed: 0,
+      error: parsed.error.issues[0]?.message ?? "Invalid input",
+    };
+  const ctx = await ensureDocContext();
+  if (!ctx.ok) return { ...ctx, added: 0, removed: 0 };
+
+  const svc = createServiceClient();
+  const { data: doc } = await svc
+    .from("internal_documents")
+    .select("id, organization_id")
+    .eq("id", parsed.data.internalDocumentId)
+    .maybeSingle();
+  if (!doc || doc.organization_id !== ctx.organizationId) {
+    return { ok: false, added: 0, removed: 0, error: "Document not found in your org" };
+  }
+
+  // Filter to assets in caller's org.
+  const wanted = new Set(parsed.data.assetIds);
+  if (wanted.size > 0) {
+    const { data: owned } = await svc
+      .from("assets")
+      .select("id")
+      .eq("organization_id", ctx.organizationId)
+      .in("id", parsed.data.assetIds);
+    const ownedSet = new Set((owned ?? []).map((a) => a.id as string));
+    for (const id of wanted) if (!ownedSet.has(id)) wanted.delete(id);
+  }
+
+  // Current link set.
+  const { data: existing } = await svc
+    .from("internal_document_asset_links")
+    .select("id, asset_id")
+    .eq("internal_document_id", parsed.data.internalDocumentId);
+  const existingByAsset = new Map<string, string>();
+  for (const r of existing ?? []) {
+    existingByAsset.set(r.asset_id as string, r.id as string);
+  }
+
+  // Compute delta.
+  const toAdd: string[] = [];
+  for (const id of wanted) if (!existingByAsset.has(id)) toAdd.push(id);
+  const toRemoveLinkIds: string[] = [];
+  for (const [assetId, linkId] of existingByAsset) {
+    if (!wanted.has(assetId)) toRemoveLinkIds.push(linkId);
+  }
+
+  if (toAdd.length > 0) {
+    const rows = toAdd.map((assetId) => ({
+      organization_id: ctx.organizationId,
+      internal_document_id: parsed.data.internalDocumentId,
+      asset_id: assetId,
+      link_rationale: parsed.data.linkRationale ?? null,
+      created_by: ctx.userId,
+    }));
+    const { error: insErr } = await svc
+      .from("internal_document_asset_links")
+      .insert(rows);
+    if (insErr) {
+      return { ok: false, added: 0, removed: 0, error: insErr.message };
+    }
+  }
+
+  if (toRemoveLinkIds.length > 0) {
+    const { error: delErr } = await svc
+      .from("internal_document_asset_links")
+      .delete()
+      .in("id", toRemoveLinkIds);
+    if (delErr) {
+      return {
+        ok: false,
+        added: toAdd.length,
+        removed: 0,
+        error: delErr.message,
+      };
+    }
+  }
+
+  revalidatePath("/regwatch/documents");
+  revalidatePath(`/regwatch/documents/${parsed.data.internalDocumentId}`);
+  // Asset detail pages of every changed asset should refresh too.
+  for (const id of [...toAdd, ...Array.from(existingByAsset.keys())]) {
+    revalidatePath(`/regwatch/assets/${id}`);
+  }
+  return {
+    ok: true,
+    added: toAdd.length,
+    removed: toRemoveLinkIds.length,
+  };
+}
+
+const unlinkAssetSchema = z.object({ linkId: z.string().uuid() });
+
+export async function unlinkDocumentFromAsset(
+  input: unknown,
+): Promise<ActionResult> {
+  const parsed = unlinkAssetSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid input" };
+  const ctx = await ensureDocContext();
+  if (!ctx.ok) return ctx;
+
+  const svc = createServiceClient();
+  const { data: link } = await svc
+    .from("internal_document_asset_links")
+    .select("id, asset_id, internal_document_id")
+    .eq("id", parsed.data.linkId)
+    .eq("organization_id", ctx.organizationId)
+    .maybeSingle();
+  if (!link) return { ok: false, error: "Link not found" };
+
+  const { error } = await svc
+    .from("internal_document_asset_links")
+    .delete()
+    .eq("id", parsed.data.linkId)
+    .eq("organization_id", ctx.organizationId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/regwatch/documents");
+  revalidatePath(`/regwatch/documents/${link.internal_document_id}`);
+  revalidatePath(`/regwatch/assets/${link.asset_id}`);
+  return { ok: true };
+}

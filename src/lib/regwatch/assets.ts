@@ -183,6 +183,49 @@ export async function getHierarchyConfig(
 }
 
 /**
+ * Walks up from a starting asset to the org root via parent_id, returning
+ * the ancestor chain in root-to-leaf order. Used by the asset detail page
+ * to compute inherited obligations + inherited documents.
+ */
+export async function getAssetAncestors(
+  assetId: string,
+): Promise<AssetNode[]> {
+  const supabase = await createClient();
+  const chain: AssetNode[] = [];
+  let cursorId: string | null = assetId;
+  let depth = 0;
+  while (cursorId && depth < 10) {
+    const { data }: { data: Record<string, unknown> | null } = await supabase
+      .from("assets")
+      .select(
+        "id, organization_id, parent_id, level, name, code, asset_type, jurisdiction_code, substances_cas, tags, archived_at, created_at, updated_at",
+      )
+      .eq("id", cursorId)
+      .maybeSingle();
+    if (!data) break;
+    const node = mapRow(data);
+    if (node.id !== assetId) chain.unshift(node);
+    cursorId = node.parentId;
+    depth += 1;
+  }
+  return chain;
+}
+
+export async function getAssetChildren(assetId: string): Promise<AssetNode[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("assets")
+    .select(
+      "id, organization_id, parent_id, level, name, code, asset_type, jurisdiction_code, substances_cas, tags, archived_at, created_at, updated_at",
+    )
+    .eq("parent_id", assetId)
+    .is("archived_at", null)
+    .order("name", { ascending: true });
+  if (error || !data) return [];
+  return data.map((r) => mapRow(r as Record<string, unknown>));
+}
+
+/**
  * Counts of assets per level + grand total for the org. Used by the page
  * header so admins see "0 sites · 0 assets" until they start configuring.
  */

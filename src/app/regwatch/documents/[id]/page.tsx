@@ -7,10 +7,13 @@ import {
   getDocument,
   DOCUMENT_KIND_LABEL,
 } from "@/lib/regwatch/internal-documents";
+import { listAssets, getHierarchyConfig } from "@/lib/regwatch/assets";
+import { getMyOrganization } from "@/lib/regwatch/footprint";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
 import { UploadFileForm } from "@/components/regwatch/documents/UploadFileForm";
 import { LinkRegulationForm } from "@/components/regwatch/documents/LinkRegulationForm";
+import { LinkAssetsPanel } from "@/components/regwatch/documents/LinkAssetsPanel";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -42,9 +45,21 @@ export default async function DocumentDetailPage({ params }: Props) {
   const doc = await getDocument(id);
   if (!doc) notFound();
 
-  const membership = await getMyMembership();
+  const [membership, org, allAssets] = await Promise.all([
+    getMyMembership(),
+    getMyOrganization(),
+    listAssets(),
+  ]);
   const canEdit =
     membership?.role === "owner" || membership?.role === "admin";
+  const config = await getHierarchyConfig(org?.organization.id ?? "");
+  const levelLabels: Record<2 | 3 | 4 | 5 | 6, string> = {
+    2: config.level2Label,
+    3: config.level3Label,
+    4: config.level4Label,
+    5: config.level5Label,
+    6: config.level6Label ?? "Component",
+  };
 
   return (
     <RegwatchAppShell authed>
@@ -101,6 +116,36 @@ export default async function DocumentDetailPage({ params }: Props) {
                   linkRationale: l.linkRationale,
                   supersededAt: l.supersededAt,
                 }))}
+              />
+            </div>
+
+            <div className="rounded-xl border border-card-border bg-card-bg/40 p-5">
+              <h2 className="mb-1 text-sm font-semibold text-foreground">
+                Linked assets
+              </h2>
+              <p className="mb-3 text-xs text-muted">
+                Pin this document to the {levelLabels[2]}s, {levelLabels[3]}s,
+                {" "}{levelLabels[4]}s, or {levelLabels[5]}s it applies to.
+                Linking at any level applies to every descendant.
+              </p>
+              <LinkAssetsPanel
+                documentId={doc.id}
+                allAssets={allAssets.map((a) => ({
+                  id: a.id,
+                  parentId: a.parentId,
+                  level: a.level,
+                  name: a.name,
+                  code: a.code,
+                }))}
+                levelLabels={levelLabels}
+                currentLinks={doc.assetLinks.map((l) => ({
+                  linkId: l.id,
+                  assetId: l.assetId,
+                  assetName: l.assetName,
+                  assetLevel: l.assetLevel,
+                  assetCode: l.assetCode,
+                }))}
+                canEdit={canEdit || membership !== null}
               />
             </div>
 

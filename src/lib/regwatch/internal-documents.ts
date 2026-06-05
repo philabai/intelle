@@ -47,6 +47,7 @@ export interface InternalDocumentListItem {
   effectiveDate: string | null;
   nextReviewDate: string | null;
   linkCount: number;
+  assetLinkCount: number;
   filePath: string | null;
   fileName: string | null;
   createdAt: string;
@@ -59,6 +60,7 @@ export interface InternalDocumentDetail extends InternalDocumentListItem {
   fileSize: number | null;
   mimeType: string | null;
   links: InternalDocumentLink[];
+  assetLinks: InternalDocumentAssetLink[];
 }
 
 export interface InternalDocumentLink {
@@ -71,6 +73,17 @@ export interface InternalDocumentLink {
   linkRationale: string | null;
   linkedAtItemVersion: string | null;
   supersededAt: string | null;
+  createdAt: string;
+}
+
+export interface InternalDocumentAssetLink {
+  id: string;
+  assetId: string;
+  assetName: string;
+  assetLevel: number;
+  assetCode: string | null;
+  jurisdictionCode: string | null;
+  linkRationale: string | null;
   createdAt: string;
 }
 
@@ -95,9 +108,10 @@ export async function listDocuments(
     return [];
   }
 
-  // Per-doc link counts in one round-trip.
+  // Per-doc link counts (regulations + assets) in two round-trips.
   const docIds = data.map((d) => d.id as string);
   const linksByDoc = new Map<string, number>();
+  const assetLinksByDoc = new Map<string, number>();
   if (docIds.length > 0) {
     const { data: linkRows } = await supabase
       .from("internal_document_regulation_links")
@@ -107,6 +121,14 @@ export async function listDocuments(
     for (const r of linkRows ?? []) {
       const id = r.internal_document_id as string;
       linksByDoc.set(id, (linksByDoc.get(id) ?? 0) + 1);
+    }
+    const { data: assetLinkRows } = await supabase
+      .from("internal_document_asset_links")
+      .select("internal_document_id")
+      .in("internal_document_id", docIds);
+    for (const r of assetLinkRows ?? []) {
+      const id = r.internal_document_id as string;
+      assetLinksByDoc.set(id, (assetLinksByDoc.get(id) ?? 0) + 1);
     }
   }
 
@@ -152,6 +174,7 @@ export async function listDocuments(
       effectiveDate: (row.effective_date as string | null) ?? null,
       nextReviewDate: (row.next_review_date as string | null) ?? null,
       linkCount: linksByDoc.get(row.id as string) ?? 0,
+      assetLinkCount: assetLinksByDoc.get(row.id as string) ?? 0,
       filePath: (row.file_path as string | null) ?? null,
       fileName: (row.file_name as string | null) ?? null,
       createdAt: row.created_at as string,
@@ -213,6 +236,41 @@ export async function getDocument(
     };
   });
 
+  // Asset links — multi-asset pinning. Loaded with the asset join so the
+  // panel can render name/level/code without a second round-trip.
+  const { data: assetLinkRows } = await supabase
+    .from("internal_document_asset_links")
+    .select(
+      `id, asset_id, link_rationale, created_at,
+       asset:assets!inner ( name, level, code, jurisdiction_code )`,
+    )
+    .eq("internal_document_id", id)
+    .order("created_at", { ascending: false });
+  type AssetLinkRow = {
+    id: string;
+    asset_id: string;
+    link_rationale: string | null;
+    created_at: string;
+    asset:
+      | { name: string; level: number; code: string | null; jurisdiction_code: string | null }
+      | { name: string; level: number; code: string | null; jurisdiction_code: string | null }[];
+  };
+  const assetLinks: InternalDocumentAssetLink[] = ((assetLinkRows ?? []) as AssetLinkRow[]).map(
+    (r) => {
+      const a = Array.isArray(r.asset) ? r.asset[0] : r.asset;
+      return {
+        id: r.id,
+        assetId: r.asset_id,
+        assetName: a?.name ?? "(unknown asset)",
+        assetLevel: a?.level ?? 0,
+        assetCode: a?.code ?? null,
+        jurisdictionCode: a?.jurisdiction_code ?? null,
+        linkRationale: r.link_rationale,
+        createdAt: r.created_at,
+      };
+    },
+  );
+
   // Owner enrichment
   let ownerEmail: string | null = null;
   let ownerName: string | null = null;
@@ -246,6 +304,7 @@ export async function getDocument(
     effectiveDate: (data.effective_date as string | null) ?? null,
     nextReviewDate: (data.next_review_date as string | null) ?? null,
     linkCount: links.filter((l) => !l.supersededAt).length,
+    assetLinkCount: assetLinks.length,
     filePath: (data.file_path as string | null) ?? null,
     fileName: (data.file_name as string | null) ?? null,
     fileSize: (data.file_size as number | null) ?? null,
@@ -253,7 +312,84 @@ export async function getDocument(
     createdAt: data.created_at as string,
     updatedAt: data.updated_at as string,
     links,
+    assetLinks,
   };
+}
+
+/**
+ * Returns internal documents linked to a given asset (or any of its
+ * ancestors — used on the asset detail page to surface inherited docs).
+ * The `inheritedFromAssetId` field is populated for ancestor matches.
+ */
+export interface AssetLinkedDocument {
+  linkId: string;
+  documentId: string;
+  title: string;
+  docKind: InternalDocumentKind;
+  internalCode: string | null;
+  version: string | null;
+  ownerUserId: string | null;
+  inheritedFromAssetId: string | null;
+  inheritedFromAssetName: string | null;
+  linkRationale: string | null;
+}
+
+export async function listDocumentsLinkedToAssetWithAncestors(
+  assetId: string,
+  ancestorIdsInOrder: string[],
+): Promise<AssetLinkedDocument[]> {
+  const supabase = await createClient();
+  const allIds = [assetId, ...ancestorIdsInOrder];
+  if (allIds.length === 0) return [];
+  const { data, error } = await supabase
+    .from("internal_document_asset_links")
+    .select(
+      `id, asset_id, link_rationale, created_at,
+       asset:assets!inner ( id, name ),
+       document:internal_documents!inner ( id, title, doc_kind, internal_code, version, owner_user_id )`,
+    )
+    .in("asset_id", allIds);
+  if (error || !data) return [];
+  type Row = {
+    id: string;
+    asset_id: string;
+    link_rationale: string | null;
+    asset: { id: string; name: string } | { id: string; name: string }[];
+    document:
+      | {
+          id: string;
+          title: string;
+          doc_kind: InternalDocumentKind;
+          internal_code: string | null;
+          version: string | null;
+          owner_user_id: string | null;
+        }
+      | {
+          id: string;
+          title: string;
+          doc_kind: InternalDocumentKind;
+          internal_code: string | null;
+          version: string | null;
+          owner_user_id: string | null;
+        }[];
+  };
+  return (data as Row[]).map((r) => {
+    const a = Array.isArray(r.asset) ? r.asset[0] : r.asset;
+    const d = Array.isArray(r.document) ? r.document[0] : r.document;
+    const inherited = r.asset_id !== assetId;
+    return {
+      linkId: r.id,
+      documentId: d.id,
+      title: d.title,
+      docKind: d.doc_kind,
+      internalCode: d.internal_code,
+      version: d.version,
+      ownerUserId: d.owner_user_id,
+      inheritedFromAssetId: inherited ? a.id : null,
+      inheritedFromAssetName: inherited ? a.name : null,
+      linkRationale: r.link_rationale,
+    };
+  });
 }
 
 /**

@@ -101,7 +101,8 @@ export default async function DocumentsPage() {
                   <th className="px-4 py-3">Title</th>
                   <th className="px-4 py-3">Kind</th>
                   <th className="px-4 py-3">Owner</th>
-                  <th className="px-4 py-3">Linked regs</th>
+                  <th className="px-4 py-3">Regs</th>
+                  <th className="px-4 py-3">Assets</th>
                   <th className="px-4 py-3">Updated</th>
                 </tr>
               </thead>
@@ -144,6 +145,17 @@ export default async function DocumentsPage() {
                         }`}
                       >
                         {d.linkCount}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs">
+                      <span
+                        className={`rounded-md px-1.5 py-0.5 font-mono ${
+                          d.assetLinkCount > 0
+                            ? "bg-brand-blue/15 text-brand-blue"
+                            : "bg-card-bg text-muted"
+                        }`}
+                      >
+                        {d.assetLinkCount}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-[11px] text-muted">

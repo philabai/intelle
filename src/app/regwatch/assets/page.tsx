@@ -108,7 +108,7 @@ export default async function AssetsPage() {
         </div>
 
         <section className="rounded-xl border border-card-border bg-card-bg/40 p-4 sm:p-6">
-          <AssetTreeView roots={tree} levelLabels={labels} linkable={false} />
+          <AssetTreeView roots={tree} levelLabels={labels} linkable />
         </section>
       </div>
     </RegwatchAppShell>
