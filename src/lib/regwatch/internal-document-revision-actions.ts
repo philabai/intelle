@@ -32,6 +32,14 @@ export interface RevisionActionResult {
   revisionId?: string;
   version?: SemVer;
   conflict?: boolean;
+  /**
+   * New `updated_at` after a successful save. The client uses this to
+   * refresh its optimistic-lock baseline — without it, the `set_updated_at`
+   * trigger advances the row's timestamp on every save, and the SECOND
+   * save in a session always conflicts because the client still holds
+   * the page-load snapshot.
+   */
+  newUpdatedAt?: string;
 }
 
 async function ensureRevisionContext(): Promise<
@@ -156,17 +164,22 @@ export async function updateDocumentDraftBody(
   const bodyText = await extractPlainText(parsed.data.bodyDoc);
 
   const svc = createServiceClient();
-  const { error } = await svc
+  const { data: updated, error } = await svc
     .from("internal_documents")
     .update({
       body_doc: parsed.data.bodyDoc,
       body_text_cached: bodyText,
     })
     .eq("id", parsed.data.docId)
-    .eq("organization_id", ctx.organizationId);
+    .eq("organization_id", ctx.organizationId)
+    .select("updated_at")
+    .single();
   if (error) return { ok: false, error: error.message };
 
-  return { ok: true };
+  return {
+    ok: true,
+    newUpdatedAt: (updated?.updated_at as string | undefined) ?? undefined,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -256,7 +269,7 @@ export async function commitDocumentRevision(
 
   // Update the doc's pointer + display version + live body.
   const versionLabel = `v${newVersion.major}.${newVersion.minor}.${newVersion.patch}`;
-  const { error: docErr } = await svc
+  const { data: updated, error: docErr } = await svc
     .from("internal_documents")
     .update({
       current_revision_id: revision.id,
@@ -265,7 +278,9 @@ export async function commitDocumentRevision(
       version: versionLabel,
     })
     .eq("id", parsed.data.docId)
-    .eq("organization_id", ctx.organizationId);
+    .eq("organization_id", ctx.organizationId)
+    .select("updated_at")
+    .single();
   if (docErr) {
     return { ok: false, error: docErr.message };
   }
@@ -293,6 +308,7 @@ export async function commitDocumentRevision(
     ok: true,
     revisionId: revision.id as string,
     version: newVersion,
+    newUpdatedAt: (updated?.updated_at as string | undefined) ?? undefined,
   };
 }
 

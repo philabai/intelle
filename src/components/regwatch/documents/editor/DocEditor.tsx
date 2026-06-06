@@ -119,6 +119,12 @@ export function DocEditor({
       return;
     }
     lastSavedDocRef.current = serialised;
+    if (res.newUpdatedAt) {
+      // Refresh the optimistic-lock baseline. The set_updated_at trigger
+      // advances the row's timestamp on every save; without this the
+      // SECOND autosave always conflicts.
+      expectedUpdatedAtRef.current = res.newUpdatedAt;
+    }
     setSaveState({ type: "saved", at: Date.now() });
   }, [editor, documentId, saveState.type]);
 
@@ -164,6 +170,9 @@ export function DocEditor({
     }
     setSaveDialogOpen(false);
     lastSavedDocRef.current = JSON.stringify(bodyDoc);
+    if (res.newUpdatedAt) {
+      expectedUpdatedAtRef.current = res.newUpdatedAt;
+    }
     setSaveState({ type: "saved", at: Date.now() });
     router.refresh();
   }

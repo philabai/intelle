@@ -116,6 +116,9 @@ export function ComposeWorkspace({
       return;
     }
     lastSavedDocRef.current = serialised;
+    if (res.newUpdatedAt) {
+      expectedUpdatedAtRef.current = res.newUpdatedAt;
+    }
     setSaveState({ type: "saved", at: Date.now() });
   }, [editor, documentId, saveState.type]);
 
@@ -161,6 +164,9 @@ export function ComposeWorkspace({
     }
     setSaveDialogOpen(false);
     lastSavedDocRef.current = JSON.stringify(bodyDoc);
+    if (res.newUpdatedAt) {
+      expectedUpdatedAtRef.current = res.newUpdatedAt;
+    }
     setSaveState({ type: "saved", at: Date.now() });
     router.refresh();
   }
