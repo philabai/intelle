@@ -24,6 +24,9 @@ import { ClauseCrosswalkPanel } from "@/components/regwatch/documents/ClauseCros
 import { LinkAssetsPanel } from "@/components/regwatch/documents/LinkAssetsPanel";
 import { MoveDocumentMenu } from "@/components/regwatch/documents/MoveDocumentMenu";
 import { DocBodyPreviewCard } from "@/components/regwatch/documents/editor/DocBodyPreviewCard";
+import { ReviewPanel } from "@/components/regwatch/documents/review/ReviewPanel";
+import { getReviewBundle } from "@/lib/regwatch/internal-document-review";
+import { listMyOrgMembers } from "@/lib/regwatch/members";
 import { getTemplate } from "@/lib/regwatch/templates/registry";
 
 interface Props {
@@ -72,14 +75,42 @@ export default async function DocumentDetailPage({ params }: Props) {
     if (t) bodyDoc = t.prosemirrorJson;
   }
 
-  const [membership, org, allAssets, folders] = await Promise.all([
+  const [membership, org, allAssets, folders, orgMembersAll] = await Promise.all([
     getMyMembership(),
     getMyOrganization(),
     listAssets(),
     listFolders(),
+    listMyOrgMembers(),
   ]);
   const canEdit =
     membership?.role === "owner" || membership?.role === "admin";
+
+  // Review bundle (assignments + signatures + audit events).
+  const reviewBundle = membership
+    ? await getReviewBundle(doc.id, membership.organizationId)
+    : null;
+
+  // Derive the current user's role-on-doc for action gating.
+  let currentRoleOnDoc: "owner" | "reviewer" | "approver" | "admin" | null = null;
+  if (membership) {
+    if (membership.role === "owner" || membership.role === "admin") {
+      currentRoleOnDoc = "admin";
+    } else if (doc.ownerUserId === user.id) {
+      currentRoleOnDoc = "owner";
+    } else {
+      const open = reviewBundle?.assignments.find(
+        (a) => a.userId === user.id && !a.completedAt,
+      );
+      if (open) currentRoleOnDoc = open.role as "reviewer" | "approver";
+    }
+  }
+
+  const orgMembersForPanel = orgMembersAll.map((m) => ({
+    userId: m.userId,
+    displayName: m.fullName ?? m.email ?? m.userId.slice(0, 8),
+    email: m.email,
+    role: m.functionalRoleLabel,
+  }));
   const folderTree = buildFolderTree(folders);
   const folderBreadcrumb = doc.folderId
     ? await getFolderBreadcrumb(doc.folderId)
@@ -162,6 +193,22 @@ export default async function DocumentDetailPage({ params }: Props) {
               hasBody={!!bodyDoc}
               hasFile={!!doc.filePath}
             />
+
+            {reviewBundle && membership && (
+              <ReviewPanel
+                docId={doc.id}
+                reviewState={reviewBundle.reviewState}
+                ownerUserId={reviewBundle.ownerUserId}
+                ownerDisplayName={reviewBundle.ownerDisplayName}
+                currentUserId={user.id}
+                currentUserRoleOnDoc={currentRoleOnDoc}
+                isOrgAdmin={canEdit}
+                assignments={reviewBundle.assignments}
+                signatures={reviewBundle.signatures}
+                auditEvents={reviewBundle.auditEvents}
+                orgMembers={orgMembersForPanel}
+              />
+            )}
 
             <div className="rounded-xl border border-card-border bg-card-bg/40 p-5">
               <h2 className="mb-1 text-sm font-semibold text-foreground">
