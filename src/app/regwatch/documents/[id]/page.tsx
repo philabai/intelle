@@ -24,6 +24,7 @@ import { ClauseCrosswalkPanel } from "@/components/regwatch/documents/ClauseCros
 import { LinkAssetsPanel } from "@/components/regwatch/documents/LinkAssetsPanel";
 import { MoveDocumentMenu } from "@/components/regwatch/documents/MoveDocumentMenu";
 import { DocReadOnlyView } from "@/components/regwatch/documents/editor/DocReadOnlyView";
+import { DocBodyPreviewCard } from "@/components/regwatch/documents/editor/DocBodyPreviewCard";
 import { getTemplate } from "@/lib/regwatch/templates/registry";
 
 interface Props {
@@ -155,35 +156,14 @@ export default async function DocumentDetailPage({ params }: Props) {
 
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <section className="min-w-0 space-y-6">
-            <div className="rounded-xl border border-card-border bg-card-bg/40 p-5">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-sm font-semibold text-foreground">
-                  Document body
-                </h2>
-                {canEdit && (
-                  <Link
-                    href={`/regwatch/documents/${doc.id}/edit`}
-                    className="rounded-md border border-brand-blue/40 px-2.5 py-1 text-[11px] font-medium text-brand-blue hover:border-brand-blue hover:bg-brand-blue/10"
-                  >
-                    {bodyDoc ? "Edit ✎" : "Start writing ✎"}
-                  </Link>
-                )}
-              </div>
-              {bodyDoc ? (
-                <DocReadOnlyView bodyDoc={bodyDoc} />
-              ) : doc.filePath ? (
-                <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-4 text-center text-xs text-muted">
-                  This document is the uploaded file in the right sidebar. Click
-                  <strong> Start writing ✎</strong> to add a native body alongside
-                  it (existing file stays linked).
-                </p>
-              ) : (
-                <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-4 text-center text-xs text-muted">
-                  No body yet. Click <strong>Start writing ✎</strong> to author it
-                  in-app, or upload a file in the right sidebar.
-                </p>
-              )}
-            </div>
+            <DocBodyPreviewCard
+              editHref={`/regwatch/documents/${doc.id}/edit`}
+              canEdit={canEdit}
+              hasBody={!!bodyDoc}
+              hasFile={!!doc.filePath}
+            >
+              {bodyDoc ? <DocReadOnlyView bodyDoc={bodyDoc} /> : null}
+            </DocBodyPreviewCard>
 
             <div className="rounded-xl border border-card-border bg-card-bg/40 p-5">
               <h2 className="mb-1 text-sm font-semibold text-foreground">
