@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { moveDocumentToFolder } from "@/lib/regwatch/document-folders-actions";
 import type { DocumentFolderTreeNode } from "@/lib/regwatch/document-folders";
@@ -13,10 +13,17 @@ interface Props {
   label?: string;
 }
 
+const MENU_WIDTH = 256;
+const ESTIMATED_MENU_HEIGHT = 320;
+
 /**
  * Compact "Move to…" dropdown. The list shows Unfiled + every folder
  * flattened with a depth indent. Picking one immediately calls the
  * server action and closes the popover.
+ *
+ * The menu uses position:fixed with viewport-relative coordinates so the
+ * parent table's `overflow-hidden` wrapper can't clip it, and flips above
+ * the trigger when there isn't enough room below the viewport.
  */
 export function MoveDocumentMenu({
   documentId,
@@ -28,15 +35,46 @@ export function MoveDocumentMenu({
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const ref = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
+  // Close on outside click. The menu is fixed-positioned so we have to
+  // check both the trigger AND the menu itself.
   useEffect(() => {
     function onClick(e: MouseEvent) {
-      if (!ref.current) return;
-      if (!ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (triggerRef.current?.contains(t)) return;
+      if (menuRef.current?.contains(t)) return;
+      setOpen(false);
     }
     if (open) window.addEventListener("click", onClick);
     return () => window.removeEventListener("click", onClick);
+  }, [open]);
+
+  // Close on Escape + reposition on scroll/resize.
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    function onReflow() {
+      if (!triggerRef.current) return;
+      setPos(computePos(triggerRef.current));
+    }
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", onReflow, true);
+    window.addEventListener("resize", onReflow);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", onReflow, true);
+      window.removeEventListener("resize", onReflow);
+    };
+  }, [open]);
+
+  useLayoutEffect(() => {
+    if (!open || !triggerRef.current) return;
+    setPos(computePos(triggerRef.current));
   }, [open]);
 
   function move(folderId: string | null) {
@@ -59,8 +97,9 @@ export function MoveDocumentMenu({
   const flat = flattenFolders(folderRoots);
 
   return (
-    <div ref={ref} className="relative">
+    <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
         disabled={pending}
@@ -69,8 +108,12 @@ export function MoveDocumentMenu({
       >
         {label}
       </button>
-      {open && (
-        <div className="absolute right-0 top-full z-30 mt-1 w-64 overflow-hidden rounded-md border border-card-border bg-card-bg shadow-xl">
+      {open && pos && (
+        <div
+          ref={menuRef}
+          style={{ top: pos.top, left: pos.left, width: MENU_WIDTH }}
+          className="fixed z-50 overflow-hidden rounded-md border border-card-border bg-card-bg shadow-xl"
+        >
           <button
             type="button"
             onClick={() => move(null)}
@@ -110,6 +153,22 @@ export function MoveDocumentMenu({
       )}
     </div>
   );
+}
+
+function computePos(trigger: HTMLElement): { top: number; left: number } {
+  const rect = trigger.getBoundingClientRect();
+  const vpH = window.innerHeight;
+  const vpW = window.innerWidth;
+  const spaceBelow = vpH - rect.bottom;
+  // Flip up when the menu would otherwise spill off the bottom.
+  const openUp = spaceBelow < ESTIMATED_MENU_HEIGHT && rect.top > spaceBelow;
+  const top = openUp
+    ? Math.max(8, rect.top - 4 - ESTIMATED_MENU_HEIGHT)
+    : rect.bottom + 4;
+  // Right-align with the trigger, but keep within the viewport on narrow screens.
+  const desiredLeft = rect.right - MENU_WIDTH;
+  const left = Math.max(8, Math.min(desiredLeft, vpW - MENU_WIDTH - 8));
+  return { top, left };
 }
 
 function flattenFolders(
