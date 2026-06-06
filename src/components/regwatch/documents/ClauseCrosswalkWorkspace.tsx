@@ -120,6 +120,27 @@ export function ClauseCrosswalkWorkspace({
     [existingLinks],
   );
 
+  // Match-number assignment — when a regulation is picked, every
+  // crosswalk pair (both anchors set) involving that regulation gets a
+  // stable sequential number. The same number appears on both panes for
+  // a given pair, making the section ↔ clause pairing visually obvious.
+  const matchNumberByLinkId = useMemo(() => {
+    const map = new Map<string, number>();
+    if (!regulation) return map;
+    // Stable order: sort by link.id lexicographic so numbering doesn't
+    // jitter when React re-renders.
+    const relevant = activeLinks
+      .filter(
+        (l) =>
+          l.regulatoryItemId === regulation.id &&
+          !!l.clauseAnchor?.trim() &&
+          !!l.internalClauseAnchor?.trim(),
+      )
+      .sort((a, b) => a.id.localeCompare(b.id));
+    relevant.forEach((l, idx) => map.set(l.id, idx + 1));
+    return map;
+  }, [activeLinks, regulation]);
+
   const mappingsByInternalKey = useMemo(() => {
     const m = new Map<string, MappedRow[]>();
     for (const l of activeLinks) {
@@ -133,13 +154,18 @@ export function ClauseCrosswalkWorkspace({
         clauseAnchor: l.clauseAnchor,
         internalClauseAnchor: l.internalClauseAnchor,
         linkRationale: l.linkRationale,
+        matchNumber: matchNumberByLinkId.get(l.id),
       };
       const arr = m.get(key) ?? [];
       arr.push(row);
       m.set(key, arr);
     }
+    // Keep chips in numeric order within each paragraph for readability.
+    for (const arr of m.values()) {
+      arr.sort((a, b) => (a.matchNumber ?? 0) - (b.matchNumber ?? 0));
+    }
     return m;
-  }, [activeLinks]);
+  }, [activeLinks, matchNumberByLinkId]);
 
   const mappingsByRegulationKey = useMemo(() => {
     const m = new Map<string, MappedRow[]>();
@@ -156,13 +182,17 @@ export function ClauseCrosswalkWorkspace({
         clauseAnchor: l.clauseAnchor,
         internalClauseAnchor: l.internalClauseAnchor,
         linkRationale: l.linkRationale,
+        matchNumber: matchNumberByLinkId.get(l.id),
       };
       const arr = m.get(key) ?? [];
       arr.push(row);
       m.set(key, arr);
     }
+    for (const arr of m.values()) {
+      arr.sort((a, b) => (a.matchNumber ?? 0) - (b.matchNumber ?? 0));
+    }
     return m;
-  }, [activeLinks, regulation]);
+  }, [activeLinks, regulation, matchNumberByLinkId]);
 
   function onPickInternal(anchor: string, text: string) {
     setInternalAnchor(anchor);
