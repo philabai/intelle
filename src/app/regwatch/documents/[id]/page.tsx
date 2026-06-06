@@ -189,6 +189,7 @@ export default async function DocumentDetailPage({ params }: Props) {
             <DocBodyPreviewCard
               documentId={doc.id}
               editHref={`/regwatch/documents/${doc.id}/edit`}
+              composeHref={`/regwatch/documents/${doc.id}/compose`}
               canEdit={canEdit}
               hasBody={!!bodyDoc}
               hasFile={!!doc.filePath}

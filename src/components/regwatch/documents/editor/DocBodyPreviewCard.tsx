@@ -7,6 +7,7 @@ import { DocPdfPreview } from "./DocPdfPreview";
 interface Props {
   documentId: string;
   editHref: string;
+  composeHref?: string;
   canEdit: boolean;
   hasBody: boolean;
   hasFile: boolean;
@@ -32,6 +33,7 @@ const ZOOM_STEP = 0.1;
 export function DocBodyPreviewCard({
   documentId,
   editHref,
+  composeHref,
   canEdit,
   hasBody,
   hasFile,
@@ -82,6 +84,15 @@ export function DocBodyPreviewCard({
                 +
               </button>
             </div>
+          )}
+          {canEdit && composeHref && (
+            <Link
+              href={composeHref}
+              title="Open side-by-side workspace — regulation on the left, editor on the right"
+              className="rounded-md border border-brand-teal/40 px-2.5 py-1 text-[11px] font-medium text-brand-teal hover:border-brand-teal hover:bg-brand-teal/10"
+            >
+              📚 Compose
+            </Link>
           )}
           {canEdit && (
             <Link

@@ -7,6 +7,7 @@ import { TableRow } from "@tiptap/extension-table-row";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
 import { PageBreakNode } from "./PageBreakNode";
+import { CitedClauseExtension } from "./CitedClauseExtension";
 
 /**
  * Locked v1 node set. Order matters for the TipTap schema. Any node added
@@ -39,4 +40,5 @@ export const EDITOR_EXTENSIONS = [
   TableHeader,
   TableCell,
   PageBreakNode,
+  CitedClauseExtension,
 ];

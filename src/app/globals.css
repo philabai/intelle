@@ -268,3 +268,34 @@ html {
     display: none;
   }
 }
+
+/* ===========================================================================
+ * Internal Documents editor — Cited clause inline pill.
+ * Rendered by CitedClauseExtension and surfaces in the editor, the
+ * read-only view, and (via the DOCX/PDF exporter once we wire it) any
+ * export. Pinned to a regulation's clause + last_changed_at at insertion
+ * time so PR-6's supersession cron can flag stale citations.
+ * =========================================================================== */
+.cited-clause {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(45, 212, 191, 0.45);
+  background-color: rgba(45, 212, 191, 0.1);
+  color: #5eead4;
+  font-size: 0.85em;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: text;
+}
+.cited-clause:hover {
+  border-color: rgba(45, 212, 191, 0.7);
+  background-color: rgba(45, 212, 191, 0.18);
+}
+.ProseMirror .cited-clause.ProseMirror-selectednode {
+  outline: 1px solid #2dd4bf;
+  outline-offset: 1px;
+}
