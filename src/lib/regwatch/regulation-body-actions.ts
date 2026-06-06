@@ -2,11 +2,10 @@
 
 import { z } from "zod";
 import { createClient } from "./supabase/server";
-import {
-  dedupeNearbyParagraphs,
-  fetchAndPersistRegulationBody,
-  filterJunkParagraphs,
-} from "./body-fetch";
+import { fetchAndPersistRegulationBody } from "./body-fetch";
+import { splitParagraphs, type BodyParagraph } from "./paragraph-split";
+
+export type { BodyParagraph } from "./paragraph-split";
 
 /**
  * Loads a regulation's full body for the clause-picker drawer. Returns the
@@ -38,16 +37,6 @@ export interface RegulationBody {
   bodyHtml: string | null;
   /** True when paragraphs were derived from `summary` only (body fields empty). */
   summaryOnly: boolean;
-}
-
-export interface BodyParagraph {
-  /** Source-order index, used as a fallback anchor (e.g. "¶12"). */
-  index: number;
-  text: string;
-  /** Detected heading anchor (e.g. "Article 6", "§ 261.4(b)(7)") when matched. */
-  detectedAnchor: string | null;
-  /** True when this paragraph looks like a heading (used for nav rail). */
-  isHeading: boolean;
 }
 
 const inputSchema = z.object({ id: z.string().uuid() });
@@ -93,94 +82,6 @@ export async function getRegulationBody(
     bodyHtml: (data.body_html as string | null) ?? null,
     summaryOnly,
   };
-}
-
-// ---------------------------------------------------------------------------
-// Paragraph + heading detection
-// ---------------------------------------------------------------------------
-
-// Regex set covering common regulatory heading conventions across our corpus.
-// Order matters — first match wins. Examples we want to catch:
-//   "Article 6", "Section 12.3", "§ 261.4(b)(7)", "Annex IV", "Schedule 2",
-//   "Chapter 3", "Part 5", "Rule 12(a)", "Sub-paragraph (3)".
-const HEADING_PATTERNS: { re: RegExp; format: (m: RegExpMatchArray) => string }[] = [
-  {
-    re: /^(article)\s+([0-9IVXLCDM]+(?:[a-z]?)(?:\.\d+)*)/i,
-    format: (m) => `Article ${m[2]}`,
-  },
-  {
-    re: /^(§|section)\s*([0-9]+(?:[a-z]?)(?:\.\d+)*(?:\([a-z0-9]+\))*)/i,
-    format: (m) => `§ ${m[2]}`,
-  },
-  {
-    re: /^(annex|appendix)\s+([0-9IVXLCDM]+(?:[a-z]?))/i,
-    format: (m) => `${capitalise(m[1])} ${m[2].toUpperCase()}`,
-  },
-  {
-    re: /^(schedule)\s+([0-9IVXLCDM]+)/i,
-    format: (m) => `Schedule ${m[2]}`,
-  },
-  {
-    re: /^(chapter|part|title)\s+([0-9IVXLCDM]+(?:\.\d+)*)/i,
-    format: (m) => `${capitalise(m[1])} ${m[2]}`,
-  },
-  {
-    re: /^(rule)\s+([0-9]+(?:\([a-z0-9]+\))*)/i,
-    format: (m) => `Rule ${m[2]}`,
-  },
-  {
-    re: /^(paragraph|para)\s+([0-9]+(?:\([a-z0-9]+\))*)/i,
-    format: (m) => `¶ ${m[2]}`,
-  },
-];
-
-function detectAnchor(line: string): string | null {
-  const trimmed = line.trim();
-  if (trimmed.length === 0) return null;
-  for (const { re, format } of HEADING_PATTERNS) {
-    const m = trimmed.match(re);
-    if (m) return format(m);
-  }
-  return null;
-}
-
-function looksLikeHeading(line: string, anchor: string | null): boolean {
-  if (anchor) return true;
-  // Without a regex-detected anchor we DON'T treat short all-caps as headings —
-  // that heuristic caught language switcher tokens (BG/ES/CS/etc.) and EUR-Lex
-  // toolbar labels and made the headings rail useless. Real structural
-  // headings come through `detectedAnchor`.
-  return false;
-}
-
-function splitParagraphs(text: string): BodyParagraph[] {
-  if (!text || text.trim().length === 0) return [];
-  // Split on blank lines first; fall back to single-newline split for
-  // sources without paragraph breaks.
-  let raw = text.split(/\n\s*\n+/).map((p) => p.replace(/\s+/g, " ").trim());
-  if (raw.length <= 2 && text.includes("\n")) {
-    raw = text.split(/\n+/).map((p) => p.trim());
-  }
-  raw = raw.filter((p) => p.length > 0);
-
-  // Junk-filter + near-duplicate dedup AT READ TIME, so already-stored
-  // bodies that pre-date the hardened extractor still display cleanly
-  // without needing a re-fetch.
-  const cleaned = dedupeNearbyParagraphs(filterJunkParagraphs(raw));
-
-  return cleaned.map((para, idx) => {
-    const anchor = detectAnchor(para);
-    return {
-      index: idx + 1,
-      text: para,
-      detectedAnchor: anchor,
-      isHeading: looksLikeHeading(para, anchor),
-    };
-  });
-}
-
-function capitalise(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 }
 
 // ===========================================================================

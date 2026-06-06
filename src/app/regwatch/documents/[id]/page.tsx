@@ -112,7 +112,7 @@ export default async function DocumentDetailPage({ params }: Props) {
           <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
             {DOCUMENT_KIND_LABEL[doc.docKind]}
           </p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="mt-1 break-words text-3xl font-semibold tracking-tight sm:text-4xl">
             {doc.title}
           </h1>
           <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted">
@@ -135,7 +135,7 @@ export default async function DocumentDetailPage({ params }: Props) {
         )}
 
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-          <section className="space-y-6">
+          <section className="min-w-0 space-y-6">
             <div className="rounded-xl border border-card-border bg-card-bg/40 p-5">
               <h2 className="mb-1 text-sm font-semibold text-foreground">
                 Linked regulations
@@ -162,9 +162,18 @@ export default async function DocumentDetailPage({ params }: Props) {
             </div>
 
             <div className="rounded-xl border border-card-border bg-card-bg/40 p-5">
-              <h2 className="mb-1 text-sm font-semibold text-foreground">
-                Clause crosswalk
-              </h2>
+              <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold text-foreground">
+                  Clause crosswalk
+                </h2>
+                <Link
+                  href={`/regwatch/documents/${doc.id}/crosswalk`}
+                  title="Open the side-by-side mapping workspace — your document on the left, regulation on the right"
+                  className="rounded-md border border-brand-teal/40 px-2.5 py-1 text-[11px] font-medium text-brand-teal hover:border-brand-teal hover:bg-brand-teal/10"
+                >
+                  Open mapping workspace →
+                </Link>
+              </div>
               <p className="mb-3 text-xs text-muted">
                 Section-to-clause traceability matrix. Map specific sections
                 of <em>your</em> document to specific clauses of external
