@@ -23,7 +23,6 @@ import { LinkRegulationForm } from "@/components/regwatch/documents/LinkRegulati
 import { ClauseCrosswalkPanel } from "@/components/regwatch/documents/ClauseCrosswalkPanel";
 import { LinkAssetsPanel } from "@/components/regwatch/documents/LinkAssetsPanel";
 import { MoveDocumentMenu } from "@/components/regwatch/documents/MoveDocumentMenu";
-import { DocReadOnlyView } from "@/components/regwatch/documents/editor/DocReadOnlyView";
 import { DocBodyPreviewCard } from "@/components/regwatch/documents/editor/DocBodyPreviewCard";
 import { getTemplate } from "@/lib/regwatch/templates/registry";
 
@@ -157,13 +156,12 @@ export default async function DocumentDetailPage({ params }: Props) {
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <section className="min-w-0 space-y-6">
             <DocBodyPreviewCard
+              documentId={doc.id}
               editHref={`/regwatch/documents/${doc.id}/edit`}
               canEdit={canEdit}
               hasBody={!!bodyDoc}
               hasFile={!!doc.filePath}
-            >
-              {bodyDoc ? <DocReadOnlyView bodyDoc={bodyDoc} /> : null}
-            </DocBodyPreviewCard>
+            />
 
             <div className="rounded-xl border border-card-border bg-card-bg/40 p-5">
               <h2 className="mb-1 text-sm font-semibold text-foreground">

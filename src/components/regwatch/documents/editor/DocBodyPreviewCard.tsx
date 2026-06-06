@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { DocPdfPreview } from "./DocPdfPreview";
 
 interface Props {
+  documentId: string;
   editHref: string;
   canEdit: boolean;
   hasBody: boolean;
   hasFile: boolean;
-  /** Server-rendered DocReadOnlyView, passed as a child so it stays out of the client bundle. */
-  children?: React.ReactNode;
 }
 
 const ZOOM_MIN = 0.5;
@@ -17,19 +17,24 @@ const ZOOM_MAX = 2.0;
 const ZOOM_STEP = 0.1;
 
 /**
- * Card wrapper around DocReadOnlyView on the document detail page. Adds
- * its own scroll container (so the body's height is bounded — the whole
- * page no longer scrolls for tall docs) and zoom in/out controls.
+ * Document body preview card on the doc detail page.
  *
- * Zoom uses the CSS `zoom` property which scales BOTH layout and
- * rendering, so the scroll area expands naturally as you zoom in.
+ *   - Hosts DocPdfPreview which renders the current body_doc as a real
+ *     PDF (server-generated on-demand, cached by content hash) — gives
+ *     authors a Word-quality multi-page preview that matches their
+ *     DOCX/PDF export exactly.
+ *   - Has its own bounded scrollbar (max-h: 75vh) so tall docs don't
+ *     hijack the page.
+ *   - Has zoom in / reset / zoom out controls (50%–200%).
+ *   - Empty-state when the doc has no editor body (legacy upload-only
+ *     docs or fresh blank docs).
  */
 export function DocBodyPreviewCard({
+  documentId,
   editHref,
   canEdit,
   hasBody,
   hasFile,
-  children,
 }: Props) {
   const [zoom, setZoom] = useState(1);
   const zoomPct = Math.round(zoom * 100);
@@ -39,9 +44,6 @@ export function DocBodyPreviewCard({
   }
   function zoomIn() {
     setZoom((z) => Math.min(ZOOM_MAX, Math.round((z + ZOOM_STEP) * 100) / 100));
-  }
-  function zoomReset() {
-    setZoom(1);
   }
 
   return (
@@ -64,7 +66,7 @@ export function DocBodyPreviewCard({
               </button>
               <button
                 type="button"
-                onClick={zoomReset}
+                onClick={() => setZoom(1)}
                 title="Reset zoom to 100%"
                 className="border-x border-card-border px-2 py-1 font-mono text-[11px] text-foreground/90 hover:bg-card-bg"
               >
@@ -94,13 +96,7 @@ export function DocBodyPreviewCard({
 
       {hasBody ? (
         <div className="max-h-[75vh] overflow-auto rounded-md bg-[#0a0e1a]">
-          <div
-            // CSS `zoom` scales both layout dimensions and rendering, so the
-            // scrollable container expands naturally as you zoom in.
-            style={{ zoom }}
-          >
-            {children}
-          </div>
+          <DocPdfPreview documentId={documentId} zoom={zoom} />
         </div>
       ) : hasFile ? (
         <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-4 text-center text-xs text-muted">
