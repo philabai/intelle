@@ -6,7 +6,8 @@
     "dev": "next dev --port 4000",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "regen-template-seed": "tsx scripts/seed-internal-doc-templates.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",

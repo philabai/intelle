@@ -29,6 +29,20 @@ export type InternalDocumentStatus =
   | "superseded"
   | "retired";
 
+/**
+ * Workflow state (PR-1 schema). Distinct axis from `status`:
+ *   - review_state captures the authoring/approval lifecycle
+ *   - status is the kind-agnostic active/retired axis
+ * Both columns coexist; the UI mostly reads review_state for new docs and
+ * falls back to status for legacy upload-only docs.
+ */
+export type InternalDocumentReviewState =
+  | "draft"
+  | "in_review"
+  | "approved"
+  | "effective"
+  | "superseded";
+
 export const DOCUMENT_KIND_LABEL: Record<InternalDocumentKind, string> = {
   sop: "SOP",
   policy: "Policy",
@@ -58,6 +72,9 @@ export interface InternalDocumentListItem {
   ownerEmail: string | null;
   ownerName: string | null;
   status: InternalDocumentStatus;
+  reviewState: InternalDocumentReviewState;
+  templateKey: string | null;
+  currentRevisionId: string | null;
   effectiveDate: string | null;
   nextReviewDate: string | null;
   linkCount: number;
@@ -133,7 +150,8 @@ export async function listDocuments(
     .from("internal_documents")
     .select(
       `id, organization_id, title, doc_kind, internal_code, version, owner_user_id,
-       status, effective_date, next_review_date, file_path, file_name,
+       status, review_state, template_key, current_revision_id,
+       effective_date, next_review_date, file_path, file_name,
        folder_id, created_at, updated_at`,
     )
     .order("updated_at", { ascending: false });
@@ -214,6 +232,9 @@ export async function listDocuments(
       ownerEmail: ownerInfo?.email ?? null,
       ownerName: ownerInfo?.name ?? null,
       status: row.status as InternalDocumentStatus,
+      reviewState: (row.review_state as InternalDocumentReviewState) ?? "draft",
+      templateKey: (row.template_key as string | null) ?? null,
+      currentRevisionId: (row.current_revision_id as string | null) ?? null,
       effectiveDate: (row.effective_date as string | null) ?? null,
       nextReviewDate: (row.next_review_date as string | null) ?? null,
       linkCount: linksByDoc.get(row.id as string) ?? 0,
@@ -236,7 +257,8 @@ export async function getDocument(
     .select(
       `id, organization_id, title, doc_kind, internal_code, version,
        owner_user_id, owner_role, description, file_path, file_name,
-       file_size, mime_type, status, effective_date, next_review_date,
+       file_size, mime_type, status, review_state, template_key,
+       current_revision_id, effective_date, next_review_date,
        folder_id, created_at, updated_at`,
     )
     .eq("id", id)
@@ -347,6 +369,9 @@ export async function getDocument(
     ownerRole: (data.owner_role as string | null) ?? null,
     description: (data.description as string | null) ?? null,
     status: data.status as InternalDocumentStatus,
+    reviewState: (data.review_state as InternalDocumentReviewState) ?? "draft",
+    templateKey: (data.template_key as string | null) ?? null,
+    currentRevisionId: (data.current_revision_id as string | null) ?? null,
     effectiveDate: (data.effective_date as string | null) ?? null,
     nextReviewDate: (data.next_review_date as string | null) ?? null,
     linkCount: links.filter((l) => !l.supersededAt).length,
