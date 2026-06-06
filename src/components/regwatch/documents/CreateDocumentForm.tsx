@@ -15,6 +15,13 @@ const KIND_OPTIONS = [
   { value: "training-material", label: "Training material" },
   { value: "validation-protocol", label: "Validation protocol" },
   { value: "risk-assessment", label: "Risk assessment" },
+  { value: "internal-standard", label: "Internal standard" },
+  { value: "regulation", label: "Regulation" },
+  { value: "test-plan", label: "Test plan" },
+  { value: "project-document", label: "Project document" },
+  { value: "lessons-learnt", label: "Lessons learnt" },
+  { value: "design-document", label: "Design document" },
+  { value: "drawing", label: "Drawing" },
   { value: "other", label: "Other" },
 ];
 

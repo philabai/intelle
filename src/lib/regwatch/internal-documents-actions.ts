@@ -21,6 +21,13 @@ const DOC_KINDS = [
   "training-material",
   "validation-protocol",
   "risk-assessment",
+  "internal-standard",
+  "regulation",
+  "test-plan",
+  "project-document",
+  "lessons-learnt",
+  "design-document",
+  "drawing",
   "other",
 ] as const;
 
@@ -246,9 +253,19 @@ const linkSchema = z.object({
   internalDocumentId: z.string().uuid(),
   regulatoryItemId: z.string().uuid(),
   clauseAnchor: z.string().trim().max(120).nullable().optional(),
+  internalClauseAnchor: z.string().trim().max(120).nullable().optional(),
   linkRationale: z.string().trim().max(1000).nullable().optional(),
 });
 
+/**
+ * Single linker for both flows. Distinction is in the payload:
+ *   - Doc-level link  → both clauseAnchor + internalClauseAnchor are
+ *     null/empty. One row per regulation.
+ *   - Clause crosswalk → BOTH anchors set. Multiple rows allowed per
+ *     regulation (one per clause-pair) — the partial unique index keys
+ *     on (org, doc, reg, coalesce(clause_anchor, '')) so distinct
+ *     regulation-side clauses don't collide.
+ */
 export async function linkDocumentToRegulation(
   input: unknown,
 ): Promise<ActionResult> {
@@ -285,6 +302,7 @@ export async function linkDocumentToRegulation(
       internal_document_id: parsed.data.internalDocumentId,
       regulatory_item_id: parsed.data.regulatoryItemId,
       clause_anchor: parsed.data.clauseAnchor ?? null,
+      internal_clause_anchor: parsed.data.internalClauseAnchor ?? null,
       link_rationale: parsed.data.linkRationale ?? null,
       linked_at_item_version:
         (reg.last_changed_at as string | null) ?? new Date().toISOString(),
@@ -293,8 +311,17 @@ export async function linkDocumentToRegulation(
     .select("id")
     .single();
   if (error) {
-    if (error.code === "23505")
-      return { ok: false, error: "This document is already linked to that regulation" };
+    if (error.code === "23505") {
+      const isCrosswalk =
+        !!parsed.data.clauseAnchor?.trim() &&
+        !!parsed.data.internalClauseAnchor?.trim();
+      return {
+        ok: false,
+        error: isCrosswalk
+          ? `Clause ${parsed.data.clauseAnchor} is already mapped from this document`
+          : "This document is already linked to that regulation",
+      };
+    }
     return { ok: false, error: error.message };
   }
   revalidatePath("/regwatch/documents");

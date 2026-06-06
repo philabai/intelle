@@ -19,6 +19,7 @@ import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
 import { UploadFileForm } from "@/components/regwatch/documents/UploadFileForm";
 import { LinkRegulationForm } from "@/components/regwatch/documents/LinkRegulationForm";
+import { ClauseCrosswalkPanel } from "@/components/regwatch/documents/ClauseCrosswalkPanel";
 import { LinkAssetsPanel } from "@/components/regwatch/documents/LinkAssetsPanel";
 import { MoveDocumentMenu } from "@/components/regwatch/documents/MoveDocumentMenu";
 
@@ -76,7 +77,7 @@ export default async function DocumentDetailPage({ params }: Props) {
 
   return (
     <RegwatchAppShell authed>
-      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/documents" className="hover:text-foreground">
             Internal documents
@@ -136,9 +137,14 @@ export default async function DocumentDetailPage({ params }: Props) {
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <section className="space-y-6">
             <div className="rounded-xl border border-card-border bg-card-bg/40 p-5">
-              <h2 className="mb-3 text-sm font-semibold text-foreground">
+              <h2 className="mb-1 text-sm font-semibold text-foreground">
                 Linked regulations
               </h2>
+              <p className="mb-3 text-xs text-muted">
+                Whole-regulation links — &ldquo;this document is in scope of
+                these regulations&rdquo;. The breadth view. For clause-level
+                traceability use the Clause crosswalk panel below.
+              </p>
               <LinkRegulationForm
                 documentId={doc.id}
                 existingLinks={doc.links.map((l) => ({
@@ -148,6 +154,32 @@ export default async function DocumentDetailPage({ params }: Props) {
                   regulationTitle: l.regulationTitle,
                   jurisdictionCode: l.jurisdictionCode,
                   clauseAnchor: l.clauseAnchor,
+                  internalClauseAnchor: l.internalClauseAnchor,
+                  linkRationale: l.linkRationale,
+                  supersededAt: l.supersededAt,
+                }))}
+              />
+            </div>
+
+            <div className="rounded-xl border border-card-border bg-card-bg/40 p-5">
+              <h2 className="mb-1 text-sm font-semibold text-foreground">
+                Clause crosswalk
+              </h2>
+              <p className="mb-3 text-xs text-muted">
+                Section-to-clause traceability matrix. Map specific sections
+                of <em>your</em> document to specific clauses of external
+                regulations — the depth view auditors look for.
+              </p>
+              <ClauseCrosswalkPanel
+                documentId={doc.id}
+                existingLinks={doc.links.map((l) => ({
+                  id: l.id,
+                  regulatoryItemId: l.regulatoryItemId,
+                  regulationCitation: l.regulationCitation,
+                  regulationTitle: l.regulationTitle,
+                  jurisdictionCode: l.jurisdictionCode,
+                  clauseAnchor: l.clauseAnchor,
+                  internalClauseAnchor: l.internalClauseAnchor,
                   linkRationale: l.linkRationale,
                   supersededAt: l.supersededAt,
                 }))}

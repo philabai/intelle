@@ -14,6 +14,13 @@ export type InternalDocumentKind =
   | "training-material"
   | "validation-protocol"
   | "risk-assessment"
+  | "internal-standard"
+  | "regulation"
+  | "test-plan"
+  | "project-document"
+  | "lessons-learnt"
+  | "design-document"
+  | "drawing"
   | "other";
 
 export type InternalDocumentStatus =
@@ -30,6 +37,13 @@ export const DOCUMENT_KIND_LABEL: Record<InternalDocumentKind, string> = {
   "training-material": "Training material",
   "validation-protocol": "Validation protocol",
   "risk-assessment": "Risk assessment",
+  "internal-standard": "Internal standard",
+  regulation: "Regulation",
+  "test-plan": "Test plan",
+  "project-document": "Project document",
+  "lessons-learnt": "Lessons learnt",
+  "design-document": "Design document",
+  drawing: "Drawing",
   other: "Other",
 };
 
@@ -70,11 +84,26 @@ export interface InternalDocumentLink {
   regulationCitation: string;
   regulationTitle: string;
   jurisdictionCode: string;
+  /** Anchor on the regulation side, e.g. "Article 6(2)". */
   clauseAnchor: string | null;
+  /** Anchor on the internal document side, e.g. "§4.2" or "Section 3". */
+  internalClauseAnchor: string | null;
   linkRationale: string | null;
   linkedAtItemVersion: string | null;
   supersededAt: string | null;
   createdAt: string;
+}
+
+/**
+ * Derive whether a link is a coarse document-level mapping
+ * ("this SOP covers this regulation in general") or a fine-grained
+ * clause crosswalk entry ("§4.2 of our SOP maps to Article 6(2)").
+ * A link is treated as crosswalk when BOTH anchors are present.
+ */
+export function isClauseCrosswalk(link: InternalDocumentLink): boolean {
+  return (
+    !!link.internalClauseAnchor?.trim() && !!link.clauseAnchor?.trim()
+  );
 }
 
 export interface InternalDocumentAssetLink {
@@ -217,7 +246,7 @@ export async function getDocument(
   const { data: linkRows } = await supabase
     .from("internal_document_regulation_links")
     .select(
-      `id, regulatory_item_id, clause_anchor, link_rationale,
+      `id, regulatory_item_id, clause_anchor, internal_clause_anchor, link_rationale,
        linked_at_item_version, superseded_at, created_at,
        regulation:regulatory_items!inner ( citation, title, jurisdiction_code )`,
     )
@@ -227,6 +256,7 @@ export async function getDocument(
     id: string;
     regulatory_item_id: string;
     clause_anchor: string | null;
+    internal_clause_anchor: string | null;
     link_rationale: string | null;
     linked_at_item_version: string | null;
     superseded_at: string | null;
@@ -244,6 +274,7 @@ export async function getDocument(
       regulationTitle: reg?.title ?? "(unknown)",
       jurisdictionCode: reg?.jurisdiction_code ?? "",
       clauseAnchor: r.clause_anchor,
+      internalClauseAnchor: r.internal_clause_anchor,
       linkRationale: r.link_rationale,
       linkedAtItemVersion: r.linked_at_item_version,
       supersededAt: r.superseded_at,
