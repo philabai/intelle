@@ -164,14 +164,14 @@ export default async function DocumentDetailPage({ params }: Props) {
             <div className="rounded-xl border border-card-border bg-card-bg/40 p-5">
               <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-sm font-semibold text-foreground">
-                  Clause crosswalk
+                  Clause linking
                 </h2>
                 <Link
                   href={`/regwatch/documents/${doc.id}/crosswalk`}
                   title="Open the side-by-side mapping workspace — your document on the left, regulation on the right"
                   className="rounded-md border border-brand-teal/40 px-2.5 py-1 text-[11px] font-medium text-brand-teal hover:border-brand-teal hover:bg-brand-teal/10"
                 >
-                  Open mapping workspace →
+                  Clause mapping workspace →
                 </Link>
               </div>
               <p className="mb-3 text-xs text-muted">
@@ -180,7 +180,6 @@ export default async function DocumentDetailPage({ params }: Props) {
                 regulations — the depth view auditors look for.
               </p>
               <ClauseCrosswalkPanel
-                documentId={doc.id}
                 existingLinks={doc.links.map((l) => ({
                   id: l.id,
                   regulatoryItemId: l.regulatoryItemId,

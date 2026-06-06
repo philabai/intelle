@@ -143,14 +143,16 @@ export function RegulationPicker({
               </p>
             </div>
             <div className="flex shrink-0 gap-1">
-              <button
-                type="button"
-                onClick={() => setViewerOpen(true)}
-                className="rounded-md border border-card-border bg-card-bg px-2 py-1 text-[10px] text-foreground hover:border-brand-teal hover:text-brand-teal"
-                title="Read the full regulation and pick a clause"
-              >
-                📖 View &amp; pick clause
-              </button>
+              {showClauseField && (
+                <button
+                  type="button"
+                  onClick={() => setViewerOpen(true)}
+                  className="rounded-md border border-card-border bg-card-bg px-2 py-1 text-[10px] text-foreground hover:border-brand-teal hover:text-brand-teal"
+                  title="Read the full regulation and pick a clause"
+                >
+                  📖 View &amp; pick clause
+                </button>
+              )}
               <button
                 type="button"
                 onClick={clear}
