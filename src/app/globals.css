@@ -209,34 +209,91 @@ html {
 }
 
 /* ===========================================================================
- * Internal Documents editor — Word-style page break renderer.
+ * Internal Documents editor — multi-page "paper sheet" renderer.
  *
- * The PageBreakNode (src/components/regwatch/documents/editor/PageBreakNode.ts)
- * outputs <div data-page-break class="page-break"> with a child rule + label.
- * We render it as a wide gutter that visually splits one continuous "paper"
- * sheet into the end-of-page + start-of-next-page motif.
+ * The editor + read-only viewer wrap content in `.regwatch-doc-stream`.
+ * Every direct child gets the paper background + horizontal page padding;
+ * the `.page-break` node is transparent so the workspace background shows
+ * through it, splitting the content stream visually into stacked paper
+ * pages — Word "Print Layout" view, in our dark theme.
+ *
+ *   ┌────────────────────────────┐
+ *   │  PAGE 1                    │  ← first-child + page-break+* siblings
+ *   │  content                   │     get rounded top + shadow + padding
+ *   └────────────────────────────┘
+ *        (workspace gutter)         ← .page-break (transparent)
+ *   ┌────────────────────────────┐
+ *   │  PAGE 2                    │
+ *   │  content                   │
+ *   └────────────────────────────┘
+ *
+ * Uses :has() (Chrome 105+, Firefox 121+, Safari 15.4+). On older browsers
+ * the rounded-corner grouping degrades to a continuous sheet — content is
+ * still readable.
  * =========================================================================== */
-.page-break {
+.regwatch-doc-stream {
+  outline: none;
+}
+
+/* Default — every top-level element is a slice of the current paper sheet. */
+.regwatch-doc-stream > * {
+  background-color: #1a1f2e;
+  border-left: 1px solid var(--card-border, #2a3142);
+  border-right: 1px solid var(--card-border, #2a3142);
+  padding-left: 1in;
+  padding-right: 1in;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  position: relative;
+}
+
+/* The page-break node ITSELF: transparent so workspace canvas shows. */
+.regwatch-doc-stream > .page-break {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  margin: 32px 0 !important;
+  height: 18px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 24px -2in;   /* extend past the 1in horizontal padding so the rule kisses the page edge */
-  padding: 0 2in 0 2in;
+  justify-content: center;
+  gap: 6px;
   user-select: none;
 }
-.page-break .page-break-rule {
+.regwatch-doc-stream > .page-break .page-break-rule {
   flex: 1;
   height: 0;
   border-top: 1px dashed rgba(255, 255, 255, 0.18);
+  max-width: 28%;
 }
-.page-break .page-break-label {
-  font-size: 10px;
-  letter-spacing: 0.08em;
+.regwatch-doc-stream > .page-break .page-break-label {
+  font-size: 9px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.35);
   white-space: nowrap;
 }
-/* Selected state — when the user clicks the page break (it's an atom node) */
+
+/* TOP-of-page — first element overall AND first element after a page-break. */
+.regwatch-doc-stream > *:first-child,
+.regwatch-doc-stream > .page-break + * {
+  padding-top: 0.85in;
+  border-top: 1px solid var(--card-border, #2a3142);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  box-shadow: 0 -8px 24px -12px rgba(0, 0, 0, 0.45);
+}
+
+/* BOTTOM-of-page — last element overall AND element right before a page-break. */
+.regwatch-doc-stream > *:last-child,
+.regwatch-doc-stream > *:has(+ .page-break) {
+  padding-bottom: 0.85in;
+  border-bottom: 1px solid var(--card-border, #2a3142);
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.55);
+}
+
 .ProseMirror .page-break.ProseMirror-selectednode .page-break-rule {
   border-top-color: var(--brand-teal, #2dd4bf);
 }
@@ -244,17 +301,32 @@ html {
   color: var(--brand-teal, #2dd4bf);
 }
 
-/* In the read-only Tiptap HTML render (DocReadOnlyView), the wrapper class
- * "prose" sets margins. Override so the page break still spans full width. */
-.prose .page-break {
-  margin-top: 24px;
-  margin-bottom: 24px;
+/* Headings + paragraphs need breathing room INSIDE a sheet — use padding
+ * (not margin) so the paper background is contiguous. */
+.regwatch-doc-stream > h1 { padding-top: 4px; padding-bottom: 12px; }
+.regwatch-doc-stream > h2 { padding-top: 18px; padding-bottom: 8px; }
+.regwatch-doc-stream > h3 { padding-top: 12px; padding-bottom: 6px; }
+.regwatch-doc-stream > p,
+.regwatch-doc-stream > ul,
+.regwatch-doc-stream > ol,
+.regwatch-doc-stream > blockquote { padding-top: 4px; padding-bottom: 8px; }
+.regwatch-doc-stream > table { padding-top: 8px; padding-bottom: 8px; }
+
+/* Re-apply 0.85in top/bottom on sheet boundaries — these win because
+ * they're declared after the per-element overrides above. */
+.regwatch-doc-stream > *:first-child,
+.regwatch-doc-stream > .page-break + * {
+  padding-top: 0.85in;
+}
+.regwatch-doc-stream > *:last-child,
+.regwatch-doc-stream > *:has(+ .page-break) {
+  padding-bottom: 0.85in;
 }
 
-/* Print stylesheet — when the browser prints (or the user picks Save as PDF
- * from print dialog), the page-break div should force a real CSS page break. */
+/* Print — every page-break becomes a real CSS page break; visual gutter
+ * vanishes; the OS handles pagination. */
 @media print {
-  .page-break {
+  .regwatch-doc-stream > .page-break {
     page-break-before: always;
     break-before: page;
     border: 0;
@@ -262,8 +334,14 @@ html {
     height: 0;
     overflow: hidden;
   }
-  .page-break .page-break-rule,
-  .page-break .page-break-label {
+  .regwatch-doc-stream > .page-break .page-break-rule,
+  .regwatch-doc-stream > .page-break .page-break-label {
     display: none;
+  }
+  .regwatch-doc-stream > * {
+    background: white;
+    color: black;
+    border: none;
+    box-shadow: none;
   }
 }

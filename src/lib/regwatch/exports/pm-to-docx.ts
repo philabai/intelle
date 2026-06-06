@@ -168,22 +168,35 @@ function mapList(node: PMLike, ordered: boolean): Paragraph[] {
   return paragraphs;
 }
 
+// US Letter content area = 8.5in page − 2 × 1in margins = 6.5in = 9360 twips.
+// Without explicit column widths Word renders each cell at ~1 character wide
+// and content stacks vertically. We compute widths from the first row's cell
+// count and apply them to both the Table and each TableCell.
+const CONTENT_WIDTH_TWIPS = 9360;
+
 function mapTable(node: PMLike): Table {
   const rows = (node.content as PMLike[] | undefined) ?? [];
+  const firstRow = rows[0];
+  const firstRowCells =
+    (firstRow?.content as PMLike[] | undefined) ?? [];
+  const colCount = Math.max(firstRowCells.length, 1);
+  const colWidth = Math.floor(CONTENT_WIDTH_TWIPS / colCount);
+  const columnWidths = Array(colCount).fill(colWidth);
   return new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
-    rows: rows.map((r) => mapTableRow(r)),
+    width: { size: CONTENT_WIDTH_TWIPS, type: WidthType.DXA },
+    columnWidths,
+    rows: rows.map((r) => mapTableRow(r, colWidth)),
   });
 }
 
-function mapTableRow(row: PMLike): TableRow {
+function mapTableRow(row: PMLike, colWidth: number): TableRow {
   const cells = (row.content as PMLike[] | undefined) ?? [];
   return new TableRow({
-    children: cells.map((c) => mapTableCell(c)),
+    children: cells.map((c) => mapTableCell(c, colWidth)),
   });
 }
 
-function mapTableCell(cell: PMLike): TableCell {
+function mapTableCell(cell: PMLike, colWidth: number): TableCell {
   const inner = (cell.content as PMLike[] | undefined) ?? [];
   const children: Paragraph[] = [];
   for (const node of inner) {
@@ -199,7 +212,10 @@ function mapTableCell(cell: PMLike): TableCell {
     }
   }
   if (children.length === 0) children.push(new Paragraph(""));
-  return new TableCell({ children });
+  return new TableCell({
+    children,
+    width: { size: colWidth, type: WidthType.DXA },
+  });
 }
 
 function mapBlockquote(node: PMLike): Paragraph {

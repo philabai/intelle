@@ -89,7 +89,7 @@ export function DocEditor({
     editorProps: {
       attributes: {
         class:
-          "min-h-[calc(11in-6rem)] max-w-none text-[15px] leading-7 text-foreground focus:outline-none prose prose-invert max-w-none prose-headings:font-semibold prose-h1:text-3xl prose-h1:mt-0 prose-h1:mb-4 prose-h2:text-xl prose-h2:mt-6 prose-h2:mb-2 prose-h3:text-lg prose-h3:mt-4 prose-h3:mb-1 prose-p:my-2 prose-table:border prose-table:border-card-border prose-th:bg-card-bg/40 prose-th:p-2 prose-td:p-2 prose-td:border prose-td:border-card-border",
+          "regwatch-doc-stream min-h-[calc(11in-6rem)] max-w-none text-[15px] leading-7 text-foreground focus:outline-none prose prose-invert prose-headings:font-semibold prose-h1:text-3xl prose-h2:text-xl prose-h3:text-lg prose-table:border prose-table:border-card-border prose-th:bg-card-bg/40 prose-th:p-2 prose-td:p-2 prose-td:border prose-td:border-card-border",
       },
     },
     onUpdate: () => {
@@ -302,15 +302,10 @@ export function DocEditor({
         {referenceOpen && (
           <EditorReferencePane onClose={() => setReferenceOpen(false)} />
         )}
-        <div className="min-h-0 flex-1 overflow-y-auto bg-[#0a0e1a]">
-          <div className="mx-auto my-8 max-w-[8.5in] rounded-md border border-card-border bg-[#1a1f2e] shadow-2xl shadow-black/40">
-            <div className="px-[1in] py-[0.85in]">
-              <EditorContent editor={editor} />
-            </div>
+        <div className="min-h-0 flex-1 overflow-y-auto bg-[#0a0e1a] py-8">
+          <div className="mx-auto max-w-[8.5in]">
+            <EditorContent editor={editor} />
           </div>
-          <p className="mb-8 text-center text-[10px] text-muted">
-            — End of page —
-          </p>
         </div>
       </div>
 

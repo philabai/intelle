@@ -44,9 +44,13 @@ export function DocReadOnlyView({ bodyDoc }: Props) {
     );
   }
   return (
-    <div
-      className="prose prose-sm prose-invert max-w-none rounded-lg border border-card-border bg-background px-8 py-6 text-sm leading-relaxed text-foreground prose-headings:font-semibold prose-h1:text-2xl prose-h2:text-lg prose-h3:text-base prose-table:border prose-table:border-card-border prose-th:bg-card-bg/40 prose-th:p-2 prose-td:p-2 prose-td:border prose-td:border-card-border"
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <div className="rounded-lg bg-[#0a0e1a] py-4">
+      <div className="mx-auto max-w-[8.5in]">
+        <div
+          className="regwatch-doc-stream prose prose-sm prose-invert max-w-none text-sm leading-relaxed text-foreground prose-headings:font-semibold prose-h1:text-2xl prose-h2:text-lg prose-h3:text-base prose-table:border prose-table:border-card-border prose-th:bg-card-bg/40 prose-th:p-2 prose-td:p-2 prose-td:border prose-td:border-card-border"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      </div>
+    </div>
   );
 }
