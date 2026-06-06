@@ -51,12 +51,21 @@ export function CrosswalkParagraphPane({
     );
   }, [paragraphs, search]);
 
-  function paragraphKey(p: BodyParagraph): string {
-    return normaliseAnchorKey(p.detectedAnchor) ?? `idx:${p.index}`;
-  }
-
   function paragraphAnchor(p: BodyParagraph): string {
     return p.detectedAnchor ?? `¶${p.index}`;
+  }
+
+  /**
+   * Lookup key MUST be derived from the same string that `paragraphAnchor`
+   * emits, otherwise a paragraph without a detected anchor will save under
+   * `¶12` but be looked up under `idx:12` — the badges then never appear
+   * after save. We normalise the displayed anchor so it matches what the
+   * save flow stores in `internal_clause_anchor`.
+   */
+  function paragraphKey(p: BodyParagraph): string {
+    return (
+      normaliseAnchorKey(paragraphAnchor(p)) ?? `idx:${p.index}`
+    );
   }
 
   if (paragraphs.length === 0) {

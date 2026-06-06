@@ -125,21 +125,29 @@ export async function getInternalDocumentBody(
     } else if (isText) {
       extracted = buf.toString("utf8");
     } else {
+      const ext = name.split(".").pop()?.toUpperCase() ?? "unknown";
       return {
         ...base,
         paragraphs: [],
         extractedChars: 0,
         usableForMapping: false,
-        fallbackReason: `File type "${mime || name.split(".").pop() || "unknown"}" can't be parsed for inline mapping. Type your section anchors manually below.`,
+        fallbackReason: `This file format (${ext}) isn't supported for automatic section detection — we can read PDF, DOCX and plain-text files. The mapping still works: type your section anchors below and pick the regulation clauses on the right.`,
       };
     }
   } catch (e) {
+    // Log the technical error server-side so the cause is debuggable,
+    // but show the user a friendly explanation — most authors have no
+    // context for "DOMMatrix is not defined" or similar pdfjs errors.
+    console.error("[getInternalDocumentBody] text extraction failed:", e);
+    const isScanned = isPdf;
     return {
       ...base,
       paragraphs: [],
       extractedChars: 0,
       usableForMapping: false,
-      fallbackReason: `Text extraction failed: ${(e as Error).message}. Type your section anchors manually below.`,
+      fallbackReason: isScanned
+        ? "We couldn't read the text inside this PDF — it may be a scanned or image-based file, or use an unusual font encoding. The mapping still works: type your section anchors below and pick the regulation clauses on the right."
+        : "We couldn't read the text inside this file automatically — the format may be unusual or password-protected. The mapping still works: type your section anchors below and pick the regulation clauses on the right.",
     };
   }
 
@@ -156,7 +164,7 @@ export async function getInternalDocumentBody(
       paragraphs,
       extractedChars: chars,
       usableForMapping: false,
-      fallbackReason: `Only ${chars} chars across ${paragraphs.length} paragraphs survived extraction — probably a scanned PDF or image-only DOCX. Type your section anchors manually below.`,
+      fallbackReason: `The text we could read from this file is too thin to auto-list sections (only ${chars} characters across ${paragraphs.length} paragraphs) — likely a scanned PDF or image-heavy DOCX. The mapping still works: type your section anchors below and pick the regulation clauses on the right.`,
     };
   }
 
