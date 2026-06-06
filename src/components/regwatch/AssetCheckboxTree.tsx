@@ -149,6 +149,7 @@ function CheckRow({
             onClick={() => setOpen((o) => !o)}
             className="grid h-4 w-4 place-items-center text-muted hover:text-foreground"
             aria-label={open ? "Collapse" : "Expand"}
+            title={open ? "Collapse children" : "Expand children"}
           >
             {open ? "▾" : "▸"}
           </button>

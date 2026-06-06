@@ -166,6 +166,7 @@ export function EvidenceFileCard({
             type="button"
             onClick={onOpenFile}
             disabled={signing}
+            title="Open this evidence file in a new tab (signed URL valid for 60 seconds)"
             className="rounded-md border border-card-border bg-card-bg px-2 py-1 text-[10px] text-foreground hover:border-brand-teal disabled:opacity-50"
           >
             {signing ? "Loading…" : "Open file ↗"}
@@ -176,6 +177,7 @@ export function EvidenceFileCard({
                 type="button"
                 onClick={onRerun}
                 disabled={pending}
+                title="Re-queue this file for AI analysis. Use after fixing the source file or when prior analysis failed."
                 className="rounded-md border border-card-border bg-card-bg px-2 py-1 text-[10px] text-foreground hover:border-brand-blue disabled:opacity-50"
               >
                 Re-run analysis
@@ -186,6 +188,7 @@ export function EvidenceFileCard({
               type="button"
               onClick={onDelete}
               disabled={pending}
+              title="Delete this evidence file and its AI analysis permanently"
               className="rounded-md border border-red-500/40 bg-transparent px-2 py-1 text-[10px] text-red-300 hover:border-red-500 hover:bg-red-500/10 disabled:opacity-50"
             >
               Delete

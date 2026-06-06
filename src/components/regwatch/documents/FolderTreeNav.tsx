@@ -111,6 +111,7 @@ export function FolderTreeNav({
             type="button"
             onClick={() => handleCreate(null)}
             disabled={pending}
+            title="Create a new top-level project folder"
             className="rounded-md border border-card-border bg-card-bg px-2 py-1 text-[10px] text-foreground hover:border-brand-blue disabled:opacity-50"
           >
             + New
@@ -172,6 +173,13 @@ function RootRow({
   return (
     <Link
       href={href}
+      title={
+        label === "All documents"
+          ? "Show every document across all folders"
+          : label === "Unfiled"
+            ? "Documents not yet placed in a project folder"
+            : label
+      }
       className={`flex items-center justify-between rounded-md px-2 py-1.5 text-sm transition ${
         active
           ? "bg-brand-teal/10 text-brand-teal"
@@ -216,6 +224,7 @@ function FolderRow({
             onClick={() => setOpen((o) => !o)}
             className="grid h-5 w-5 place-items-center text-muted hover:text-foreground"
             aria-label={open ? "Collapse" : "Expand"}
+            title={open ? "Collapse sub-folders" : "Expand sub-folders"}
           >
             {open ? "▾" : "▸"}
           </button>
@@ -224,6 +233,7 @@ function FolderRow({
         )}
         <Link
           href={`/regwatch/documents?folder=${node.id}`}
+          title={`Open "${node.name}" — ${node.totalDocumentCount} document${node.totalDocumentCount === 1 ? "" : "s"} including sub-folders`}
           className={`flex flex-1 items-center justify-between truncate ${
             isActive ? "text-brand-teal" : "text-foreground"
           }`}
@@ -239,7 +249,8 @@ function FolderRow({
               type="button"
               onClick={() => onAddChild(node.id)}
               disabled={pending}
-              title="Add sub-folder"
+              aria-label={`Add sub-folder inside ${node.name}`}
+              title={`Add a sub-folder inside "${node.name}"`}
               className="grid h-5 w-5 place-items-center text-[12px] text-muted hover:text-brand-teal disabled:opacity-50"
             >
               +
@@ -248,7 +259,8 @@ function FolderRow({
               type="button"
               onClick={() => onRename(node)}
               disabled={pending}
-              title="Rename"
+              aria-label={`Rename ${node.name}`}
+              title={`Rename "${node.name}"`}
               className="grid h-5 w-5 place-items-center text-[10px] text-muted hover:text-foreground disabled:opacity-50"
             >
               ✎
@@ -257,7 +269,8 @@ function FolderRow({
               type="button"
               onClick={() => onArchive(node)}
               disabled={pending}
-              title="Archive"
+              aria-label={`Archive ${node.name}`}
+              title={`Archive "${node.name}" — documents inside move to Unfiled, nothing is deleted`}
               className="grid h-5 w-5 place-items-center text-[10px] text-muted hover:text-red-400 disabled:opacity-50"
             >
               ⊘

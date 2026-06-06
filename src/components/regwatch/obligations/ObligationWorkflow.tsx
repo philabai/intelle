@@ -642,6 +642,7 @@ function Dialog({
             onClick={onClose}
             className="text-muted hover:text-foreground"
             aria-label="Close"
+            title="Close this dialog without submitting"
           >
             ✕
           </button>

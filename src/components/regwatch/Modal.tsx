@@ -72,6 +72,7 @@ export function Modal({
             onClick={onClose}
             className="rounded-md p-1 text-muted hover:bg-card-bg hover:text-foreground"
             aria-label="Close"
+            title="Close (Esc)"
           >
             ✕
           </button>

@@ -223,6 +223,7 @@ export function AssetTreeBuilder({
             type="button"
             onClick={() => handleAdd(null, 2)}
             disabled={pending}
+            title={`Add a new top-level ${levelLabels[2]}`}
             className="rounded-md bg-brand-blue px-3 py-1.5 text-xs text-white hover:bg-brand-blue/90 disabled:opacity-50"
           >
             + Add {levelLabels[2]}
@@ -375,6 +376,8 @@ function BuilderRow({
             type="button"
             onClick={() => setOpen((o) => !o)}
             className="grid h-4 w-4 place-items-center text-muted hover:text-foreground"
+            aria-label={open ? "Collapse" : "Expand"}
+            title={open ? "Collapse children" : "Expand children"}
           >
             {open ? "▾" : "▸"}
           </button>
@@ -412,7 +415,8 @@ function BuilderRow({
           onClick={() => onRename(node.id, node.name)}
           disabled={pending}
           className="text-[10px] text-muted hover:text-foreground disabled:opacity-50"
-          title="Rename"
+          aria-label={`Rename ${node.name}`}
+          title={`Rename "${node.name}"`}
         >
           ✎
         </button>
@@ -421,7 +425,8 @@ function BuilderRow({
           onClick={() => onArchive(node.id, node.name)}
           disabled={pending}
           className="text-[10px] text-muted hover:text-red-400 disabled:opacity-50"
-          title="Archive"
+          aria-label={`Archive ${node.name}`}
+          title={`Archive "${node.name}" — hides it from the tree but preserves obligations attached to it`}
         >
           ⊘
         </button>

@@ -64,6 +64,7 @@ export function MoveDocumentMenu({
         type="button"
         onClick={() => setOpen((o) => !o)}
         disabled={pending}
+        title="Move this document into a project folder (or back to Unfiled)"
         className="rounded-md border border-card-border bg-card-bg px-2 py-1 text-[10px] text-foreground hover:border-brand-blue disabled:opacity-50"
       >
         {label}

@@ -146,6 +146,7 @@ export function RegulationViewer({
               onClick={onClose}
               className="text-muted hover:text-foreground"
               aria-label="Close"
+              title="Close the regulation viewer (Esc)"
             >
               ✕
             </button>
