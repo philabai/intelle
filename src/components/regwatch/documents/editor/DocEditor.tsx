@@ -16,6 +16,8 @@ import {
 import { EDITOR_EXTENSIONS } from "./extensions";
 import { EditorToolbar } from "./EditorToolbar";
 import { SaveVersionDialog } from "./SaveVersionDialog";
+import { ApplyTemplateDialog } from "./ApplyTemplateDialog";
+import { EditorReferencePane } from "./EditorReferencePane";
 
 interface Props {
   documentId: string;
@@ -41,11 +43,17 @@ const AUTOSAVE_DEBOUNCE_MS = 3_000;
 /**
  * Hybrid-strategy "Edit document" surface.
  *
+ *   - Page-frame layout: dark workspace canvas + raised "paper" page so the
+ *     editor feels like a Word document, not a transparent overlay.
  *   - Autosave (3s debounce) writes the live PM JSON to
  *     internal_documents.body_doc only. No revision is created.
  *   - "Save version" opens a modal that takes a major/minor/patch + reason
  *     for change, then calls commitDocumentRevision to write an immutable
  *     revision and advance current_revision_id.
+ *   - "Apply template" button drops a curated template structure into the
+ *     editor (replaces body; existing committed versions stay).
+ *   - "📖 Reference" toggle opens a slim regulation reader on the left so
+ *     authors can read while writing (click-to-cite lands in PR-5).
  *
  * Optimistic lock: the server checks the doc's updated_at against the
  * expectedUpdatedAt we send. If they diverge, the editor surfaces a
@@ -62,6 +70,8 @@ export function DocEditor({
   const router = useRouter();
   const [saveState, setSaveState] = useState<SaveState>({ type: "idle" });
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [referenceOpen, setReferenceOpen] = useState(false);
   const [commitPending, setCommitPending] = useState(false);
   const [commitError, setCommitError] = useState<string | null>(null);
   const expectedUpdatedAtRef = useRef(initialUpdatedAt);
@@ -75,7 +85,7 @@ export function DocEditor({
     editorProps: {
       attributes: {
         class:
-          "min-h-[60vh] max-w-none px-8 py-6 text-sm leading-relaxed text-foreground focus:outline-none prose prose-sm prose-invert prose-headings:font-semibold prose-h1:text-2xl prose-h2:text-lg prose-h3:text-base prose-table:border prose-table:border-card-border prose-th:bg-card-bg/40 prose-th:p-2 prose-td:p-2 prose-td:border prose-td:border-card-border",
+          "min-h-[calc(11in-6rem)] max-w-none text-[15px] leading-7 text-foreground focus:outline-none prose prose-invert max-w-none prose-headings:font-semibold prose-h1:text-3xl prose-h1:mt-0 prose-h1:mb-4 prose-h2:text-xl prose-h2:mt-6 prose-h2:mb-2 prose-h3:text-lg prose-h3:mt-4 prose-h3:mb-1 prose-p:my-2 prose-table:border prose-table:border-card-border prose-th:bg-card-bg/40 prose-th:p-2 prose-td:p-2 prose-td:border prose-td:border-card-border",
       },
     },
     onUpdate: () => {
@@ -83,7 +93,6 @@ export function DocEditor({
     },
   });
 
-  // Cleanup the autosave timer on unmount.
   useEffect(() => {
     return () => {
       if (autosaveTimerRef.current) {
@@ -135,8 +144,6 @@ export function DocEditor({
     if (!editor) return;
     setCommitPending(true);
     setCommitError(null);
-    // Flush any pending autosave before committing so the server has the
-    // latest body_doc as the optimistic-lock baseline.
     if (autosaveTimerRef.current) {
       window.clearTimeout(autosaveTimerRef.current);
       autosaveTimerRef.current = null;
@@ -164,14 +171,44 @@ export function DocEditor({
     setSaveDialogOpen(false);
     lastSavedDocRef.current = JSON.stringify(bodyDoc);
     setSaveState({ type: "saved", at: Date.now() });
-    // Refresh server data — updated_at moves on, so we need a new snapshot
-    // for subsequent saves.
     router.refresh();
+  }
+
+  function handleApplyTemplate(templateBodyDoc: unknown, _templateLabel: string) {
+    if (!editor) return;
+    editor
+      .chain()
+      .focus()
+      .setContent(templateBodyDoc as Parameters<typeof editor.commands.setContent>[0])
+      .run();
+    setTemplateDialogOpen(false);
+    // Force the autosave to fire on the next tick so the template lands in
+    // body_doc even if the user doesn't immediately type.
+    if (autosaveTimerRef.current) {
+      window.clearTimeout(autosaveTimerRef.current);
+    }
+    autosaveTimerRef.current = window.setTimeout(() => {
+      runAutosave();
+    }, 250);
+  }
+
+  function hasExistingContent(): boolean {
+    if (!editor) return false;
+    const doc = editor.getJSON();
+    const content = (doc as { content?: unknown[] }).content;
+    if (!content || content.length === 0) return false;
+    if (content.length === 1) {
+      const only = content[0] as { type?: string; content?: unknown[] };
+      if (only.type === "paragraph" && (!only.content || only.content.length === 0)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
-      <header className="flex items-center justify-between gap-4 border-b border-card-border bg-card-bg/30 px-4 py-2.5">
+      <header className="flex items-center justify-between gap-4 border-b border-card-border bg-card-bg/40 px-4 py-2.5">
         <div className="min-w-0">
           <p className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">
             Editing
@@ -185,6 +222,27 @@ export function DocEditor({
         </div>
         <div className="flex items-center gap-2">
           <SaveStateBadge state={saveState} version={currentVersion} />
+          <button
+            type="button"
+            onClick={() => setTemplateDialogOpen(true)}
+            disabled={!editor}
+            title="Drop a curated section structure into this document (replaces current body)"
+            className="rounded-md border border-card-border bg-background px-3 py-1.5 text-xs text-foreground/90 hover:border-brand-teal hover:text-brand-teal disabled:opacity-50"
+          >
+            ➕ Apply template
+          </button>
+          <button
+            type="button"
+            onClick={() => setReferenceOpen((v) => !v)}
+            title="Open a regulation alongside the editor so you can read while you write"
+            className={`rounded-md border px-3 py-1.5 text-xs ${
+              referenceOpen
+                ? "border-brand-teal bg-brand-teal/15 text-brand-teal"
+                : "border-card-border bg-background text-foreground/90 hover:border-brand-teal hover:text-brand-teal"
+            }`}
+          >
+            📖 Reference
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -222,9 +280,19 @@ export function DocEditor({
 
       <EditorToolbar editor={editor} />
 
-      <div className="min-h-0 flex-1 overflow-y-auto bg-background">
-        <div className="mx-auto max-w-3xl">
-          <EditorContent editor={editor} />
+      <div className="flex min-h-0 flex-1">
+        {referenceOpen && (
+          <EditorReferencePane onClose={() => setReferenceOpen(false)} />
+        )}
+        <div className="min-h-0 flex-1 overflow-y-auto bg-[#0a0e1a]">
+          <div className="mx-auto my-8 max-w-[8.5in] rounded-md border border-card-border bg-[#1a1f2e] shadow-2xl shadow-black/40">
+            <div className="px-[1in] py-[0.85in]">
+              <EditorContent editor={editor} />
+            </div>
+          </div>
+          <p className="mb-8 text-center text-[10px] text-muted">
+            — End of page —
+          </p>
         </div>
       </div>
 
@@ -237,6 +305,13 @@ export function DocEditor({
         pending={commitPending}
         errorMessage={commitError}
         onSubmit={handleCommit}
+      />
+
+      <ApplyTemplateDialog
+        open={templateDialogOpen}
+        onClose={() => setTemplateDialogOpen(false)}
+        hasExistingContent={hasExistingContent()}
+        onApply={handleApplyTemplate}
       />
     </div>
   );
