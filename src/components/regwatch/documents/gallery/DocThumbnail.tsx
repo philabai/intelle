@@ -1,6 +1,7 @@
 import { generateHTML } from "@tiptap/html";
 import { EDITOR_EXTENSIONS } from "../editor/extensions";
 import type { InternalDocumentKind } from "@/lib/regwatch/internal-documents";
+import { sanitiseBodyDoc } from "@/lib/regwatch/templates/sanitise-body-doc";
 
 interface Props {
   bodyDoc: unknown;
@@ -51,7 +52,8 @@ export function DocThumbnail({
 function EditorBodyThumb({ bodyDoc }: { bodyDoc: unknown }) {
   let html: string;
   try {
-    const trimmed = trimToFirstNodes(bodyDoc, 10);
+    const sanitised = sanitiseBodyDoc(bodyDoc);
+    const trimmed = trimToFirstNodes(sanitised, 10);
     html = generateHTML(
       trimmed as Parameters<typeof generateHTML>[0],
       EDITOR_EXTENSIONS,

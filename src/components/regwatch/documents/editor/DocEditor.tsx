@@ -18,6 +18,7 @@ import { EditorToolbar } from "./EditorToolbar";
 import { SaveVersionDialog } from "./SaveVersionDialog";
 import { ApplyTemplateDialog } from "./ApplyTemplateDialog";
 import { EditorReferencePane } from "./EditorReferencePane";
+import { sanitiseBodyDoc } from "@/lib/regwatch/templates/sanitise-body-doc";
 
 interface Props {
   documentId: string;
@@ -78,9 +79,11 @@ export function DocEditor({
   const lastSavedDocRef = useRef<string>(JSON.stringify(initialBodyDoc ?? null));
   const autosaveTimerRef = useRef<number | null>(null);
 
+  const sanitisedInitial = useRef(sanitiseBodyDoc(initialBodyDoc));
   const editor = useEditor({
     extensions: EDITOR_EXTENSIONS,
-    content: initialBodyDoc ?? undefined,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    content: (sanitisedInitial.current as any) ?? undefined,
     immediatelyRender: false,
     editorProps: {
       attributes: {
@@ -176,10 +179,12 @@ export function DocEditor({
 
   function handleApplyTemplate(templateBodyDoc: unknown, _templateLabel: string) {
     if (!editor) return;
+    const sanitised = sanitiseBodyDoc(templateBodyDoc);
     editor
       .chain()
       .focus()
-      .setContent(templateBodyDoc as Parameters<typeof editor.commands.setContent>[0])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .setContent(sanitised as any, { emitUpdate: true })
       .run();
     setTemplateDialogOpen(false);
     // Force the autosave to fire on the next tick so the template lands in

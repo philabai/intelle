@@ -38,26 +38,42 @@ export function doc(...content: PMNode[]): PMDoc {
 }
 
 export function h1(text: string): PMNode {
+  if (!text) return { type: "heading", attrs: { level: 1 } };
   return { type: "heading", attrs: { level: 1 }, content: [textNode(text)] };
 }
 
 export function h2(text: string): PMNode {
+  if (!text) return { type: "heading", attrs: { level: 2 } };
   return { type: "heading", attrs: { level: 2 }, content: [textNode(text)] };
 }
 
 export function h3(text: string): PMNode {
+  if (!text) return { type: "heading", attrs: { level: 3 } };
   return { type: "heading", attrs: { level: 3 }, content: [textNode(text)] };
 }
 
+/**
+ * Paragraph builder. Strings get wrapped in a text node; PMNodes pass
+ * through. Empty strings are dropped — ProseMirror rejects empty text
+ * nodes and silently throws away the entire doc otherwise (this caused
+ * templates to land in the editor blank on first instantiation).
+ */
 export function p(...children: (PMNode | string)[]): PMNode {
-  return {
-    type: "paragraph",
-    content: children.map((c) => (typeof c === "string" ? textNode(c) : c)),
-  };
+  const content: PMNode[] = [];
+  for (const c of children) {
+    if (typeof c === "string") {
+      if (c.length > 0) content.push(textNode(c));
+    } else {
+      content.push(c);
+    }
+  }
+  if (content.length === 0) return { type: "paragraph" };
+  return { type: "paragraph", content };
 }
 
 /** Italic placeholder text used for "fill this in" prompts in templates. */
 export function prompt(text: string): PMNode {
+  if (!text) return { type: "paragraph" };
   return {
     type: "paragraph",
     content: [
@@ -156,7 +172,7 @@ function textNode(text: string): PMNode {
 }
 
 export function bold(text: string): PMNode {
-  return { type: "text", text, marks: [{ type: "bold" }] };
+  return { type: "text", text: text.length > 0 ? text : " ", marks: [{ type: "bold" }] };
 }
 
 // ---------------------------------------------------------------------------

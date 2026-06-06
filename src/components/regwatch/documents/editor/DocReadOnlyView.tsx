@@ -1,5 +1,6 @@
 import { generateHTML } from "@tiptap/html";
 import { EDITOR_EXTENSIONS } from "./extensions";
+import { sanitiseBodyDoc } from "@/lib/regwatch/templates/sanitise-body-doc";
 
 interface Props {
   bodyDoc: unknown;
@@ -30,7 +31,11 @@ export function DocReadOnlyView({ bodyDoc }: Props) {
   try {
     // Cast — generateHTML's JSONContent signature is permissive enough
     // for our PM JSON shape but we hand-author the input.
-    html = generateHTML(bodyDoc as Parameters<typeof generateHTML>[0], EDITOR_EXTENSIONS);
+    const sanitised = sanitiseBodyDoc(bodyDoc);
+    html = generateHTML(
+      sanitised as Parameters<typeof generateHTML>[0],
+      EDITOR_EXTENSIONS,
+    );
   } catch (e) {
     return (
       <p className="rounded-lg border border-red-500/40 bg-red-500/10 p-4 text-xs text-red-300">
