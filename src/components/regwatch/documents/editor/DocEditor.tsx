@@ -8,28 +8,28 @@ import {
   commitDocumentRevision,
   updateDocumentDraftBody,
 } from "@/lib/regwatch/internal-document-revision-actions";
+import { exportDocumentAsFile } from "@/lib/regwatch/exports/export-actions";
 import {
   formatVersion,
   type SemVer,
   type VersionBump,
 } from "@/lib/regwatch/templates/version";
+import { Modal } from "@/components/regwatch/Modal";
 import { EDITOR_EXTENSIONS } from "./extensions";
 import { EditorToolbar } from "./EditorToolbar";
 import { SaveVersionDialog } from "./SaveVersionDialog";
 import { ApplyTemplateDialog } from "./ApplyTemplateDialog";
 import { EditorReferencePane } from "./EditorReferencePane";
-import { ExportMenu } from "./ExportMenu";
+import { DocMenuBar } from "./DocMenuBar";
+import { DocSectionNav } from "./DocSectionNav";
 import { sanitiseBodyDoc } from "@/lib/regwatch/templates/sanitise-body-doc";
 
 interface Props {
   documentId: string;
   documentTitle: string;
   documentSubtitle: string;
-  /** Initial ProseMirror JSON; null when the doc has no body yet (first edit). */
   initialBodyDoc: unknown;
-  /** Snapshot of updated_at at server render time — drives the optimistic lock. */
   initialUpdatedAt: string;
-  /** Last committed semver, null for never-committed docs. */
   currentVersion: SemVer | null;
 }
 
@@ -42,25 +42,6 @@ type SaveState =
 
 const AUTOSAVE_DEBOUNCE_MS = 3_000;
 
-/**
- * Hybrid-strategy "Edit document" surface.
- *
- *   - Page-frame layout: dark workspace canvas + raised "paper" page so the
- *     editor feels like a Word document, not a transparent overlay.
- *   - Autosave (3s debounce) writes the live PM JSON to
- *     internal_documents.body_doc only. No revision is created.
- *   - "Save version" opens a modal that takes a major/minor/patch + reason
- *     for change, then calls commitDocumentRevision to write an immutable
- *     revision and advance current_revision_id.
- *   - "Apply template" button drops a curated template structure into the
- *     editor (replaces body; existing committed versions stay).
- *   - "📖 Reference" toggle opens a slim regulation reader on the left so
- *     authors can read while writing (click-to-cite lands in PR-5).
- *
- * Optimistic lock: the server checks the doc's updated_at against the
- * expectedUpdatedAt we send. If they diverge, the editor surfaces a
- * conflict banner and disables autosave until the user reloads.
- */
 export function DocEditor({
   documentId,
   documentTitle,
@@ -74,6 +55,12 @@ export function DocEditor({
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [referenceOpen, setReferenceOpen] = useState(false);
+  const [outlineOpen, setOutlineOpen] = useState(true);
+  const [toolbarOpen, setToolbarOpen] = useState(true);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [wordCountOpen, setWordCountOpen] = useState(false);
+  const [exporting, setExporting] = useState<"docx" | "pdf" | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
   const [commitPending, setCommitPending] = useState(false);
   const [commitError, setCommitError] = useState<string | null>(null);
   const expectedUpdatedAtRef = useRef(initialUpdatedAt);
@@ -89,7 +76,7 @@ export function DocEditor({
     editorProps: {
       attributes: {
         class:
-          "regwatch-doc-stream min-h-[calc(11in-6rem)] max-w-none text-[15px] leading-7 text-foreground focus:outline-none prose prose-invert prose-headings:font-semibold prose-h1:text-3xl prose-h2:text-xl prose-h3:text-lg prose-table:border prose-table:border-card-border prose-th:bg-card-bg/40 prose-th:p-2 prose-td:p-2 prose-td:border prose-td:border-card-border",
+          "regwatch-doc-stream max-w-none text-[15px] leading-7 text-foreground focus:outline-none prose prose-invert prose-headings:font-semibold prose-h1:text-3xl prose-h2:text-xl prose-h3:text-lg prose-table:border prose-table:border-card-border prose-th:bg-card-bg/40 prose-th:p-2 prose-td:p-2 prose-td:border prose-td:border-card-border",
       },
     },
     onUpdate: () => {
@@ -178,7 +165,7 @@ export function DocEditor({
     router.refresh();
   }
 
-  function handleApplyTemplate(templateBodyDoc: unknown, _templateLabel: string) {
+  function handleApplyTemplate(templateBodyDoc: unknown) {
     if (!editor) return;
     const sanitised = sanitiseBodyDoc(templateBodyDoc);
     editor
@@ -188,8 +175,6 @@ export function DocEditor({
       .setContent(sanitised as any, { emitUpdate: true })
       .run();
     setTemplateDialogOpen(false);
-    // Force the autosave to fire on the next tick so the template lands in
-    // body_doc even if the user doesn't immediately type.
     if (autosaveTimerRef.current) {
       window.clearTimeout(autosaveTimerRef.current);
     }
@@ -212,35 +197,83 @@ export function DocEditor({
     return true;
   }
 
+  function appendNewPage() {
+    if (!editor) return;
+    // Move cursor to end of document, then insert a page break followed by
+    // an empty paragraph. The paragraph IS the new page (one element, gets
+    // last-child styling so the whole sheet renders properly).
+    const end = editor.state.doc.content.size;
+    editor
+      .chain()
+      .focus()
+      .setTextSelection(end)
+      .insertContent([
+        { type: "pageBreak" },
+        { type: "paragraph" },
+      ])
+      .run();
+  }
+
+  async function handleExport(format: "docx" | "pdf") {
+    if (autosaveTimerRef.current) {
+      window.clearTimeout(autosaveTimerRef.current);
+      autosaveTimerRef.current = null;
+    }
+    await runAutosave();
+    setExporting(format);
+    setExportError(null);
+    const res = await exportDocumentAsFile({ docId: documentId, format });
+    setExporting(null);
+    if (!res.ok) {
+      setExportError(res.error ?? `Could not export as ${format.toUpperCase()}`);
+      return;
+    }
+    if (res.signedUrl) {
+      window.open(res.signedUrl, "_blank", "noopener,noreferrer");
+    }
+    router.refresh();
+  }
+
+  function wordStats() {
+    if (!editor) return { words: 0, chars: 0, pages: 1 };
+    const text = editor.state.doc.textBetween(0, editor.state.doc.content.size, " ");
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    const chars = text.length;
+    let pages = 1;
+    editor.state.doc.descendants((node) => {
+      if (node.type.name === "pageBreak") pages += 1;
+      return true;
+    });
+    return { words, chars, pages };
+  }
+
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
-      <header className="flex items-center justify-between gap-4 border-b border-card-border bg-card-bg/40 px-4 py-2.5">
-        <div className="min-w-0">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">
-            Editing
-          </p>
-          <h1 className="truncate text-sm font-semibold text-foreground">
-            {documentTitle}
-          </h1>
-          {documentSubtitle && (
-            <p className="truncate text-[11px] text-muted">{documentSubtitle}</p>
-          )}
+      {/* Slim header — title, save state, primary actions */}
+      <header className="flex items-center justify-between gap-4 border-b border-card-border bg-card-bg/40 px-4 py-1.5">
+        <div className="min-w-0 flex items-center gap-3">
+          <Link
+            href={`/regwatch/documents/${documentId}`}
+            className="rounded-md border border-card-border bg-background px-2 py-1 text-[11px] text-muted hover:border-brand-blue hover:text-foreground"
+            title="Back to document detail"
+          >
+            ←
+          </Link>
+          <div className="min-w-0">
+            <h1 className="truncate text-sm font-semibold text-foreground">
+              {documentTitle}
+            </h1>
+            {documentSubtitle && (
+              <p className="truncate text-[10px] text-muted">{documentSubtitle}</p>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <SaveStateBadge state={saveState} version={currentVersion} />
           <button
             type="button"
-            onClick={() => setTemplateDialogOpen(true)}
-            disabled={!editor}
-            title="Drop a curated section structure into this document (replaces current body)"
-            className="rounded-md border border-card-border bg-background px-3 py-1.5 text-xs text-foreground/90 hover:border-brand-teal hover:text-brand-teal disabled:opacity-50"
-          >
-            ➕ Apply template
-          </button>
-          <button
-            type="button"
             onClick={() => setReferenceOpen((v) => !v)}
-            title="Open a regulation alongside the editor so you can read while you write"
+            title="Open a regulation alongside the editor"
             className={`rounded-md border px-3 py-1.5 text-xs ${
               referenceOpen
                 ? "border-brand-teal bg-brand-teal/15 text-brand-teal"
@@ -249,18 +282,6 @@ export function DocEditor({
           >
             📖 Reference
           </button>
-          <ExportMenu
-            documentId={documentId}
-            onBeforeExport={async () => {
-              // Flush any pending autosave so the export reflects the
-              // latest editor content.
-              if (autosaveTimerRef.current) {
-                window.clearTimeout(autosaveTimerRef.current);
-                autosaveTimerRef.current = null;
-              }
-              await runAutosave();
-            }}
-          />
           <button
             type="button"
             onClick={() => {
@@ -272,14 +293,24 @@ export function DocEditor({
           >
             Save version
           </button>
-          <Link
-            href={`/regwatch/documents/${documentId}`}
-            className="rounded-md border border-card-border bg-background px-3 py-1.5 text-xs text-muted hover:border-brand-blue hover:text-foreground"
-          >
-            Done
-          </Link>
         </div>
       </header>
+
+      {/* Google Docs-style menu bar */}
+      <DocMenuBar
+        editor={editor}
+        documentId={documentId}
+        onApplyTemplate={() => setTemplateDialogOpen(true)}
+        onToggleReference={() => setReferenceOpen((v) => !v)}
+        referenceOpen={referenceOpen}
+        onToggleOutline={() => setOutlineOpen((v) => !v)}
+        outlineOpen={outlineOpen}
+        onToggleToolbar={() => setToolbarOpen((v) => !v)}
+        toolbarOpen={toolbarOpen}
+        onExport={handleExport}
+        onShowShortcuts={() => setShortcutsOpen(true)}
+        onShowWordCount={() => setWordCountOpen(true)}
+      />
 
       {saveState.type === "conflict" && (
         <div className="border-b border-amber-500/40 bg-amber-500/10 px-4 py-2 text-[11px] text-amber-200">
@@ -296,15 +327,50 @@ export function DocEditor({
         </div>
       )}
 
-      <EditorToolbar editor={editor} />
+      {exportError && (
+        <div className="border-b border-red-500/40 bg-red-500/10 px-4 py-2 text-[11px] text-red-300">
+          Export failed: {exportError}{" "}
+          <button
+            type="button"
+            onClick={() => setExportError(null)}
+            className="underline"
+          >
+            dismiss
+          </button>
+        </div>
+      )}
+      {exporting && (
+        <div className="border-b border-brand-blue/40 bg-brand-blue/10 px-4 py-2 text-[11px] text-brand-blue">
+          Exporting as {exporting.toUpperCase()}…
+        </div>
+      )}
+
+      {toolbarOpen && <EditorToolbar editor={editor} />}
 
       <div className="flex min-h-0 flex-1">
+        {outlineOpen && (
+          <DocSectionNav
+            editor={editor}
+            onClose={() => setOutlineOpen(false)}
+          />
+        )}
         {referenceOpen && (
           <EditorReferencePane onClose={() => setReferenceOpen(false)} />
         )}
         <div className="min-h-0 flex-1 overflow-y-auto bg-[#0a0e1a] py-8">
           <div className="mx-auto max-w-[8.5in]">
             <EditorContent editor={editor} />
+            <div className="mt-6 flex justify-center">
+              <button
+                type="button"
+                onClick={appendNewPage}
+                disabled={!editor}
+                title="Append a new blank page at the end of the document. To insert a page between existing pages, place your cursor where you want the break and use Insert ▾ → Page break (or ⌘↩)."
+                className="rounded-md border border-dashed border-card-border bg-card-bg/30 px-4 py-2 text-xs text-muted hover:border-brand-teal hover:bg-brand-teal/10 hover:text-brand-teal disabled:opacity-50"
+              >
+                + New page
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -326,6 +392,54 @@ export function DocEditor({
         hasExistingContent={hasExistingContent()}
         onApply={handleApplyTemplate}
       />
+
+      <Modal
+        open={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
+        title="Keyboard shortcuts"
+        size="md"
+      >
+        <table className="w-full text-xs">
+          <tbody className="divide-y divide-card-border">
+            {[
+              ["Bold", "⌘B"],
+              ["Italic", "⌘I"],
+              ["Underline", "⌘U"],
+              ["Undo", "⌘Z"],
+              ["Redo", "⇧⌘Z"],
+              ["Select all", "⌘A"],
+              ["Insert page break", "⌘↩"],
+              ["Print", "⌘P"],
+            ].map(([label, k]) => (
+              <tr key={label}>
+                <td className="py-1.5 text-foreground/90">{label}</td>
+                <td className="py-1.5 text-right font-mono text-muted">{k}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Modal>
+
+      <Modal
+        open={wordCountOpen}
+        onClose={() => setWordCountOpen(false)}
+        title="Document statistics"
+        size="sm"
+      >
+        {(() => {
+          const s = wordStats();
+          return (
+            <dl className="grid grid-cols-2 gap-3 text-sm">
+              <dt className="text-muted">Pages</dt>
+              <dd className="text-right font-mono text-foreground">{s.pages}</dd>
+              <dt className="text-muted">Words</dt>
+              <dd className="text-right font-mono text-foreground">{s.words}</dd>
+              <dt className="text-muted">Characters</dt>
+              <dd className="text-right font-mono text-foreground">{s.chars}</dd>
+            </dl>
+          );
+        })()}
+      </Modal>
     </div>
   );
 }

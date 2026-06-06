@@ -235,11 +235,13 @@ html {
   outline: none;
 }
 
-/* Default — every top-level element is a slice of the current paper sheet. */
+/* Default — every top-level element is a slice of the current paper sheet.
+ * Width is set on the wrapping column (max-w-[8.5in]); the 1in horizontal
+ * padding here matches Word's default US Letter margins. */
 .regwatch-doc-stream > * {
   background-color: #1a1f2e;
-  border-left: 1px solid var(--card-border, #2a3142);
-  border-right: 1px solid var(--card-border, #2a3142);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
   padding-left: 1in;
   padding-right: 1in;
   margin-top: 0 !important;
@@ -277,21 +279,21 @@ html {
 /* TOP-of-page — first element overall AND first element after a page-break. */
 .regwatch-doc-stream > *:first-child,
 .regwatch-doc-stream > .page-break + * {
-  padding-top: 0.85in;
-  border-top: 1px solid var(--card-border, #2a3142);
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  box-shadow: 0 -8px 24px -12px rgba(0, 0, 0, 0.45);
+  padding-top: 1in;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  box-shadow: 0 -12px 32px -8px rgba(0, 0, 0, 0.5);
 }
 
 /* BOTTOM-of-page — last element overall AND element right before a page-break. */
 .regwatch-doc-stream > *:last-child,
 .regwatch-doc-stream > *:has(+ .page-break) {
-  padding-bottom: 0.85in;
-  border-bottom: 1px solid var(--card-border, #2a3142);
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
-  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.55);
+  padding-bottom: 1in;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.65);
 }
 
 .ProseMirror .page-break.ProseMirror-selectednode .page-break-rule {
@@ -312,15 +314,23 @@ html {
 .regwatch-doc-stream > blockquote { padding-top: 4px; padding-bottom: 8px; }
 .regwatch-doc-stream > table { padding-top: 8px; padding-bottom: 8px; }
 
-/* Re-apply 0.85in top/bottom on sheet boundaries — these win because
+/* Re-apply 1in top/bottom on sheet boundaries — these win because
  * they're declared after the per-element overrides above. */
 .regwatch-doc-stream > *:first-child,
 .regwatch-doc-stream > .page-break + * {
-  padding-top: 0.85in;
+  padding-top: 1in;
 }
 .regwatch-doc-stream > *:last-child,
 .regwatch-doc-stream > *:has(+ .page-break) {
-  padding-bottom: 0.85in;
+  padding-bottom: 1in;
+}
+
+/* Give the first element of each sheet a min-height that approximates a
+ * full US Letter page (11in - 2 × 1in margins = 9in usable, minus a bit
+ * of breathing room so a short page doesn't look comically tall). */
+.regwatch-doc-stream > *:first-child,
+.regwatch-doc-stream > .page-break + * {
+  min-height: calc(9in - 32px);
 }
 
 /* Print — every page-break becomes a real CSS page break; visual gutter
