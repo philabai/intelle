@@ -325,21 +325,17 @@ html {
   padding-bottom: 1in;
 }
 
-/* US-Letter page fill — every "last element of a page" (last-child OR
- * the element right before a page-break) gets an extra bottom padding
- * computed in JS (DocEditor's pageFillEffect) and stored in the custom
- * property --page-fill-px. This stretches a short page out to 11in tall
- * without affecting where the user types — the padding is BELOW the
- * content, so the cursor still sits at the end of the actual text.
+/* US-Letter page fill — the DocEditor effect (pageFillEffect) measures
+ * each page group between page-breaks and sets `padding-bottom` directly
+ * (inline) on the LAST element of each group when the page falls short of
+ * 11in (1056px @ 96dpi). The inline style overrides the 1in default
+ * above. Padding sits BELOW the content, so the cursor stays where the
+ * actual text ends — typing right after a heading just appends a new
+ * sibling paragraph, and the next reflow shrinks the bottom pad to match.
  *
  * We DO NOT use min-height on the FIRST element of each page because that
  * makes the heading take the whole page vertically, pushing the user's
- * next paragraph (which is a sibling, not a child) below the visual page
- * bottom — they can't type "right after the heading". */
-.regwatch-doc-stream > *:last-child,
-.regwatch-doc-stream > *:has(+ .page-break) {
-  padding-bottom: calc(1in + var(--page-fill-px, 0px));
-}
+ * next paragraph (a sibling, not a child) below the visual page bottom. */
 
 /* Print — every page-break becomes a real CSS page break; visual gutter
  * vanishes; the OS handles pagination. */

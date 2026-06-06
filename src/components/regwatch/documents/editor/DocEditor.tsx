@@ -92,19 +92,33 @@ export function DocEditor({
   // ─── Page-fill effect ─────────────────────────────────────────────────
   // After every editor update, walk the top-level children of the
   // ProseMirror DOM and stretch each "page group" (elements between
-  // page-breaks) to a full US-Letter page height by setting --page-fill-px
-  // on the last element of that group. CSS then adds that pixel value to
-  // the existing 1in bottom padding so the sheet visually fills to 11in.
-  // No padding is added when the page already exceeds 11in — long pages
-  // grow naturally.
+  // page-breaks) to a full US-Letter page height by writing inline
+  // `padding-bottom` directly on the LAST element of that group. Inline
+  // styles override the 1in CSS default, and the next reflow recomputes
+  // them — typing more content shrinks the bottom pad to match. No
+  // padding is added when the page already exceeds 11in.
   useEffect(() => {
     if (!editor) return;
     const TARGET_PAGE_PX = 1056; // 11in @ 96dpi
+    const INCH_PX = 96;
     function adjustPageHeights() {
       if (!editor) return;
       const container = editor.view.dom as HTMLElement;
       const children = Array.from(container.children) as HTMLElement[];
       if (children.length === 0) return;
+      // 1) Reset any inline padding we set on a previous pass so
+      //    measurements reflect the natural CSS-default 1in padding.
+      for (const el of children) {
+        if (el.dataset.pageFillApplied === "1") {
+          el.style.removeProperty("padding-bottom");
+          delete el.dataset.pageFillApplied;
+        }
+      }
+      // Force reflow so subsequent offsetHeight reads are accurate after
+      // the resets above.
+      void container.offsetHeight;
+      // 2) Walk page groups and set fill inline on the last element of
+      //    each group when the group falls short of 11in.
       let pageStartIdx = 0;
       for (let i = 0; i <= children.length; i++) {
         const isPageBoundary =
@@ -116,30 +130,25 @@ export function DocEditor({
           continue;
         }
         const lastEl = children[lastIdx];
-        // Reset so the measurement reflects the natural content height.
-        lastEl.style.removeProperty("--page-fill-px");
         let pageHeight = 0;
         for (let j = pageStartIdx; j <= lastIdx; j++) {
           pageHeight += children[j].offsetHeight;
         }
         if (pageHeight < TARGET_PAGE_PX) {
-          lastEl.style.setProperty(
-            "--page-fill-px",
-            `${TARGET_PAGE_PX - pageHeight}px`,
-          );
+          // Add the missing pixels to the existing 1in base padding.
+          lastEl.style.paddingBottom = `${INCH_PX + (TARGET_PAGE_PX - pageHeight)}px`;
+          lastEl.dataset.pageFillApplied = "1";
         }
         pageStartIdx = i + 1;
       }
     }
-    // Run on mount + every transaction. setTimeout(0) lets the DOM
-    // settle when the editor first hydrates from server-rendered content.
-    const initial = window.setTimeout(adjustPageHeights, 0);
+    // setTimeout(120) waits for the editor's hydrated DOM + fonts to
+    // settle. Then re-run on every transaction.
+    const initial = window.setTimeout(adjustPageHeights, 120);
     editor.on("update", adjustPageHeights);
-    editor.on("selectionUpdate", adjustPageHeights);
     return () => {
       window.clearTimeout(initial);
       editor.off("update", adjustPageHeights);
-      editor.off("selectionUpdate", adjustPageHeights);
     };
   }, [editor]);
 
