@@ -8,19 +8,17 @@ import {
   commitDocumentRevision,
   updateDocumentDraftBody,
 } from "@/lib/regwatch/internal-document-revision-actions";
-import { exportDocumentAsFile } from "@/lib/regwatch/exports/export-actions";
 import {
   formatVersion,
   type SemVer,
   type VersionBump,
 } from "@/lib/regwatch/templates/version";
-import { Modal } from "@/components/regwatch/Modal";
 import { EDITOR_EXTENSIONS } from "./extensions";
 import { EditorToolbar } from "./EditorToolbar";
 import { SaveVersionDialog } from "./SaveVersionDialog";
 import { ApplyTemplateDialog } from "./ApplyTemplateDialog";
 import { EditorReferencePane } from "./EditorReferencePane";
-import { DocMenuBar } from "./DocMenuBar";
+import { ExportMenu } from "./ExportMenu";
 import { DocSectionNav } from "./DocSectionNav";
 import { sanitiseBodyDoc } from "@/lib/regwatch/templates/sanitise-body-doc";
 
@@ -41,6 +39,9 @@ type SaveState =
   | { type: "error"; message: string };
 
 const AUTOSAVE_DEBOUNCE_MS = 3_000;
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 2.0;
+const ZOOM_STEP = 0.1;
 
 export function DocEditor({
   documentId,
@@ -56,11 +57,7 @@ export function DocEditor({
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [referenceOpen, setReferenceOpen] = useState(false);
   const [outlineOpen, setOutlineOpen] = useState(true);
-  const [toolbarOpen, setToolbarOpen] = useState(true);
-  const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const [wordCountOpen, setWordCountOpen] = useState(false);
-  const [exporting, setExporting] = useState<"docx" | "pdf" | null>(null);
-  const [exportError, setExportError] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
   const [commitPending, setCommitPending] = useState(false);
   const [commitError, setCommitError] = useState<string | null>(null);
   const expectedUpdatedAtRef = useRef(initialUpdatedAt);
@@ -199,9 +196,6 @@ export function DocEditor({
 
   function appendNewPage() {
     if (!editor) return;
-    // Move cursor to end of document, then insert a page break followed by
-    // an empty paragraph. The paragraph IS the new page (one element, gets
-    // last-child styling so the whole sheet renders properly).
     const end = editor.state.doc.content.size;
     editor
       .chain()
@@ -214,44 +208,19 @@ export function DocEditor({
       .run();
   }
 
-  async function handleExport(format: "docx" | "pdf") {
-    if (autosaveTimerRef.current) {
-      window.clearTimeout(autosaveTimerRef.current);
-      autosaveTimerRef.current = null;
-    }
-    await runAutosave();
-    setExporting(format);
-    setExportError(null);
-    const res = await exportDocumentAsFile({ docId: documentId, format });
-    setExporting(null);
-    if (!res.ok) {
-      setExportError(res.error ?? `Could not export as ${format.toUpperCase()}`);
-      return;
-    }
-    if (res.signedUrl) {
-      window.open(res.signedUrl, "_blank", "noopener,noreferrer");
-    }
-    router.refresh();
+  function zoomOut() {
+    setZoom((z) => Math.max(ZOOM_MIN, Math.round((z - ZOOM_STEP) * 100) / 100));
   }
-
-  function wordStats() {
-    if (!editor) return { words: 0, chars: 0, pages: 1 };
-    const text = editor.state.doc.textBetween(0, editor.state.doc.content.size, " ");
-    const words = text.trim().split(/\s+/).filter(Boolean).length;
-    const chars = text.length;
-    let pages = 1;
-    editor.state.doc.descendants((node) => {
-      if (node.type.name === "pageBreak") pages += 1;
-      return true;
-    });
-    return { words, chars, pages };
+  function zoomIn() {
+    setZoom((z) => Math.min(ZOOM_MAX, Math.round((z + ZOOM_STEP) * 100) / 100));
   }
+  const zoomPct = Math.round(zoom * 100);
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
-      {/* Slim header — title, save state, primary actions */}
-      <header className="flex items-center justify-between gap-4 border-b border-card-border bg-card-bg/40 px-4 py-1.5">
-        <div className="min-w-0 flex items-center gap-3">
+      {/* Header — title + primary actions */}
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-card-border bg-card-bg/40 px-4 py-2">
+        <div className="flex min-w-0 items-center gap-3">
           <Link
             href={`/regwatch/documents/${documentId}`}
             className="rounded-md border border-card-border bg-background px-2 py-1 text-[11px] text-muted hover:border-brand-blue hover:text-foreground"
@@ -268,8 +237,20 @@ export function DocEditor({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <SaveStateBadge state={saveState} version={currentVersion} />
+          <button
+            type="button"
+            onClick={() => setOutlineOpen((v) => !v)}
+            title={outlineOpen ? "Hide outline" : "Show outline"}
+            className={`rounded-md border px-3 py-1.5 text-xs ${
+              outlineOpen
+                ? "border-brand-teal bg-brand-teal/15 text-brand-teal"
+                : "border-card-border bg-background text-foreground/90 hover:border-brand-teal hover:text-brand-teal"
+            }`}
+          >
+            📑 Outline
+          </button>
           <button
             type="button"
             onClick={() => setReferenceOpen((v) => !v)}
@@ -284,6 +265,25 @@ export function DocEditor({
           </button>
           <button
             type="button"
+            onClick={() => setTemplateDialogOpen(true)}
+            disabled={!editor}
+            title="Drop a curated section structure into this document"
+            className="rounded-md border border-card-border bg-background px-3 py-1.5 text-xs text-foreground/90 hover:border-brand-teal hover:text-brand-teal disabled:opacity-50"
+          >
+            ➕ Apply template
+          </button>
+          <ExportMenu
+            documentId={documentId}
+            onBeforeExport={async () => {
+              if (autosaveTimerRef.current) {
+                window.clearTimeout(autosaveTimerRef.current);
+                autosaveTimerRef.current = null;
+              }
+              await runAutosave();
+            }}
+          />
+          <button
+            type="button"
             onClick={() => {
               setCommitError(null);
               setSaveDialogOpen(true);
@@ -295,22 +295,6 @@ export function DocEditor({
           </button>
         </div>
       </header>
-
-      {/* Google Docs-style menu bar */}
-      <DocMenuBar
-        editor={editor}
-        documentId={documentId}
-        onApplyTemplate={() => setTemplateDialogOpen(true)}
-        onToggleReference={() => setReferenceOpen((v) => !v)}
-        referenceOpen={referenceOpen}
-        onToggleOutline={() => setOutlineOpen((v) => !v)}
-        outlineOpen={outlineOpen}
-        onToggleToolbar={() => setToolbarOpen((v) => !v)}
-        toolbarOpen={toolbarOpen}
-        onExport={handleExport}
-        onShowShortcuts={() => setShortcutsOpen(true)}
-        onShowWordCount={() => setWordCountOpen(true)}
-      />
 
       {saveState.type === "conflict" && (
         <div className="border-b border-amber-500/40 bg-amber-500/10 px-4 py-2 text-[11px] text-amber-200">
@@ -327,25 +311,42 @@ export function DocEditor({
         </div>
       )}
 
-      {exportError && (
-        <div className="border-b border-red-500/40 bg-red-500/10 px-4 py-2 text-[11px] text-red-300">
-          Export failed: {exportError}{" "}
-          <button
-            type="button"
-            onClick={() => setExportError(null)}
-            className="underline"
-          >
-            dismiss
-          </button>
+      {/* Toolbar with zoom group on the right */}
+      <div className="flex items-center justify-between border-b border-card-border bg-card-bg/30">
+        <div className="min-w-0 flex-1">
+          <EditorToolbar editor={editor} />
         </div>
-      )}
-      {exporting && (
-        <div className="border-b border-brand-blue/40 bg-brand-blue/10 px-4 py-2 text-[11px] text-brand-blue">
-          Exporting as {exporting.toUpperCase()}…
+        <div className="shrink-0 px-3 py-2">
+          <div className="inline-flex items-center overflow-hidden rounded-md border border-card-border bg-background">
+            <button
+              type="button"
+              onClick={zoomOut}
+              disabled={zoom <= ZOOM_MIN}
+              title="Zoom out"
+              className="px-2 py-1 text-xs text-foreground/90 hover:bg-card-bg disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              −
+            </button>
+            <button
+              type="button"
+              onClick={() => setZoom(1)}
+              title="Reset zoom to 100%"
+              className="border-x border-card-border px-2 py-1 font-mono text-[11px] text-foreground/90 hover:bg-card-bg"
+            >
+              {zoomPct}%
+            </button>
+            <button
+              type="button"
+              onClick={zoomIn}
+              disabled={zoom >= ZOOM_MAX}
+              title="Zoom in"
+              className="px-2 py-1 text-xs text-foreground/90 hover:bg-card-bg disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              +
+            </button>
+          </div>
         </div>
-      )}
-
-      {toolbarOpen && <EditorToolbar editor={editor} />}
+      </div>
 
       <div className="flex min-h-0 flex-1">
         {outlineOpen && (
@@ -358,14 +359,19 @@ export function DocEditor({
           <EditorReferencePane onClose={() => setReferenceOpen(false)} />
         )}
         <div className="min-h-0 flex-1 overflow-y-auto bg-[#0a0e1a] py-8">
-          <div className="mx-auto max-w-[8.5in]">
+          <div
+            className="mx-auto max-w-[8.5in]"
+            // CSS `zoom` scales both layout dimensions and rendering, so the
+            // scroll container expands naturally as the user zooms in.
+            style={{ zoom }}
+          >
             <EditorContent editor={editor} />
             <div className="mt-6 flex justify-center">
               <button
                 type="button"
                 onClick={appendNewPage}
                 disabled={!editor}
-                title="Append a new blank page at the end of the document. To insert a page between existing pages, place your cursor where you want the break and use Insert ▾ → Page break (or ⌘↩)."
+                title="Append a new blank page at the end of the document. To insert a page between existing pages, click an existing page break and press the ↵ Page break button."
                 className="rounded-md border border-dashed border-card-border bg-card-bg/30 px-4 py-2 text-xs text-muted hover:border-brand-teal hover:bg-brand-teal/10 hover:text-brand-teal disabled:opacity-50"
               >
                 + New page
@@ -392,54 +398,6 @@ export function DocEditor({
         hasExistingContent={hasExistingContent()}
         onApply={handleApplyTemplate}
       />
-
-      <Modal
-        open={shortcutsOpen}
-        onClose={() => setShortcutsOpen(false)}
-        title="Keyboard shortcuts"
-        size="md"
-      >
-        <table className="w-full text-xs">
-          <tbody className="divide-y divide-card-border">
-            {[
-              ["Bold", "⌘B"],
-              ["Italic", "⌘I"],
-              ["Underline", "⌘U"],
-              ["Undo", "⌘Z"],
-              ["Redo", "⇧⌘Z"],
-              ["Select all", "⌘A"],
-              ["Insert page break", "⌘↩"],
-              ["Print", "⌘P"],
-            ].map(([label, k]) => (
-              <tr key={label}>
-                <td className="py-1.5 text-foreground/90">{label}</td>
-                <td className="py-1.5 text-right font-mono text-muted">{k}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Modal>
-
-      <Modal
-        open={wordCountOpen}
-        onClose={() => setWordCountOpen(false)}
-        title="Document statistics"
-        size="sm"
-      >
-        {(() => {
-          const s = wordStats();
-          return (
-            <dl className="grid grid-cols-2 gap-3 text-sm">
-              <dt className="text-muted">Pages</dt>
-              <dd className="text-right font-mono text-foreground">{s.pages}</dd>
-              <dt className="text-muted">Words</dt>
-              <dd className="text-right font-mono text-foreground">{s.words}</dd>
-              <dt className="text-muted">Characters</dt>
-              <dd className="text-right font-mono text-foreground">{s.chars}</dd>
-            </dl>
-          );
-        })()}
-      </Modal>
     </div>
   );
 }

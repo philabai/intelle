@@ -1,4 +1,5 @@
 import { Node, mergeAttributes } from "@tiptap/core";
+import { NodeSelection } from "@tiptap/pm/state";
 
 /**
  * Custom block-level `pageBreak` node. Visually renders as a styled
@@ -44,8 +45,23 @@ export const PageBreakNode = Node.create({
     return {
       insertPageBreak:
         () =>
-        ({ commands }) =>
-          commands.insertContent({ type: this.name }),
+        ({ chain, state }) => {
+          const { selection } = state;
+          // When a NodeSelection is active (user clicked an atom block like
+          // an existing page-break), the default insertContent would replace
+          // it — net-zero change. Jump past the selected node first and
+          // insert [paragraph, pageBreak] so the new blank page lands AFTER.
+          if (selection instanceof NodeSelection) {
+            return chain()
+              .setTextSelection(selection.to)
+              .insertContent([
+                { type: "paragraph" },
+                { type: this.name },
+              ])
+              .run();
+          }
+          return chain().insertContent({ type: this.name }).run();
+        },
     };
   },
 

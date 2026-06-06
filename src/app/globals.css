@@ -325,13 +325,12 @@ html {
   padding-bottom: 1in;
 }
 
-/* Give the first element of each sheet a min-height that approximates a
- * full US Letter page (11in - 2 × 1in margins = 9in usable, minus a bit
- * of breathing room so a short page doesn't look comically tall). */
-.regwatch-doc-stream > *:first-child,
-.regwatch-doc-stream > .page-break + * {
-  min-height: calc(9in - 32px);
-}
+/* NOTE: we deliberately do NOT set min-height on the first element of each
+ * sheet. Doing so makes that single element fill the page vertically, which
+ * pushes subsequent siblings (paragraphs the user types) below the visual
+ * page bottom — the user can't type "right after the heading" because the
+ * heading box already takes the whole page. Pages now grow with content;
+ * use page breaks to start a new sheet. */
 
 /* Print — every page-break becomes a real CSS page break; visual gutter
  * vanishes; the OS handles pagination. */
