@@ -90,39 +90,51 @@ export function DocEditor({
   }, []);
 
   // ─── Page-fill effect ─────────────────────────────────────────────────
-  // After every editor update, walk the top-level children of the
-  // ProseMirror DOM and stretch each "page group" (elements between
-  // page-breaks) to a full US-Letter page height by writing inline
-  // `padding-bottom` directly on the LAST element of that group. Inline
-  // styles override the 1in CSS default, and the next reflow recomputes
-  // them — typing more content shrinks the bottom pad to match. No
-  // padding is added when the page already exceeds 11in.
+  // Stretch each "page group" (children between page-breaks) to a full
+  // 11in US-Letter sheet by writing inline `padding-bottom` on the LAST
+  // element of that group. Padding sits BELOW the cursor's text, so
+  // typing after the heading just appends a sibling paragraph and the
+  // next reflow re-tunes the fill.
+  //
+  // Hooks belt-and-braces:
+  //   - editor.on("update")       — TipTap's transaction event
+  //   - MutationObserver          — catches DOM mutations TipTap might
+  //                                  apply outside the "update" event
+  //   - window resize listener    — handles viewport changes
+  //   - double rAF inside schedule() — waits for layout before measuring
   useEffect(() => {
     if (!editor) return;
     const TARGET_PAGE_PX = 1056; // 11in @ 96dpi
     const INCH_PX = 96;
-    function adjustPageHeights() {
+    let isScheduled = false;
+    let mutationDuringAdjust = false;
+    let muteObserver = false;
+
+    function adjust() {
       if (!editor) return;
       const container = editor.view.dom as HTMLElement;
       const children = Array.from(container.children) as HTMLElement[];
       if (children.length === 0) return;
-      // 1) Reset any inline padding we set on a previous pass so
-      //    measurements reflect the natural CSS-default 1in padding.
+
+      muteObserver = true;
+
+      // 1) Reset previously-applied fills so measurements reflect the
+      //    natural CSS-default 1in padding.
       for (const el of children) {
         if (el.dataset.pageFillApplied === "1") {
-          el.style.removeProperty("padding-bottom");
+          el.style.paddingBottom = "";
           delete el.dataset.pageFillApplied;
         }
       }
-      // Force reflow so subsequent offsetHeight reads are accurate after
-      // the resets above.
+      // Force reflow before measuring.
       void container.offsetHeight;
-      // 2) Walk page groups and set fill inline on the last element of
-      //    each group when the group falls short of 11in.
+
+      // 2) Walk page groups; fill the last element of each short page.
       let pageStartIdx = 0;
       for (let i = 0; i <= children.length; i++) {
         const isPageBoundary =
-          i === children.length || children[i].classList.contains("page-break");
+          i === children.length ||
+          children[i].classList.contains("page-break");
         if (!isPageBoundary) continue;
         const lastIdx = i - 1;
         if (lastIdx < pageStartIdx) {
@@ -135,20 +147,57 @@ export function DocEditor({
           pageHeight += children[j].offsetHeight;
         }
         if (pageHeight < TARGET_PAGE_PX) {
-          // Add the missing pixels to the existing 1in base padding.
           lastEl.style.paddingBottom = `${INCH_PX + (TARGET_PAGE_PX - pageHeight)}px`;
           lastEl.dataset.pageFillApplied = "1";
         }
         pageStartIdx = i + 1;
       }
+
+      // Unmute the observer after the current microtask so our own DOM
+      // mutations don't trigger a feedback loop.
+      window.setTimeout(() => {
+        muteObserver = false;
+      }, 0);
     }
-    // setTimeout(120) waits for the editor's hydrated DOM + fonts to
-    // settle. Then re-run on every transaction.
-    const initial = window.setTimeout(adjustPageHeights, 120);
-    editor.on("update", adjustPageHeights);
+
+    function schedule() {
+      if (isScheduled) {
+        mutationDuringAdjust = true;
+        return;
+      }
+      isScheduled = true;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          adjust();
+          isScheduled = false;
+          if (mutationDuringAdjust) {
+            mutationDuringAdjust = false;
+            schedule();
+          }
+        });
+      });
+    }
+
+    schedule();
+
+    editor.on("update", schedule);
+
+    const observer = new MutationObserver(() => {
+      if (muteObserver) return;
+      schedule();
+    });
+    observer.observe(editor.view.dom, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    window.addEventListener("resize", schedule);
+
     return () => {
-      window.clearTimeout(initial);
-      editor.off("update", adjustPageHeights);
+      editor.off("update", schedule);
+      observer.disconnect();
+      window.removeEventListener("resize", schedule);
     };
   }, [editor]);
 
