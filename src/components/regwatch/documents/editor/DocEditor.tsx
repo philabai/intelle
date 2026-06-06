@@ -18,6 +18,7 @@ import { EditorToolbar } from "./EditorToolbar";
 import { SaveVersionDialog } from "./SaveVersionDialog";
 import { ApplyTemplateDialog } from "./ApplyTemplateDialog";
 import { EditorReferencePane } from "./EditorReferencePane";
+import { ExportMenu } from "./ExportMenu";
 import { sanitiseBodyDoc } from "@/lib/regwatch/templates/sanitise-body-doc";
 
 interface Props {
@@ -248,6 +249,18 @@ export function DocEditor({
           >
             📖 Reference
           </button>
+          <ExportMenu
+            documentId={documentId}
+            onBeforeExport={async () => {
+              // Flush any pending autosave so the export reflects the
+              // latest editor content.
+              if (autosaveTimerRef.current) {
+                window.clearTimeout(autosaveTimerRef.current);
+                autosaveTimerRef.current = null;
+              }
+              await runAutosave();
+            }}
+          />
           <button
             type="button"
             onClick={() => {

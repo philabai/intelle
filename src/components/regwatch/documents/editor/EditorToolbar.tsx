@@ -114,6 +114,13 @@ export function EditorToolbar({ editor }: Props) {
         "Add column right",
       )}
       <Separator />
+      {btn(
+        "↵ Page break",
+        false,
+        () => editor.chain().focus().insertPageBreak().run(),
+        "Insert a page break here (⌘↩)",
+      )}
+      <Separator />
       <button
         type="button"
         disabled

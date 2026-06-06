@@ -163,6 +163,14 @@ export function hr(): PMNode {
   return { type: "horizontalRule" };
 }
 
+/**
+ * Visible page break — renders as an "End of page → Page break" marker
+ * in the editor; exports to a real page break in DOCX and PDF.
+ */
+export function pageBreak(): PMNode {
+  return { type: "pageBreak" };
+}
+
 // ---------------------------------------------------------------------------
 // Inline + mark builders
 // ---------------------------------------------------------------------------
@@ -179,8 +187,14 @@ export function bold(text: string): PMNode {
 // Section helper — header + prompt paragraph + optional body
 // ---------------------------------------------------------------------------
 
+/**
+ * Section helper — emits a page-break + H2 + prompt paragraph + optional
+ * body nodes. The page-break sits ahead of every section's H2 so the
+ * title block (H1 + metaTable) stays on page 1 and each section starts
+ * on its own page.
+ */
 export function section(heading: string, promptText: string, ...body: PMNode[]): PMNode[] {
-  return [h2(heading), prompt(promptText), ...body];
+  return [pageBreak(), h2(heading), prompt(promptText), ...body];
 }
 
 export function subsection(heading: string, promptText: string, ...body: PMNode[]): PMNode[] {

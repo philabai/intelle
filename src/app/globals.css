@@ -207,3 +207,63 @@ html {
     animation: none;
   }
 }
+
+/* ===========================================================================
+ * Internal Documents editor — Word-style page break renderer.
+ *
+ * The PageBreakNode (src/components/regwatch/documents/editor/PageBreakNode.ts)
+ * outputs <div data-page-break class="page-break"> with a child rule + label.
+ * We render it as a wide gutter that visually splits one continuous "paper"
+ * sheet into the end-of-page + start-of-next-page motif.
+ * =========================================================================== */
+.page-break {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 24px -2in;   /* extend past the 1in horizontal padding so the rule kisses the page edge */
+  padding: 0 2in 0 2in;
+  user-select: none;
+}
+.page-break .page-break-rule {
+  flex: 1;
+  height: 0;
+  border-top: 1px dashed rgba(255, 255, 255, 0.18);
+}
+.page-break .page-break-label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+}
+/* Selected state — when the user clicks the page break (it's an atom node) */
+.ProseMirror .page-break.ProseMirror-selectednode .page-break-rule {
+  border-top-color: var(--brand-teal, #2dd4bf);
+}
+.ProseMirror .page-break.ProseMirror-selectednode .page-break-label {
+  color: var(--brand-teal, #2dd4bf);
+}
+
+/* In the read-only Tiptap HTML render (DocReadOnlyView), the wrapper class
+ * "prose" sets margins. Override so the page break still spans full width. */
+.prose .page-break {
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+/* Print stylesheet — when the browser prints (or the user picks Save as PDF
+ * from print dialog), the page-break div should force a real CSS page break. */
+@media print {
+  .page-break {
+    page-break-before: always;
+    break-before: page;
+    border: 0;
+    margin: 0;
+    height: 0;
+    overflow: hidden;
+  }
+  .page-break .page-break-rule,
+  .page-break .page-break-label {
+    display: none;
+  }
+}
