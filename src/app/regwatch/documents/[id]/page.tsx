@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
+import { createServiceClient } from "@/lib/regwatch/supabase/service";
 import { checkFeatureGate } from "@/lib/regwatch/tier";
 import { getMyMembership } from "@/lib/regwatch/members";
 import {
@@ -22,6 +23,8 @@ import { LinkRegulationForm } from "@/components/regwatch/documents/LinkRegulati
 import { ClauseCrosswalkPanel } from "@/components/regwatch/documents/ClauseCrosswalkPanel";
 import { LinkAssetsPanel } from "@/components/regwatch/documents/LinkAssetsPanel";
 import { MoveDocumentMenu } from "@/components/regwatch/documents/MoveDocumentMenu";
+import { DocReadOnlyView } from "@/components/regwatch/documents/editor/DocReadOnlyView";
+import { getTemplate } from "@/lib/regwatch/templates/registry";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -52,6 +55,22 @@ export default async function DocumentDetailPage({ params }: Props) {
 
   const doc = await getDocument(id);
   if (!doc) notFound();
+
+  // Pull body_doc + template_key separately — neither lives on getDocument
+  // (it's an editor-only concern). Server component → service client is fine.
+  const svc = createServiceClient();
+  const { data: bodyRow } = await svc
+    .from("internal_documents")
+    .select("body_doc, template_key")
+    .eq("id", id)
+    .maybeSingle();
+  let bodyDoc: unknown = bodyRow?.body_doc ?? null;
+  const templateKey = (bodyRow?.template_key as string | null) ?? null;
+  if (!bodyDoc && templateKey) {
+    // Show the template default as a preview until the first save.
+    const t = getTemplate(templateKey);
+    if (t) bodyDoc = t.prosemirrorJson;
+  }
 
   const [membership, org, allAssets, folders] = await Promise.all([
     getMyMembership(),
@@ -136,6 +155,36 @@ export default async function DocumentDetailPage({ params }: Props) {
 
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <section className="min-w-0 space-y-6">
+            <div className="rounded-xl border border-card-border bg-card-bg/40 p-5">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold text-foreground">
+                  Document body
+                </h2>
+                {canEdit && (
+                  <Link
+                    href={`/regwatch/documents/${doc.id}/edit`}
+                    className="rounded-md border border-brand-blue/40 px-2.5 py-1 text-[11px] font-medium text-brand-blue hover:border-brand-blue hover:bg-brand-blue/10"
+                  >
+                    {bodyDoc ? "Edit ✎" : "Start writing ✎"}
+                  </Link>
+                )}
+              </div>
+              {bodyDoc ? (
+                <DocReadOnlyView bodyDoc={bodyDoc} />
+              ) : doc.filePath ? (
+                <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-4 text-center text-xs text-muted">
+                  This document is the uploaded file in the right sidebar. Click
+                  <strong> Start writing ✎</strong> to add a native body alongside
+                  it (existing file stays linked).
+                </p>
+              ) : (
+                <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-4 text-center text-xs text-muted">
+                  No body yet. Click <strong>Start writing ✎</strong> to author it
+                  in-app, or upload a file in the right sidebar.
+                </p>
+              )}
+            </div>
+
             <div className="rounded-xl border border-card-border bg-card-bg/40 p-5">
               <h2 className="mb-1 text-sm font-semibold text-foreground">
                 Linked regulations

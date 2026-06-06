@@ -1,11 +1,14 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   createDocument,
   uploadDocumentFile,
 } from "@/lib/regwatch/internal-documents-actions";
+import { createDocumentFromTemplate } from "@/lib/regwatch/internal-document-revision-actions";
+import { TEMPLATE_REGISTRY } from "@/lib/regwatch/templates/registry";
+import { TEMPLATE_FAMILY_LABEL, type TemplateFamily } from "@/lib/regwatch/templates/types";
 
 const KIND_OPTIONS = [
   { value: "sop", label: "SOP" },
@@ -42,6 +45,7 @@ export function CreateDocumentForm({
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [title, setTitle] = useState("");
+  const [templateKey, setTemplateKey] = useState<string>("__blank__");
   const [docKind, setDocKind] = useState("sop");
   const [internalCode, setInternalCode] = useState("");
   const [version, setVersion] = useState("");
@@ -50,27 +54,59 @@ export function CreateDocumentForm({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  const templatesByFamily = useMemo(() => {
+    const map = new Map<TemplateFamily, typeof TEMPLATE_REGISTRY>();
+    for (const t of TEMPLATE_REGISTRY) {
+      const arr = map.get(t.family) ?? [];
+      arr.push(t);
+      map.set(t.family, arr);
+    }
+    for (const arr of map.values()) {
+      arr.sort((a, b) => a.sortOrder - b.sortOrder);
+    }
+    return map;
+  }, []);
+
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const createRes = await createDocument({
-        title: title.trim(),
-        docKind,
-        internalCode: internalCode.trim() || null,
-        version: version.trim() || null,
-        ownerRole: ownerRole.trim() || null,
-        folderId: defaultFolderId ?? null,
-      });
-      if (!createRes.ok || !createRes.id) {
-        setError(createRes.error ?? "Could not create document");
-        return;
+      let createdId: string | null = null;
+
+      if (templateKey !== "__blank__") {
+        // Template path — instantiates body_doc + creates the v0.1.0 revision
+        // + emits the 'created' audit event in one action.
+        const res = await createDocumentFromTemplate({
+          templateKey,
+          title: title.trim(),
+          folderId: defaultFolderId ?? null,
+        });
+        if (!res.ok || !res.id) {
+          setError(res.error ?? "Could not create document from template");
+          return;
+        }
+        createdId = res.id;
+      } else {
+        // Legacy / blank path — metadata-only doc, body authored later.
+        const createRes = await createDocument({
+          title: title.trim(),
+          docKind,
+          internalCode: internalCode.trim() || null,
+          version: version.trim() || null,
+          ownerRole: ownerRole.trim() || null,
+          folderId: defaultFolderId ?? null,
+        });
+        if (!createRes.ok || !createRes.id) {
+          setError(createRes.error ?? "Could not create document");
+          return;
+        }
+        createdId = createRes.id;
       }
 
       // Optional: chain the file upload if one was picked.
-      if (file) {
+      if (file && createdId) {
         const fd = new FormData();
-        fd.set("documentId", createRes.id);
+        fd.set("documentId", createdId);
         fd.set("file", file);
         const upRes = await uploadDocumentFile(fd);
         if (!upRes.ok) {
@@ -79,7 +115,7 @@ export function CreateDocumentForm({
           setError(
             `Document created, but the file upload failed: ${upRes.error ?? "unknown error"}. You can retry from the document detail page.`,
           );
-          router.push(`/regwatch/documents/${createRes.id}`);
+          router.push(`/regwatch/documents/${createdId}`);
           return;
         }
       }
@@ -91,12 +127,56 @@ export function CreateDocumentForm({
       setOwnerRole("");
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
-      router.push(`/regwatch/documents/${createRes.id}`);
+
+      if (createdId) {
+        // Template-instantiated docs land in /edit so the author can start
+        // writing immediately. Blank docs land on the detail page so the
+        // user can decide whether to upload a file or click "Start writing".
+        const targetPath =
+          templateKey !== "__blank__"
+            ? `/regwatch/documents/${createdId}/edit`
+            : `/regwatch/documents/${createdId}`;
+        router.push(targetPath);
+      }
     });
   }
 
+  const isTemplatePath = templateKey !== "__blank__";
+
   return (
     <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
+      <label
+        className="flex flex-col gap-1 text-sm sm:col-span-2"
+        title="Pick a built-in template to pre-fill the document body with industry-standard sections, or start blank and author from scratch."
+      >
+        <span className="text-xs font-medium uppercase tracking-wider text-muted">
+          Template
+        </span>
+        <select
+          value={templateKey}
+          onChange={(e) => setTemplateKey(e.target.value)}
+          className="rounded-md border border-card-border bg-card-bg px-3 py-2 text-sm text-foreground focus:border-brand-blue focus:outline-none"
+        >
+          <option value="__blank__">
+            Blank — no template (you author the body from scratch)
+          </option>
+          {Array.from(templatesByFamily.entries()).map(([family, list]) => (
+            <optgroup key={family} label={TEMPLATE_FAMILY_LABEL[family]}>
+              {list.map((t) => (
+                <option key={t.key} value={t.key}>
+                  {t.label}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+        {isTemplatePath && (
+          <span className="text-[10px] text-muted">
+            The body will be pre-populated with the template&apos;s standard
+            section structure. You&apos;ll land in the editor to start writing.
+          </span>
+        )}
+      </label>
       <label
         className="flex flex-col gap-1 text-sm sm:col-span-2"
         title="Display name shown on the document list and detail page. Required."
@@ -113,8 +193,12 @@ export function CreateDocumentForm({
         />
       </label>
       <label
-        className="flex flex-col gap-1 text-sm"
-        title="What kind of document this is. Drives icon + filter chips."
+        className={`flex flex-col gap-1 text-sm ${isTemplatePath ? "opacity-50" : ""}`}
+        title={
+          isTemplatePath
+            ? "Kind is determined by the chosen template."
+            : "What kind of document this is. Drives icon + filter chips."
+        }
       >
         <span className="text-xs font-medium uppercase tracking-wider text-muted">
           Kind
@@ -122,7 +206,8 @@ export function CreateDocumentForm({
         <select
           value={docKind}
           onChange={(e) => setDocKind(e.target.value)}
-          className="rounded-md border border-card-border bg-card-bg px-3 py-2 text-sm text-foreground focus:border-brand-blue focus:outline-none"
+          disabled={isTemplatePath}
+          className="rounded-md border border-card-border bg-card-bg px-3 py-2 text-sm text-foreground focus:border-brand-blue focus:outline-none disabled:cursor-not-allowed"
         >
           {KIND_OPTIONS.map((k) => (
             <option key={k.value} value={k.value}>
