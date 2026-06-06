@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { formatDistanceToNowStrict } from "date-fns";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { checkFeatureGate } from "@/lib/regwatch/tier";
 import { getMyMembership } from "@/lib/regwatch/members";
 import { getMyOrganization } from "@/lib/regwatch/footprint";
-import { listDocuments, DOCUMENT_KIND_LABEL } from "@/lib/regwatch/internal-documents";
+import {
+  listDocuments,
+  DOCUMENT_KIND_LABEL,
+} from "@/lib/regwatch/internal-documents";
 import {
   listFolders,
   buildFolderTree,
@@ -15,9 +17,10 @@ import {
 } from "@/lib/regwatch/document-folders";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
-import { CreateDocumentForm } from "@/components/regwatch/documents/CreateDocumentForm";
 import { FolderTreeNav } from "@/components/regwatch/documents/FolderTreeNav";
-import { MoveDocumentMenu } from "@/components/regwatch/documents/MoveDocumentMenu";
+import { DocCardGrid } from "@/components/regwatch/documents/gallery/DocCardGrid";
+import { GalleryControls } from "@/components/regwatch/documents/gallery/GalleryControls";
+import { NewDocumentButton } from "@/components/regwatch/documents/gallery/NewDocumentButton";
 
 export const metadata = { title: "Internal documents" };
 export const dynamic = "force-dynamic";
@@ -38,6 +41,11 @@ function pick(
 export default async function DocumentsPage({ searchParams }: Props) {
   const raw = await searchParams;
   const folderParam = pick(raw, "folder") ?? null;
+  const ownerParam = (pick(raw, "owner") ?? "anyone") as "anyone" | "me";
+  const sortParam = (pick(raw, "sort") ?? "updated") as
+    | "updated"
+    | "title"
+    | "kind";
 
   const supabase = await createClient();
   const {
@@ -58,7 +66,6 @@ export default async function DocumentsPage({ searchParams }: Props) {
     );
   }
 
-  // Resolve which folder we're showing.
   const folderId =
     folderParam && folderParam !== "unfiled" ? folderParam : null;
   const showUnfiled = folderParam === "unfiled";
@@ -67,7 +74,7 @@ export default async function DocumentsPage({ searchParams }: Props) {
   const [org, membership, allDocs, folders, unfiledCount] = await Promise.all([
     getMyOrganization(),
     getMyMembership(),
-    listDocuments(), // for totals + the "All" view
+    listDocuments(),
     listFolders(),
     countUnfiledDocuments(),
   ]);
@@ -76,14 +83,29 @@ export default async function DocumentsPage({ searchParams }: Props) {
   const canCreate =
     membership?.role === "owner" || membership?.role === "admin";
 
-  // The visible doc list for this view.
-  const visibleDocs = showAll
+  // Filter chain — folder → owner.
+  let visibleDocs = showAll
     ? allDocs
     : showUnfiled
       ? allDocs.filter((d) => d.folderId === null)
       : allDocs.filter((d) => d.folderId === folderId);
+  if (ownerParam === "me") {
+    visibleDocs = visibleDocs.filter((d) => d.ownerUserId === user.id);
+  }
 
-  // Folder context for the header.
+  // Sort.
+  visibleDocs = [...visibleDocs].sort((a, b) => {
+    if (sortParam === "title") return a.title.localeCompare(b.title);
+    if (sortParam === "kind") {
+      const kindCompare = DOCUMENT_KIND_LABEL[a.docKind].localeCompare(
+        DOCUMENT_KIND_LABEL[b.docKind],
+      );
+      if (kindCompare !== 0) return kindCompare;
+      return a.title.localeCompare(b.title);
+    }
+    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+  });
+
   let activeFolderName: string | null = null;
   let breadcrumb: { id: string; name: string }[] = [];
   if (folderId) {
@@ -108,7 +130,7 @@ export default async function DocumentsPage({ searchParams }: Props) {
 
   return (
     <RegwatchAppShell authed>
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+      <div className="mx-auto max-w-[1600px] px-4 py-10 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/feed" className="hover:text-foreground">
             My Feed
@@ -139,7 +161,7 @@ export default async function DocumentsPage({ searchParams }: Props) {
           )}
         </nav>
 
-        <header className="mt-4 mb-8 flex flex-wrap items-start justify-between gap-4">
+        <header className="mt-4 mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
               {org?.organization.name ?? "Your organization"}
@@ -149,24 +171,26 @@ export default async function DocumentsPage({ searchParams }: Props) {
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted">
               {showAll
-                ? "Your SOPs, policies, permits, and standards. Organise them into project folders, link them to regulations + assets, and stay alerted when linked regulations change."
+                ? "Your SOPs, policies, permits, and standards. Author them in-app, organise them into project folders, link them to regulations + assets, and stay alerted when linked regulations change."
                 : showUnfiled
-                  ? "Documents not yet assigned to a project folder. Use the Move to… menu on each row to file them."
+                  ? "Documents not yet assigned to a project folder. Use the document detail page to move them."
                   : "Documents inside this project folder. Sub-folders show in the left-hand tree."}
             </p>
           </div>
-          <div className="text-right">
-            <p className="text-xs uppercase tracking-wider text-muted">
-              {showAll ? "Total" : "In this view"}
-            </p>
-            <p className="font-mono text-2xl font-semibold text-foreground">
-              {visibleDocs.length}
-            </p>
+          <div className="flex flex-col items-end gap-2">
+            {canCreate && <NewDocumentButton defaultFolderId={folderId} />}
+            <div className="text-right">
+              <p className="text-[10px] uppercase tracking-wider text-muted">
+                {showAll ? "Total" : "In view"}
+              </p>
+              <p className="font-mono text-xl font-semibold text-foreground">
+                {visibleDocs.length}
+              </p>
+            </div>
           </div>
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-          {/* Left rail */}
           <FolderTreeNav
             roots={folderTree}
             activeFolderKey={activeFolderKey}
@@ -175,112 +199,11 @@ export default async function DocumentsPage({ searchParams }: Props) {
             totalDocCount={allDocs.length}
           />
 
-          {/* Right pane */}
-          <section className="space-y-6">
-            {canCreate && (
-              <div className="rounded-xl border border-card-border bg-card-bg/40 p-5 sm:p-6">
-                <header className="mb-4">
-                  <h2 className="text-lg font-semibold tracking-tight text-foreground">
-                    Register a document
-                  </h2>
-                  <p className="mt-1 text-xs text-muted">
-                    {folderId
-                      ? "Created in the current folder. You can move it later from the Move to… menu."
-                      : "Created in Unfiled. Drop it into a folder from the Move to… menu, or via the detail page."}
-                  </p>
-                </header>
-                <CreateDocumentForm defaultFolderId={folderId} />
-              </div>
-            )}
-
-            {visibleDocs.length === 0 ? (
-              <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-8 text-center text-sm text-muted">
-                No documents in this view.
-              </p>
-            ) : (
-              <div className="overflow-hidden rounded-xl border border-card-border bg-background">
-                <table className="w-full text-sm">
-                  <thead className="border-b border-card-border bg-card-bg/40 text-left text-[10px] uppercase tracking-wider text-muted">
-                    <tr>
-                      <th className="px-4 py-3">Title</th>
-                      <th className="px-4 py-3">Kind</th>
-                      <th className="px-4 py-3">Owner</th>
-                      <th className="px-4 py-3">Regs</th>
-                      <th className="px-4 py-3">Assets</th>
-                      <th className="px-4 py-3">Updated</th>
-                      <th className="px-4 py-3"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visibleDocs.map((d) => (
-                      <tr
-                        key={d.id}
-                        className="border-b border-card-border last:border-0 hover:bg-card-bg/50"
-                      >
-                        <td className="px-4 py-3">
-                          <Link
-                            href={`/regwatch/documents/${d.id}`}
-                            className="font-medium text-foreground hover:text-brand-teal"
-                          >
-                            {d.title}
-                          </Link>
-                          {d.internalCode && (
-                            <span className="ml-2 font-mono text-[10px] text-muted">
-                              {d.internalCode}
-                            </span>
-                          )}
-                          {d.version && (
-                            <span className="ml-1 text-[10px] text-muted">
-                              · {d.version}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-xs text-muted">
-                          {DOCUMENT_KIND_LABEL[d.docKind]}
-                        </td>
-                        <td className="px-4 py-3 text-xs text-muted">
-                          {d.ownerName ?? d.ownerEmail ?? "—"}
-                        </td>
-                        <td className="px-4 py-3 text-xs">
-                          <span
-                            className={`rounded-md px-1.5 py-0.5 font-mono ${
-                              d.linkCount > 0
-                                ? "bg-brand-teal/15 text-brand-teal"
-                                : "bg-card-bg text-muted"
-                            }`}
-                          >
-                            {d.linkCount}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-xs">
-                          <span
-                            className={`rounded-md px-1.5 py-0.5 font-mono ${
-                              d.assetLinkCount > 0
-                                ? "bg-brand-blue/15 text-brand-blue"
-                                : "bg-card-bg text-muted"
-                            }`}
-                          >
-                            {d.assetLinkCount}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-[11px] text-muted">
-                          {formatDistanceToNowStrict(new Date(d.updatedAt), {
-                            addSuffix: true,
-                          })}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <MoveDocumentMenu
-                            documentId={d.id}
-                            currentFolderId={d.folderId}
-                            folderRoots={folderTree}
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+          <section className="min-w-0 space-y-4">
+            <div className="flex items-center justify-between gap-2">
+              <GalleryControls ownerFilter={ownerParam} sort={sortParam} />
+            </div>
+            <DocCardGrid docs={visibleDocs} />
           </section>
         </div>
       </div>
