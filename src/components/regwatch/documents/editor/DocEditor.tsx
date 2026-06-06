@@ -89,6 +89,60 @@ export function DocEditor({
     };
   }, []);
 
+  // ─── Page-fill effect ─────────────────────────────────────────────────
+  // After every editor update, walk the top-level children of the
+  // ProseMirror DOM and stretch each "page group" (elements between
+  // page-breaks) to a full US-Letter page height by setting --page-fill-px
+  // on the last element of that group. CSS then adds that pixel value to
+  // the existing 1in bottom padding so the sheet visually fills to 11in.
+  // No padding is added when the page already exceeds 11in — long pages
+  // grow naturally.
+  useEffect(() => {
+    if (!editor) return;
+    const TARGET_PAGE_PX = 1056; // 11in @ 96dpi
+    function adjustPageHeights() {
+      if (!editor) return;
+      const container = editor.view.dom as HTMLElement;
+      const children = Array.from(container.children) as HTMLElement[];
+      if (children.length === 0) return;
+      let pageStartIdx = 0;
+      for (let i = 0; i <= children.length; i++) {
+        const isPageBoundary =
+          i === children.length || children[i].classList.contains("page-break");
+        if (!isPageBoundary) continue;
+        const lastIdx = i - 1;
+        if (lastIdx < pageStartIdx) {
+          pageStartIdx = i + 1;
+          continue;
+        }
+        const lastEl = children[lastIdx];
+        // Reset so the measurement reflects the natural content height.
+        lastEl.style.removeProperty("--page-fill-px");
+        let pageHeight = 0;
+        for (let j = pageStartIdx; j <= lastIdx; j++) {
+          pageHeight += children[j].offsetHeight;
+        }
+        if (pageHeight < TARGET_PAGE_PX) {
+          lastEl.style.setProperty(
+            "--page-fill-px",
+            `${TARGET_PAGE_PX - pageHeight}px`,
+          );
+        }
+        pageStartIdx = i + 1;
+      }
+    }
+    // Run on mount + every transaction. setTimeout(0) lets the DOM
+    // settle when the editor first hydrates from server-rendered content.
+    const initial = window.setTimeout(adjustPageHeights, 0);
+    editor.on("update", adjustPageHeights);
+    editor.on("selectionUpdate", adjustPageHeights);
+    return () => {
+      window.clearTimeout(initial);
+      editor.off("update", adjustPageHeights);
+      editor.off("selectionUpdate", adjustPageHeights);
+    };
+  }, [editor]);
+
   const runAutosave = useCallback(async () => {
     if (!editor) return;
     if (saveState.type === "conflict") return;

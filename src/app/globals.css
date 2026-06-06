@@ -325,12 +325,21 @@ html {
   padding-bottom: 1in;
 }
 
-/* NOTE: we deliberately do NOT set min-height on the first element of each
- * sheet. Doing so makes that single element fill the page vertically, which
- * pushes subsequent siblings (paragraphs the user types) below the visual
- * page bottom — the user can't type "right after the heading" because the
- * heading box already takes the whole page. Pages now grow with content;
- * use page breaks to start a new sheet. */
+/* US-Letter page fill — every "last element of a page" (last-child OR
+ * the element right before a page-break) gets an extra bottom padding
+ * computed in JS (DocEditor's pageFillEffect) and stored in the custom
+ * property --page-fill-px. This stretches a short page out to 11in tall
+ * without affecting where the user types — the padding is BELOW the
+ * content, so the cursor still sits at the end of the actual text.
+ *
+ * We DO NOT use min-height on the FIRST element of each page because that
+ * makes the heading take the whole page vertically, pushing the user's
+ * next paragraph (which is a sibling, not a child) below the visual page
+ * bottom — they can't type "right after the heading". */
+.regwatch-doc-stream > *:last-child,
+.regwatch-doc-stream > *:has(+ .page-break) {
+  padding-bottom: calc(1in + var(--page-fill-px, 0px));
+}
 
 /* Print — every page-break becomes a real CSS page break; visual gutter
  * vanishes; the OS handles pagination. */
