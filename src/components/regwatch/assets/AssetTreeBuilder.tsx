@@ -351,7 +351,14 @@ function BuilderRow({
   onArchive: (id: string, name: string) => void;
   pending: boolean;
 }) {
-  const [open, setOpen] = useState(node.level <= 3);
+  // Default-expand every level up to Asset Class (L4). Previously we only
+  // expanded through Areas (L3), which meant that the moment a reviewer
+  // added an Asset under an Asset Class the new child was created in the
+  // DB but stayed hidden because the parent was collapsed. The user reported
+  // it as "the asset isn't showing up" — surfacing it by default fixes that.
+  // L5 → L6 (Components, opt-in) stays collapsed so heavy Asset rows don't
+  // explode the tree.
+  const [open, setOpen] = useState(node.level <= 4);
   const isSelected = selectedId === node.id;
   const nextLevel = (node.level + 1) as 2 | 3 | 4 | 5 | 6;
   const canAddChild = node.level < maxLevel;
@@ -395,9 +402,9 @@ function BuilderRow({
             onClick={() => onAdd(node.id, nextLevel)}
             disabled={pending}
             className="rounded-md border border-card-border bg-card-bg px-2 py-0.5 text-[10px] text-foreground hover:border-brand-blue disabled:opacity-50"
-            title={`Add ${levelLabels[nextLevel]}`}
+            title={`Add a new ${levelLabels[nextLevel]} inside ${node.name}`}
           >
-            + {levelLabels[nextLevel]}
+            + Add {levelLabels[nextLevel]}
           </button>
         )}
         <button
