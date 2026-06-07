@@ -88,10 +88,10 @@ export function DocBodyPreviewCard({
           {canEdit && composeHref && (
             <Link
               href={composeHref}
-              title="Open side-by-side workspace — regulation on the left, editor on the right"
+              title="Open the side-by-side workspace — regulation on the left, editor on the right. Click 'Cite this clause' to insert a pinned citation pill."
               className="rounded-md border border-brand-teal/40 px-2.5 py-1 text-[11px] font-medium text-brand-teal hover:border-brand-teal hover:bg-brand-teal/10"
             >
-              📚 Compose
+              🔗 Citations
             </Link>
           )}
           {canEdit && (
