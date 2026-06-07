@@ -10,6 +10,12 @@
 --   /en/ paths → 'en' (no translation tab)
 --   /ar/ paths → 'ar' (English translation tab appears)
 --
+-- NOTE: This URL-path heuristic turned out to be wrong (see 20260717
+-- which forces every SASO row to 'ar' since the actual PDF content is
+-- Arabic regardless of which language page links to it). Keep this as
+-- historical reference — future SASO seed migrations should set
+-- source_language='ar' for all rows directly.
+--
 -- The user will share another 50+ PDFs once this batch verifies; the next
 -- migration will be additive (no DELETE).
 -- ===========================================================================
