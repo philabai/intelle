@@ -2,6 +2,7 @@ import Link from "next/link";
 import { RegwatchLogo } from "./Logo";
 import { NotificationBell } from "./NotificationBell";
 import { NavDropdown, NavLink } from "./NavInteractive";
+import { HelpButton } from "./help/HelpButton";
 
 /**
  * Vantage's internal app nav. Server Component — NotificationBell needs
@@ -54,6 +55,7 @@ export function RegwatchNav({ authed }: { authed: boolean }) {
           >
             ← intelle.io
           </Link>
+          <HelpButton />
           {authed && <NotificationBell authed={authed} />}
           {authed ? (
             <NavDropdown

@@ -39,6 +39,9 @@ const requestSchema = z.union([
   z.object({
     messages: z.array(messageSchema).min(1).max(20),
     scopedItemId: z.string().uuid().optional(),
+    /** "corpus" = Iris answers from the regulatory corpus (default).
+     *  "help"   = Iris answers about how Vantage works (product Q&A). */
+    mode: z.enum(["corpus", "help"]).optional(),
   }),
 ]);
 
@@ -81,6 +84,45 @@ STRUCTURE:
 CITATION FORMAT:
 Use bracketed integers: "EU CBAM applies from 2026 [1]." NEVER inline URLs.`;
 
+const SYSTEM_PROMPT_HELP = `You are the Vantage product help assistant. Vantage is a regulatory monitoring + compliance authoring SaaS by intelle.io. You help users learn how to use the app — features, workflows, navigation, terminology.
+
+WHAT VANTAGE DOES:
+- Monitors regulatory changes across global publishers (EUR-Lex, US Federal Register, GOV.UK, IMO, ESMA, IEA, NSTA, ADNOC, SASO).
+- Pull-model: users configure a Footprint (geographies, NAICS industries, monitored substances + topics + regulators) and Vantage's Relevance Feed scores incoming regulations against it.
+- Browse view shows the publisher's full hierarchy (Title → Chapter → Subchapter → Part → Section for eCFR; analogous trees elsewhere) with amber "Updated 30d" markers — every section visible regardless of updates.
+- Regulation detail page has two tabs: Articles (extracted body) and Original (cached source PDF/HTML, rendered in-app via react-pdf or sandboxed iframe).
+
+INTERNAL DOCUMENTS:
+- Author SOPs, Policies, Permits, Standards via the TipTap editor — saved as ProseMirror JSON.
+- The Compose workspace pairs the editor with a reference picker (any regulation or internal doc) so users can click "Cite this clause" to drop a pinned citation pill (regId + clauseAnchor + pinnedVersion + displayText). When the source regulation updates past the pinned version, the doc's Citation Review Queue (in the Workflow drawer) flags the citation as stale.
+- Crosswalk: section-to-clause traceability matrix that auditors expect.
+- Versioning: every save picks major / minor / patch + a reason-for-change. Older revisions + their comments survive.
+- Review workflow states: draft → in_review → approved → effective → superseded. Transitions require reason-for-change and capture an e-signature (21 CFR Part 11 / EU Annex 11 shape: name + timestamp + meaning + reason-for-change).
+- Comments: top-level threads with replies, optional paragraph anchor, resolve / re-open.
+- Audit trail PDF export: /api/regwatch/documents/[id]/audit-trail streams a Part 11-formatted PDF (signature manifest + chronological event log).
+
+COMPLIANCE OBLIGATIONS:
+- Asset × Regulation × Reviewer. Admins create obligations by pinning a regulation to an asset (and optionally a clause anchor), setting severity (catastrophic/critical/moderate/marginal/negligible) and compliance status (non-compliant/at-risk/compliant/unknown).
+- Reviewers complete the review with evidence attachments + e-signature; review states are open/awaiting-triage/in-review/pending-approval/verified/closed/not-applicable.
+
+NAVIGATION:
+- Top nav surfaces: Discover (browse + regulators + topics + search), Monitor (Today + briefings + recap + saved + alerts), Comply (inbox + obligations + assets + footprint + checkup), Author (documents + folders + templates + compose + crosswalk), Settings.
+- The "?" button in the nav opens the Help drawer with guided tours for: Footprint setup, Compose workspace, Crosswalk, Obligations + reviews.
+- Iris (this assistant) is mounted in the bottom-right on every page — switch tabs between "Ask the corpus" and "Help · Vantage".
+
+TIERS:
+- Free: corpus browse + 10 Iris queries/day.
+- Team: relevance feed, internal documents, obligations, audit-trail PDF, unlimited Iris.
+
+ANSWERING RULES:
+- Be concise and specific. Lead with the direct answer.
+- Reference the exact menu / button / page name the user needs to click.
+- When asked "how do I X?", explain the step-by-step path through the UI.
+- If something is gated behind a paid tier, say so.
+- If you don't know something product-specific, say so plainly — don't invent features.
+- Plain English. Define jargon on first use.
+- No markdown code fences, no bracketed citations (this mode doesn't use the corpus).`;
+
 export async function POST(request: Request) {
   let parsed: z.infer<typeof requestSchema>;
   try {
@@ -93,14 +135,16 @@ export async function POST(request: Request) {
     });
   }
 
-  // Normalise to {messages, scopedItemId} shape.
+  // Normalise to {messages, scopedItemId, mode} shape.
   let messages: { role: "user" | "assistant"; content: string }[];
   let scopedItemId: string | undefined;
+  let mode: "corpus" | "help" = "corpus";
   if ("query" in parsed) {
     messages = [{ role: "user", content: parsed.query }];
   } else {
     messages = parsed.messages;
     scopedItemId = parsed.scopedItemId;
+    mode = parsed.mode ?? "corpus";
   }
 
   // Latest user message drives retrieval.
@@ -154,6 +198,70 @@ export async function POST(request: Request) {
         `Free plan is capped at ${FREE_IRIS_DAILY_CAP} Iris queries per 24h. Upgrade to Pro at /regwatch/settings/billing for unlimited Q&A.`,
       );
     }
+  }
+
+  // Help mode skips the corpus retrieval entirely — answers come from
+  // the static product knowledge baked into SYSTEM_PROMPT_HELP.
+  if (mode === "help") {
+    const stream = new ReadableStream({
+      async start(controller) {
+        const encoder = new TextEncoder();
+        const sendEvt = (e: StreamEvent) =>
+          controller.enqueue(encoder.encode(sse(e)));
+        sendEvt({ type: "sources", sources: [] });
+        try {
+          const anthropic = getAnthropic();
+          const apiStream = anthropic.messages.stream({
+            model: IRIS_MODEL,
+            max_tokens: 1024,
+            system: [
+              {
+                type: "text",
+                text: SYSTEM_PROMPT_HELP,
+                cache_control: { type: "ephemeral" },
+              },
+            ],
+            messages,
+          });
+          for await (const event of apiStream) {
+            if (
+              event.type === "content_block_delta" &&
+              event.delta.type === "text_delta"
+            ) {
+              sendEvt({ type: "delta", text: event.delta.text });
+            }
+          }
+          sendEvt({ type: "done" });
+          if (irisUser) {
+            try {
+              const svc = createServiceClient();
+              await svc.from("audit_log").insert({
+                organization_id: organizationId,
+                user_id: irisUser.id,
+                action: "iris_query",
+                metadata: { tier, mode: "help" },
+              });
+            } catch (err) {
+              console.error("[regwatch] iris help audit_log insert failed:", err);
+            }
+          }
+        } catch (e) {
+          sendEvt({
+            type: "error",
+            message: (e as Error).message ?? "Iris help stream failed",
+          });
+        } finally {
+          controller.close();
+        }
+      },
+    });
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+      },
+    });
   }
 
   // Retrieve corpus excerpts. When scoped, hit the one item directly.

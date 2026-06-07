@@ -60,6 +60,7 @@ export function RegwatchChatWidget({
 }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<"corpus" | "help">("corpus");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
@@ -73,6 +74,21 @@ export function RegwatchChatWidget({
     scopedItemCitation ??
     (pathScope.kind === "regulation" ? `${pathScope.slug}` : null);
   const effectiveScopedId = scopedItemId; // explicit id only
+
+  // The HelpButton dispatches "vantage:iris-mode" with detail "help" when
+  // the user clicks "Open Iris in Help mode". Switch the widget, open it,
+  // and reset prior corpus messages so the user starts fresh in help mode.
+  useEffect(() => {
+    function onModeRequest(e: Event) {
+      const m = (e as CustomEvent<"corpus" | "help">).detail;
+      if (m !== "corpus" && m !== "help") return;
+      setMode(m);
+      setMessages([]);
+      setOpen(true);
+    }
+    window.addEventListener("vantage:iris-mode", onModeRequest);
+    return () => window.removeEventListener("vantage:iris-mode", onModeRequest);
+  }, []);
 
   // Auto-scroll to bottom on new messages.
   useEffect(() => {
@@ -101,6 +117,7 @@ export function RegwatchChatWidget({
         body: JSON.stringify({
           messages: nextMessages.map(({ role, content }) => ({ role, content })),
           scopedItemId: effectiveScopedId,
+          mode,
         }),
       });
       if (!res.body) throw new Error("No response body");
@@ -215,11 +232,13 @@ export function RegwatchChatWidget({
                 Iris
               </p>
               <p className="text-sm font-medium text-foreground">
-                {effectiveScopedId
+                {mode === "help"
+                  ? "Ask about how Vantage works"
+                  : effectiveScopedId
                   ? "Asking about this regulation"
                   : "Ask anything about the corpus"}
               </p>
-              {headerLabel && effectiveScopedId && (
+              {headerLabel && effectiveScopedId && mode === "corpus" && (
                 <p className="font-mono text-[10px] text-muted">{headerLabel}</p>
               )}
             </div>
@@ -234,11 +253,38 @@ export function RegwatchChatWidget({
             )}
           </header>
 
+          {/* Mode tabs — Corpus ↔ Help. Hidden on the regulation-scoped
+              widget instance to keep the focused mode clean. */}
+          {!effectiveScopedId && (
+            <div className="flex items-center gap-1 border-b border-card-border bg-background/60 px-2">
+              <ModeTab
+                active={mode === "corpus"}
+                onClick={() => {
+                  if (mode !== "corpus") {
+                    setMode("corpus");
+                    setMessages([]);
+                  }
+                }}
+                label="Ask the corpus"
+              />
+              <ModeTab
+                active={mode === "help"}
+                onClick={() => {
+                  if (mode !== "help") {
+                    setMode("help");
+                    setMessages([]);
+                  }
+                }}
+                label="Help · Vantage"
+              />
+            </div>
+          )}
+
           <div
             ref={scrollRef}
             className="flex-1 space-y-3 overflow-y-auto px-4 py-3"
           >
-            {messages.length === 0 && (
+            {messages.length === 0 && mode === "corpus" && (
               <div className="space-y-3">
                 <p className="text-xs text-muted">
                   Multi-turn Q&amp;A over the Vantage corpus, powered by
@@ -256,6 +302,32 @@ export function RegwatchChatWidget({
                   />
                   <SuggestionButton
                     text="Compare CBAM vs UK ETS coverage of cement."
+                    onPick={(t) => setInput(t)}
+                  />
+                </div>
+              </div>
+            )}
+            {messages.length === 0 && mode === "help" && (
+              <div className="space-y-3">
+                <p className="text-xs text-muted">
+                  Ask anything about how Vantage works — features, workflows,
+                  the review state machine, citations, tours.
+                </p>
+                <div className="grid gap-1.5">
+                  <SuggestionButton
+                    text="How do I cite a clause in my SOP?"
+                    onPick={(t) => setInput(t)}
+                  />
+                  <SuggestionButton
+                    text="What's the difference between Articles and Original tab?"
+                    onPick={(t) => setInput(t)}
+                  />
+                  <SuggestionButton
+                    text="How does the review workflow work?"
+                    onPick={(t) => setInput(t)}
+                  />
+                  <SuggestionButton
+                    text="How is the relevance feed scored?"
                     onPick={(t) => setInput(t)}
                   />
                 </div>
@@ -304,6 +376,30 @@ export function RegwatchChatWidget({
         </div>
       )}
     </>
+  );
+}
+
+function ModeTab({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`-mb-px border-b-2 px-3 py-2 text-[11px] font-medium transition ${
+        active
+          ? "border-brand-violet text-foreground"
+          : "border-transparent text-muted hover:text-foreground"
+      }`}
+    >
+      {label}
+    </button>
   );
 }
 
