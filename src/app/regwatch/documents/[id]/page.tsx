@@ -22,6 +22,11 @@ import { UploadFileForm } from "@/components/regwatch/documents/UploadFileForm";
 import { MoveDocumentMenu } from "@/components/regwatch/documents/MoveDocumentMenu";
 import { DocActionsClient } from "@/components/regwatch/documents/DocActionsClient";
 import { getReviewBundle } from "@/lib/regwatch/internal-document-review";
+import {
+  listCommentsForDoc,
+  countOpenComments,
+} from "@/lib/regwatch/internal-document-comments";
+import { findStaleCitations } from "@/lib/regwatch/internal-document-citations";
 import { listMyOrgMembers } from "@/lib/regwatch/members";
 import { getTemplate } from "@/lib/regwatch/templates/registry";
 
@@ -81,10 +86,17 @@ export default async function DocumentDetailPage({ params }: Props) {
   const canEdit =
     membership?.role === "owner" || membership?.role === "admin";
 
-  // Review bundle (assignments + signatures + audit events).
-  const reviewBundle = membership
-    ? await getReviewBundle(doc.id, membership.organizationId)
-    : null;
+  // Review bundle (assignments + signatures + audit events) + PR-6 surfaces
+  // (comments + stale-citation queue). All four read paths are parallel-safe.
+  const [reviewBundle, commentThreads, openCommentCount, staleCitations] =
+    await Promise.all([
+      membership
+        ? getReviewBundle(doc.id, membership.organizationId)
+        : Promise.resolve(null),
+      listCommentsForDoc(doc.id),
+      countOpenComments(doc.id),
+      findStaleCitations(bodyDoc),
+    ]);
 
   // Derive the current user's role-on-doc for action gating.
   let currentRoleOnDoc: "owner" | "reviewer" | "approver" | "admin" | null = null;
@@ -225,6 +237,9 @@ export default async function DocumentDetailPage({ params }: Props) {
                   assetLevel: l.assetLevel,
                   assetCode: l.assetCode,
                 }))}
+                commentThreads={commentThreads}
+                openCommentCount={openCommentCount}
+                staleCitations={staleCitations}
               />
             )}
 

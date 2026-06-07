@@ -9,12 +9,15 @@ import { LinkRegulationForm } from "./LinkRegulationForm";
 import { ClauseCrosswalkPanel } from "./ClauseCrosswalkPanel";
 import { LinkAssetsPanel } from "./LinkAssetsPanel";
 import { DocBodyPreviewCard } from "./editor/DocBodyPreviewCard";
+import { CommentSidebar } from "./comments/CommentSidebar";
 import type { InternalDocumentReviewState } from "@/lib/regwatch/internal-documents";
 import type {
   ReviewAssignment,
   SignatureRow,
   AuditEvent,
 } from "@/lib/regwatch/internal-document-review";
+import type { CommentThread } from "@/lib/regwatch/internal-document-comments";
+import type { StaleCitation } from "@/lib/regwatch/internal-document-citations";
 
 interface ExistingRegLink {
   id: string;
@@ -77,9 +80,20 @@ interface Props {
   allAssets: AssetNode[];
   levelLabels: Record<2 | 3 | 4 | 5 | 6, string>;
   currentAssetLinks: LinkedAsset[];
+
+  // Comments + citation freshness (PR-6)
+  commentThreads: CommentThread[];
+  openCommentCount: number;
+  staleCitations: StaleCitation[];
 }
 
-type DrawerKey = "workflow" | "regulations" | "clauses" | "assets" | null;
+type DrawerKey =
+  | "workflow"
+  | "regulations"
+  | "clauses"
+  | "assets"
+  | "comments"
+  | null;
 
 const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 2.0;
@@ -201,6 +215,21 @@ export function DocActionsClient(props: Props) {
             )}
           </button>
 
+          <button
+            type="button"
+            onClick={() => setDrawer("comments")}
+            className={secondaryBtn(drawer === "comments")}
+            title="Review comments — anchored threads, reply chains, resolve when addressed"
+          >
+            <span>💬</span>
+            <span>Comments</span>
+            {props.openCommentCount > 0 && (
+              <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 font-mono text-[10px] text-amber-300">
+                {props.openCommentCount}
+              </span>
+            )}
+          </button>
+
           {/* Spacer pushes preview controls to the right */}
           <div className="ml-auto flex flex-wrap items-center gap-2">
             {props.hasBody && (
@@ -295,6 +324,7 @@ export function DocActionsClient(props: Props) {
           signatures={props.signatures}
           auditEvents={props.auditEvents}
           orgMembers={props.orgMembers}
+          staleCitations={props.staleCitations}
         />
       </DocSlideOver>
 
@@ -343,6 +373,20 @@ export function DocActionsClient(props: Props) {
           levelLabels={props.levelLabels}
           currentLinks={props.currentAssetLinks}
           canEdit={props.isOrgAdmin}
+        />
+      </DocSlideOver>
+
+      <DocSlideOver
+        open={drawer === "comments"}
+        onClose={close}
+        title="Comments"
+        subtitle="Review threads anchored to paragraphs or clauses. Bodies are immutable once posted; resolution is mutable."
+      >
+        <CommentSidebar
+          docId={props.documentId}
+          threads={props.commentThreads}
+          currentUserId={props.currentUserId}
+          canResolve={props.isOrgAdmin}
         />
       </DocSlideOver>
     </>

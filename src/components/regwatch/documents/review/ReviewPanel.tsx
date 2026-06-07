@@ -18,9 +18,11 @@ import type {
   SignatureRow,
   AuditEvent,
 } from "@/lib/regwatch/internal-document-review";
+import type { StaleCitation } from "@/lib/regwatch/internal-document-citations";
 import { StatePill } from "./StatePill";
 import { ReasonForChangeDialog } from "./ReasonForChangeDialog";
 import { AssignReviewerDialog } from "./AssignReviewerDialog";
+import { CitationReviewQueue } from "./CitationReviewQueue";
 
 interface OrgMemberOption {
   userId: string;
@@ -41,6 +43,7 @@ interface Props {
   signatures: SignatureRow[];
   auditEvents: AuditEvent[];
   orgMembers: OrgMemberOption[];
+  staleCitations: StaleCitation[];
 }
 
 const EVENT_LABEL: Record<string, string> = {
@@ -81,6 +84,7 @@ export function ReviewPanel({
   signatures,
   auditEvents,
   orgMembers,
+  staleCitations,
 }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -166,6 +170,15 @@ export function ReviewPanel({
           >
             {showAudit ? "Hide audit trail" : "Audit trail"}
           </button>
+          <a
+            href={`/api/regwatch/documents/${docId}/audit-trail`}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-md border border-card-border bg-background px-2.5 py-1 text-[11px] text-muted hover:border-brand-blue hover:text-foreground"
+            title="Download a Part-11-formatted PDF — signature manifest + event log"
+          >
+            ↓ Export PDF
+          </a>
         </div>
       </div>
 
@@ -204,6 +217,11 @@ export function ReviewPanel({
           {error}
         </p>
       )}
+
+      {/* Citation review queue — stale-citation auditor surface */}
+      <div className="mb-3">
+        <CitationReviewQueue stale={staleCitations} />
+      </div>
 
       {/* Assignments + Owner */}
       <div className="grid gap-3 sm:grid-cols-2">
