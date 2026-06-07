@@ -84,10 +84,16 @@ const ITEM_LIST_COLUMNS = `
   regulator:regulators!inner ( slug, name, short_name )
 `;
 
+// source_language is loaded SEPARATELY in getRegulation() because the
+// 20260710 migration adds it — when that migration hasn't been applied
+// yet, including the column here would error the entire SELECT and the
+// detail page would 404 instead of rendering. The separate-load pattern
+// degrades gracefully: detail still renders, English tab just doesn't
+// appear until source_language is populated.
 const ITEM_DETAIL_COLUMNS = `
   id, citation, slug, title, summary, instrument_type, status,
   effective_date, proposed_date, consultation_closes_at, published_at,
-  last_changed_at, source_url, source_language, body_text, body_html, jurisdiction_code,
+  last_changed_at, source_url, body_text, body_html, jurisdiction_code,
   topics, substances_cas, naics_codes, isic_codes, nace_codes,
   regulator:regulators!inner (
     slug, name, short_name, jurisdiction_name, canonical_url, description
@@ -253,8 +259,25 @@ export async function getRegulation(
   }
   if (!data) return null;
 
+  // Best-effort load of source_language — column added in 20260710,
+  // may not exist in older deployments. Default to 'en' on any failure.
+  let sourceLanguage = "en";
+  try {
+    const { data: langRow } = await supabase
+      .from("regulatory_items")
+      .select("source_language")
+      .eq("id", data.id as string)
+      .maybeSingle();
+    if (langRow) {
+      const v = (langRow as { source_language?: string | null }).source_language;
+      if (typeof v === "string" && v.length > 0) sourceLanguage = v;
+    }
+  } catch {
+    // Column doesn't exist yet; keep default 'en'.
+  }
+
   const regulator = Array.isArray(data.regulator) ? data.regulator[0] : data.regulator;
-  return { ...data, regulator } as RegulationDetail;
+  return { ...data, regulator, source_language: sourceLanguage } as RegulationDetail;
 }
 
 /**
