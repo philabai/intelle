@@ -19,12 +19,9 @@ import { getMyOrganization } from "@/lib/regwatch/footprint";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
 import { UploadFileForm } from "@/components/regwatch/documents/UploadFileForm";
-import { LinkRegulationForm } from "@/components/regwatch/documents/LinkRegulationForm";
-import { ClauseCrosswalkPanel } from "@/components/regwatch/documents/ClauseCrosswalkPanel";
-import { LinkAssetsPanel } from "@/components/regwatch/documents/LinkAssetsPanel";
 import { MoveDocumentMenu } from "@/components/regwatch/documents/MoveDocumentMenu";
 import { DocBodyPreviewCard } from "@/components/regwatch/documents/editor/DocBodyPreviewCard";
-import { ReviewPanel } from "@/components/regwatch/documents/review/ReviewPanel";
+import { DocActionsClient } from "@/components/regwatch/documents/DocActionsClient";
 import { getReviewBundle } from "@/lib/regwatch/internal-document-review";
 import { listMyOrgMembers } from "@/lib/regwatch/members";
 import { getTemplate } from "@/lib/regwatch/templates/registry";
@@ -186,18 +183,9 @@ export default async function DocumentDetailPage({ params }: Props) {
 
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <section className="min-w-0 space-y-6">
-            <DocBodyPreviewCard
-              documentId={doc.id}
-              editHref={`/regwatch/documents/${doc.id}/edit`}
-              composeHref={`/regwatch/documents/${doc.id}/compose`}
-              canEdit={canEdit}
-              hasBody={!!bodyDoc}
-              hasFile={!!doc.filePath}
-            />
-
             {reviewBundle && membership && (
-              <ReviewPanel
-                docId={doc.id}
+              <DocActionsClient
+                documentId={doc.id}
                 reviewState={reviewBundle.reviewState}
                 ownerUserId={reviewBundle.ownerUserId}
                 ownerDisplayName={reviewBundle.ownerDisplayName}
@@ -208,21 +196,7 @@ export default async function DocumentDetailPage({ params }: Props) {
                 signatures={reviewBundle.signatures}
                 auditEvents={reviewBundle.auditEvents}
                 orgMembers={orgMembersForPanel}
-              />
-            )}
-
-            <div className="rounded-xl border border-card-border bg-card-bg/40 p-5">
-              <h2 className="mb-1 text-sm font-semibold text-foreground">
-                Linked regulations
-              </h2>
-              <p className="mb-3 text-xs text-muted">
-                Whole-regulation links — &ldquo;this document is in scope of
-                these regulations&rdquo;. The breadth view. For clause-level
-                traceability use the Clause crosswalk panel below.
-              </p>
-              <LinkRegulationForm
-                documentId={doc.id}
-                existingLinks={doc.links.map((l) => ({
+                regulationLinks={doc.links.map((l) => ({
                   id: l.id,
                   regulatoryItemId: l.regulatoryItemId,
                   regulationCitation: l.regulationCitation,
@@ -233,53 +207,6 @@ export default async function DocumentDetailPage({ params }: Props) {
                   linkRationale: l.linkRationale,
                   supersededAt: l.supersededAt,
                 }))}
-              />
-            </div>
-
-            <div className="rounded-xl border border-card-border bg-card-bg/40 p-5">
-              <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-sm font-semibold text-foreground">
-                  Clause linking
-                </h2>
-                <Link
-                  href={`/regwatch/documents/${doc.id}/crosswalk`}
-                  title="Open the side-by-side mapping workspace — your document on the left, regulation on the right"
-                  className="rounded-md border border-brand-teal/40 px-2.5 py-1 text-[11px] font-medium text-brand-teal hover:border-brand-teal hover:bg-brand-teal/10"
-                >
-                  Clause mapping workspace →
-                </Link>
-              </div>
-              <p className="mb-3 text-xs text-muted">
-                Section-to-clause traceability matrix. Map specific sections
-                of <em>your</em> document to specific clauses of external
-                regulations — the depth view auditors look for.
-              </p>
-              <ClauseCrosswalkPanel
-                existingLinks={doc.links.map((l) => ({
-                  id: l.id,
-                  regulatoryItemId: l.regulatoryItemId,
-                  regulationCitation: l.regulationCitation,
-                  regulationTitle: l.regulationTitle,
-                  jurisdictionCode: l.jurisdictionCode,
-                  clauseAnchor: l.clauseAnchor,
-                  internalClauseAnchor: l.internalClauseAnchor,
-                  linkRationale: l.linkRationale,
-                  supersededAt: l.supersededAt,
-                }))}
-              />
-            </div>
-
-            <div className="rounded-xl border border-card-border bg-card-bg/40 p-5">
-              <h2 className="mb-1 text-sm font-semibold text-foreground">
-                Linked assets
-              </h2>
-              <p className="mb-3 text-xs text-muted">
-                Pin this document to the {levelLabels[2]}s, {levelLabels[3]}s,
-                {" "}{levelLabels[4]}s, or {levelLabels[5]}s it applies to.
-                Linking at any level applies to every descendant.
-              </p>
-              <LinkAssetsPanel
-                documentId={doc.id}
                 allAssets={allAssets.map((a) => ({
                   id: a.id,
                   parentId: a.parentId,
@@ -288,16 +215,25 @@ export default async function DocumentDetailPage({ params }: Props) {
                   code: a.code,
                 }))}
                 levelLabels={levelLabels}
-                currentLinks={doc.assetLinks.map((l) => ({
+                currentAssetLinks={doc.assetLinks.map((l) => ({
                   linkId: l.id,
                   assetId: l.assetId,
                   assetName: l.assetName,
                   assetLevel: l.assetLevel,
                   assetCode: l.assetCode,
                 }))}
-                canEdit={canEdit || membership !== null}
+                composeHref={`/regwatch/documents/${doc.id}/compose`}
               />
-            </div>
+            )}
+
+            <DocBodyPreviewCard
+              documentId={doc.id}
+              editHref={`/regwatch/documents/${doc.id}/edit`}
+              composeHref={`/regwatch/documents/${doc.id}/compose`}
+              canEdit={canEdit}
+              hasBody={!!bodyDoc}
+              hasFile={!!doc.filePath}
+            />
 
             {doc.links.some((l) => l.supersededAt) && (
               <div className="rounded-xl border border-card-border bg-card-bg/20 p-5">
