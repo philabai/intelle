@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 /**
  * Client-only nav primitives. Kept in a separate file so the parent Nav
@@ -13,11 +13,21 @@ import { useEffect, useRef, useState } from "react";
  * Dropdown open behaviour:
  *   - Desktop (>=md): opens on HOVER (pointer over the trigger or panel
  *     keeps it open). Also opens on click for keyboard / touch users
- *     and stays sticky for 200ms after pointer leaves to allow diagonal
+ *     and stays sticky for ~220ms after pointer leaves to allow diagonal
  *     mouse paths to the menu items.
+ *   - When one dropdown opens, it broadcasts a window event so any other
+ *     open dropdown closes IMMEDIATELY (no two-open-at-once overlap when
+ *     sliding from one top menu to another).
+ *   - Active-row highlight inside a dropdown is EXACT-match on the
+ *     pathname — parent hubs (e.g. `/regwatch/comply`) don't co-light
+ *     with their children (e.g. `/regwatch/comply/inbox`). Only the
+ *     trigger button uses prefix-match for the "section is active"
+ *     visual.
  *   - Mobile (<md): the parent Nav renders a hamburger sheet (see
  *     MobileNavSheet below). NavDropdown isn't rendered on mobile.
  */
+
+const NAV_OPEN_EVENT = "vantage:navdropdown-open";
 
 export function NavLink({
   href,
@@ -59,17 +69,21 @@ export function NavDropdown({
   triggerClassName?: string;
 }) {
   const pathname = usePathname();
+  const ownId = useId();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Trigger lights up when ANY child route is the current page — uses
+  // prefix-match so /regwatch/comply trigger highlights on
+  // /regwatch/comply/inbox. Individual menu rows use exact-match below.
   const sectionActive = items.some(
     (it) => pathname === it.href || pathname.startsWith(it.href + "/"),
   );
 
   function scheduleClose() {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setOpen(false), 220);
+    closeTimer.current = setTimeout(() => setOpen(false), 180);
   }
   function cancelClose() {
     if (closeTimer.current) {
@@ -77,6 +91,29 @@ export function NavDropdown({
       closeTimer.current = null;
     }
   }
+  function openMe() {
+    cancelClose();
+    setOpen(true);
+    // Tell every other NavDropdown to close right now — prevents two
+    // menus overlapping when the user slides between top items.
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent<string>(NAV_OPEN_EVENT, { detail: ownId }),
+      );
+    }
+  }
+
+  // Listen for siblings opening; close myself instantly when they do.
+  useEffect(() => {
+    function onSiblingOpen(e: Event) {
+      const detail = (e as CustomEvent<string>).detail;
+      if (detail === ownId) return;
+      cancelClose();
+      setOpen(false);
+    }
+    window.addEventListener(NAV_OPEN_EVENT, onSiblingOpen);
+    return () => window.removeEventListener(NAV_OPEN_EVENT, onSiblingOpen);
+  }, [ownId]);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -104,19 +141,16 @@ export function NavDropdown({
     <div
       ref={ref}
       className="relative"
-      onMouseEnter={() => {
-        cancelClose();
-        setOpen(true);
-      }}
+      onMouseEnter={openMe}
       onMouseLeave={scheduleClose}
     >
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
-        onFocus={() => {
-          cancelClose();
-          setOpen(true);
+        onClick={() => {
+          if (open) setOpen(false);
+          else openMe();
         }}
+        onFocus={openMe}
         aria-haspopup="menu"
         aria-expanded={open}
         className={
@@ -147,8 +181,10 @@ export function NavDropdown({
         >
           <ul className="py-1">
             {items.map((it) => {
-              const active =
-                pathname === it.href || pathname.startsWith(it.href + "/");
+              // EXACT match only — parent hub rows (/regwatch/comply)
+              // don't stay highlighted when a child (/regwatch/comply/inbox)
+              // is the active page.
+              const active = pathname === it.href;
               return (
                 <li key={it.href}>
                   <Link
@@ -293,8 +329,9 @@ function MobileCluster({
       {open && (
         <ul className="border-t border-card-border">
           {cluster.items.map((it) => {
-            const active =
-              pathname === it.href || pathname.startsWith(it.href + "/");
+            // Exact-match parity with the desktop dropdown — prevents a
+            // parent hub row staying highlighted alongside its child.
+            const active = pathname === it.href;
             return (
               <li key={it.href}>
                 <Link
