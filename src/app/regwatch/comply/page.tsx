@@ -98,6 +98,23 @@ export default async function ComplyHub() {
             </Link>
           ))}
         </div>
+
+        <section className="mt-10 rounded-xl border border-card-border bg-card-bg/40 p-5">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted">
+            Admin tools
+          </p>
+          <Link
+            href="/regwatch/admin/connectors"
+            className="mt-2 inline-flex items-center gap-2 text-sm text-brand-teal hover:underline"
+          >
+            ⚙ Connector runner →
+          </Link>
+          <p className="mt-1 text-[11px] text-muted">
+            Manually trigger any publisher connector. Useful right after
+            adding a new publisher (e.g. SASO) — fills the corpus without
+            waiting for the nightly cron. Owner/admin only.
+          </p>
+        </section>
       </div>
     </RegwatchAppShell>
   );
