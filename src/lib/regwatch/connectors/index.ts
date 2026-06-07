@@ -4,6 +4,7 @@ import { EUR_LEX_CONNECTORS } from "./eur-lex";
 import { GOVUK_CONNECTORS } from "./govuk-scraper";
 import { IMO_CONNECTORS } from "./imo-scraper";
 import { PHASE_1X_CONNECTORS } from "./esma-iea-nsta-adnoc";
+import { SASO_CONNECTORS } from "./saso-scraper";
 import {
   attachEcfrHierarchy,
   FEDERAL_REGISTER_ECFR_SCOPES,
@@ -36,6 +37,7 @@ export const REGWATCH_CONNECTORS: Connector[] = [
   ...GOVUK_CONNECTORS,
   ...IMO_CONNECTORS,
   ...PHASE_1X_CONNECTORS,
+  ...SASO_CONNECTORS,
 ];
 
 export function findConnector(id: string): Connector | undefined {
