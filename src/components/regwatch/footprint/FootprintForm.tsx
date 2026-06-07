@@ -105,21 +105,25 @@ export function FootprintForm({
         </Section>
       )}
 
-      <Section
-        step={showRole ? 2 : 1}
-        title="Geography"
-        description="Pick every country whose regulations might apply to your operations."
-      >
-        <GeographyPicker value={geographies} onChange={setGeographies} />
-      </Section>
+      <div data-tour="footprint-geographies">
+        <Section
+          step={showRole ? 2 : 1}
+          title="Geography"
+          description="Pick every country whose regulations might apply to your operations."
+        >
+          <GeographyPicker value={geographies} onChange={setGeographies} />
+        </Section>
+      </div>
 
-      <Section
-        step={showRole ? 3 : 2}
-        title="Activities (NAICS)"
-        description="Which industrial activities does your org operate? Use the filter to narrow the list."
-      >
-        <ActivitiesPicker value={naics} onChange={setNaics} />
-      </Section>
+      <div data-tour="footprint-naics">
+        <Section
+          step={showRole ? 3 : 2}
+          title="Activities (NAICS)"
+          description="Which industrial activities does your org operate? Use the filter to narrow the list."
+        >
+          <ActivitiesPicker value={naics} onChange={setNaics} />
+        </Section>
+      </div>
 
       <Section
         step={showRole ? 4 : 3}
@@ -137,13 +141,15 @@ export function FootprintForm({
         <RegulatorsPicker value={regs} options={regulators} onChange={setRegs} />
       </Section>
 
-      <Section
-        step={showRole ? 6 : 5}
-        title="Monitored topics"
-        description="Topic domains worth tracking — used to score relevance once Phase 1.2 matching is live."
-      >
-        <TopicsPicker value={topics} onChange={setTopics} />
-      </Section>
+      <div data-tour="footprint-topics">
+        <Section
+          step={showRole ? 6 : 5}
+          title="Monitored topics"
+          description="Topic domains worth tracking — used to score relevance once Phase 1.2 matching is live."
+        >
+          <TopicsPicker value={topics} onChange={setTopics} />
+        </Section>
+      </div>
 
       <div className="sticky bottom-0 z-10 flex flex-col gap-3 border-t border-card-border bg-background/95 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
         <div className="text-xs text-muted">
@@ -161,6 +167,7 @@ export function FootprintForm({
         <button
           type="submit"
           disabled={pending}
+          data-tour="footprint-save"
           className="rounded-md bg-brand-blue px-5 py-2 text-sm font-medium text-white hover:bg-brand-blue/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending ? "Saving…" : submitLabel}
