@@ -173,12 +173,19 @@ function makeConnector(cfg: ConnectorConfig): Connector {
       const nowIso = ctx.now.toISOString();
 
       for (const [celex, title] of byCelex) {
-        const citation = `CELEX:${celex}`;
+        // Emit human-readable citation + slug instead of the raw
+        // CELEX form. Matches the seed convention (20260605):
+        //   "Regulation (EU) 2024/1787"  /  "eu-reg-2024-1787"
+        // so the URL doesn't have 'celex' in it and the citation
+        // chip in the UI reads naturally.
+        const parsed = parseCelex(celex);
+        const citation = parsed ? humanCitation(parsed) : `EU Act ${celex}`;
+        const slug = parsed ? humanSlug(parsed) : citationSlug(`eu-${celex}`);
         const sourceUrl = sourceUrlFromCelex(celex);
         const item: NormalisedItem = {
           regulator_slug: cfg.regulator_slug,
           citation,
-          slug: citationSlug(citation),
+          slug,
           title,
           instrument_type: instrumentTypeFromCelex(celex),
           status: "in-force",
@@ -198,6 +205,52 @@ function makeConnector(cfg: ConnectorConfig): Connector {
       return result;
     },
   };
+}
+
+interface ParsedCelex {
+  year: string;
+  typeChar: string;
+  number: number;
+}
+
+function parseCelex(celex: string): ParsedCelex | null {
+  const m = celex.match(/^3(\d{4})([A-Z])0*(\d+)/);
+  if (!m) return null;
+  return { year: m[1], typeChar: m[2].toUpperCase(), number: parseInt(m[3], 10) };
+}
+
+function typeLabel(typeChar: string): string {
+  return (
+    {
+      R: "Regulation",
+      L: "Directive",
+      D: "Decision",
+      H: "Recommendation",
+      C: "Communication",
+      X: "Notice",
+    }[typeChar] ?? "EU Act"
+  );
+}
+
+function typeSlugSegment(typeChar: string): string {
+  return (
+    {
+      R: "reg",
+      L: "dir",
+      D: "dec",
+      H: "rec",
+      C: "com",
+      X: "notice",
+    }[typeChar] ?? "act"
+  );
+}
+
+function humanCitation(p: ParsedCelex): string {
+  return `${typeLabel(p.typeChar)} (EU) ${p.year}/${p.number}`;
+}
+
+function humanSlug(p: ParsedCelex): string {
+  return `eu-${typeSlugSegment(p.typeChar)}-${p.year}-${p.number}`;
 }
 
 function stripTags(s: string): string {
