@@ -37,21 +37,47 @@ export async function saveSearch(input: unknown): Promise<ActionResult> {
   if (!user) return { ok: false, error: "Not authenticated" };
 
   const membership = await getMyMembership();
+  const nowIso = new Date().toISOString();
+  const queryNormalised = parsed.data.query.trim();
 
-  const { data, error } = await supabase
+  // Manual upsert — check first, then insert OR update by id. Avoids
+  // the PostgREST onConflict shape (which broke when the original
+  // unique index used lower(query)). Also race-safe for a single user
+  // because the constraint still rejects duplicates.
+  const { data: existing } = await supabase
     .from("saved_searches")
-    .upsert(
-      {
-        user_id: user.id,
-        organization_id: membership?.organizationId ?? null,
-        query: parsed.data.query,
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("query", queryNormalised)
+    .maybeSingle();
+
+  if (existing) {
+    const { error: updErr } = await supabase
+      .from("saved_searches")
+      .update({
         label: parsed.data.label ?? null,
         filters: parsed.data.filters ?? {},
         result_count_at_save: parsed.data.resultCountAtSave ?? null,
-        last_run_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id,query" },
-    )
+        last_run_at: nowIso,
+      })
+      .eq("id", existing.id);
+    if (updErr) return { ok: false, error: updErr.message };
+    revalidatePath("/regwatch/saved");
+    revalidatePath("/regwatch/search");
+    return { ok: true, savedSearchId: existing.id as string };
+  }
+
+  const { data, error } = await supabase
+    .from("saved_searches")
+    .insert({
+      user_id: user.id,
+      organization_id: membership?.organizationId ?? null,
+      query: queryNormalised,
+      label: parsed.data.label ?? null,
+      filters: parsed.data.filters ?? {},
+      result_count_at_save: parsed.data.resultCountAtSave ?? null,
+      last_run_at: nowIso,
+    })
     .select("id")
     .single();
   if (error || !data) {

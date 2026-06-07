@@ -64,6 +64,16 @@ export default async function SearchPage({ searchParams }: Props) {
           <Suspense fallback={null}>
             <SearchInput initialQuery={query} />
           </Suspense>
+          {query && (
+            <div className="mt-3 flex items-center justify-end">
+              <SaveSearchButton
+                query={query}
+                resultCount={items.length}
+                alreadySaved={alreadySaved}
+                authed={!!user}
+              />
+            </div>
+          )}
         </div>
 
         {!query ? (
@@ -84,18 +94,10 @@ export default async function SearchPage({ searchParams }: Props) {
             </Suspense>
 
             <section>
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted">
-                  {items.length} hybrid {items.length === 1 ? "match" : "matches"} in the
-                  corpus
-                </p>
-                <SaveSearchButton
-                  query={query}
-                  resultCount={items.length}
-                  alreadySaved={alreadySaved}
-                  authed={!!user}
-                />
-              </div>
+              <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
+                {items.length} hybrid {items.length === 1 ? "match" : "matches"} in the
+                corpus
+              </p>
               {items.length === 0 ? (
                 <EmptyState
                   title="No corpus rows matched your keywords."
