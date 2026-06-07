@@ -13,6 +13,8 @@ import { StatusChip } from "@/components/regwatch/StatusChip";
 import { InstrumentTypeBadge } from "@/components/regwatch/InstrumentTypeBadge";
 import { RegulationRow } from "@/components/regwatch/RegulationRow";
 import { RegwatchChatWidget } from "@/components/regwatch/chat/RegwatchChatWidget";
+import { RegulationTabsClient } from "@/components/regwatch/regulation/RegulationTabsClient";
+import { getOriginalCaptureStatus } from "@/lib/regwatch/regulation-original-actions";
 
 interface Props {
   params: Promise<{ jurisdiction: string; slug: string }>;
@@ -41,9 +43,11 @@ export default async function RegulationDetailPage({ params }: Props) {
       data: { user },
     },
     related,
+    originalStatus,
   ] = await Promise.all([
     supabase.auth.getUser(),
     getRelatedRegulations(item.jurisdiction_code, item.id, item.topics, 5),
+    getOriginalCaptureStatus(item.id),
   ]);
 
   const changedAgo = formatDistanceToNowStrict(new Date(item.last_changed_at), {
@@ -105,42 +109,52 @@ export default async function RegulationDetailPage({ params }: Props) {
         </header>
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_320px]">
-          {/* ---- Reader ---- */}
-          <article className="prose prose-invert max-w-none">
-            <LifecycleStrip item={item} />
+          {/* ---- Reader (dual-view tabs) ---- */}
+          <div className="min-w-0">
+            <RegulationTabsClient
+              regId={item.id}
+              sourceUrl={item.source_url}
+              hasCached={originalStatus.hasCached}
+              articlesContent={
+                <article className="prose prose-invert max-w-none">
+                  <LifecycleStrip item={item} />
 
-            {item.body_html ? (
-              <div
-                className="mt-8 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: item.body_html }}
-              />
-            ) : item.body_text ? (
-              <p className="mt-8 whitespace-pre-line">{item.body_text}</p>
-            ) : (
-              <p className="mt-8 text-muted">
-                Full body unavailable in the seed corpus. Phase 1.x ingest will populate
-                the body for items crawled directly from the regulator source.
-              </p>
-            )}
+                  {item.body_html ? (
+                    <div
+                      className="mt-8 leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: item.body_html }}
+                    />
+                  ) : item.body_text ? (
+                    <p className="mt-8 whitespace-pre-line">{item.body_text}</p>
+                  ) : (
+                    <p className="mt-8 text-muted">
+                      No extracted body yet. Switch to the{" "}
+                      <strong className="text-foreground">Original</strong>{" "}
+                      tab to view the source PDF / HTML directly.
+                    </p>
+                  )}
 
-            <div className="mt-12 rounded-lg border border-card-border bg-card-bg p-4 text-sm">
-              <p className="text-xs font-medium uppercase tracking-wider text-muted">
-                Source
-              </p>
-              <a
-                href={item.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-1 block break-all text-brand-teal hover:underline"
-              >
-                {item.source_url}
-              </a>
-              <p className="mt-2 text-xs text-muted">
-                Canonical document at the regulator. Always cite this URL — not the
-                Vantage detail page — in compliance evidence.
-              </p>
-            </div>
-          </article>
+                  <div className="mt-12 rounded-lg border border-card-border bg-card-bg p-4 text-sm">
+                    <p className="text-xs font-medium uppercase tracking-wider text-muted">
+                      Source
+                    </p>
+                    <a
+                      href={item.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 block break-all text-brand-teal hover:underline"
+                    >
+                      {item.source_url}
+                    </a>
+                    <p className="mt-2 text-xs text-muted">
+                      Canonical document at the regulator. Always cite this URL — not the
+                      Vantage detail page — in compliance evidence.
+                    </p>
+                  </div>
+                </article>
+              }
+            />
+          </div>
 
           {/* ---- Metadata sidebar ---- */}
           <aside className="space-y-6 lg:sticky lg:top-20 lg:self-start">
