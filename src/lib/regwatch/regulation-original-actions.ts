@@ -50,11 +50,14 @@ export async function getRegulationOriginalDocument(
 
   const svc = createServiceClient();
 
+  // 1a. Load the regulation row with the minimum columns guaranteed
+  //     by 20260602. We attempt to load the original-capture columns
+  //     in a second query — if they don't exist yet (20260702 not
+  //     applied), we skip caching and fall back to fetching the
+  //     source URL straight from the publisher.
   const { data: row, error: loadErr } = await svc
     .from("regulatory_items")
-    .select(
-      "id, source_url, source_mime, last_changed_at, original_storage_path, original_mime, original_captured_at, original_capture_error, regulator_id, regulators!inner(disallow_original_capture)",
-    )
+    .select("id, source_url, last_changed_at, regulator_id")
     .eq("id", parsed.data.regId)
     .maybeSingle();
 
@@ -62,16 +65,55 @@ export async function getRegulationOriginalDocument(
     return { ok: false, error: loadErr?.message ?? "Regulation not found" };
   }
 
-  // Supabase returns the joined regulators as an array even with !inner.
-  const regulatorRows = row.regulators as
-    | { disallow_original_capture: boolean | null }[]
-    | { disallow_original_capture: boolean | null }
-    | null;
-  const regulator = Array.isArray(regulatorRows)
-    ? regulatorRows[0] ?? null
-    : regulatorRows;
+  // 1b. Best-effort load of the original-capture state.
+  let cachedPath: string | null = null;
+  let cachedMime: string | null = null;
+  let cachedCapturedAt: string | null = null;
+  let captureColumnsExist = true;
+  try {
+    const { data: capRow, error: capErr } = await svc
+      .from("regulatory_items")
+      .select(
+        "original_storage_path, original_mime, original_captured_at",
+      )
+      .eq("id", parsed.data.regId)
+      .maybeSingle();
+    if (capErr) {
+      captureColumnsExist = false;
+    } else if (capRow) {
+      cachedPath =
+        (capRow as { original_storage_path: string | null })
+          .original_storage_path ?? null;
+      cachedMime =
+        (capRow as { original_mime: string | null }).original_mime ?? null;
+      cachedCapturedAt =
+        (capRow as { original_captured_at: string | null })
+          .original_captured_at ?? null;
+    }
+  } catch {
+    captureColumnsExist = false;
+  }
 
-  if (regulator?.disallow_original_capture) {
+  // 2. Best-effort disallow-flag lookup. If the column doesn't exist
+  //    yet, treat as allowed (default behaviour). If it does exist and
+  //    is true, refuse.
+  let disallow = false;
+  try {
+    const { data: regRow, error: regErr } = await svc
+      .from("regulators")
+      .select("disallow_original_capture")
+      .eq("id", row.regulator_id as string)
+      .maybeSingle();
+    if (!regErr && regRow) {
+      disallow =
+        (regRow as { disallow_original_capture: boolean | null })
+          .disallow_original_capture === true;
+    }
+  } catch {
+    // Column doesn't exist yet — assume allowed.
+  }
+
+  if (disallow) {
     return {
       ok: true,
       reason: "disallowed",
@@ -84,8 +126,6 @@ export async function getRegulationOriginalDocument(
     return { ok: false, reason: "no_source", error: "No source URL on record" };
   }
 
-  const cachedPath = row.original_storage_path as string | null;
-  const cachedCapturedAt = row.original_captured_at as string | null;
   const lastChangedAt = row.last_changed_at as string | null;
 
   const cacheValid =
@@ -100,7 +140,7 @@ export async function getRegulationOriginalDocument(
       return {
         ok: true,
         signedUrl: signed,
-        mime: (row.original_mime as string | null) ?? undefined,
+        mime: cachedMime ?? undefined,
         sourceUrl,
         captured: true,
         fromCache: true,
@@ -112,19 +152,36 @@ export async function getRegulationOriginalDocument(
   // Fetch + cache.
   const captured = await captureSource(sourceUrl);
   if (!captured.ok) {
-    await svc
-      .from("regulatory_items")
-      .update({
-        original_capture_error: captured.error,
-        original_captured_at: new Date().toISOString(),
-      })
-      .eq("id", parsed.data.regId);
+    if (captureColumnsExist) {
+      await svc
+        .from("regulatory_items")
+        .update({
+          original_capture_error: captured.error,
+          original_captured_at: new Date().toISOString(),
+        })
+        .eq("id", parsed.data.regId);
+    }
     return {
       ok: true,
       reason: captured.reason ?? "fetch_failed",
       error: captured.error,
       sourceUrl,
       captured: false,
+    };
+  }
+
+  // If the capture-columns aren't installed yet (20260702 not applied),
+  // we can't persist the cache. Return the source URL directly so the
+  // viewer can at least render it via the iframe / external link path,
+  // and the translation action can re-fetch + extract on the fly.
+  if (!captureColumnsExist) {
+    return {
+      ok: true,
+      signedUrl: sourceUrl,
+      mime: captured.mime,
+      sourceUrl,
+      captured: false,
+      fromCache: false,
     };
   }
 
@@ -143,11 +200,16 @@ export async function getRegulationOriginalDocument(
       cacheControl: "3600",
     });
   if (upErr) {
+    // Storage bucket might not exist yet (20260702's regwatch-public
+    // bucket creation didn't run). Fall back to direct URL so the
+    // viewer + translation still work without the cache.
     return {
-      ok: false,
-      reason: "fetch_failed",
-      error: `Storage upload failed: ${upErr.message}`,
+      ok: true,
+      signedUrl: sourceUrl,
+      mime: captured.mime,
       sourceUrl,
+      captured: false,
+      fromCache: false,
     };
   }
 
