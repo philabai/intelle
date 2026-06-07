@@ -78,6 +78,45 @@ export interface Connector {
   regulator_slug: string;
   /** Discovers + fetches items published in the last `ctx.lookbackDays` days. */
   run(ctx: ConnectorRunContext): Promise<ConnectorResult>;
+  /**
+   * Optional. Returns the publisher's table-of-contents as a tree of
+   * nodes, used by the regwatch-hierarchy cron to populate
+   * regwatch.regulatory_sections — the data behind the eCFR-style
+   * browse view. Connectors without a real ToC should omit this; the
+   * browse UI falls back to a flat "All regulations from {publisher}"
+   * pseudo-root for those publishers.
+   */
+  buildHierarchy?(ctx: ConnectorRunContext): Promise<HierarchyNode[]>;
+}
+
+/**
+ * One node in a publisher's regulatory table-of-contents. Children
+ * nest recursively. The `path` is the canonical ltree coordinate used
+ * as the dedupe key in regwatch.regulatory_sections — keep it stable
+ * across reruns (don't use auto-incrementing IDs).
+ *
+ *   path: 'us.cfr.title_1'             level: 1  identifier: 'Title 1'
+ *   path: 'us.cfr.title_1.chapter_i'   level: 2  identifier: 'Chapter I'
+ *
+ * Leaf nodes that represent the actual cited regulation set `citation`
+ * to the matching `regulatory_items.citation` value so the browse leaf
+ * can link to the regulation detail page.
+ */
+export interface HierarchyNode {
+  path: string;
+  level: number;
+  level_label: string;
+  identifier: string;
+  title: string | null;
+  citation: string | null;
+  source_url: string | null;
+  children: HierarchyNode[];
+}
+
+export interface HierarchySyncResult {
+  source: string;
+  upserted: number;
+  errors: string[];
 }
 
 export function citationSlug(citation: string): string {

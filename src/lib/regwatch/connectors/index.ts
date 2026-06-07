@@ -4,6 +4,18 @@ import { EUR_LEX_CONNECTORS } from "./eur-lex";
 import { GOVUK_CONNECTORS } from "./govuk-scraper";
 import { IMO_CONNECTORS } from "./imo-scraper";
 import { PHASE_1X_CONNECTORS } from "./esma-iea-nsta-adnoc";
+import {
+  attachEcfrHierarchy,
+  FEDERAL_REGISTER_ECFR_SCOPES,
+} from "./ecfr-hierarchy";
+
+// Attach the eCFR hierarchy adapter to each Federal Register connector so
+// the regwatch-hierarchy cron can build the corresponding Title/Chapter
+// slice without touching the connector files themselves.
+for (const c of FEDERAL_REGISTER_CONNECTORS) {
+  const scope = FEDERAL_REGISTER_ECFR_SCOPES[c.id];
+  if (scope) attachEcfrHierarchy(c, scope);
+}
 
 /**
  * Registry of every connector RegWatch knows about. The crawl orchestrator
