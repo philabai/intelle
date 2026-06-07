@@ -100,6 +100,20 @@ export function IrisAnswer({ query }: { query: string }) {
   }, [query]);
 
   const rendered = renderCitations(text, sources);
+  // Citations the model actually used inline. Sources that came back from
+  // the retriever but didn't get cited surface in the "Also reviewed" row
+  // below so the user can still see + open them.
+  const usedIndices = new Set<number>();
+  if (done) {
+    const matches = text.matchAll(/\[(\d+)\]/g);
+    for (const m of matches) {
+      const n = parseInt(m[1], 10);
+      if (n >= 1 && n <= sources.length) usedIndices.add(n);
+    }
+  }
+  const unused = sources
+    .map((s, i) => ({ n: i + 1, s }))
+    .filter((x) => !usedIndices.has(x.n));
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
@@ -128,6 +142,26 @@ export function IrisAnswer({ query }: { query: string }) {
               <p className="whitespace-pre-wrap">{rendered}</p>
             )}
           </div>
+          {done && unused.length > 0 && (
+            <div className="mt-4 border-t border-brand-violet/20 pt-3">
+              <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted">
+                Also reviewed (not cited inline)
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {unused.map(({ n, s }) => (
+                  <a
+                    key={s.id}
+                    href={`/regwatch/r/${s.jurisdiction_code.toLowerCase()}/${s.slug}`}
+                    title={`${s.regulator} — ${s.title}`}
+                    className="inline-flex items-center gap-1 rounded border border-card-border bg-card-bg/60 px-1.5 py-0.5 text-[11px] text-muted hover:border-brand-teal hover:text-brand-teal"
+                  >
+                    <span className="font-mono text-brand-teal">[{n}]</span>
+                    <span className="max-w-[160px] truncate">{s.citation}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         <p className="mt-3 text-[11px] text-muted">
           AI-generated synthesis. Verify every claim against the cited source before

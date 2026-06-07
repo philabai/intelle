@@ -1,9 +1,11 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { listRegulationsHybrid } from "@/lib/regwatch/queries";
+import { isSavedQuery } from "@/lib/regwatch/saved-searches";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { SearchInput } from "@/components/regwatch/search/SearchInput";
 import { IrisAnswer } from "@/components/regwatch/search/IrisAnswer";
+import { SaveSearchButton } from "@/components/regwatch/search/SaveSearchButton";
 import { RegulationRow } from "@/components/regwatch/RegulationRow";
 import { EmptyState } from "@/components/regwatch/EmptyState";
 
@@ -32,7 +34,12 @@ export default async function SearchPage({ searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const items = query ? await listRegulationsHybrid(query, 25) : [];
+  const [items, alreadySaved] = query
+    ? await Promise.all([
+        listRegulationsHybrid(query, 25),
+        isSavedQuery(query),
+      ])
+    : [[], false];
 
   return (
     <RegwatchAppShell authed={!!user}>
@@ -77,10 +84,18 @@ export default async function SearchPage({ searchParams }: Props) {
             </Suspense>
 
             <section>
-              <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
-                {items.length} hybrid {items.length === 1 ? "match" : "matches"} in the
-                corpus
-              </p>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted">
+                  {items.length} hybrid {items.length === 1 ? "match" : "matches"} in the
+                  corpus
+                </p>
+                <SaveSearchButton
+                  query={query}
+                  resultCount={items.length}
+                  alreadySaved={alreadySaved}
+                  authed={!!user}
+                />
+              </div>
               {items.length === 0 ? (
                 <EmptyState
                   title="No corpus rows matched your keywords."
