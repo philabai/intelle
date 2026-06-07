@@ -246,17 +246,26 @@ export async function getRegulation(
   slug: string,
 ): Promise<RegulationDetail | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  // NOT maybeSingle(): the EUR-Lex connector runs as multiple
+  // topic-filtered variants (eurlex-dg-clima, eurlex-dg-ener) and the
+  // same regulation often surfaces under both, producing two rows with
+  // different regulator_ids but the same (jurisdiction_code, slug).
+  // maybeSingle() errors on >1 match and the page would 404.
+  // limit(1) + order picks the most-recently-changed copy deterministically.
+  // Dedupe at write time is a separate cleanup migration.
+  const { data: rows, error } = await supabase
     .from("regulatory_items")
     .select(ITEM_DETAIL_COLUMNS)
     .eq("jurisdiction_code", jurisdiction.toUpperCase())
     .eq("slug", slug)
-    .maybeSingle();
+    .order("last_changed_at", { ascending: false })
+    .limit(1);
 
   if (error) {
     console.error("[regwatch] getRegulation error:", error);
     return null;
   }
+  const data = rows?.[0];
   if (!data) return null;
 
   // Best-effort load of source_language — column added in 20260710,
