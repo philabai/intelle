@@ -181,8 +181,8 @@ export function RegulationTranslationPane({ regId, sourceLang }: Props) {
       )}
 
       {state.status === "completed" && state.text && (
-        <article className="rounded-xl border border-card-border bg-card-bg/40 p-5">
-          <div className="mb-3 flex items-center justify-between gap-2 border-b border-card-border pb-2">
+        <article className="overflow-hidden rounded-xl border border-card-border bg-card-bg/40">
+          <header className="flex items-center justify-between gap-2 border-b border-card-border bg-card-bg/60 px-5 py-3">
             <p className="text-[11px] text-muted">
               Machine translation · {sourceLangLabel} → English
               {state.translatedAt && (
@@ -194,9 +194,19 @@ export function RegulationTranslationPane({ regId, sourceLang }: Props) {
                 </>
               )}
             </p>
-          </div>
-          <div className="prose prose-invert max-w-none whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-            {state.text}
+            <p className="font-mono text-[10px] text-muted">
+              {state.text.length.toLocaleString()} chars
+            </p>
+          </header>
+          {/* Own scroll container so the translation doesn't push the
+              page beyond a sane viewport — matches the Original tab's
+              max-h-[80vh] PDF viewer chrome. The disclaimer banner
+              stays OUTSIDE this scroller so it remains visible no
+              matter how far the user scrolls into the translation. */}
+          <div className="max-h-[80vh] overflow-auto bg-[#0a0e1a] px-5 py-5">
+            <div className="prose prose-invert max-w-none whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+              {state.text}
+            </div>
           </div>
         </article>
       )}
