@@ -20,7 +20,6 @@ import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
 import { UploadFileForm } from "@/components/regwatch/documents/UploadFileForm";
 import { MoveDocumentMenu } from "@/components/regwatch/documents/MoveDocumentMenu";
-import { DocBodyPreviewCard } from "@/components/regwatch/documents/editor/DocBodyPreviewCard";
 import { DocActionsClient } from "@/components/regwatch/documents/DocActionsClient";
 import { getReviewBundle } from "@/lib/regwatch/internal-document-review";
 import { listMyOrgMembers } from "@/lib/regwatch/members";
@@ -186,6 +185,10 @@ export default async function DocumentDetailPage({ params }: Props) {
             {reviewBundle && membership && (
               <DocActionsClient
                 documentId={doc.id}
+                hasBody={!!bodyDoc}
+                hasFile={!!doc.filePath}
+                editHref={`/regwatch/documents/${doc.id}/edit`}
+                composeHref={`/regwatch/documents/${doc.id}/compose`}
                 reviewState={reviewBundle.reviewState}
                 ownerUserId={reviewBundle.ownerUserId}
                 ownerDisplayName={reviewBundle.ownerDisplayName}
@@ -222,18 +225,8 @@ export default async function DocumentDetailPage({ params }: Props) {
                   assetLevel: l.assetLevel,
                   assetCode: l.assetCode,
                 }))}
-                composeHref={`/regwatch/documents/${doc.id}/compose`}
               />
             )}
-
-            <DocBodyPreviewCard
-              documentId={doc.id}
-              editHref={`/regwatch/documents/${doc.id}/edit`}
-              composeHref={`/regwatch/documents/${doc.id}/compose`}
-              canEdit={canEdit}
-              hasBody={!!bodyDoc}
-              hasFile={!!doc.filePath}
-            />
 
             {doc.links.some((l) => l.supersededAt) && (
               <div className="rounded-xl border border-card-border bg-card-bg/20 p-5">

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { DocSlideOver } from "./DocSlideOver";
 import { ReviewPanel } from "./review/ReviewPanel";
 import { StatePill } from "./review/StatePill";
 import { LinkRegulationForm } from "./LinkRegulationForm";
 import { ClauseCrosswalkPanel } from "./ClauseCrosswalkPanel";
 import { LinkAssetsPanel } from "./LinkAssetsPanel";
-import Link from "next/link";
+import { DocBodyPreviewCard } from "./editor/DocBodyPreviewCard";
 import type { InternalDocumentReviewState } from "@/lib/regwatch/internal-documents";
 import type {
   ReviewAssignment,
@@ -52,6 +53,10 @@ interface OrgMemberOption {
 
 interface Props {
   documentId: string;
+  hasBody: boolean;
+  hasFile: boolean;
+  editHref: string;
+  composeHref: string;
 
   // Review workflow
   reviewState: InternalDocumentReviewState;
@@ -65,20 +70,33 @@ interface Props {
   auditEvents: AuditEvent[];
   orgMembers: OrgMemberOption[];
 
-  // Linked regulations
+  // Linked regulations + clause linking (same row set, filtered inside the panel)
   regulationLinks: ExistingRegLink[];
-
-  // Clause linking — uses same regulation-links shape, filtered to crosswalk rows
-  // (both anchors set) inside ClauseCrosswalkPanel.
 
   // Linked assets
   allAssets: AssetNode[];
   levelLabels: Record<2 | 3 | 4 | 5 | 6, string>;
   currentAssetLinks: LinkedAsset[];
-  composeHref: string;
 }
 
 type DrawerKey = "workflow" | "regulations" | "clauses" | "assets" | null;
+
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 2.0;
+const ZOOM_STEP = 0.1;
+
+/* Single base style for every action-bar button so the bar reads as one
+ * design language. Active = highlighted with the blue brand border.
+ * Variants only differ by an icon glyph or — for the primary Edit — a
+ * filled background. */
+const BTN_BASE =
+  "inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium";
+const BTN_SECONDARY =
+  "border-card-border bg-background text-foreground/90 hover:border-brand-blue hover:text-foreground";
+const BTN_SECONDARY_ACTIVE =
+  "border-brand-blue bg-brand-blue/15 text-foreground";
+const BTN_PRIMARY =
+  "border-brand-blue bg-brand-blue text-white hover:bg-brand-blue/90";
 
 const REVIEW_TONE: Record<InternalDocumentReviewState, string> = {
   draft: "bg-card-bg/60 text-muted border-card-border",
@@ -88,20 +106,9 @@ const REVIEW_TONE: Record<InternalDocumentReviewState, string> = {
   superseded: "bg-card-bg/40 text-muted border-card-border",
 };
 
-/**
- * Action bar at the top of the doc detail page. Four buttons → four
- * slide-over drawers:
- *   - 📋 Workflow      (ReviewPanel: state pill, actions, sig manifest, audit)
- *   - 🔗 Regulations   (LinkRegulationForm: doc-level scope links)
- *   - ⛓ Clause linking (ClauseCrosswalkPanel: section ↔ clause map)
- *   - 📍 Assets        (LinkAssetsPanel: asset hierarchy pinning)
- *
- * Replaces the four-stacked-cards layout the page had previously. Counts
- * + review state are inline on each button so the at-a-glance status is
- * preserved without forcing the user into a drawer.
- */
 export function DocActionsClient(props: Props) {
   const [drawer, setDrawer] = useState<DrawerKey>(null);
+  const [zoom, setZoom] = useState(1);
 
   const activeRegLinks = props.regulationLinks.filter((l) => !l.supersededAt);
   const crosswalkCount = activeRegLinks.filter(
@@ -113,94 +120,163 @@ export function DocActionsClient(props: Props) {
       !l.clauseAnchor?.trim() || !l.internalClauseAnchor?.trim(),
   ).length;
   const assetCount = props.currentAssetLinks.length;
+  const zoomPct = Math.round(zoom * 100);
 
   function close() {
     setDrawer(null);
   }
+  function zoomOut() {
+    setZoom((z) => Math.max(ZOOM_MIN, Math.round((z - ZOOM_STEP) * 100) / 100));
+  }
+  function zoomIn() {
+    setZoom((z) => Math.min(ZOOM_MAX, Math.round((z + ZOOM_STEP) * 100) / 100));
+  }
 
-  function btnClass(active: boolean) {
-    return `inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs ${
-      active
-        ? "border-brand-blue bg-brand-blue/15 text-foreground"
-        : "border-card-border bg-background text-foreground/90 hover:border-brand-blue hover:text-foreground"
-    }`;
+  function secondaryBtn(active: boolean): string {
+    return `${BTN_BASE} ${active ? BTN_SECONDARY_ACTIVE : BTN_SECONDARY}`;
   }
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-card-border bg-card-bg/40 p-3">
-        <button
-          type="button"
-          onClick={() => setDrawer("workflow")}
-          className={btnClass(drawer === "workflow")}
-          title="Open the review workflow drawer — state, assignments, signatures, audit trail"
-        >
-          <span>📋</span>
-          <span className="font-medium">Workflow</span>
-          <span
-            className={`rounded-full border px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider ${REVIEW_TONE[props.reviewState]}`}
+      <div className="rounded-xl border border-card-border bg-card-bg/40 p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Drawer triggers */}
+          <button
+            type="button"
+            onClick={() => setDrawer("workflow")}
+            className={secondaryBtn(drawer === "workflow")}
+            title="Open the review workflow drawer — state, assignments, signatures, audit trail"
           >
-            {props.reviewState.replace("_", " ")}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setDrawer("regulations")}
-          className={btnClass(drawer === "regulations")}
-          title="Doc-level regulation links — 'this doc is in scope of these regulations'"
-        >
-          <span>🔗</span>
-          <span className="font-medium">Linked regulations</span>
-          {docLevelRegCount > 0 && (
-            <span className="rounded-full bg-brand-teal/15 px-1.5 py-0.5 font-mono text-[10px] text-brand-teal">
-              {docLevelRegCount}
+            <span>📋</span>
+            <span>Workflow</span>
+            <span
+              className={`rounded-full border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${REVIEW_TONE[props.reviewState]}`}
+            >
+              {props.reviewState.replace("_", " ")}
             </span>
-          )}
-        </button>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setDrawer("clauses")}
-          className={btnClass(drawer === "clauses")}
-          title="Clause linking — section ↔ clause traceability matrix"
-        >
-          <span>⛓</span>
-          <span className="font-medium">Clause linking</span>
-          {crosswalkCount > 0 && (
-            <span className="rounded-full bg-brand-teal/15 px-1.5 py-0.5 font-mono text-[10px] text-brand-teal">
-              {crosswalkCount}
-            </span>
-          )}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setDrawer("assets")}
-          className={btnClass(drawer === "assets")}
-          title="Pin this doc to sites / areas / asset classes / assets in the hierarchy"
-        >
-          <span>📍</span>
-          <span className="font-medium">Linked assets</span>
-          {assetCount > 0 && (
-            <span className="rounded-full bg-brand-blue/15 px-1.5 py-0.5 font-mono text-[10px] text-brand-blue">
-              {assetCount}
-            </span>
-          )}
-        </button>
-
-        <div className="ml-auto">
-          <Link
-            href={props.composeHref}
-            className="inline-flex items-center gap-1.5 rounded-md border border-brand-teal/40 px-3 py-1.5 text-xs font-medium text-brand-teal hover:border-brand-teal hover:bg-brand-teal/10"
-            title="Open the side-by-side workspace — regulation on the left, editor on the right. Click 'Cite this clause' to insert a pinned citation pill."
+          <button
+            type="button"
+            onClick={() => setDrawer("regulations")}
+            className={secondaryBtn(drawer === "regulations")}
+            title="Doc-level regulation links — 'this doc is in scope of these regulations'"
           >
-            🔗 Citations
-          </Link>
+            <span>🔗</span>
+            <span>Linked regulations</span>
+            {docLevelRegCount > 0 && (
+              <span className="rounded-full bg-brand-teal/15 px-1.5 py-0.5 font-mono text-[10px] text-brand-teal">
+                {docLevelRegCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setDrawer("clauses")}
+            className={secondaryBtn(drawer === "clauses")}
+            title="Clause linking — section ↔ clause traceability matrix"
+          >
+            <span>⛓</span>
+            <span>Clause linking</span>
+            {crosswalkCount > 0 && (
+              <span className="rounded-full bg-brand-teal/15 px-1.5 py-0.5 font-mono text-[10px] text-brand-teal">
+                {crosswalkCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setDrawer("assets")}
+            className={secondaryBtn(drawer === "assets")}
+            title="Pin this doc to sites / areas / asset classes / assets in the hierarchy"
+          >
+            <span>📍</span>
+            <span>Linked assets</span>
+            {assetCount > 0 && (
+              <span className="rounded-full bg-brand-blue/15 px-1.5 py-0.5 font-mono text-[10px] text-brand-blue">
+                {assetCount}
+              </span>
+            )}
+          </button>
+
+          {/* Spacer pushes preview controls to the right */}
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            {props.hasBody && (
+              <div
+                className={`${BTN_BASE} ${BTN_SECONDARY} gap-0 overflow-hidden p-0`}
+                title="Zoom in / out on the preview"
+              >
+                <button
+                  type="button"
+                  onClick={zoomOut}
+                  disabled={zoom <= ZOOM_MIN}
+                  title="Zoom out"
+                  className="px-2 py-1.5 hover:bg-card-bg disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setZoom(1)}
+                  title="Reset zoom to 100%"
+                  className="border-x border-card-border px-2 py-1.5 font-mono text-[11px] hover:bg-card-bg"
+                >
+                  {zoomPct}%
+                </button>
+                <button
+                  type="button"
+                  onClick={zoomIn}
+                  disabled={zoom >= ZOOM_MAX}
+                  title="Zoom in"
+                  className="px-2 py-1.5 hover:bg-card-bg disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  +
+                </button>
+              </div>
+            )}
+
+            <Link
+              href={props.composeHref}
+              className={`${BTN_BASE} ${BTN_SECONDARY}`}
+              title="Open the side-by-side workspace — regulation on the left, editor on the right. Click 'Cite this clause' to insert a pinned citation pill."
+            >
+              <span>🔗</span>
+              <span>Citations</span>
+            </Link>
+
+            {props.isOrgAdmin && (
+              <Link
+                href={props.editHref}
+                className={`${BTN_BASE} ${BTN_PRIMARY}`}
+                title={
+                  props.hasBody
+                    ? "Open the single-pane editor"
+                    : "Start writing — opens the editor"
+                }
+              >
+                <span>{props.hasBody ? "✎" : "✎"}</span>
+                <span>{props.hasBody ? "Edit" : "Start writing"}</span>
+              </Link>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Workflow drawer */}
+      {/* Body */}
+      <div className="mt-6">
+        <DocBodyPreviewCard
+          documentId={props.documentId}
+          hasBody={props.hasBody}
+          hasFile={props.hasFile}
+          zoom={zoom}
+          canEdit={props.isOrgAdmin}
+          editHref={props.editHref}
+        />
+      </div>
+
+      {/* Drawers */}
       <DocSlideOver
         open={drawer === "workflow"}
         onClose={close}
@@ -222,7 +298,6 @@ export function DocActionsClient(props: Props) {
         />
       </DocSlideOver>
 
-      {/* Linked regulations drawer */}
       <DocSlideOver
         open={drawer === "regulations"}
         onClose={close}
@@ -235,22 +310,21 @@ export function DocActionsClient(props: Props) {
         />
       </DocSlideOver>
 
-      {/* Clause linking drawer */}
       <DocSlideOver
         open={drawer === "clauses"}
         onClose={close}
         title="Clause linking"
         subtitle="Section-to-clause traceability matrix — the depth view auditors look for."
       >
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between gap-2">
           <p className="text-xs text-muted">
             Map specific sections of <em>your</em> document to specific clauses
             of external regulations.
           </p>
           <Link
             href={`/regwatch/documents/${props.documentId}/crosswalk`}
+            className={`${BTN_BASE} ${BTN_SECONDARY} shrink-0`}
             title="Open the side-by-side clause mapping workspace"
-            className="rounded-md border border-brand-teal/40 px-2.5 py-1 text-[11px] font-medium text-brand-teal hover:border-brand-teal hover:bg-brand-teal/10"
           >
             Mapping workspace →
           </Link>
@@ -258,7 +332,6 @@ export function DocActionsClient(props: Props) {
         <ClauseCrosswalkPanel existingLinks={activeRegLinks} />
       </DocSlideOver>
 
-      {/* Linked assets drawer */}
       <DocSlideOver
         open={drawer === "assets"}
         onClose={close}
@@ -276,5 +349,4 @@ export function DocActionsClient(props: Props) {
   );
 }
 
-// re-export StatePill so legacy importers still resolve
 export { StatePill };
