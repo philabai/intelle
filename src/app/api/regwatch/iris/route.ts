@@ -62,7 +62,7 @@ function sse(event: StreamEvent): string {
   return `data: ${JSON.stringify(event)}\n\n`;
 }
 
-const SYSTEM_PROMPT_BASE = `You are Iris, the AI concierge for intelle.io RegWatch — a regulatory monitoring product for compliance, EHS, legal, ESG, and government-affairs teams.
+const SYSTEM_PROMPT_BASE = `You are Iris, the AI concierge for Vantage by intelle.io — a regulatory monitoring product for compliance, EHS, legal, ESG, and government-affairs teams.
 
 ANSWERING RULES:
 1. Ground every substantive claim in the corpus excerpts you are given below. Reference each claim with a [n] token where n is the 1-based index of the source.

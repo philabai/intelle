@@ -2,7 +2,7 @@ import Link from "next/link";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { RegwatchSignupForm } from "./SignupForm";
 
-export const metadata = { title: "Create your RegWatch account" };
+export const metadata = { title: "Create your Vantage account" };
 
 export default function RegwatchSignupPage() {
   return (

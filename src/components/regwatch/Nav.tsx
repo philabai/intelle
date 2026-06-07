@@ -4,7 +4,7 @@ import { NotificationBell } from "./NotificationBell";
 import { NavDropdown, NavLink } from "./NavInteractive";
 
 /**
- * RegWatch's internal app nav. Server Component — NotificationBell needs
+ * Vantage's internal app nav. Server Component — NotificationBell needs
  * to be server-renderable because its dependency chain reaches
  * supabase/server which uses next/headers. The interactive dropdowns +
  * active-link styling live in NavInteractive.tsx ("use client") so the

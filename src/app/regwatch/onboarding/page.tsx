@@ -8,7 +8,7 @@ import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { FootprintForm } from "@/components/regwatch/footprint/FootprintForm";
 import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
 
-export const metadata = { title: "Welcome to RegWatch" };
+export const metadata = { title: "Welcome to Vantage" };
 export const dynamic = "force-dynamic";
 
 export default async function OnboardingPage() {
@@ -68,7 +68,7 @@ export default async function OnboardingPage() {
             Configure your operations footprint
           </h1>
           <p className="mt-3 max-w-2xl text-sm text-muted">
-            Tells RegWatch which jurisdictions, activities, and topics to prioritise. Pick
+            Tells Vantage which jurisdictions, activities, and topics to prioritise. Pick
             as much or as little as you want — you can always refine it later from{" "}
             <Link
               href="/regwatch/settings/footprint"

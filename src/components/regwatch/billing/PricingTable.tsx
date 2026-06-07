@@ -123,7 +123,7 @@ function TierCard({
           )
         ) : isEnterprise ? (
           <a
-            href="mailto:hello@intelle.io?subject=RegWatch Enterprise"
+            href="mailto:hello@intelle.io?subject=Vantage Enterprise"
             className="inline-block w-full rounded-md border border-card-border bg-card-bg px-4 py-2 text-center text-sm text-foreground hover:border-brand-teal"
           >
             Talk to sales

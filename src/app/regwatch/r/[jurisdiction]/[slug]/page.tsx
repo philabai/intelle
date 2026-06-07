@@ -137,7 +137,7 @@ export default async function RegulationDetailPage({ params }: Props) {
               </a>
               <p className="mt-2 text-xs text-muted">
                 Canonical document at the regulator. Always cite this URL — not the
-                RegWatch detail page — in compliance evidence.
+                Vantage detail page — in compliance evidence.
               </p>
             </div>
           </article>

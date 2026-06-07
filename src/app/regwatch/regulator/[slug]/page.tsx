@@ -30,10 +30,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const regulator = await getRegulatorBySlug(slug);
   if (!regulator) return { title: "Regulator not found" };
   return {
-    title: `${regulator.name} — RegWatch`,
+    title: `${regulator.name} — Vantage`,
     description:
       regulator.description ??
-      `Latest regulatory items from ${regulator.name} (${regulator.jurisdiction_name}), monitored by intelle.io RegWatch.`,
+      `Latest regulatory items from ${regulator.name} (${regulator.jurisdiction_name}), monitored by Vantage by intelle.io.`,
   };
 }
 

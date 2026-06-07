@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { RegwatchLoginForm } from "./LoginForm";
 
-export const metadata = { title: "Sign in to RegWatch" };
+export const metadata = { title: "Sign in to Vantage" };
 
 export default function RegwatchLoginPage() {
   return (
@@ -19,7 +19,7 @@ export default function RegwatchLoginPage() {
           <RegwatchLoginForm />
         </Suspense>
         <p className="text-sm text-muted">
-          New to RegWatch?{" "}
+          New to Vantage?{" "}
           <Link href="/regwatch/signup" className="text-brand-teal hover:underline">
             Create an account
           </Link>

@@ -5,9 +5,9 @@ import { TOPIC_TAXONOMY, topicLabel } from "@/lib/regwatch/taxonomy";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 
 export const metadata: Metadata = {
-  title: "Topics — RegWatch",
+  title: "Topics — Vantage",
   description:
-    "Every topic intelle.io RegWatch tracks — emissions, methane, PFAS, CBAM, process safety, and more — with live counts.",
+    "Every topic Vantage by intelle.io tracks — emissions, methane, PFAS, CBAM, process safety, and more — with live counts.",
 };
 export const dynamic = "force-dynamic";
 

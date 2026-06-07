@@ -241,7 +241,7 @@ export function RegwatchChatWidget({
             {messages.length === 0 && (
               <div className="space-y-3">
                 <p className="text-xs text-muted">
-                  Multi-turn Q&amp;A over the RegWatch corpus, powered by
+                  Multi-turn Q&amp;A over the Vantage corpus, powered by
                   Claude Haiku. Every answer is grounded in citations to
                   specific items — never made up.
                 </p>

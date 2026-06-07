@@ -3,7 +3,7 @@ import { RegwatchChatWidget } from "./chat/RegwatchChatWidget";
 
 /**
  * Shell wrapping every /regwatch/* surface. The main intelle.io SiteNav is
- * deliberately NOT rendered here — RegWatch surfaces feel like a focused
+ * deliberately NOT rendered here — Vantage surfaces feel like a focused
  * sub-app with their own four-affordance nav. The header keeps an
  * "← intelle.io" link so users can navigate back to the marketing site.
  *
@@ -27,7 +27,7 @@ export function RegwatchAppShell({
       <RegwatchNav authed={authed} />
       <main className="flex-1">{children}</main>
       <footer className="border-t border-card-border bg-card-bg/40 py-6 text-center text-xs text-muted">
-        intelle.io RegWatch — pull-model regulatory monitoring · SparkLab LLC · Dubai
+        Vantage by intelle.io — pull-model regulatory monitoring · SparkLab LLC · Dubai
       </footer>
       {!suppressChatWidget && <RegwatchChatWidget />}
     </div>

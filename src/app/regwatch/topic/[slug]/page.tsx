@@ -24,8 +24,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const label = topicLabel(slug);
   return {
-    title: `${label} — RegWatch topic`,
-    description: `Latest regulations covering ${label} across every jurisdiction monitored by intelle.io RegWatch.`,
+    title: `${label} — Vantage topic`,
+    description: `Latest regulations covering ${label} across every jurisdiction monitored by Vantage by intelle.io.`,
   };
 }
 
@@ -68,7 +68,7 @@ export default async function TopicPage({ params }: Props) {
             {label}
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-muted">
-            Every regulation in the RegWatch corpus tagged with{" "}
+            Every regulation in the Vantage corpus tagged with{" "}
             <span className="font-mono text-foreground">{slug}</span>. Items are
             tagged by the enrichment cron once they land, plus any topic
             attribution the connector pre-populates.

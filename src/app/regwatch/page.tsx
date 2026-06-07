@@ -5,9 +5,9 @@ import { listRegulators } from "@/lib/regwatch/queries";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 
 export const metadata: Metadata = {
-  title: "RegWatch — Regulatory monitoring with footprint-aware impact",
+  title: "Vantage — Regulatory monitoring with footprint-aware impact",
   description:
-    "Pull-model dashboard SaaS that monitors regulatory changes across global energy, environmental, industrial, and chemical regulators — with footprint-aware impact analysis.",
+    "Vantage by intelle.io — pull-model dashboard SaaS that monitors regulatory changes across global energy, environmental, industrial, and chemical regulators with footprint-aware impact analysis.",
 };
 export const dynamic = "force-dynamic";
 
@@ -54,7 +54,7 @@ export default async function RegwatchLanding() {
             <span className="gradient-text">your operations.</span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-muted">
-            RegWatch monitors {totalRegulators} regulators across global energy,
+            Vantage monitors {totalRegulators} regulators across global energy,
             environmental, industrial, and chemical jurisdictions, scores each
             change against your operations footprint, and delivers a 4-section
             impact briefing — citation-grounded, mobile-readable, no sales call

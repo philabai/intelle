@@ -7,7 +7,7 @@ import { RegulatorCard } from "@/components/regwatch/RegulatorCard";
 export const metadata = {
   title: "Regulators",
   description:
-    "Every regulator intelle.io RegWatch monitors — grouped by region with item counts and recent activity.",
+    "Every regulator Vantage by intelle.io monitors — grouped by region with item counts and recent activity.",
 };
 export const dynamic = "force-dynamic";
 
@@ -53,7 +53,7 @@ export default async function RegulatorsIndexPage() {
             regulations
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-muted">
-            Every regulator RegWatch monitors today, grouped by region. Click a
+            Every regulator Vantage monitors today, grouped by region. Click a
             card for the full per-regulator feed of items. Public corpus — no
             signup required to read.
           </p>

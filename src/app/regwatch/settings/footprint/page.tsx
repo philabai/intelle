@@ -77,7 +77,7 @@ export default async function FootprintSettingsPage() {
               Footprint configurator
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted">
-              Tells RegWatch which jurisdictions, activities, substances, regulators, and
+              Tells Vantage which jurisdictions, activities, substances, regulators, and
               topics to score against. Save as often as you like — changes propagate to
               your Relevance Feed automatically.
             </p>
