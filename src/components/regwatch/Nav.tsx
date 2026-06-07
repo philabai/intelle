@@ -11,38 +11,62 @@ import { HelpButton } from "./help/HelpButton";
  * active-link styling live in NavInteractive.tsx ("use client") so the
  * server tree stays clean.
  *
- * Compressed into grouped dropdowns:
- *   Discover ▾   (Browse, Regulators, Topics)
- *   Search                 standalone
- *   My Feed                standalone
- *   Workspace ▾  (Assets, Obligations, Documents, Footprint)
- *   Account ▾    (Account, Billing, Members, Alerts, Footprint)
+ * Consolidated to four top-level surfaces (PR-F):
+ *   Discover ▾ — public: Browse (hierarchy tree), Regulators, Topics, Search
+ *   Monitor  ▾ — authed: Today, Recap, Saved, Alerts, Briefings
+ *   Comply   ▾ — authed: Reviewer Inbox, Obligations, Assets, Footprint, Checkup
+ *   Author   ▾ — authed: Internal documents
+ *
+ * Account drops the duplicate Footprint + Alerts entries; those moved to
+ * Comply / Monitor respectively where they semantically belong.
  */
 export function RegwatchNav({ authed }: { authed: boolean }) {
   return (
     <nav className="glass-nav sticky top-0 z-40">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <RegwatchLogo href={authed ? "/regwatch/feed" : "/regwatch"} />
+        <RegwatchLogo
+          href={authed ? "/regwatch/monitor/today" : "/regwatch/discover"}
+        />
 
         <div className="hidden items-center gap-1 md:flex">
           <NavDropdown
             label="Discover"
             items={[
-              { href: "/regwatch/browse", label: "Browse the corpus" },
+              { href: "/regwatch/discover", label: "Discover landing" },
+              { href: "/regwatch/discover/browse/us", label: "Browse (hierarchy)" },
               { href: "/regwatch/regulators", label: "Regulators" },
               { href: "/regwatch/topics", label: "Topics" },
+              { href: "/regwatch/search", label: "Search" },
             ]}
           />
-          <NavLink href="/regwatch/search">Search</NavLink>
-          {authed && <NavLink href="/regwatch/feed">My Feed</NavLink>}
           {authed && (
             <NavDropdown
-              label="Workspace"
+              label="Monitor"
               items={[
-                { href: "/regwatch/assets", label: "Assets" },
+                { href: "/regwatch/monitor/today", label: "Today (relevance feed)" },
+                { href: "/regwatch/recap", label: "Weekly recap" },
+                { href: "/regwatch/saved", label: "Saved" },
+                { href: "/regwatch/settings/alerts", label: "Alerts" },
+              ]}
+            />
+          )}
+          {authed && (
+            <NavDropdown
+              label="Comply"
+              items={[
+                { href: "/regwatch/comply", label: "Comply hub" },
+                { href: "/regwatch/comply/inbox", label: "Reviewer Inbox" },
                 { href: "/regwatch/obligations", label: "Obligations" },
-                { href: "/regwatch/documents", label: "Internal documents" },
+                { href: "/regwatch/assets", label: "Asset hierarchy" },
                 { href: "/regwatch/settings/footprint", label: "Footprint" },
+              ]}
+            />
+          )}
+          {authed && (
+            <NavDropdown
+              label="Author"
+              items={[
+                { href: "/regwatch/documents", label: "Internal documents" },
               ]}
             />
           )}
@@ -66,8 +90,6 @@ export function RegwatchNav({ authed }: { authed: boolean }) {
                 { href: "/regwatch/settings/account", label: "Account" },
                 { href: "/regwatch/settings/billing", label: "Billing" },
                 { href: "/regwatch/settings/members", label: "Members" },
-                { href: "/regwatch/settings/alerts", label: "Alerts" },
-                { href: "/regwatch/settings/footprint", label: "Footprint" },
               ]}
             />
           ) : (
