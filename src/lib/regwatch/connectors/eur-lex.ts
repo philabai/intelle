@@ -53,6 +53,34 @@ function instrumentTypeFromCelex(celex: string): InstrumentType {
   }
 }
 
+/**
+ * Build the canonical EUR-Lex source URL from a CELEX number.
+ *
+ * Uses the ELI (European Legislation Identifier) form
+ *   https://eur-lex.europa.eu/eli/reg/2024/1787
+ * for Regulations / Directives / Decisions when the CELEX type maps
+ * to a known ELI subtype, because ELI is the W3C-recommended stable
+ * identifier and bypasses the older `/legal-content/?uri=CELEX:...`
+ * redirect layer that occasionally returns a "Document not found"
+ * page. For CELEX types that don't have an ELI mapping
+ * (Communications, Notices, Treaties, etc.) we keep the legacy
+ * format so the URL still resolves.
+ */
+function sourceUrlFromCelex(celex: string): string {
+  if (celex.length < 7) {
+    return `https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:${celex}`;
+  }
+  const year = celex.slice(1, 5);
+  const typeChar = celex.charAt(5).toUpperCase();
+  const number = celex.slice(6).replace(/^0+/, "") || "0";
+  const eliSubtype =
+    typeChar === "R" ? "reg" : typeChar === "L" ? "dir" : typeChar === "D" ? "dec" : null;
+  if (eliSubtype) {
+    return `https://eur-lex.europa.eu/eli/${eliSubtype}/${year}/${number}`;
+  }
+  return `https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:${celex}`;
+}
+
 interface ConnectorConfig {
   id: string;
   label: string;
@@ -146,7 +174,7 @@ function makeConnector(cfg: ConnectorConfig): Connector {
 
       for (const [celex, title] of byCelex) {
         const citation = `CELEX:${celex}`;
-        const sourceUrl = `https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:${celex}`;
+        const sourceUrl = sourceUrlFromCelex(celex);
         const item: NormalisedItem = {
           regulator_slug: cfg.regulator_slug,
           citation,
