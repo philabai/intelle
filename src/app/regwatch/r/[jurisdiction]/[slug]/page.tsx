@@ -115,6 +115,7 @@ export default async function RegulationDetailPage({ params }: Props) {
               regId={item.id}
               sourceUrl={item.source_url}
               hasCached={originalStatus.hasCached}
+              sourceLanguage={item.source_language ?? "en"}
               articlesContent={
                 <article className="prose prose-invert max-w-none">
                   <LifecycleStrip item={item} />

@@ -12,3 +12,11 @@ export const ENRICHMENT_MODEL = "claude-haiku-4-5-20251001";
  * enough for native PDF + multi-image vision + tool-use structured output.
  */
 export const EVIDENCE_ANALYSIS_MODEL = "claude-sonnet-4-6";
+
+/**
+ * Arabic / French / etc. → English translation for regulation source
+ * PDFs. Sonnet picked over Haiku for technical-text accuracy on
+ * regulatory + legal terminology; Opus would be overkill for ~5-15k
+ * char SASO documents.
+ */
+export const TRANSLATION_MODEL = "claude-sonnet-4-6";

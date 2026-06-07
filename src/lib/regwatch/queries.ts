@@ -49,6 +49,7 @@ export interface RegulationDetail extends RegulationListItem {
   consultation_closes_at: string | null;
   published_at: string;
   source_url: string;
+  source_language: string;
   body_text: string | null;
   body_html: string | null;
   substances_cas: string[];
@@ -86,7 +87,7 @@ const ITEM_LIST_COLUMNS = `
 const ITEM_DETAIL_COLUMNS = `
   id, citation, slug, title, summary, instrument_type, status,
   effective_date, proposed_date, consultation_closes_at, published_at,
-  last_changed_at, source_url, body_text, body_html, jurisdiction_code,
+  last_changed_at, source_url, source_language, body_text, body_html, jurisdiction_code,
   topics, substances_cas, naics_codes, isic_codes, nace_codes,
   regulator:regulators!inner (
     slug, name, short_name, jurisdiction_name, canonical_url, description
