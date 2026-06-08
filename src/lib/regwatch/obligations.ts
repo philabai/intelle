@@ -1,4 +1,5 @@
 import { createClient } from "./supabase/server";
+import { createServiceClient } from "./supabase/service";
 
 /**
  * compliance_obligations read-side. Mutations live in obligations-actions.ts.
@@ -47,6 +48,8 @@ export interface ObligationListItem {
   complianceStatus: ObligationComplianceStatus;
   reviewStatus: ObligationReviewStatus;
   assignedReviewerUserId: string | null;
+  /** Resolved display name of the assigned reviewer, null if unassigned. */
+  assignedReviewerName: string | null;
   reviewDueAt: string | null;
   complianceAttestedUntil: string | null;
   adminSignedOffAt: string | null;
@@ -94,9 +97,13 @@ type ListRow = {
   regulation: { citation: string; title: string } | { citation: string; title: string }[] | null;
 };
 
-function mapListRow(row: ListRow): ObligationListItem {
+function mapListRow(
+  row: ListRow,
+  nameByUserId?: Map<string, string>,
+): ObligationListItem {
   const asset = Array.isArray(row.asset) ? row.asset[0] : row.asset;
   const reg = Array.isArray(row.regulation) ? row.regulation[0] : row.regulation;
+  const assigneeId = row.assigned_reviewer_user_id;
   return {
     id: row.id,
     organizationId: row.organization_id,
@@ -110,7 +117,10 @@ function mapListRow(row: ListRow): ObligationListItem {
     severity: row.severity,
     complianceStatus: row.compliance_status,
     reviewStatus: row.review_status,
-    assignedReviewerUserId: row.assigned_reviewer_user_id,
+    assignedReviewerUserId: assigneeId,
+    assignedReviewerName: assigneeId
+      ? (nameByUserId?.get(assigneeId) ?? null)
+      : null,
     reviewDueAt: row.review_due_at,
     complianceAttestedUntil: row.compliance_attested_until,
     adminSignedOffAt: row.admin_signed_off_at,
@@ -161,7 +171,41 @@ export async function listObligations(
     console.error("[regwatch] listObligations:", error);
     return [];
   }
-  return (data ?? []).map((r) => mapListRow(r as unknown as ListRow));
+  const rows = (data ?? []) as unknown as ListRow[];
+
+  // Batch-resolve assignee display names. Goes through the service
+  // client because auth.users isn't directly queryable by RLS-bound
+  // clients. One round-trip per distinct user id; capped per row count
+  // already on this query, so the worst case is ~200 lookups.
+  const assigneeIds = Array.from(
+    new Set(
+      rows
+        .map((r) => r.assigned_reviewer_user_id)
+        .filter((v): v is string => typeof v === "string" && v.length > 0),
+    ),
+  );
+  const nameByUserId = new Map<string, string>();
+  if (assigneeIds.length > 0) {
+    const svc = createServiceClient();
+    await Promise.all(
+      assigneeIds.map(async (uid) => {
+        try {
+          const { data: u } = await svc.auth.admin.getUserById(uid);
+          if (u?.user) {
+            const display =
+              (u.user.user_metadata?.full_name as string | undefined) ??
+              u.user.email ??
+              uid.slice(0, 8);
+            nameByUserId.set(uid, display);
+          }
+        } catch {
+          // best-effort — leave unset, UI falls back to "Assigned"
+        }
+      }),
+    );
+  }
+
+  return rows.map((r) => mapListRow(r, nameByUserId));
 }
 
 export async function getObligation(id: string): Promise<ObligationDetail | null> {

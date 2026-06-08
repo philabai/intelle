@@ -138,7 +138,7 @@ export default async function DocumentDetailPage({ params }: Props) {
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/documents" className="hover:text-foreground">
-            Internal documents
+            Company documents
           </Link>
           {folderBreadcrumb.map((f) => (
             <span key={f.id}>

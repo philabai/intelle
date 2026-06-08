@@ -18,6 +18,8 @@ export interface TourEntry {
   steps: TourStep[];
 }
 
+const FOOTPRINT_PATH = "/regwatch/comply/footprint";
+
 const footprintTour: TourEntry = {
   id: "footprint-v1",
   title: "Set up your operations footprint",
@@ -29,24 +31,28 @@ const footprintTour: TourEntry = {
       title: "Pick your jurisdictions",
       body: "Where you have assets or operate. The relevance feed prioritises regulations from these jurisdictions first.",
       side: "bottom",
+      navigatePath: FOOTPRINT_PATH,
     },
     {
       element: "[data-tour='footprint-naics']",
       title: "Add your activities (NAICS)",
       body: "Choose the industry classifications that fit your operations. Used to score regulation relevance.",
       side: "bottom",
+      navigatePath: FOOTPRINT_PATH,
     },
     {
       element: "[data-tour='footprint-topics']",
       title: "Pick monitored topics",
       body: "PFAS, methane, CBAM, process safety — whatever you care about most. You can refine these later.",
       side: "bottom",
+      navigatePath: FOOTPRINT_PATH,
     },
     {
       element: "[data-tour='footprint-save']",
       title: "Save and you're done",
       body: "Changes propagate to your Relevance Feed within a minute. You can revisit this page any time.",
       side: "top",
+      navigatePath: FOOTPRINT_PATH,
     },
   ],
 };
@@ -111,6 +117,8 @@ const crosswalkTour: TourEntry = {
   ],
 };
 
+const OBLIGATIONS_PATH = "/regwatch/obligations";
+
 const obligationsTour: TourEntry = {
   id: "obligations-v1",
   title: "Set up your first compliance obligation",
@@ -122,24 +130,28 @@ const obligationsTour: TourEntry = {
       title: "Pin to an asset",
       body: "Pick a site, area, or component from your asset hierarchy. (Set up the hierarchy under Assets → Setup if you haven't.)",
       side: "bottom",
+      navigatePath: OBLIGATIONS_PATH,
     },
     {
       element: "[data-tour='obligation-pick-reg']",
       title: "Pin to a regulation",
       body: "Search the corpus, pick the regulation, optionally narrow to a specific clause anchor.",
       side: "bottom",
+      navigatePath: OBLIGATIONS_PATH,
     },
     {
       element: "[data-tour='obligation-severity']",
       title: "Set severity + compliance status",
       body: "Severity drives priority in the relevance feed and reports. Status starts as 'unknown' until the reviewer assesses.",
       side: "bottom",
+      navigatePath: OBLIGATIONS_PATH,
     },
     {
       element: "[data-tour='obligation-assign']",
       title: "Assign a reviewer",
       body: "They'll see this obligation in their Reviewer Inbox and can complete the assessment with evidence + e-signature.",
       side: "top",
+      navigatePath: OBLIGATIONS_PATH,
     },
   ],
 };

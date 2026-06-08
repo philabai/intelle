@@ -22,7 +22,7 @@ import { DocCardGrid } from "@/components/regwatch/documents/gallery/DocCardGrid
 import { GalleryControls } from "@/components/regwatch/documents/gallery/GalleryControls";
 import { NewDocumentButton } from "@/components/regwatch/documents/gallery/NewDocumentButton";
 
-export const metadata = { title: "Internal documents" };
+export const metadata = { title: "Company documents" };
 export const dynamic = "force-dynamic";
 
 interface Props {
@@ -140,7 +140,7 @@ export default async function DocumentsPage({ searchParams }: Props) {
             href="/regwatch/documents"
             className="hover:text-foreground"
           >
-            Internal documents
+            Company documents
           </Link>
           {breadcrumb.map((b) => (
             <span key={b.id}>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { createClient } from "@/lib/regwatch/supabase/server";
 import { RegwatchLogo } from "./Logo";
 import { NotificationBell } from "./NotificationBell";
 import {
@@ -48,13 +49,38 @@ const COMPLY_ITEMS: DropdownItem[] = [
   { href: "/regwatch/settings/footprint", label: "Footprint" },
 ];
 const AUTHOR_ITEMS: DropdownItem[] = [
-  { href: "/regwatch/documents", label: "Internal documents" },
+  { href: "/regwatch/documents", label: "Company documents" },
 ];
 const ACCOUNT_ITEMS: DropdownItem[] = [
-  { href: "/regwatch/settings/account", label: "Account" },
+  { href: "/regwatch/settings/account", label: "Profile" },
   { href: "/regwatch/settings/billing", label: "Billing" },
   { href: "/regwatch/settings/members", label: "Members" },
 ];
+
+/**
+ * Best-effort first name for the Account menu trigger. Prefers an
+ * explicit first_name in user_metadata (captured at signup), falls
+ * back to the leading token of full_name, then the email local-part.
+ */
+function firstNameFromUser(user: {
+  email?: string | null;
+  user_metadata?: Record<string, unknown>;
+} | null): string {
+  if (!user) return "Account";
+  const meta = user.user_metadata ?? {};
+  const first = (meta.first_name as string | undefined)?.trim();
+  if (first) return first;
+  const full = (meta.full_name as string | undefined)?.trim();
+  if (full) return full.split(/\s+/)[0];
+  const email = user.email ?? "";
+  const local = email.split("@")[0];
+  if (local) {
+    // Capitalise the local-part token (john.doe → John).
+    const token = local.split(/[._-]/)[0];
+    return token.charAt(0).toUpperCase() + token.slice(1);
+  }
+  return "Account";
+}
 
 const CLUSTERS: NavCluster[] = [
   { label: "Discover", items: DISCOVER_ITEMS },
@@ -63,7 +89,16 @@ const CLUSTERS: NavCluster[] = [
   { label: "Author", items: AUTHOR_ITEMS, authedOnly: true },
 ];
 
-export function RegwatchNav({ authed }: { authed: boolean }) {
+export async function RegwatchNav({ authed }: { authed: boolean }) {
+  let accountLabel = "Account";
+  if (authed) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    accountLabel = firstNameFromUser(user);
+  }
+
   return (
     <nav className="glass-nav sticky top-0 z-40">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-3 sm:px-6">
@@ -92,7 +127,7 @@ export function RegwatchNav({ authed }: { authed: boolean }) {
           {authed ? (
             <div className="hidden md:inline-flex">
               <NavDropdown
-                label="Account"
+                label={accountLabel}
                 align="right"
                 triggerClassName="flex items-center gap-1 rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-sm text-foreground hover:border-brand-blue/60"
                 items={ACCOUNT_ITEMS}

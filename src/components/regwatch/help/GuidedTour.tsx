@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 /**
  * driver.js wrapper. Loads the library lazily so the help machinery
@@ -28,6 +29,17 @@ export interface TourStep {
   /** Where the popover sits relative to the highlighted element. */
   side?: "top" | "bottom" | "left" | "right" | "over";
   align?: "start" | "center" | "end";
+  /**
+   * Optional path the tour should be on for this step. If set and the
+   * current pathname differs, the wrapper pushes to it before
+   * highlighting and waits for the selector to mount.
+   */
+  navigatePath?: string;
+  /**
+   * Extra px to offset scrollIntoView (default 80) so highlighted
+   * elements don't end up underneath the sticky top nav.
+   */
+  scrollOffsetTop?: number;
 }
 
 interface Props {
@@ -45,16 +57,38 @@ export function GuidedTour({
   startSignal,
 }: Props) {
   const startedRef = useRef(false);
+  const router = useRouter();
+  const pathname = usePathname() ?? "";
+  // Keep a ref to the latest pathname so the navigation hook reads the
+  // CURRENT path each time it fires (steps span multiple pages).
+  const pathnameRef = useRef(pathname);
+  pathnameRef.current = pathname;
 
   useEffect(() => {
     let cancelled = false;
     const flagKey = `vantage_tour_${tourId}`;
+
+    async function navigateAndWait(step: TourStep): Promise<HTMLElement | null> {
+      if (
+        step.navigatePath &&
+        pathnameRef.current.replace(/\/$/, "") !==
+          step.navigatePath.replace(/\/$/, "")
+      ) {
+        router.push(step.navigatePath);
+      }
+      return waitForSelector(step.element, 5000);
+    }
 
     async function start(force: boolean) {
       if (cancelled) return;
       if (!force && localStorage.getItem(flagKey)) return;
       if (startedRef.current) return;
       startedRef.current = true;
+
+      // If the very first step is on a different page, navigate there
+      // before driver.js even mounts so the element exists on first paint.
+      if (steps[0]) await navigateAndWait(steps[0]);
+      if (cancelled) return;
 
       // Lazy import keeps the library out of every bundle.
       const { driver } = await import("driver.js");
@@ -80,6 +114,21 @@ export function GuidedTour({
             side: s.side,
             align: s.align,
           },
+          // driver.js fires onHighlightStarted before drawing the
+          // spotlight. Use that window to push to the step's
+          // navigatePath (if any) and wait for the selector to mount,
+          // then scroll the element into the middle of the viewport.
+          onHighlightStarted: async () => {
+            const el = await navigateAndWait(s);
+            if (el && typeof el.scrollIntoView === "function") {
+              el.scrollIntoView({ behavior: "smooth", block: "center" });
+              // Compensate for sticky-nav top overlap.
+              const offset = s.scrollOffsetTop ?? 80;
+              if (offset > 0) {
+                setTimeout(() => window.scrollBy({ top: -offset, behavior: "smooth" }), 250);
+              }
+            }
+          },
         })),
       });
       d.drive();
@@ -101,6 +150,25 @@ export function GuidedTour({
     };
   }, [tourId, steps, autoStartOnFirstVisit, startSignal]);
 
+  return null;
+}
+
+/**
+ * Polls the DOM up to `timeoutMs` for the first element matching
+ * `selector`. Resolves with the element or null on timeout. Used so
+ * tour steps that navigate to a new page can wait for React to render
+ * the target before driver.js tries to highlight it.
+ */
+async function waitForSelector(
+  selector: string,
+  timeoutMs: number,
+): Promise<HTMLElement | null> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const el = document.querySelector(selector) as HTMLElement | null;
+    if (el) return el;
+    await new Promise((r) => setTimeout(r, 100));
+  }
   return null;
 }
 

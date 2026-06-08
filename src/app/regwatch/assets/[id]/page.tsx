@@ -195,10 +195,10 @@ export default async function AssetDetailPage({ params }: Props) {
               )}
             </section>
 
-            {/* Internal documents linked to this asset (or any ancestor) */}
+            {/* Company documents linked to this asset (or any ancestor) */}
             <section className="rounded-xl border border-card-border bg-card-bg/40 p-5">
               <h2 className="mb-3 text-sm font-semibold text-foreground">
-                Internal documents
+                Company documents
               </h2>
               {linkedDocs.length === 0 ? (
                 <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-4 text-center text-xs text-muted">

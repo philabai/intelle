@@ -6,6 +6,8 @@ import { createClient } from "@/lib/regwatch/supabase/client";
 
 export function RegwatchSignupForm() {
   const router = useRouter();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [orgName, setOrgName] = useState("");
@@ -19,11 +21,19 @@ export function RegwatchSignupForm() {
     setInfo(null);
     setPending(true);
     const supabase = createClient();
+    const trimmedFirst = firstName.trim();
+    const trimmedLast = lastName.trim();
+    const fullName = [trimmedFirst, trimmedLast].filter(Boolean).join(" ");
     const { data, error: err } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: orgName ? { org_name: orgName } : undefined,
+        data: {
+          ...(trimmedFirst ? { first_name: trimmedFirst } : {}),
+          ...(trimmedLast ? { last_name: trimmedLast } : {}),
+          ...(fullName ? { full_name: fullName } : {}),
+          ...(orgName ? { org_name: orgName } : {}),
+        },
         emailRedirectTo: `${window.location.origin}/regwatch/auth/callback?next=${encodeURIComponent("/regwatch/onboarding")}`,
       },
     });
@@ -42,6 +52,30 @@ export function RegwatchSignupForm() {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-3">
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="text-muted">First name</span>
+          <input
+            type="text"
+            required
+            autoComplete="given-name"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            className="rounded-md border border-card-border bg-card-bg px-3 py-2 text-foreground focus:border-brand-blue focus:outline-none"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="text-muted">Last name</span>
+          <input
+            type="text"
+            required
+            autoComplete="family-name"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            className="rounded-md border border-card-border bg-card-bg px-3 py-2 text-foreground focus:border-brand-blue focus:outline-none"
+          />
+        </label>
+      </div>
       <label className="flex flex-col gap-1 text-sm">
         <span className="text-muted">Work email</span>
         <input

@@ -195,6 +195,7 @@ export default async function ObligationsPage({ searchParams }: Props) {
                   <th className="px-4 py-3">Severity</th>
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Review</th>
+                  <th className="px-4 py-3">Assigned to</th>
                   <th className="px-4 py-3">Updated</th>
                 </tr>
               </thead>
@@ -275,6 +276,15 @@ function ObligationRow({
         >
           {o.reviewStatus}
         </span>
+      </td>
+      <td className="px-4 py-3 text-xs">
+        {o.assignedReviewerName ? (
+          <span className="text-foreground">{o.assignedReviewerName}</span>
+        ) : o.assignedReviewerUserId ? (
+          <span className="text-muted">Assigned</span>
+        ) : (
+          <span className="text-[11px] italic text-muted/60">Unassigned</span>
+        )}
       </td>
       <td className="px-4 py-3 text-[11px] text-muted">
         {formatDistanceToNowStrict(new Date(o.updatedAt), { addSuffix: true })}
