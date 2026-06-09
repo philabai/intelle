@@ -33,6 +33,7 @@ const REGULATIONS_ITEMS: DropdownItem[] = [
   { href: "/regwatch/regulators", label: "Regulators" },
   { href: "/regwatch/topics", label: "Topics" },
   { href: "/regwatch/search", label: "Search" },
+  { href: "/regwatch/tutorials", label: "Video tutorials" },
 ];
 const MONITOR_ITEMS: DropdownItem[] = [
   { href: "/regwatch/monitor/today", label: "Today (relevance feed)" },
