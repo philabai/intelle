@@ -8,11 +8,13 @@ import {
   listRegulators,
   type BrowseFilters as BrowseFiltersInput,
 } from "@/lib/regwatch/queries";
+import { getJurisdictionHierarchy } from "@/lib/regwatch/regulatory-sections";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { RegulationRow } from "@/components/regwatch/RegulationRow";
 import { BrowseFilters } from "@/components/regwatch/BrowseFilters";
 import { BrowseSearchInput } from "@/components/regwatch/BrowseSearchInput";
 import { EmptyState } from "@/components/regwatch/EmptyState";
+import { HierarchyTree } from "@/components/regwatch/browse/HierarchyTree";
 
 export const dynamic = "force-dynamic";
 
@@ -42,10 +44,12 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
     },
     summaries,
     regulators,
+    hierarchyRoots,
   ] = await Promise.all([
     supabase.auth.getUser(),
     getJurisdictionSummaries(),
     listRegulators(),
+    getJurisdictionHierarchy(jurisdictionCode),
   ]);
 
   const summary = summaries.find((s) => s.jurisdiction_code === jurisdictionCode);
@@ -61,7 +65,28 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
     hideNews: pickFilter(raw, "hide_news") !== "0",
   };
 
-  const items = await listRegulations(filters, 100);
+  // View mode: the eCFR-style hierarchy tree, or the flat filtered list.
+  // Default to the tree when one exists and the user hasn't engaged a
+  // filter/search (a filter implies they want the flat result list).
+  const hasHierarchy = hierarchyRoots.length > 0;
+  const hasActiveFilters = Boolean(
+    filters.regulator ||
+      filters.topic ||
+      filters.instrument_type ||
+      filters.status ||
+      filters.q,
+  );
+  const viewParam = pickFilter(raw, "view");
+  const view: "tree" | "list" =
+    viewParam === "tree"
+      ? "tree"
+      : viewParam === "list"
+        ? "list"
+        : hasHierarchy && !hasActiveFilters
+          ? "tree"
+          : "list";
+
+  const items = view === "list" ? await listRegulations(filters, 100) : [];
 
   const jurisdictionOptions = summaries.map((s) => ({
     code: s.jurisdiction_code,
@@ -99,43 +124,73 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
               {Number(summary.recent_item_count).toLocaleString()} updated in the last 30 days
             </span>
           </p>
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap items-center gap-4">
             <Suspense fallback={null}>
               <BrowseSearchInput />
             </Suspense>
+            {hasHierarchy && (
+              <div className="inline-flex overflow-hidden rounded-md border border-card-border text-xs">
+                <Link
+                  href={`/regwatch/browse/${jurisdiction}?view=tree`}
+                  className={`px-3 py-1.5 ${
+                    view === "tree"
+                      ? "bg-brand-blue/15 font-medium text-foreground"
+                      : "text-muted hover:text-foreground"
+                  }`}
+                >
+                  Hierarchy
+                </Link>
+                <Link
+                  href={`/regwatch/browse/${jurisdiction}?view=list`}
+                  className={`border-l border-card-border px-3 py-1.5 ${
+                    view === "list"
+                      ? "bg-brand-blue/15 font-medium text-foreground"
+                      : "text-muted hover:text-foreground"
+                  }`}
+                >
+                  List
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[220px_1fr]">
-        <Suspense fallback={null}>
-          <BrowseFilters
-            jurisdictions={jurisdictionOptions}
-            regulators={regulatorOptions}
-            lockedJurisdiction={jurisdictionCode}
-          />
-        </Suspense>
-
-        <section>
-          {items.length === 0 ? (
-            <EmptyState
-              title="No regulations match these filters."
-              description="Try clearing a facet or broadening your search."
+      {view === "tree" ? (
+        <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+          <HierarchyTree roots={hierarchyRoots} jurisdictionCode={jurisdictionCode} />
+        </div>
+      ) : (
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[220px_1fr]">
+          <Suspense fallback={null}>
+            <BrowseFilters
+              jurisdictions={jurisdictionOptions}
+              regulators={regulatorOptions}
+              lockedJurisdiction={jurisdictionCode}
             />
-          ) : (
-            <>
-              <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted">
-                Showing {items.length} {items.length === 1 ? "regulation" : "regulations"}
-              </p>
-              <div className="overflow-hidden rounded-xl border border-card-border bg-background">
-                {items.map((item) => (
-                  <RegulationRow key={item.id} item={item} />
-                ))}
-              </div>
-            </>
-          )}
-        </section>
-      </div>
+          </Suspense>
+
+          <section>
+            {items.length === 0 ? (
+              <EmptyState
+                title="No regulations match these filters."
+                description="Try clearing a facet or broadening your search."
+              />
+            ) : (
+              <>
+                <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted">
+                  Showing {items.length} {items.length === 1 ? "regulation" : "regulations"}
+                </p>
+                <div className="overflow-hidden rounded-xl border border-card-border bg-background">
+                  {items.map((item) => (
+                    <RegulationRow key={item.id} item={item} />
+                  ))}
+                </div>
+              </>
+            )}
+          </section>
+        </div>
+      )}
     </RegwatchAppShell>
   );
 }

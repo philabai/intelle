@@ -17,6 +17,10 @@ export const TOPIC_TAXONOMY: { value: string; label: string }[] = [
   { value: "sanctions", label: "Sanctions" },
   { value: "worker-safety", label: "Worker safety" },
   { value: "process-safety", label: "Process safety" },
+  { value: "energy", label: "Energy" },
+  { value: "pipelines", label: "Pipelines" },
+  { value: "nuclear", label: "Nuclear" },
+  { value: "radiation", label: "Radiation protection" },
 ];
 
 export const INSTRUMENT_TYPE_TAXONOMY: { value: string; label: string }[] = [

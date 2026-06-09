@@ -30,15 +30,22 @@ export default async function DiscoverLandingPage() {
     getJurisdictionSummaries(),
   ]);
 
-  const FEATURED_CODES = new Set(["US", "EU", "GB", "SA"]);
-  const featured = summaries.filter((s) =>
-    FEATURED_CODES.has(s.jurisdiction_code),
-  );
+  const FEATURED_CODES = new Set(["CA", "US", "EU", "GB", "SA"]);
+  // Explicit display order for the featured row — Canada sits first.
+  const FEATURED_ORDER = ["CA", "US", "EU", "GB", "SA"];
+  const featured = summaries
+    .filter((s) => FEATURED_CODES.has(s.jurisdiction_code))
+    .sort(
+      (a, b) =>
+        FEATURED_ORDER.indexOf(a.jurisdiction_code) -
+        FEATURED_ORDER.indexOf(b.jurisdiction_code),
+    );
   const rest = summaries
     .filter((s) => !FEATURED_CODES.has(s.jurisdiction_code))
     .sort((a, b) => Number(b.item_count) - Number(a.item_count));
 
   const ACCENT: Record<string, string> = {
+    CA: "#d52b1e",
     US: "#1e3a8a",
     EU: "#0033a0",
     GB: "#c8102e",
