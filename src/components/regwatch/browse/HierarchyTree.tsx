@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import type { SectionNode } from "@/lib/regwatch/regulatory-sections";
+import { loadSectionChildren } from "@/lib/regwatch/section-children-actions";
 
 interface Props {
   roots: SectionNode[];
@@ -10,21 +11,65 @@ interface Props {
 }
 
 /**
- * Recursive collapsible tree for the eCFR-style browse view. Every
- * node shows level chip + identifier + title + child count + an
- * "Updated 30d" amber marker when has_updates_30d is true. Leaves
- * with regulatory_item_id link to the regulation detail page.
+ * Collapsible eCFR-style browse tree with lazy expansion.
  *
- * State is intentionally local — the URL doesn't track which nodes
- * are open (would explode for 12k-node titles). Deep linking still
- * works because every leaf is a hyperlink to the detail page.
+ * The server sends only the shallow tree (down to Part level). A node whose
+ * `childCount > 0` but has no loaded children renders an expand arrow and
+ * fetches its children via the loadSectionChildren server action the first
+ * time it's opened. This keeps the initial payload tiny — a full CFR
+ * jurisdiction is ~23k section nodes, but only ~hundreds down to Part level.
+ *
+ * State is local: open set, a map of lazily-loaded children, and an in-flight
+ * set for spinners. Deep links still work because every leaf is a hyperlink.
  */
 export function HierarchyTree({ roots, jurisdictionCode }: Props) {
   const [updatesOnly, setUpdatesOnly] = useState(false);
   const [openIds, setOpenIds] = useState<Set<string>>(
-    // Top-level (Title-level) nodes start expanded so the page shows
-    // structure on first load.
     () => new Set(roots.map((r) => r.id)),
+  );
+  const [loaded, setLoaded] = useState<Map<string, SectionNode[]>>(new Map());
+  const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
+
+  const getChildren = useCallback(
+    (node: SectionNode): SectionNode[] =>
+      node.children.length > 0 ? node.children : loaded.get(node.id) ?? [],
+    [loaded],
+  );
+
+  const toggle = useCallback(
+    async (node: SectionNode) => {
+      if (openIds.has(node.id)) {
+        setOpenIds((prev) => {
+          const next = new Set(prev);
+          next.delete(node.id);
+          return next;
+        });
+        return;
+      }
+      // Opening — lazy-load children the first time if the shallow tree didn't
+      // include them.
+      const needLoad =
+        node.children.length === 0 &&
+        node.childCount > 0 &&
+        !loaded.has(node.id);
+      if (needLoad) {
+        setLoadingIds((prev) => new Set(prev).add(node.id));
+        try {
+          const kids = await loadSectionChildren(node.id);
+          setLoaded((prev) => new Map(prev).set(node.id, kids));
+        } catch {
+          // leave unloaded; arrow stays so the user can retry
+        } finally {
+          setLoadingIds((prev) => {
+            const next = new Set(prev);
+            next.delete(node.id);
+            return next;
+          });
+        }
+      }
+      setOpenIds((prev) => new Set(prev).add(node.id));
+    },
+    [openIds, loaded],
   );
 
   const filtered = useMemo(() => {
@@ -33,15 +78,6 @@ export function HierarchyTree({ roots, jurisdictionCode }: Props) {
       .map((r) => pruneToUpdates(r))
       .filter((r): r is SectionNode => Boolean(r));
   }, [roots, updatesOnly]);
-
-  function toggle(id: string) {
-    setOpenIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
 
   return (
     <div>
@@ -75,6 +111,8 @@ export function HierarchyTree({ roots, jurisdictionCode }: Props) {
               depth={0}
               jurisdictionCode={jurisdictionCode}
               openIds={openIds}
+              loadingIds={loadingIds}
+              getChildren={getChildren}
               onToggle={toggle}
             />
           ))}
@@ -89,23 +127,36 @@ interface RowProps {
   depth: number;
   jurisdictionCode: string;
   openIds: Set<string>;
-  onToggle: (id: string) => void;
+  loadingIds: Set<string>;
+  getChildren: (node: SectionNode) => SectionNode[];
+  onToggle: (node: SectionNode) => void;
 }
 
-function TreeRow({ node, depth, jurisdictionCode, openIds, onToggle }: RowProps) {
+function TreeRow({
+  node,
+  depth,
+  jurisdictionCode,
+  openIds,
+  loadingIds,
+  getChildren,
+  onToggle,
+}: RowProps) {
   const open = openIds.has(node.id);
-  const hasChildren = node.children.length > 0;
+  const loading = loadingIds.has(node.id);
+  // childCount is denormalised, so a Part shows an expand arrow even before its
+  // sections are lazy-loaded.
+  const hasChildren = node.childCount > 0 || node.children.length > 0;
   // Three ways a row resolves:
-  //  - INTERNAL: the node maps to an in-app regulation (a resolved item id, or
-  //    a citation whose slug matches the item's slug). Linked even if it also
-  //    has children — e.g. a CFR Part is both expandable and a regulation.
-  //  - SECTION: a childless node with no item (e.g. an eCFR section) opens the
-  //    in-app section page (short summary + a deep-link out to the publisher).
+  //  - INTERNAL: maps to an in-app regulation (resolved item id, or a citation
+  //    whose slug matches the item). Linked even if also expandable (a Part).
+  //  - SECTION: a childless node with no item (an eCFR section) opens the
+  //    in-app section page (summary + deep-link out).
   //  - GROUP: a structural node (Chapter/Subpart/…) just toggles.
   const internalTarget = node.citation ?? node.regulatoryItemId;
   const isInternal = !!(node.regulatoryItemId || node.citation);
   const isSectionLeaf = !isInternal && !hasChildren;
   const indent = depth * 16;
+  const children = open ? getChildren(node) : [];
 
   const headerInner = (
     <div className="flex flex-1 items-baseline gap-2 truncate">
@@ -135,11 +186,11 @@ function TreeRow({ node, depth, jurisdictionCode, openIds, onToggle }: RowProps)
         {hasChildren ? (
           <button
             type="button"
-            onClick={() => onToggle(node.id)}
+            onClick={() => onToggle(node)}
             className="w-3 shrink-0 text-[10px] text-muted hover:text-foreground"
             aria-label={open ? "Collapse" : "Expand"}
           >
-            {open ? "▾" : "▸"}
+            {loading ? "◌" : open ? "▾" : "▸"}
           </button>
         ) : (
           <span className="w-3 shrink-0" aria-hidden />
@@ -159,7 +210,7 @@ function TreeRow({ node, depth, jurisdictionCode, openIds, onToggle }: RowProps)
         ) : (
           <button
             type="button"
-            onClick={() => hasChildren && onToggle(node.id)}
+            onClick={() => hasChildren && onToggle(node)}
             className="flex-1 truncate text-left"
           >
             {headerInner}
@@ -178,18 +229,29 @@ function TreeRow({ node, depth, jurisdictionCode, openIds, onToggle }: RowProps)
         </span>
       </div>
 
-      {open && hasChildren && (
+      {open && (
         <ul className="space-y-0.5">
-          {node.children.map((c) => (
-            <TreeRow
-              key={c.id}
-              node={c}
-              depth={depth + 1}
-              jurisdictionCode={jurisdictionCode}
-              openIds={openIds}
-              onToggle={onToggle}
-            />
-          ))}
+          {loading && children.length === 0 ? (
+            <li
+              className="px-2 py-1 text-[11px] text-muted"
+              style={{ paddingLeft: (depth + 1) * 16 + 8 }}
+            >
+              Loading…
+            </li>
+          ) : (
+            children.map((c) => (
+              <TreeRow
+                key={c.id}
+                node={c}
+                depth={depth + 1}
+                jurisdictionCode={jurisdictionCode}
+                openIds={openIds}
+                loadingIds={loadingIds}
+                getChildren={getChildren}
+                onToggle={onToggle}
+              />
+            ))
+          )}
         </ul>
       )}
     </li>
@@ -197,8 +259,9 @@ function TreeRow({ node, depth, jurisdictionCode, openIds, onToggle }: RowProps)
 }
 
 /**
- * Returns a copy of `node` containing only subtrees that lead to an
- * updated leaf. Used when "Show only updates" is on.
+ * Returns a copy of `node` containing only subtrees that lead to an updated
+ * leaf. Operates on the shallow tree using the rolled-up has_updates_30d flag,
+ * so it stays correct even though sections aren't loaded yet.
  */
 function pruneToUpdates(node: SectionNode): SectionNode | null {
   const prunedChildren = node.children

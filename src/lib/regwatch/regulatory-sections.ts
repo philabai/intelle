@@ -93,16 +93,19 @@ const SECTION_COLUMNS =
  */
 export async function getJurisdictionHierarchy(
   jurisdictionCode: string,
+  maxLevel?: number,
 ): Promise<SectionNode[]> {
   const svc = createServiceClient();
   const PAGE = 1000;
   const MAX = 60000;
   const rows: SectionRow[] = [];
   for (let from = 0; from < MAX; from += PAGE) {
-    const { data, error } = await svc
+    let q = svc
       .from("regulatory_sections")
       .select(SECTION_COLUMNS)
-      .eq("jurisdiction_code", jurisdictionCode)
+      .eq("jurisdiction_code", jurisdictionCode);
+    if (maxLevel !== undefined) q = q.lte("level", maxLevel);
+    const { data, error } = await q
       .order("level", { ascending: true })
       .order("identifier", { ascending: true })
       .order("path", { ascending: true })
@@ -116,6 +119,54 @@ export async function getJurisdictionHierarchy(
     if (data.length < PAGE) break;
   }
   return assembleTree(rows);
+}
+
+/**
+ * Shallow load for the browse tree: only nodes down to `maxLevel` (Part level
+ * by default). A node with `childCount > 0` but no loaded children renders an
+ * expand affordance and lazy-loads its children via getSectionChildren on
+ * demand. This keeps the initial payload small — a full eCFR jurisdiction is
+ * ~23k section nodes, but only ~hundreds of nodes down to Part level.
+ *
+ * maxLevel 4 covers Title→Chapter→Subchapter→Part for eCFR, and the entire
+ * tree for shallower publishers (SASO, CNSC, CER all top out at level ≤4).
+ */
+export async function getJurisdictionHierarchyShallow(
+  jurisdictionCode: string,
+  maxLevel = 4,
+): Promise<SectionNode[]> {
+  return getJurisdictionHierarchy(jurisdictionCode, maxLevel);
+}
+
+/**
+ * Direct children of one section node — used to lazy-load a subtree when the
+ * user expands a node in the browse tree. Returns flat nodes (each with its
+ * own childCount, so the UI knows whether to show a further expand arrow).
+ */
+export async function getSectionChildren(
+  parentSectionId: string,
+): Promise<SectionNode[]> {
+  const svc = createServiceClient();
+  const PAGE = 1000;
+  const MAX = 20000;
+  const rows: SectionRow[] = [];
+  for (let from = 0; from < MAX; from += PAGE) {
+    const { data, error } = await svc
+      .from("regulatory_sections")
+      .select(SECTION_COLUMNS)
+      .eq("parent_section_id", parentSectionId)
+      .order("identifier", { ascending: true })
+      .order("path", { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) {
+      if (rows.length === 0) return [];
+      break;
+    }
+    if (!data || data.length === 0) break;
+    rows.push(...(data as SectionRow[]));
+    if (data.length < PAGE) break;
+  }
+  return rows.map(rowToNode);
 }
 
 /**

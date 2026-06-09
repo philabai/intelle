@@ -8,7 +8,7 @@ import {
   listRegulators,
   type BrowseFilters as BrowseFiltersInput,
 } from "@/lib/regwatch/queries";
-import { getJurisdictionHierarchy } from "@/lib/regwatch/regulatory-sections";
+import { getJurisdictionHierarchyShallow } from "@/lib/regwatch/regulatory-sections";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { RegulationRow } from "@/components/regwatch/RegulationRow";
 import { BrowseFilters } from "@/components/regwatch/BrowseFilters";
@@ -49,7 +49,7 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
     supabase.auth.getUser(),
     getJurisdictionSummaries(),
     listRegulators(),
-    getJurisdictionHierarchy(jurisdictionCode),
+    getJurisdictionHierarchyShallow(jurisdictionCode),
   ]);
 
   const summary = summaries.find((s) => s.jurisdiction_code === jurisdictionCode);
