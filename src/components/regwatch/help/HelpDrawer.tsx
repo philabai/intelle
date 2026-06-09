@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
   TOUR_CATALOGUE,
@@ -116,6 +117,25 @@ export function HelpDrawer({ open, onClose, onAskIris }: Props) {
         </header>
 
         <div className="flex-1 overflow-y-auto px-5 py-4">
+          <Link
+            href="/regwatch/tutorials"
+            onClick={onClose}
+            className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-brand-teal/40 bg-brand-teal/5 p-4 hover:border-brand-teal"
+          >
+            <div>
+              <p className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">
+                Video tutorials
+              </p>
+              <h4 className="mt-1 text-sm font-semibold text-foreground">
+                Watch the 4 product walkthroughs
+              </h4>
+              <p className="mt-1 text-xs text-muted">
+                Regulations · Monitor · Comply · Author — ~1 min each.
+              </p>
+            </div>
+            <span className="shrink-0 text-brand-teal">▶</span>
+          </Link>
+
           {activeTour && (
             <section className="mb-5 rounded-xl border border-brand-blue/40 bg-brand-blue/5 p-4">
               <p className="text-[10px] font-medium uppercase tracking-wider text-brand-blue">

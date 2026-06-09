@@ -93,6 +93,12 @@ export default async function DiscoverLandingPage() {
             >
               Search →
             </Link>
+            <Link
+              href="/regwatch/tutorials"
+              className="rounded-md border border-brand-teal/40 bg-brand-teal/10 px-3 py-1.5 text-brand-teal hover:border-brand-teal"
+            >
+              Watch tutorials →
+            </Link>
           </div>
         </div>
       </header>

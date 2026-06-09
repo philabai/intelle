@@ -61,3 +61,6 @@ supabase/.temp/
 /public/Thread Cheat Sheet_57bae2.pptx
 /public/digital_thread_late_change_cascade.docx
 /public/intelle_seo_social_workbook.xlsx
+
+# Demo video renders (hosted in Supabase Storage)
+scripts/demos/out/
