@@ -118,6 +118,7 @@ function jurisdictionFromConnectorId(id: string): string {
   if (id.startsWith("govuk-")) return "GB";
   if (id.startsWith("saso-")) return "SA";
   if (id.startsWith("cnsc-") || id.startsWith("cer-")) return "CA";
+  if (id.startsWith("ecfr-")) return "US";
   if (id.startsWith("imo-")) return "INT";
   return "INT";
 }

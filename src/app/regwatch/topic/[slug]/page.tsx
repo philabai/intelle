@@ -19,9 +19,6 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  if (!TOPIC_TAXONOMY.find((t) => t.value === slug)) {
-    return { title: "Topic not found" };
-  }
   const label = topicLabel(slug);
   return {
     title: `${label} — Vantage topic`,
@@ -32,7 +29,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function TopicPage({ params }: Props) {
   const { slug } = await params;
   const known = TOPIC_TAXONOMY.find((t) => t.value === slug);
-  if (!known) notFound();
 
   const supabase = await createClient();
   const [
@@ -46,6 +42,11 @@ export default async function TopicPage({ params }: Props) {
     listRegulationsByTopic(slug, 100),
     getTopicStats(slug),
   ]);
+
+  // Allow any topic that is either curated OR actually present in the corpus
+  // (connector-set topics like SASO's standards/gulf). Only 404 a topic that
+  // is both unknown and unused.
+  if (!known && items.length === 0) notFound();
 
   const label = topicLabel(slug);
 

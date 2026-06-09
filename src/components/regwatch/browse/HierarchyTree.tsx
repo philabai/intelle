@@ -95,11 +95,16 @@ interface RowProps {
 function TreeRow({ node, depth, jurisdictionCode, openIds, onToggle }: RowProps) {
   const open = openIds.has(node.id);
   const hasChildren = node.children.length > 0;
-  // A leaf is a childless node carrying a citation (or a resolved item id). We
-  // link by citation slug so the leaf is clickable even before the section→item
-  // id linkage lands — the slug matches the regulation's own slug.
-  const leafTarget = node.citation ?? node.regulatoryItemId;
-  const isLeaf = !hasChildren && !!leafTarget;
+  // Three ways a row resolves:
+  //  - INTERNAL: the node maps to an in-app regulation (a resolved item id, or
+  //    a citation whose slug matches the item's slug). Linked even if it also
+  //    has children — e.g. a CFR Part is both expandable and a regulation.
+  //  - EXTERNAL: a childless node with no item but a real source_url (e.g. an
+  //    eCFR section) deep-links out to the publisher.
+  //  - GROUP: a structural node (Chapter/Subpart/…) just toggles.
+  const internalTarget = node.citation ?? node.regulatoryItemId;
+  const isInternal = !!(node.regulatoryItemId || node.citation);
+  const isExternalLeaf = !isInternal && !hasChildren && !!node.sourceUrl;
   const indent = depth * 16;
 
   const headerInner = (
@@ -115,7 +120,7 @@ function TreeRow({ node, depth, jurisdictionCode, openIds, onToggle }: RowProps)
           {node.title}
         </span>
       )}
-      {node.childCount > 0 && !isLeaf && (
+      {node.childCount > 0 && (
         <span className="text-[10px] text-muted">· {node.childCount} children</span>
       )}
     </div>
@@ -140,13 +145,23 @@ function TreeRow({ node, depth, jurisdictionCode, openIds, onToggle }: RowProps)
           <span className="w-3 shrink-0" aria-hidden />
         )}
 
-        {isLeaf && leafTarget ? (
+        {isInternal && internalTarget ? (
           <Link
-            href={`/regwatch/r/${jurisdictionCode.toLowerCase()}/${slugFromCitation(leafTarget)}`}
+            href={`/regwatch/r/${jurisdictionCode.toLowerCase()}/${slugFromCitation(internalTarget)}`}
             className="flex-1 truncate"
           >
             {headerInner}
           </Link>
+        ) : isExternalLeaf && node.sourceUrl ? (
+          <a
+            href={node.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 truncate"
+            title="Open on the publisher's site"
+          >
+            {headerInner}
+          </a>
         ) : (
           <button
             type="button"

@@ -103,6 +103,15 @@ export default async function TopicsCloudPage() {
   const grandTotal = Array.from(total.values()).reduce((a, b) => a + b, 0);
   const grandRecent = Array.from(recent.values()).reduce((a, b) => a + b, 0);
 
+  // Dynamic fallback: any topic present in the corpus but not shown in a
+  // curated group (e.g. connector-set topics like SASO's standards/gulf) still
+  // surfaces here, so newly-ingested regulations never go invisible.
+  const coveredSlugs = new Set(TOPIC_GROUPS.flatMap((g) => g.topics));
+  const otherTopics = Array.from(total.entries())
+    .filter(([slug, count]) => count > 0 && !coveredSlugs.has(slug))
+    .sort((a, b) => b[1] - a[1])
+    .map(([slug]) => slug);
+
   // Hero — the three biggest topics by total count.
   const hero = [...TOPIC_TAXONOMY]
     .map((t) => ({ value: t.value, label: t.label, count: total.get(t.value) ?? 0 }))
@@ -210,6 +219,38 @@ export default async function TopicsCloudPage() {
               </section>
             );
           })}
+
+          {otherTopics.length > 0 && (
+            <section>
+              <header className="mb-4 flex items-baseline justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold tracking-tight text-muted">
+                    Other topics in the corpus
+                  </h2>
+                  <p className="mt-0.5 text-xs text-muted">
+                    Topics attached by publisher connectors, beyond the curated
+                    domains above.
+                  </p>
+                </div>
+                <span className="text-[11px] text-muted">
+                  {otherTopics.length}{" "}
+                  {otherTopics.length === 1 ? "topic" : "topics"}
+                </span>
+              </header>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {otherTopics.map((slug) => (
+                  <TopicTile
+                    key={slug}
+                    slug={slug}
+                    label={topicLabel(slug)}
+                    total={total.get(slug) ?? 0}
+                    recent30d={recent.get(slug) ?? 0}
+                    styles={ACCENT_STYLES.muted}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
         </div>
 
         {/* Suggest a topic CTA */}

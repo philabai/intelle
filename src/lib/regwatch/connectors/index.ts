@@ -7,6 +7,7 @@ import { PHASE_1X_CONNECTORS } from "./esma-iea-nsta-adnoc";
 import { SASO_CONNECTORS } from "./saso-scraper";
 import { CNSC_CONNECTORS } from "./cnsc-scraper";
 import { CER_CONNECTORS } from "./cer-act";
+import { ECFR_TITLE_CONNECTORS } from "./ecfr-title";
 import {
   attachEcfrHierarchy,
   FEDERAL_REGISTER_ECFR_SCOPES,
@@ -42,6 +43,7 @@ export const REGWATCH_CONNECTORS: Connector[] = [
   ...SASO_CONNECTORS,
   ...CNSC_CONNECTORS,
   ...CER_CONNECTORS,
+  ...ECFR_TITLE_CONNECTORS,
 ];
 
 export function findConnector(id: string): Connector | undefined {

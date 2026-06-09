@@ -80,26 +80,42 @@ function assembleTree(rows: SectionRow[]): SectionNode[] {
   return roots;
 }
 
+const SECTION_COLUMNS =
+  "id, regulator_id, jurisdiction_code, parent_section_id, level, level_label, identifier, title, citation, regulatory_item_id, path, child_count, has_updates_30d, last_changed_at, source_url";
+
 /**
  * Load the full hierarchy tree for one jurisdiction. Returns the
- * top-level roots with children nested. Capped at ~20k rows; larger
- * jurisdictions should drill in via getSectionSubtree.
+ * top-level roots with children nested.
+ *
+ * PostgREST caps any single response at ~1,000 rows regardless of .limit(),
+ * so we page through with .range() until a short page comes back. A full CFR
+ * Title is ~6k nodes; the page cap (50k) is just a runaway guard.
  */
 export async function getJurisdictionHierarchy(
   jurisdictionCode: string,
 ): Promise<SectionNode[]> {
   const svc = createServiceClient();
-  const { data: rows, error } = await svc
-    .from("regulatory_sections")
-    .select(
-      "id, regulator_id, jurisdiction_code, parent_section_id, level, level_label, identifier, title, citation, regulatory_item_id, path, child_count, has_updates_30d, last_changed_at, source_url",
-    )
-    .eq("jurisdiction_code", jurisdictionCode)
-    .order("level", { ascending: true })
-    .order("identifier", { ascending: true })
-    .limit(20000);
-  if (error || !rows) return [];
-  return assembleTree(rows as SectionRow[]);
+  const PAGE = 1000;
+  const MAX = 60000;
+  const rows: SectionRow[] = [];
+  for (let from = 0; from < MAX; from += PAGE) {
+    const { data, error } = await svc
+      .from("regulatory_sections")
+      .select(SECTION_COLUMNS)
+      .eq("jurisdiction_code", jurisdictionCode)
+      .order("level", { ascending: true })
+      .order("identifier", { ascending: true })
+      .order("path", { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) {
+      if (rows.length === 0) return [];
+      break;
+    }
+    if (!data || data.length === 0) break;
+    rows.push(...(data as SectionRow[]));
+    if (data.length < PAGE) break;
+  }
+  return assembleTree(rows);
 }
 
 /**

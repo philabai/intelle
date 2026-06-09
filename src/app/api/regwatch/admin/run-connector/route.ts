@@ -107,7 +107,9 @@ export async function POST(req: Request) {
             : connector.id.startsWith("cnsc-") ||
                 connector.id.startsWith("cer-")
               ? "CA"
-              : "INT";
+              : connector.id.startsWith("ecfr-")
+                ? "US"
+                : "INT";
       const res = await persistHierarchy(
         connector.regulator_slug,
         jurisdiction,
