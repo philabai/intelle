@@ -99,12 +99,12 @@ function TreeRow({ node, depth, jurisdictionCode, openIds, onToggle }: RowProps)
   //  - INTERNAL: the node maps to an in-app regulation (a resolved item id, or
   //    a citation whose slug matches the item's slug). Linked even if it also
   //    has children — e.g. a CFR Part is both expandable and a regulation.
-  //  - EXTERNAL: a childless node with no item but a real source_url (e.g. an
-  //    eCFR section) deep-links out to the publisher.
+  //  - SECTION: a childless node with no item (e.g. an eCFR section) opens the
+  //    in-app section page (short summary + a deep-link out to the publisher).
   //  - GROUP: a structural node (Chapter/Subpart/…) just toggles.
   const internalTarget = node.citation ?? node.regulatoryItemId;
   const isInternal = !!(node.regulatoryItemId || node.citation);
-  const isExternalLeaf = !isInternal && !hasChildren && !!node.sourceUrl;
+  const isSectionLeaf = !isInternal && !hasChildren;
   const indent = depth * 16;
 
   const headerInner = (
@@ -152,16 +152,10 @@ function TreeRow({ node, depth, jurisdictionCode, openIds, onToggle }: RowProps)
           >
             {headerInner}
           </Link>
-        ) : isExternalLeaf && node.sourceUrl ? (
-          <a
-            href={node.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 truncate"
-            title="Open on the publisher's site"
-          >
+        ) : isSectionLeaf ? (
+          <Link href={`/regwatch/section/${node.id}`} className="flex-1 truncate">
             {headerInner}
-          </a>
+          </Link>
         ) : (
           <button
             type="button"
