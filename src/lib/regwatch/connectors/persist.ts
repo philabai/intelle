@@ -34,6 +34,48 @@ export async function persistItems(items: NormalisedItem[]): Promise<PersistResu
 
   const slugToId = new Map<string, string>(regs?.map((r) => [r.slug, r.id]) ?? []);
 
+  // Preserve enrichment-owned fields when the connector emits null. A re-crawl
+  // re-emits the same metadata with body_text/body_html/summary = null (the
+  // enrichment + body-fetch pipelines fill those out-of-band). Without this,
+  // every 15-minute crawl would wipe enriched/backfilled bodies. We read the
+  // existing values once (chunked to keep the GET URL bounded) and carry them
+  // forward when the incoming value is null.
+  type Existing = {
+    body_text: string | null;
+    body_html: string | null;
+    summary: string | null;
+  };
+  const existing = new Map<string, Existing>();
+  const citationsByReg = new Map<string, Set<string>>();
+  for (const item of items) {
+    const rid = slugToId.get(item.regulator_slug);
+    if (!rid) continue;
+    if (!citationsByReg.has(rid)) citationsByReg.set(rid, new Set());
+    citationsByReg.get(rid)!.add(item.citation);
+  }
+  for (const [rid, citSet] of citationsByReg) {
+    const cits = Array.from(citSet);
+    for (let i = 0; i < cits.length; i += 100) {
+      const slice = cits.slice(i, i + 100);
+      const { data: rows, error: exErr } = await supabase
+        .from("regulatory_items")
+        .select("citation, body_text, body_html, summary")
+        .eq("regulator_id", rid)
+        .in("citation", slice);
+      if (exErr) {
+        result.errors.push(`existing lookup @${i}: ${exErr.message}`);
+        continue;
+      }
+      for (const r of rows ?? []) {
+        existing.set(`${rid}::${r.citation as string}`, {
+          body_text: (r.body_text as string | null) ?? null,
+          body_html: (r.body_html as string | null) ?? null,
+          summary: (r.summary as string | null) ?? null,
+        });
+      }
+    }
+  }
+
   type ItemRow = {
     regulator_id: string;
     citation: string;
@@ -65,6 +107,7 @@ export async function persistItems(items: NormalisedItem[]): Promise<PersistResu
       result.errors.push(`unknown regulator slug: ${item.regulator_slug}`);
       continue;
     }
+    const ex = existing.get(`${regulator_id}::${item.citation}`);
     rows.push({
       regulator_id,
       citation: item.citation,
@@ -78,9 +121,10 @@ export async function persistItems(items: NormalisedItem[]): Promise<PersistResu
       published_at: item.published_at,
       last_changed_at: item.last_changed_at,
       source_url: item.source_url,
-      summary: item.summary,
-      body_text: item.body_text,
-      body_html: item.body_html,
+      // Don't let a null from the connector erase an enriched value.
+      summary: item.summary ?? ex?.summary ?? null,
+      body_text: item.body_text ?? ex?.body_text ?? null,
+      body_html: item.body_html ?? ex?.body_html ?? null,
       jurisdiction_code: item.jurisdiction_code,
       topics: item.topics ?? [],
       substances_cas: item.substances_cas ?? [],
