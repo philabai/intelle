@@ -141,16 +141,27 @@ function extractExcerpt(xml: string, maxChars: number): string | null {
 }
 
 function stripText(s: string): string {
-  return s
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&#167;/g, "§")
-    .replace(/&#8201;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, " ")
+  return decodeEntities(s.replace(/<[^>]+>/g, " "))
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function decodeEntities(s: string): string {
+  return s
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => codePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => codePoint(parseInt(d, 10)))
+    .replace(/&nbsp;/g, " ")
+    .replace(/&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
+function codePoint(n: number): string {
+  try {
+    return Number.isFinite(n) ? String.fromCodePoint(n) : "";
+  } catch {
+    return "";
+  }
 }
