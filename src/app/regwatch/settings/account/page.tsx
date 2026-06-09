@@ -5,6 +5,7 @@ import { getMyMembership } from "@/lib/regwatch/members";
 import { roleLabel } from "@/lib/regwatch/reference/roles";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { RegwatchSignOutButton } from "./SignOutButton";
+import { ProfileForm } from "./ProfileForm";
 
 export const metadata = { title: "Profile" };
 export const dynamic = "force-dynamic";
@@ -81,6 +82,11 @@ export default async function AccountPage() {
               </span>
             )}
           </div>
+
+          <ProfileForm
+            initialFirstName={firstName ?? ""}
+            initialLastName={lastName ?? ""}
+          />
         </section>
 
         <section className="rounded-lg border border-card-border bg-card-bg p-6">

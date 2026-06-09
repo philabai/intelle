@@ -30,7 +30,7 @@ export function JurisdictionCard({
 }: Props) {
   return (
     <Link
-      href={`/regwatch/discover/browse/${jurisdictionCode.toLowerCase()}`}
+      href={`/regwatch/browse/${jurisdictionCode.toLowerCase()}`}
       className={`group block overflow-hidden rounded-xl border bg-card-bg/40 p-5 transition hover:border-brand-blue/60 hover:bg-card-bg/60 ${featured ? "border-brand-teal/50 shadow-lg shadow-brand-teal/10" : "border-card-border"}`}
       style={
         featured && accentColor

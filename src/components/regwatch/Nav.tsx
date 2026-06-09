@@ -18,19 +18,18 @@ import { HelpButton } from "./help/HelpButton";
  * Four top-level surfaces (PR-F), with hover-open dropdowns on
  * desktop and a hamburger sheet on mobile (PR-F follow-up):
  *
- *   Discover ▾ — public  · landing + browse hierarchy + regulators + topics + search
- *   Monitor  ▾ — authed  · today + recap + saved + alerts
- *   Comply   ▾ — authed  · inbox + obligations + assets + footprint
- *   Author   ▾ — authed  · internal documents
- *   Account  ▾ — authed  · account + billing + members
+ *   Regulations ▾ — public · country landing + regulators + topics + search
+ *   Monitor     ▾ — authed · today + recap + saved + alerts
+ *   Comply      ▾ — authed · inbox + obligations + assets + footprint
+ *   Author      ▾ — authed · company documents
+ *   Account     ▾ — authed · profile + billing + members
  *
  * The cluster list is defined ONCE here and passed to both the desktop
  * NavDropdown row and the mobile MobileNavSheet — no duplication.
  */
 
-const DISCOVER_ITEMS: DropdownItem[] = [
-  { href: "/regwatch/discover", label: "Discover landing" },
-  { href: "/regwatch/discover/browse/us", label: "Browse (hierarchy)" },
+const REGULATIONS_ITEMS: DropdownItem[] = [
+  { href: "/regwatch/discover", label: "Country" },
   { href: "/regwatch/regulators", label: "Regulators" },
   { href: "/regwatch/topics", label: "Topics" },
   { href: "/regwatch/search", label: "Search" },
@@ -83,7 +82,7 @@ function firstNameFromUser(user: {
 }
 
 const CLUSTERS: NavCluster[] = [
-  { label: "Discover", items: DISCOVER_ITEMS },
+  { label: "Regulations", items: REGULATIONS_ITEMS },
   { label: "Monitor", items: MONITOR_ITEMS, authedOnly: true },
   { label: "Comply", items: COMPLY_ITEMS, authedOnly: true },
   { label: "Author", items: AUTHOR_ITEMS, authedOnly: true },
