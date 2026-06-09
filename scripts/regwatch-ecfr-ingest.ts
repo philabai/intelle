@@ -25,8 +25,9 @@ import { persistHierarchy } from "../src/lib/regwatch/connectors/persist-hierarc
 import { ECFR_TITLE_CONNECTORS } from "../src/lib/regwatch/connectors/ecfr-title";
 import { getJurisdictionHierarchy } from "../src/lib/regwatch/regulatory-sections";
 
-const REGULATORS = [
-  {
+// slug → row, mirroring the 20260722/24/25 regulator migrations.
+const REGULATORS: Record<string, Record<string, unknown>> = {
+  "us-cfr-10": {
     slug: "us-cfr-10",
     name: "Code of Federal Regulations — Title 10 (Energy)",
     short_name: "10 CFR",
@@ -36,23 +37,55 @@ const REGULATORS = [
     regulator_type: "authority",
     canonical_url: "https://www.ecfr.gov/current/title-10",
     description:
-      "Title 10 of the U.S. Code of Federal Regulations — Energy. Covers the Nuclear Regulatory Commission and the Department of Energy (and smaller boards), sourced from eCFR.",
+      "Title 10 of the U.S. Code of Federal Regulations — Energy (NRC + DOE), sourced from eCFR.",
     topic_domains: ["energy", "nuclear", "radiation", "emissions", "permitting", "reporting", "worker-safety"],
   },
-];
+  "us-cfr-14": {
+    slug: "us-cfr-14",
+    name: "Code of Federal Regulations — Title 14 (Aeronautics and Space)",
+    short_name: "14 CFR",
+    jurisdiction_code: "US",
+    jurisdiction_name: "United States",
+    region: "na",
+    regulator_type: "authority",
+    canonical_url: "https://www.ecfr.gov/current/title-14",
+    description:
+      "Title 14 of the U.S. Code of Federal Regulations — Aeronautics and Space (FAA, Commercial Space, NASA), sourced from eCFR.",
+    topic_domains: ["aviation", "aerospace", "permitting", "reporting", "worker-safety", "emissions"],
+  },
+  "us-cfr-21": {
+    slug: "us-cfr-21",
+    name: "Code of Federal Regulations — Title 21 (Food and Drugs)",
+    short_name: "21 CFR",
+    jurisdiction_code: "US",
+    jurisdiction_name: "United States",
+    region: "na",
+    regulator_type: "authority",
+    canonical_url: "https://www.ecfr.gov/current/title-21",
+    description:
+      "Title 21 of the U.S. Code of Federal Regulations — Food and Drugs (FDA + DEA), sourced from eCFR.",
+    topic_domains: ["food-safety", "drugs", "medical-devices", "cosmetics", "tobacco", "chemicals", "permitting", "reporting"],
+  },
+};
 
 async function main() {
   const svc = createServiceClient();
 
-  console.log("→ upserting regulators…");
-  const { error: regErr } = await svc
-    .from("regulators")
-    .upsert(REGULATORS, { onConflict: "slug" });
-  if (regErr) throw new Error(`regulator upsert: ${regErr.message}`);
-  console.log(`  ok (${REGULATORS.length})`);
+  // Optional argv filter: connector ids to run (default = all).
+  const filter = process.argv.slice(2);
+  const connectors = filter.length
+    ? ECFR_TITLE_CONNECTORS.filter((c) => filter.includes(c.id))
+    : ECFR_TITLE_CONNECTORS;
+  if (connectors.length === 0) throw new Error(`no connectors match ${filter.join(",")}`);
 
   const ctx = { lookbackDays: 30, now: new Date(), dryRun: false };
-  for (const c of ECFR_TITLE_CONNECTORS) {
+  for (const c of connectors) {
+    const reg = REGULATORS[c.regulator_slug];
+    if (reg) {
+      const { error } = await svc.from("regulators").upsert(reg, { onConflict: "slug" });
+      if (error) throw new Error(`regulator upsert ${c.regulator_slug}: ${error.message}`);
+    }
+
     console.log(`\n→ ${c.id}`);
     const run = await c.run(ctx);
     console.log(`  fetched ${run.fetched} part items, ${run.errors.length} errors`);
@@ -67,36 +100,24 @@ async function main() {
       const h = await persistHierarchy(c.regulator_slug, "US", roots);
       console.log(`  hierarchy upserted ${h.upserted} sections, ${h.errors.length} errors`);
       if (h.errors.length) console.log(`    ${h.errors.slice(0, 3).join("\n    ")}`);
+
+      const idResp = await svc
+        .from("regulators")
+        .select("id")
+        .eq("slug", c.regulator_slug)
+        .single();
+      if (idResp.data) {
+        const linked = await svc
+          .from("regulatory_sections")
+          .select("id", { count: "exact", head: true })
+          .eq("regulator_id", idResp.data.id)
+          .not("regulatory_item_id", "is", null);
+        console.log(`  linked part leaves: ${linked.count}`);
+      }
     }
   }
 
-  // ---- verification ----
-  console.log("\n→ verifying corpus…");
-  const sum = await svc
-    .from("jurisdiction_summary")
-    .select("*")
-    .eq("jurisdiction_code", "US")
-    .maybeSingle();
-  console.log(`  US summary: ${JSON.stringify(sum.data)}`);
-
-  const r = await svc.from("regulators").select("id").eq("slug", "us-cfr-10").single();
-  const id = r.data!.id;
-  const items = await svc
-    .from("regulatory_items")
-    .select("id", { count: "exact", head: true })
-    .eq("regulator_id", id);
-  const secs = await svc
-    .from("regulatory_sections")
-    .select("id", { count: "exact", head: true })
-    .eq("regulator_id", id);
-  const linked = await svc
-    .from("regulatory_sections")
-    .select("id", { count: "exact", head: true })
-    .eq("regulator_id", id)
-    .not("regulatory_item_id", "is", null);
-  console.log(`  us-cfr-10: items=${items.count} sections=${secs.count} linkedLeaves=${linked.count}`);
-
-  // Confirm getJurisdictionHierarchy returns the whole US tree (no truncation).
+  // Confirm getJurisdictionHierarchy returns the whole US tree (paginated).
   const tree = await getJurisdictionHierarchy("US");
   let nodes = 0;
   const stack = [...tree];
@@ -105,9 +126,8 @@ async function main() {
     nodes++;
     stack.push(...x.children);
   }
-  console.log(`  getJurisdictionHierarchy(US) → ${tree.length} roots, ${nodes} nodes assembled`);
-
-  console.log("\n✓ done");
+  console.log(`\nUS tree: ${tree.length} roots, ${nodes} nodes assembled`);
+  console.log("✓ done");
 }
 
 main().catch((e) => {

@@ -28,8 +28,12 @@ import { createServiceClient } from "../src/lib/regwatch/supabase/service";
  * enrichment_metadata.body_fetched_at so the cron skips these rows afterwards.
  */
 
-const REGULATOR_SLUG = "us-cfr-10";
-const TITLE = 10;
+// slug ↔ title; pass title numbers as argv to filter (default = all).
+const ALL_TITLES = [
+  { slug: "us-cfr-10", title: 10 },
+  { slug: "us-cfr-14", title: 14 },
+  { slug: "us-cfr-21", title: 21 },
+];
 const UA = "vantage-intelle/1.0 (compliance monitoring; +https://intelle.io)";
 const MAX_HTML = 400_000; // cap per row
 const DELAY_MS = 300;
@@ -110,12 +114,15 @@ function convert(xml: string): { html: string; text: string } {
   return { html, text };
 }
 
-async function main() {
-  const svc = createServiceClient();
-  const date = await titleDate(TITLE);
-  console.log(`eCFR Title ${TITLE} date: ${date}`);
+async function backfillTitle(
+  svc: ReturnType<typeof createServiceClient>,
+  slug: string,
+  title: number,
+) {
+  const date = await titleDate(title);
+  console.log(`\n=== ${slug} (Title ${title}, ${date}) ===`);
 
-  const reg = await svc.from("regulators").select("id").eq("slug", REGULATOR_SLUG).single();
+  const reg = await svc.from("regulators").select("id").eq("slug", slug).single();
   if (reg.error) throw new Error(reg.error.message);
 
   const { data: items, error } = await svc
@@ -136,7 +143,7 @@ async function main() {
       continue;
     }
     const part = partMatch[1];
-    const url = `https://www.ecfr.gov/api/versioner/v1/full/${date}/title-${TITLE}.xml?part=${encodeURIComponent(part)}`;
+    const url = `https://www.ecfr.gov/api/versioner/v1/full/${date}/title-${title}.xml?part=${encodeURIComponent(part)}`;
     try {
       const res = await fetch(url, {
         headers: { "User-Agent": UA, Accept: "application/xml" },
@@ -180,7 +187,18 @@ async function main() {
     if ((ok + empty + failed) % 30 === 0) console.log(`  …${ok + empty + failed} processed`);
   }
 
-  console.log(`\n✓ done — populated ${ok}, empty ${empty}, failed ${failed}`);
+  console.log(`✓ ${slug} — populated ${ok}, empty ${empty}, failed ${failed}`);
+}
+
+async function main() {
+  const svc = createServiceClient();
+  const filter = process.argv.slice(2).map(Number);
+  const titles = filter.length
+    ? ALL_TITLES.filter((t) => filter.includes(t.title))
+    : ALL_TITLES;
+  if (titles.length === 0) throw new Error(`no titles match ${filter.join(",")}`);
+  for (const t of titles) await backfillTitle(svc, t.slug, t.title);
+  console.log("\n✓ all done");
 }
 
 main().catch((e) => {

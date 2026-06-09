@@ -127,8 +127,9 @@ function CheckRow({
   needle: string;
 }) {
   const [open, setOpen] = useState(node.level <= 3);
-  if (!matches(node, needle)) return null;
+  // Hooks must run unconditionally — compute before the visibility early-return.
   const descendants = useMemo(() => descendantIds(node), [node]);
+  if (!matches(node, needle)) return null;
   const allSelected = descendants.every((id) => selected.has(id));
   const someSelected = descendants.some((id) => selected.has(id));
   const tristate: "checked" | "partial" | "empty" = allSelected

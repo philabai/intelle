@@ -71,7 +71,7 @@ export default async function AdminConnectorsPage() {
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted">
             Manually trigger any connector. Same code path as the nightly
-            cron — fetches the publisher's index, upserts into
+            cron — fetches the publisher&apos;s index, upserts into
             <code className="ml-1 rounded bg-card-bg px-1 font-mono text-[11px]">
               regulatory_items
             </code>

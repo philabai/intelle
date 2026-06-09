@@ -88,7 +88,7 @@ export default async function BillingPage({ searchParams }: Props) {
         {checkoutStatus === "success" && (
           <div className="mb-6 rounded-lg border border-brand-teal/40 bg-brand-teal/10 p-4 text-sm text-brand-teal">
             Checkout completed. Your subscription is being provisioned — the tier
-            will update within a few seconds once Stripe's webhook fires. Refresh
+            will update within a few seconds once Stripe&apos;s webhook fires. Refresh
             this page to see the change.
           </div>
         )}

@@ -136,7 +136,7 @@ export function buildEcfrTitleConnector(args: EcfrTitleConnectorArgs): Connector
           body_text: null,
           body_html: null,
           jurisdiction_code: "US",
-          topics: deriveTopics(agency, node.label_description ?? ""),
+          topics: deriveTopics(titleNumber, agency, node.label_description ?? ""),
         });
       }
       result.fetched = result.items.length;
@@ -243,25 +243,66 @@ function collectParts(
   return out;
 }
 
-function deriveTopics(agency: string, partTitle: string): string[] {
-  const base = new Set<string>(["energy"]); // Title 10 = Energy
+/** Per-title fallback so every part has at least one topic. */
+const TITLE_DEFAULT_TOPIC: Record<number, string> = {
+  10: "energy",
+  14: "aviation",
+  21: "drugs",
+};
+
+function deriveTopics(
+  titleNumber: number,
+  agency: string,
+  partTitle: string,
+): string[] {
+  const topics = new Set<string>();
   const hay = `${agency} ${partTitle}`.toLowerCase();
 
-  if (/nuclear regulatory|reactor|nuclear|radioact|byproduct|source material|spent fuel|enrich/.test(hay))
-    base.add("nuclear");
-  if (/radiation|dose|dosimetr/.test(hay)) base.add("radiation");
-  if (/efficien|conservation|appliance|standby|energy star|building/.test(hay))
-    base.add("energy");
-  if (/environment|nepa|emission|greenhouse/.test(hay)) base.add("emissions");
-  if (/licen[cs]|certif|application|approval|permit/.test(hay))
-    base.add("permitting");
-  if (/report|record|inform|disclosure/.test(hay)) base.add("reporting");
-  if (/worker|occupational|safety|protection of/.test(hay))
-    base.add("worker-safety");
-  if (/nuclear regulatory commission/.test(agency.toLowerCase()))
-    base.add("nuclear");
+  // Cross-title keyword signals.
+  if (/licen[cs]|certif|application|approval|permit|registration/.test(hay))
+    topics.add("permitting");
+  if (/report|record|inform|disclosure|filing/.test(hay)) topics.add("reporting");
+  if (/environment|nepa|emission|greenhouse|air quality|noise/.test(hay))
+    topics.add("emissions");
+  if (/occupational|worker|workplace/.test(hay)) topics.add("worker-safety");
 
-  return Array.from(base);
+  // Title 10 — Energy (NRC + DOE).
+  if (titleNumber === 10) {
+    topics.add("energy");
+    if (/nuclear|reactor|radioact|byproduct|source material|spent fuel|enrich/.test(hay))
+      topics.add("nuclear");
+    if (/radiation|dose|dosimetr/.test(hay)) topics.add("radiation");
+    if (/efficien|conservation|appliance|standby|energy star/.test(hay))
+      topics.add("energy");
+  }
+
+  // Title 14 — Aeronautics and Space (FAA + Commercial Space + NASA).
+  if (titleNumber === 14) {
+    topics.add("aviation");
+    if (/space|launch|orbital|satellite|reentry|spaceport|astronaut/.test(hay))
+      topics.add("aerospace");
+    if (/airworthiness|aircraft|airport|airman|airspace|flight|pilot|drone|unmanned/.test(hay))
+      topics.add("aviation");
+  }
+
+  // Title 21 — Food and Drugs (FDA + DEA).
+  if (titleNumber === 21) {
+    if (/food|dietary|nutrition|beverage|color additive|infant formula/.test(hay))
+      topics.add("food-safety");
+    if (/drug|pharmaceutic|biologic|prescription|controlled substance|narcotic|opioid/.test(hay))
+      topics.add("drugs");
+    if (/device|radiolog|diagnostic|in vitro|mammograph/.test(hay))
+      topics.add("medical-devices");
+    if (/cosmetic/.test(hay)) topics.add("cosmetics");
+    if (/tobacco|cigarette|vap/.test(hay)) topics.add("tobacco");
+    if (/radiation|radiolog|x-ray|laser/.test(hay)) topics.add("radiation");
+    if (/chemical|substance/.test(hay)) topics.add("chemicals");
+  }
+
+  if (topics.size === 0) {
+    topics.add(TITLE_DEFAULT_TOPIC[titleNumber] ?? "reporting");
+  }
+  return Array.from(topics);
 }
 
 // ---------------------------------------------------------------------------
@@ -372,5 +413,17 @@ export const ECFR_TITLE_CONNECTORS: Connector[] = [
     regulatorSlug: "us-cfr-10",
     titleNumber: 10,
     label: "eCFR — Title 10 (Energy)",
+  }),
+  buildEcfrTitleConnector({
+    id: "ecfr-title-14",
+    regulatorSlug: "us-cfr-14",
+    titleNumber: 14,
+    label: "eCFR — Title 14 (Aeronautics and Space)",
+  }),
+  buildEcfrTitleConnector({
+    id: "ecfr-title-21",
+    regulatorSlug: "us-cfr-21",
+    titleNumber: 21,
+    label: "eCFR — Title 21 (Food and Drugs)",
   }),
 ];

@@ -76,8 +76,8 @@ export default async function OnboardingPage() {
             >
               Settings &rarr; Footprint
             </Link>
-            . The defaults are intentionally empty so you don't get scored against
-            assumptions you didn't make.
+            . The defaults are intentionally empty so you don&apos;t get scored against
+            assumptions you didn&apos;t make.
           </p>
         </header>
 
@@ -105,7 +105,7 @@ export default async function OnboardingPage() {
           <Link href="/regwatch/feed" className="text-foreground hover:underline">
             skip to the Feed
           </Link>{" "}
-          — your footprint can stay empty until you're ready.
+          — your footprint can stay empty until you&apos;re ready.
         </p>
       </div>
     </RegwatchAppShell>

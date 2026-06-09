@@ -26,6 +26,13 @@ export const TOPIC_TAXONOMY: { value: string; label: string }[] = [
   { value: "construction", label: "Construction & materials" },
   { value: "gulf", label: "Gulf / GCC" },
   { value: "gcc-alignment", label: "GCC alignment" },
+  { value: "aviation", label: "Aviation" },
+  { value: "aerospace", label: "Aerospace & space" },
+  { value: "food-safety", label: "Food safety" },
+  { value: "drugs", label: "Drugs & pharmaceuticals" },
+  { value: "medical-devices", label: "Medical devices" },
+  { value: "cosmetics", label: "Cosmetics" },
+  { value: "tobacco", label: "Tobacco" },
 ];
 
 export const INSTRUMENT_TYPE_TAXONOMY: { value: string; label: string }[] = [
