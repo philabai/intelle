@@ -95,7 +95,11 @@ interface RowProps {
 function TreeRow({ node, depth, jurisdictionCode, openIds, onToggle }: RowProps) {
   const open = openIds.has(node.id);
   const hasChildren = node.children.length > 0;
-  const isLeaf = !!node.regulatoryItemId;
+  // A leaf is a childless node carrying a citation (or a resolved item id). We
+  // link by citation slug so the leaf is clickable even before the section→item
+  // id linkage lands — the slug matches the regulation's own slug.
+  const leafTarget = node.citation ?? node.regulatoryItemId;
+  const isLeaf = !hasChildren && !!leafTarget;
   const indent = depth * 16;
 
   const headerInner = (
@@ -136,9 +140,9 @@ function TreeRow({ node, depth, jurisdictionCode, openIds, onToggle }: RowProps)
           <span className="w-3 shrink-0" aria-hidden />
         )}
 
-        {isLeaf && node.regulatoryItemId ? (
+        {isLeaf && leafTarget ? (
           <Link
-            href={`/regwatch/r/${jurisdictionCode.toLowerCase()}/${slugFromCitation(node.citation ?? node.regulatoryItemId)}`}
+            href={`/regwatch/r/${jurisdictionCode.toLowerCase()}/${slugFromCitation(leafTarget)}`}
             className="flex-1 truncate"
           >
             {headerInner}

@@ -113,17 +113,26 @@ export async function persistHierarchy(
     const citations = Array.from(
       new Set(leavesWithCitation.map((f) => f.node.citation as string)),
     );
-    const { data: items, error: itemErr } = await svc
-      .from("regulatory_items")
-      .select("id, citation")
-      .eq("regulator_id", regulatorId)
-      .in("citation", citations);
-    if (itemErr) {
-      result.errors.push(`citation lookup: ${itemErr.message}`);
-    } else {
-      const citationToItemId = new Map(
-        (items ?? []).map((it) => [it.citation as string, it.id as string]),
-      );
+    // Resolve in chunks: a single .in() over hundreds of long citations
+    // overflows the GET request URL (statutes like C-15.1 carry ~400 leaf
+    // citations), which surfaces as an opaque "fetch failed".
+    const citationToItemId = new Map<string, string>();
+    for (let i = 0; i < citations.length; i += 100) {
+      const slice = citations.slice(i, i + 100);
+      const { data: items, error: itemErr } = await svc
+        .from("regulatory_items")
+        .select("id, citation")
+        .eq("regulator_id", regulatorId)
+        .in("citation", slice);
+      if (itemErr) {
+        result.errors.push(`citation lookup @${i}: ${itemErr.message}`);
+        continue;
+      }
+      for (const it of items ?? []) {
+        citationToItemId.set(it.citation as string, it.id as string);
+      }
+    }
+    {
       const updates: { id: string; regulatory_item_id: string }[] = [];
       for (const f of leavesWithCitation) {
         const sectionId = pathToId.get(f.node.path);

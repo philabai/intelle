@@ -33,7 +33,7 @@ import { citationSlug } from "./types";
 const XML_URL = "https://laws-lois.justice.gc.ca/eng/XML/C-15.1.xml";
 const SECTION_URL_BASE = "https://laws-lois.justice.gc.ca/eng/acts/C-15.1";
 const ACT_TITLE = "Canadian Energy Regulator Act";
-const FETCH_TIMEOUT_MS = 30_000;
+const FETCH_TIMEOUT_MS = 90_000;
 const USER_AGENT =
   "vantage-intelle/1.0 (compliance monitoring; +https://intelle.io)";
 
