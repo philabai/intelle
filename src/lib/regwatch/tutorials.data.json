@@ -352,32 +352,32 @@
           "slug": "gallery",
           "title": "Your company documents",
           "file": "tutorials/author/01-gallery.mp4",
-          "durationSec": 25.71,
-          "rev": 1781123562830,
+          "durationSec": 27.25,
+          "rev": 1781124844548,
           "cues": [
             {
               "start": 0,
-              "end": 8.52,
+              "end": 4.75,
+              "text": "Open Author → Company documents"
+            },
+            {
+              "start": 4.75,
+              "end": 11.57,
               "text": "Your company documents"
             },
             {
-              "start": 8.52,
-              "end": 11.98,
-              "text": "A folder for every project"
+              "start": 11.57,
+              "end": 16.83,
+              "text": "Organise into project folders"
             },
             {
-              "start": 11.98,
-              "end": 15.75,
-              "text": "Create a folder"
-            },
-            {
-              "start": 15.75,
-              "end": 19.35,
+              "start": 16.83,
+              "end": 21.39,
               "text": "SOPs, policies, permits, standards"
             },
             {
-              "start": 19.35,
-              "end": 25.71,
+              "start": 21.39,
+              "end": 27.25,
               "text": "Status & ownership at a glance"
             }
           ]
@@ -386,32 +386,32 @@
           "slug": "template",
           "title": "Start from a template",
           "file": "tutorials/author/02-template.mp4",
-          "durationSec": 31.25,
-          "rev": 1781123562830,
+          "durationSec": 30,
+          "rev": 1781124844548,
           "cues": [
             {
               "start": 0,
-              "end": 3.36,
-              "text": "Create a new document"
+              "end": 3.12,
+              "text": "Click “+ New”"
             },
             {
-              "start": 3.36,
-              "end": 11.88,
+              "start": 3.12,
+              "end": 11.83,
               "text": "Pick a template family"
             },
             {
-              "start": 11.88,
-              "end": 18.89,
+              "start": 11.83,
+              "end": 19.44,
               "text": "Pre-structured for you"
             },
             {
-              "start": 18.89,
-              "end": 25.3,
+              "start": 19.44,
+              "end": 24.24,
               "text": "Create from the template"
             },
             {
-              "start": 25.3,
-              "end": 31.25,
+              "start": 24.24,
+              "end": 30,
               "text": "Land on your document hub"
             }
           ]
@@ -420,32 +420,32 @@
           "slug": "editor",
           "title": "Write in the editor",
           "file": "tutorials/author/03-editor.mp4",
-          "durationSec": 23.71,
-          "rev": 1781123562830,
+          "durationSec": 24.46,
+          "rev": 1781124844548,
           "cues": [
             {
               "start": 0,
-              "end": 2.66,
-              "text": "Open the editor"
+              "end": 4.92,
+              "text": "Click “Edit”"
             },
             {
-              "start": 2.66,
-              "end": 7.77,
+              "start": 4.92,
+              "end": 9.77,
               "text": "A familiar toolbar"
             },
             {
-              "start": 7.77,
-              "end": 12.93,
+              "start": 9.77,
+              "end": 14.47,
               "text": "Add and edit sections"
             },
             {
-              "start": 12.93,
-              "end": 18.09,
+              "start": 14.47,
+              "end": 18.24,
               "text": "A live section outline"
             },
             {
-              "start": 18.09,
-              "end": 23.71,
+              "start": 18.24,
+              "end": 24.46,
               "text": "Tables, rows and page breaks"
             }
           ]
@@ -454,32 +454,32 @@
           "slug": "cite",
           "title": "Cite & crosswalk regulations",
           "file": "tutorials/author/04-cite.mp4",
-          "durationSec": 27.41,
-          "rev": 1781123562830,
+          "durationSec": 24.11,
+          "rev": 1781124844548,
           "cues": [
             {
               "start": 0,
-              "end": 7.51,
+              "end": 6.22,
               "text": "Click “Clause linking”"
             },
             {
-              "start": 7.51,
-              "end": 12.17,
+              "start": 6.22,
+              "end": 11.07,
               "text": "Open the mapping workspace"
             },
             {
-              "start": 12.17,
-              "end": 17.79,
+              "start": 11.07,
+              "end": 15.03,
               "text": "Crosswalk against a regulation"
             },
             {
-              "start": 17.79,
-              "end": 22.95,
+              "start": 15.03,
+              "end": 19.69,
               "text": "Map sections to clauses"
             },
             {
-              "start": 22.95,
-              "end": 27.41,
+              "start": 19.69,
+              "end": 24.11,
               "text": "Save the traceability matrix"
             }
           ]
@@ -488,32 +488,32 @@
           "slug": "review",
           "title": "Link, review & sign off",
           "file": "tutorials/author/05-review.mp4",
-          "durationSec": 31.45,
-          "rev": 1781123562830,
+          "durationSec": 29.23,
+          "rev": 1781124844548,
           "cues": [
             {
               "start": 0,
-              "end": 5.45,
+              "end": 5.4,
               "text": "Click “Linked regulations”"
             },
             {
-              "start": 5.45,
-              "end": 12.22,
+              "start": 5.4,
+              "end": 11.81,
               "text": "Pinned to the version on file"
             },
             {
-              "start": 12.22,
-              "end": 17.67,
+              "start": 11.81,
+              "end": 16.61,
               "text": "Link the assets it governs"
             },
             {
-              "start": 17.67,
-              "end": 23.53,
+              "start": 16.61,
+              "end": 21.91,
               "text": "Comment & resolve"
             },
             {
-              "start": 23.53,
-              "end": 31.45,
+              "start": 21.91,
+              "end": 29.23,
               "text": "Move through review & sign off"
             }
           ]
