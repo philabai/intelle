@@ -185,24 +185,50 @@ async function main() {
   const folderId = folder?.id ?? null;
 
   const docs = [
-    { title: "Process Safety Management Manual", doc_kind: "sop", internal_code: "SOP-EHS-014", version: "2.1", description: "Company PSM programme covering pressure equipment, MOC and PHA.", status: "active" },
-    { title: "Air Emissions Monitoring Policy", doc_kind: "policy", internal_code: "POL-ENV-003", version: "1.0", description: "Methane and VOC monitoring, recordkeeping and reporting policy.", status: "active" },
-    { title: "Reactor ISI Programme (draft)", doc_kind: "internal-standard", internal_code: "STD-NUC-009", version: "0.1", description: "In-service inspection programme for the reactor pressure vessel.", status: "draft" },
+    { title: "Process Safety Management Manual", doc_kind: "sop", internal_code: "SOP-EHS-014", version: "2.1", description: "Company PSM programme covering pressure equipment, MOC and PHA.", status: "active", review_state: "effective" },
+    { title: "Air Emissions Monitoring Policy", doc_kind: "policy", internal_code: "POL-ENV-003", version: "1.0", description: "Methane and VOC monitoring, recordkeeping and reporting policy.", status: "active", review_state: "in_review" },
+    { title: "Reactor ISI Programme (draft)", doc_kind: "internal-standard", internal_code: "STD-NUC-009", version: "0.1", description: "In-service inspection programme for the reactor pressure vessel.", status: "draft", review_state: "draft" },
   ];
+  const docIdByTitle = new Map<string, string>();
   for (const d of docs) {
-    const { error } = await db.from("internal_documents").insert({
-      organization_id: ownerOrg,
-      owner_user_id: userId,
-      owner_role: "EHS Manager",
-      folder_id: folderId,
-      created_by: userId,
-      effective_date: "2026-03-01",
-      next_review_date: "2027-03-01",
-      ...d,
-    });
+    const { data, error } = await db
+      .from("internal_documents")
+      .insert({
+        organization_id: ownerOrg,
+        owner_user_id: userId,
+        owner_role: "EHS Manager",
+        folder_id: folderId,
+        created_by: userId,
+        effective_date: "2026-03-01",
+        next_review_date: "2027-03-01",
+        ...d,
+      })
+      .select("id")
+      .single();
     if (error) throw new Error(`document ${d.title}: ${error.message}`);
+    if (data) docIdByTitle.set(d.title, data.id as string);
   }
   console.log(`  documents: ${docs.length} seeded`);
+
+  // Open review comments — so the in-review policy shows "under commenting".
+  const reviewDocId = docIdByTitle.get("Air Emissions Monitoring Policy");
+  const draftDocId = docIdByTitle.get("Reactor ISI Programme (draft)");
+  const comments: Record<string, unknown>[] = [];
+  if (reviewDocId) {
+    comments.push(
+      { organization_id: ownerOrg, internal_document_id: reviewDocId, author_user_id: userId, body: "Section 3.2 — confirm the LDAR survey frequency matches OOOOb." },
+      { organization_id: ownerOrg, internal_document_id: reviewDocId, author_user_id: userId, body: "Add the super-emitter response timeline to the recordkeeping table." },
+      { organization_id: ownerOrg, internal_document_id: reviewDocId, author_user_id: userId, body: "Cross-reference the flare monitoring SOP here." },
+    );
+  }
+  if (draftDocId) {
+    comments.push({ organization_id: ownerOrg, internal_document_id: draftDocId, author_user_id: userId, body: "Define the ISI interval per the ASME code edition we adopt." });
+  }
+  if (comments.length) {
+    const cErr = (await db.from("internal_document_comments").insert(comments)).error;
+    if (cErr) console.log(`  (comments skipped: ${cErr.message})`);
+    else console.log(`  open comments: ${comments.length} seeded`);
+  }
 
   // 9. Saved searches (so the Monitor → Saved page isn't empty).
   await db.from("saved_searches").delete().eq("organization_id", ownerOrg);

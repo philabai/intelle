@@ -63,3 +63,30 @@ export async function getDocumentSummary(): Promise<DocumentSummary> {
   s.openComments = count ?? 0;
   return s;
 }
+
+export interface DocCommentCount {
+  documentId: string;
+  title: string;
+  count: number;
+}
+
+/** Open (unresolved) review comments grouped by document. */
+export async function getOpenCommentsByDocument(): Promise<DocCommentCount[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("internal_document_comments")
+    .select("internal_document_id, doc:internal_documents!inner ( title )")
+    .is("resolved_at", null);
+  if (error || !data) return [];
+  const map = new Map<string, { title: string; count: number }>();
+  for (const r of data) {
+    const doc = Array.isArray(r.doc) ? r.doc[0] : r.doc;
+    const id = r.internal_document_id as string;
+    const e = map.get(id) ?? { title: (doc?.title as string) ?? "Untitled", count: 0 };
+    e.count += 1;
+    map.set(id, e);
+  }
+  return Array.from(map.entries())
+    .map(([documentId, v]) => ({ documentId, ...v }))
+    .sort((a, b) => b.count - a.count);
+}

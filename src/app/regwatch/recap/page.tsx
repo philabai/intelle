@@ -12,6 +12,7 @@ import { getCorpusRecap, type RecapItem } from "@/lib/regwatch/recap-queries";
 import {
   getObligationSummary,
   getDocumentSummary,
+  getOpenCommentsByDocument,
 } from "@/lib/regwatch/compliance-summary";
 import { topicLabel } from "@/lib/regwatch/taxonomy";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
@@ -107,7 +108,7 @@ export default async function RecapPage() {
     );
   }
 
-  const [counts, topPriorities, recentlyChanged, deadlines, obligations, documents] =
+  const [counts, topPriorities, recentlyChanged, deadlines, obligations, documents, commentsByDoc] =
     await Promise.all([
       getMyFeedCounts(),
       listMyFeed({ sort: "score", limit: 6 }),
@@ -115,6 +116,7 @@ export default async function RecapPage() {
       listApproachingDeadlines(),
       getObligationSummary(),
       getDocumentSummary(),
+      getOpenCommentsByDocument(),
     ]);
 
   // Topic breakdown across the user's active matches (from the loaded sets).
@@ -192,13 +194,37 @@ export default async function RecapPage() {
             to get started.
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            <Stat label="Total" value={documents.total} />
-            <Stat label="Drafts" value={documents.draft} accent="teal" />
-            <Stat label="In review" value={documents.inReview} accent="amber" />
-            <Stat label="Live" value={documents.live} />
-            <Stat label="Open comments" value={documents.openComments} />
-          </div>
+          <>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+              <Stat label="Total" value={documents.total} />
+              <Stat label="Drafts" value={documents.draft} accent="teal" />
+              <Stat label="In review" value={documents.inReview} accent="amber" />
+              <Stat label="Live" value={documents.live} />
+              <Stat label="Open comments" value={documents.openComments} />
+            </div>
+            {commentsByDoc.length > 0 && (
+              <div className="mt-3 rounded-xl border border-card-border bg-card-bg/40 p-4">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
+                  Under commenting
+                </p>
+                <ul className="mt-2 space-y-1.5">
+                  {commentsByDoc.map((c) => (
+                    <li key={c.documentId} className="flex items-center justify-between gap-3 text-sm">
+                      <Link
+                        href={`/regwatch/documents/${c.documentId}`}
+                        className="truncate text-foreground hover:text-brand-teal"
+                      >
+                        {c.title}
+                      </Link>
+                      <span className="shrink-0 text-xs text-amber-300">
+                        {c.count} open {c.count === 1 ? "comment" : "comments"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </>
         )}
 
         {topTopics.length > 0 && (
