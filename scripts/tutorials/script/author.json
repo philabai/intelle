@@ -57,32 +57,32 @@
       "slug": "cite",
       "title": "Cite & crosswalk regulations",
       "steps": [
-        { "caption": "Compose beside the source", "segment": { "in": 410, "out": 420 },
-          "narration": "In the Compose workspace, pull a regulation up beside your draft." },
-        { "caption": "Cite a clause inline", "segment": { "in": 420, "out": 432 },
-          "narration": "Cite a clause directly. The citation pins to that regulation version, and flags for review if it ever changes." },
-        { "caption": "Open the Clause Crosswalk", "segment": { "in": 200, "out": 212 },
-          "narration": "Or open the Clause Crosswalk to map your whole document, section by section." },
+        { "caption": "Click “Clause linking”", "segment": { "in": 176, "out": 183 },
+          "narration": "On the document, click Clause linking — the section-to-clause traceability matrix that auditors look for." },
+        { "caption": "Open the mapping workspace", "segment": { "in": 184, "out": 191 },
+          "narration": "Open the mapping workspace to build it, clause by clause." },
+        { "caption": "Crosswalk against a regulation", "segment": { "in": 193, "out": 206 },
+          "narration": "Search for the regulation you're mapping against, and pull up its clauses." },
         { "caption": "Map sections to clauses", "segment": { "in": 235, "out": 248 },
-          "narration": "Pick a section on the left and the matching regulation clause on the right." },
-        { "caption": "A traceability matrix", "segment": { "in": 248, "out": 260 },
-          "narration": "Save the mapping to build the clause-by-clause traceability matrix auditors expect." }
+          "narration": "Pair each section of your document with the matching regulation clause." },
+        { "caption": "Save the traceability matrix", "segment": { "in": 248, "out": 260 },
+          "narration": "Save it, and you've built a clause-by-clause traceability matrix." }
       ]
     },
     {
       "slug": "review",
       "title": "Link, review & sign off",
       "steps": [
-        { "caption": "Link regulations", "segment": { "in": 108, "out": 120 },
-          "narration": "Link the document to the regulations it's in scope of — pinned to the version on file." },
-        { "caption": "Link assets", "segment": { "in": 275, "out": 286 },
-          "narration": "Link the assets it governs, so it's tied into your compliance picture." },
+        { "caption": "Click “Linked regulations”", "segment": { "in": 106, "out": 112 },
+          "narration": "On the document hub, click Linked regulations to see what it's in scope of." },
+        { "caption": "Pinned to the version on file", "segment": { "in": 112, "out": 121 },
+          "narration": "Link every regulation it covers — each pinned to the version on file, so it flags when that regulation changes." },
+        { "caption": "Link the assets it governs", "segment": { "in": 275, "out": 286 },
+          "narration": "Link the assets it governs, tying the document into your live compliance picture." },
         { "caption": "Comment & resolve", "segment": { "in": 286, "out": 298 },
           "narration": "Reviewers leave comments anchored to paragraphs or clauses, and resolve them as they go." },
-        { "caption": "Move through review", "segment": { "in": 95, "out": 106 },
-          "narration": "Move the document through the review workflow — submit, request changes, approve." },
-        { "caption": "Sign off with an audit trail", "segment": { "in": 100, "out": 108 },
-          "narration": "Each step captures an electronic signature, with a full audit trail you can export as a PDF." }
+        { "caption": "Move through review & sign off", "segment": { "in": 95, "out": 104 },
+          "narration": "Then move the document through review and sign off — every step captures an electronic signature and a full audit trail." }
       ]
     }
   ]

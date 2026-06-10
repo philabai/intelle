@@ -89,8 +89,8 @@ async function main() {
     console.log(`\n=== ${nn} ${sec.slug} ===`);
 
     const stepAudios: string[] = [];
+    const stepVideos: string[] = [];
     const cues: { start: number; end: number; text: string }[] = [];
-    const filters: string[] = [];
     let cursor = 0;
 
     for (let i = 0; i < sec.steps.length; i++) {
@@ -103,38 +103,41 @@ async function main() {
       cues.push({ start: +cursor.toFixed(2), end: +(cursor + d).toFixed(2), text: step.caption });
       cursor += d;
 
-      // 2. Fit this step's segment to exactly d seconds.
+      // 2. Fit this step's segment to EXACTLY d seconds, rendered to its own
+      //    clip (seek-based, so backward source jumps between steps can't
+      //    corrupt the timeline). Speed up to fit, capped at MAX_SPEED; if the
+      //    footage is shorter than the narration, play it at 1x then freeze the
+      //    last frame for the remainder (never slow-mo).
       const seg = step.segment;
       const raw = seg.out - seg.in;
-      let usedOut = seg.out, pad = 0, dur0: number;
+      let usedOut = seg.out, pad = 0, mult: number;
       if (raw / d > MAX_SPEED) {
-        usedOut = seg.in + d * MAX_SPEED; dur0 = d * MAX_SPEED; // trim tail, play at MAX
+        usedOut = seg.in + d * MAX_SPEED; mult = 1 / MAX_SPEED; // trim tail, play at MAX
       } else if (raw < d) {
-        dur0 = raw; pad = d - raw; // hold last frame for the remainder
+        mult = 1; pad = d - raw; // play at 1x, hold last frame for the remainder
       } else {
-        dur0 = raw; // fit exactly
+        mult = d / raw; // speed up to fit exactly
       }
-      const mult = d / dur0; // setpts multiplier so dur0 → d
-      let chain = `[0:v]trim=start=${seg.in}:end=${usedOut},setpts=${mult.toFixed(6)}*(PTS-STARTPTS)`;
-      if (pad > 0.04) chain += `,tpad=stop_mode=clone:stop_duration=${pad.toFixed(3)}`;
-      chain += `[p${i}]`;
-      filters.push(chain);
-      const speed = raw / Math.min(dur0, raw) * (pad > 0 ? 1 : 1); // for logging only
+      const len = usedOut - seg.in;
+      let vf = `setpts=${mult.toFixed(6)}*(PTS-STARTPTS)`;
+      if (pad > 0.04) vf += `,tpad=stop_mode=clone:stop_duration=${pad.toFixed(3)}`;
+      vf += `,fps=30,scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:color=0x0a0e1a,setsar=1`;
+      const sv = `${tmp}/${nn}-${i}-v.mp4`;
+      await ff(["-hide_banner", "-y", "-ss", seg.in.toString(), "-t", len.toFixed(3), "-i", src,
+        "-vf", vf, "-an", "-c:v", "libx264", "-preset", "medium", "-crf", "22",
+        "-pix_fmt", "yuv420p", "-video_track_timescale", "15360", sv]);
+      stepVideos.push(sv);
       console.log(`  step ${i + 1}: "${step.caption}" ${d.toFixed(1)}s  (${(raw / d).toFixed(2)}x${pad > 0.04 ? ", hold" : ""})`);
-      void speed;
     }
     const N = cursor;
 
-    // 3. Concat step videos → section video, then normalise.
-    const cat = sec.steps.map((_, i) => `[p${i}]`).join("");
-    const filter = [
-      ...filters,
-      `${cat}concat=n=${sec.steps.length}:v=1:a=0[c]`,
-      `[c]fps=30,scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:color=0x0a0e1a,setsar=1[vout]`,
-    ].join(";");
+    // 3. Concat the per-step clips (each already normalised + exactly its
+    //    narration long) via the demuxer — no shared-decode timeline to balloon.
+    const vlist = `${tmp}/${nn}-vlist.txt`;
+    writeFileSync(vlist, stepVideos.map((f) => `file '${f}'`).join("\n"));
     const videoOut = `${tmp}/${nn}-video.mp4`;
-    await ff(["-hide_banner", "-y", "-i", src, "-filter_complex", filter, "-map", "[vout]",
-      "-c:v", "libx264", "-preset", "medium", "-crf", "22", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-an", videoOut]);
+    await ff(["-hide_banner", "-y", "-f", "concat", "-safe", "0", "-i", vlist,
+      "-c", "copy", "-movflags", "+faststart", videoOut]);
 
     // 4. Concat step audios + mux.
     const listFile = `${tmp}/${nn}-list.txt`;
