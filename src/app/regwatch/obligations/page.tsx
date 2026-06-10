@@ -186,8 +186,8 @@ export default async function ObligationsPage({ searchParams }: Props) {
             No obligations yet for this filter.
           </p>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-card-border bg-background">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-xl border border-card-border bg-background">
+            <table className="w-full min-w-[640px] text-sm">
               <thead className="border-b border-card-border bg-card-bg/40 text-left text-[10px] uppercase tracking-wider text-muted">
                 <tr>
                   <th className="px-4 py-3">Regulation</th>

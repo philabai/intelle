@@ -96,7 +96,7 @@ export function HelpDrawer({ open, onClose, onAskIris }: Props) {
         className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <aside className="fixed right-0 top-0 z-50 flex h-screen w-full max-w-[440px] flex-col border-l border-card-border bg-card-bg shadow-2xl shadow-black/60">
+      <aside className="fixed right-0 top-0 z-50 flex h-[100dvh] w-full max-w-[440px] flex-col border-l border-card-border bg-card-bg shadow-2xl shadow-black/60">
         <header className="flex items-start justify-between gap-3 border-b border-card-border bg-card-bg/80 px-5 py-3">
           <div className="min-w-0">
             <h3 className="text-sm font-semibold text-foreground">

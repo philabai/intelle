@@ -224,7 +224,7 @@ export function RegwatchChatWidget({
         <div
           role="dialog"
           aria-label="Iris chatbot"
-          className="fixed bottom-20 right-5 z-50 flex h-[600px] max-h-[calc(100vh-100px)] w-[400px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-xl border border-card-border bg-background shadow-2xl"
+          className="fixed bottom-20 right-3 z-50 flex h-[600px] max-h-[calc(100dvh-100px)] w-[400px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-xl border border-card-border bg-background shadow-2xl"
         >
           <header className="flex items-center justify-between gap-2 border-b border-card-border bg-card-bg/60 px-4 py-3">
             <div>

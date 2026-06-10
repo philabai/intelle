@@ -262,7 +262,7 @@ export function ClauseCrosswalkWorkspace({
   const showFallback = !internalBody.usableForMapping;
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] flex-col">
+    <div className="flex h-[calc(100dvh-3.5rem)] flex-col">
       {/* Header */}
       <header className="flex items-center justify-between gap-4 border-b border-card-border bg-card-bg/30 px-4 py-2.5">
         <div className="min-w-0">

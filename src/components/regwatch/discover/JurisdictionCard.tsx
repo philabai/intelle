@@ -56,7 +56,7 @@ export function JurisdictionCard({
         {itemCount.toLocaleString()}{" "}
         {itemCount === 1 ? "regulation" : "regulations"}
       </p>
-      <p className="mt-3 text-[11px] text-brand-blue opacity-0 transition group-hover:opacity-100">
+      <p className="mt-3 text-[11px] text-brand-blue opacity-100 transition md:opacity-0 md:group-hover:opacity-100">
         Browse the hierarchy →
       </p>
     </Link>

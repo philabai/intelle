@@ -265,7 +265,7 @@ export function MobileNavSheet({
         )}
       </button>
       {open && (
-        <div className="fixed inset-x-0 top-14 z-40 max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-card-border bg-background/95 backdrop-blur-md md:hidden">
+        <div className="fixed inset-x-0 top-14 z-40 max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t border-card-border bg-background/95 backdrop-blur-md md:hidden">
           <div className="space-y-3 px-4 py-4">
             {visibleClusters.map((c) => (
               <MobileCluster key={c.label} cluster={c} />

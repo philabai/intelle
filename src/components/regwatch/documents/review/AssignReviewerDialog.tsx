@@ -80,7 +80,7 @@ export function AssignReviewerDialog({
   return (
     <Modal open={open} onClose={onClose} title="Assign reviewer or approver" size="md">
       <div className="space-y-3">
-        <fieldset className="grid grid-cols-2 gap-2">
+        <fieldset className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {(["reviewer", "approver"] as const).map((r) => (
             <label
               key={r}

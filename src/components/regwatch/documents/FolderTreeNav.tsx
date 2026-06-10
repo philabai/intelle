@@ -244,7 +244,7 @@ function FolderRow({
           </span>
         </Link>
         {canEdit && (
-          <span className="hidden gap-0.5 group-hover:flex">
+          <span className="flex gap-0.5 md:hidden md:group-hover:flex">
             <button
               type="button"
               onClick={() => onAddChild(node.id)}

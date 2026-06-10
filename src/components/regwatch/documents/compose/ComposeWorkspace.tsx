@@ -190,7 +190,7 @@ export function ComposeWorkspace({
   }
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] flex-col">
+    <div className="flex h-[calc(100dvh-3.5rem)] flex-col">
       {/* Header */}
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-card-border bg-card-bg/40 px-4 py-2">
         <div className="flex min-w-0 items-center gap-3">

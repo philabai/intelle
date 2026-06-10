@@ -142,7 +142,7 @@ export function CrosswalkParagraphPane({
                     <button
                       type="button"
                       onClick={() => onPick(anchor, p.text)}
-                      className="ml-auto rounded-md border border-card-border bg-background px-2 py-0.5 text-[10px] font-medium text-foreground/90 opacity-0 transition group-hover:opacity-100 hover:border-brand-blue hover:text-brand-blue focus:opacity-100"
+                      className="ml-auto rounded-md border border-card-border bg-background px-2 py-1 text-[10px] font-medium text-foreground/90 opacity-100 transition hover:border-brand-blue hover:text-brand-blue focus:opacity-100 md:opacity-0 md:group-hover:opacity-100"
                     >
                       {pickLabel}
                     </button>
