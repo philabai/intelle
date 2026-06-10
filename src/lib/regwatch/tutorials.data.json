@@ -182,6 +182,83 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "comply",
+      "title": "Managing Compliance",
+      "description": "Work your reviewer inbox, create and review obligations with evidence, build your asset hierarchy, and configure your footprint.",
+      "sections": [
+        {
+          "slug": "hub",
+          "title": "Your compliance cockpit",
+          "file": "tutorials/comply/01-hub.mp4",
+          "durationSec": 8.11,
+          "cues": [
+            {
+              "start": 0,
+              "end": 8.11,
+              "text": "Your compliance cockpit"
+            }
+          ]
+        },
+        {
+          "slug": "inbox",
+          "title": "The reviewer inbox",
+          "file": "tutorials/comply/02-inbox.mp4",
+          "durationSec": 5.86,
+          "cues": [
+            {
+              "start": 0,
+              "end": 5.86,
+              "text": "The reviewer inbox"
+            }
+          ]
+        },
+        {
+          "slug": "obligations",
+          "title": "Obligations & evidence",
+          "file": "tutorials/comply/03-obligations.mp4",
+          "durationSec": 18.63,
+          "cues": [
+            {
+              "start": 0,
+              "end": 8.81,
+              "text": "Create an obligation"
+            },
+            {
+              "start": 8.81,
+              "end": 18.63,
+              "text": "Review with evidence"
+            }
+          ]
+        },
+        {
+          "slug": "assets",
+          "title": "Build your asset hierarchy",
+          "file": "tutorials/comply/04-assets.mp4",
+          "durationSec": 11.16,
+          "cues": [
+            {
+              "start": 0,
+              "end": 11.16,
+              "text": "Build your asset hierarchy"
+            }
+          ]
+        },
+        {
+          "slug": "footprint",
+          "title": "Configure your footprint",
+          "file": "tutorials/comply/05-footprint.mp4",
+          "durationSec": 11.86,
+          "cues": [
+            {
+              "start": 0,
+              "end": 11.86,
+              "text": "Configure your footprint"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
