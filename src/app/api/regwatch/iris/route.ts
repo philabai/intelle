@@ -318,24 +318,67 @@ export async function POST(request: Request) {
       match_limit: 6,
       alpha: 0.65,
     });
-    if (error) return sseErrorResponse(`Corpus query failed: ${error.message}`);
-    hits = (data ?? []).map((row: Record<string, unknown>) => ({
-      id: row.id as string,
-      citation: row.citation as string,
-      title: row.title as string,
-      slug: row.slug as string,
-      summary: (row.summary as string) ?? null,
-      instrument_type: row.instrument_type as string,
-      status: row.status as string,
-      effective_date: (row.effective_date as string) ?? null,
-      jurisdiction_code: row.jurisdiction_code as string,
-      source_url: row.source_url as string,
-      body_text: (row.body_text as string) ?? null,
-      regulator: {
-        name: row.regulator_name as string,
-        short_name: (row.regulator_short as string) ?? null,
-      },
-    })) as typeof hits;
+    if (error) {
+      // The hybrid RPC can time out on a large corpus. Degrade to fast pure
+      // FTS (GIN-indexed) so Iris still answers from keyword matches instead
+      // of surfacing a "Corpus query failed: …timeout" error to the user.
+      console.error("[regwatch] iris hybrid rpc error — FTS fallback:", error);
+      const fb = await supabase
+        .from("regulatory_items")
+        .select(
+          `id, citation, slug, title, summary, instrument_type, status,
+           effective_date, jurisdiction_code, source_url, body_text,
+           regulator:regulators!inner ( name, short_name )`,
+        )
+        .textSearch("body_search", latestUser.content, {
+          type: "websearch",
+          config: "english",
+        })
+        .order("last_changed_at", { ascending: false })
+        .limit(6);
+      if (fb.error)
+        return sseErrorResponse(`Corpus query failed: ${fb.error.message}`);
+      hits = (fb.data ?? []).map((row) => {
+        const reg = Array.isArray(row.regulator)
+          ? row.regulator[0]
+          : row.regulator;
+        return {
+          id: row.id as string,
+          citation: row.citation as string,
+          title: row.title as string,
+          slug: row.slug as string,
+          summary: (row.summary as string | null) ?? null,
+          instrument_type: row.instrument_type as string,
+          status: row.status as string,
+          effective_date: (row.effective_date as string | null) ?? null,
+          jurisdiction_code: row.jurisdiction_code as string,
+          source_url: row.source_url as string,
+          body_text: (row.body_text as string | null) ?? null,
+          regulator: {
+            name: (reg?.name as string) ?? "",
+            short_name: (reg?.short_name as string | null) ?? null,
+          },
+        };
+      }) as typeof hits;
+    } else {
+      hits = (data ?? []).map((row: Record<string, unknown>) => ({
+        id: row.id as string,
+        citation: row.citation as string,
+        title: row.title as string,
+        slug: row.slug as string,
+        summary: (row.summary as string) ?? null,
+        instrument_type: row.instrument_type as string,
+        status: row.status as string,
+        effective_date: (row.effective_date as string) ?? null,
+        jurisdiction_code: row.jurisdiction_code as string,
+        source_url: row.source_url as string,
+        body_text: (row.body_text as string) ?? null,
+        regulator: {
+          name: row.regulator_name as string,
+          short_name: (row.regulator_short as string) ?? null,
+        },
+      })) as typeof hits;
+    }
   }
 
   const sources: CitationSource[] = hits.map((row) => ({

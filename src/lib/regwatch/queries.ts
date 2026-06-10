@@ -226,8 +226,11 @@ export async function listRegulationsHybrid(
     alpha,
   });
   if (error) {
-    console.error("[regwatch] listRegulationsHybrid rpc error:", error);
-    return [];
+    // The hybrid RPC can time out on a large corpus. Degrade gracefully to
+    // fast pure-FTS (GIN-indexed via listRegulations) so Search still returns
+    // results instead of an error / empty state.
+    console.error("[regwatch] listRegulationsHybrid rpc error — FTS fallback:", error);
+    return listRegulations({ q: query }, limit);
   }
   // The RPC returns flat columns; reshape to RegulationListItem so the
   // existing RegulationRow component can render without changes.
