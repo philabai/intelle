@@ -9,8 +9,16 @@
       "slug": "hub",
       "title": "Your compliance cockpit",
       "steps": [
-        { "caption": "Your compliance cockpit", "segment": { "in": 7, "out": 12 },
-          "narration": "The Comply tab is your compliance cockpit — one view of your reviewer inbox, obligations, asset hierarchy and footprint." }
+        { "caption": "Your compliance cockpit", "segment": { "in": 7, "out": 11 },
+          "narration": "The Comply tab is your compliance cockpit — every surface where compliance work happens." },
+        { "caption": "Reviewer inbox", "segment": { "in": 8, "out": 12 },
+          "narration": "The Reviewer inbox: every review assigned to you, across the org." },
+        { "caption": "Obligations", "segment": { "in": 225, "out": 229 },
+          "narration": "Obligations — compliance duties pinned to assets, with evidence and sign-off." },
+        { "caption": "Asset hierarchy", "segment": { "in": 229, "out": 233 },
+          "narration": "The Asset hierarchy: your operations tree, org down to component." },
+        { "caption": "Footprint & compliance checkup", "segment": { "in": 230, "out": 234 },
+          "narration": "And Footprint and the Compliance checkup tune what scores your feed." }
       ]
     },
     {

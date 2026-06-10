@@ -185,13 +185,33 @@
           "slug": "hub",
           "title": "Your compliance cockpit",
           "file": "tutorials/comply/01-hub.mp4",
-          "durationSec": 8.11,
-          "rev": 1781121681005,
+          "durationSec": 26.78,
+          "rev": 1781122036385,
           "cues": [
             {
               "start": 0,
-              "end": 8.11,
+              "end": 6.05,
               "text": "Your compliance cockpit"
+            },
+            {
+              "start": 6.05,
+              "end": 10.51,
+              "text": "Reviewer inbox"
+            },
+            {
+              "start": 10.51,
+              "end": 17.28,
+              "text": "Obligations"
+            },
+            {
+              "start": 17.28,
+              "end": 22.08,
+              "text": "Asset hierarchy"
+            },
+            {
+              "start": 22.08,
+              "end": 26.78,
+              "text": "Footprint & compliance checkup"
             }
           ]
         },
@@ -199,12 +219,12 @@
           "slug": "inbox",
           "title": "The reviewer inbox",
           "file": "tutorials/comply/02-inbox.mp4",
-          "durationSec": 6.65,
-          "rev": 1781121681005,
+          "durationSec": 5.81,
+          "rev": 1781122036385,
           "cues": [
             {
               "start": 0,
-              "end": 6.65,
+              "end": 5.81,
               "text": "The reviewer inbox"
             }
           ]
@@ -213,42 +233,42 @@
           "slug": "obligations",
           "title": "Obligations & AI-evaluated evidence",
           "file": "tutorials/comply/03-obligations.mp4",
-          "durationSec": 51.29,
-          "rev": 1781121681005,
+          "durationSec": 48.12,
+          "rev": 1781122036385,
           "cues": [
             {
               "start": 0,
-              "end": 6.82,
+              "end": 4.42,
               "text": "Open Obligations"
             },
             {
-              "start": 6.82,
-              "end": 12.39,
+              "start": 4.42,
+              "end": 9.72,
               "text": "Set severity & reviewer"
             },
             {
-              "start": 12.39,
-              "end": 20.14,
+              "start": 9.72,
+              "end": 17.83,
               "text": "Attach evidence — a photo"
             },
             {
-              "start": 20.14,
-              "end": 28.25,
+              "start": 17.83,
+              "end": 25.58,
               "text": "The AI reads the photo"
             },
             {
-              "start": 28.25,
-              "end": 37.75,
+              "start": 25.58,
+              "end": 35.04,
               "text": "Every finding, flagged"
             },
             {
-              "start": 37.75,
-              "end": 44.47,
+              "start": 35.04,
+              "end": 41.81,
               "text": "You review and respond"
             },
             {
-              "start": 44.47,
-              "end": 51.29,
+              "start": 41.81,
+              "end": 48.12,
               "text": "Sign off through the workflow"
             }
           ]
@@ -257,37 +277,37 @@
           "slug": "assets",
           "title": "Build your asset hierarchy",
           "file": "tutorials/comply/04-assets.mp4",
-          "durationSec": 34.2,
-          "rev": 1781121681005,
+          "durationSec": 35.09,
+          "rev": 1781122036385,
           "cues": [
             {
               "start": 0,
-              "end": 6.5,
+              "end": 6.31,
               "text": "Open the asset hierarchy"
             },
             {
-              "start": 6.5,
-              "end": 10.87,
+              "start": 6.31,
+              "end": 11.33,
               "text": "Your sites"
             },
             {
-              "start": 10.87,
-              "end": 15.48,
+              "start": 11.33,
+              "end": 16.13,
               "text": "Add a site"
             },
             {
-              "start": 15.48,
-              "end": 23.23,
+              "start": 16.13,
+              "end": 24.43,
               "text": "Seed an ISO 14224 oil & gas hierarchy"
             },
             {
-              "start": 23.23,
-              "end": 27.79,
+              "start": 24.43,
+              "end": 29.28,
               "text": "Units & equipment, auto-built"
             },
             {
-              "start": 27.79,
-              "end": 34.2,
+              "start": 29.28,
+              "end": 35.09,
               "text": "Expand and refine"
             }
           ]
@@ -296,27 +316,27 @@
           "slug": "footprint",
           "title": "Configure your footprint",
           "file": "tutorials/comply/05-footprint.mp4",
-          "durationSec": 29.06,
-          "rev": 1781121681005,
+          "durationSec": 29.52,
+          "rev": 1781122036385,
           "cues": [
             {
               "start": 0,
-              "end": 9.6,
+              "end": 9.5,
               "text": "Pick your role"
             },
             {
-              "start": 9.6,
-              "end": 16.25,
+              "start": 9.5,
+              "end": 15.86,
               "text": "Your geographies"
             },
             {
-              "start": 16.25,
-              "end": 21.96,
+              "start": 15.86,
+              "end": 22.32,
               "text": "Industries & substances"
             },
             {
-              "start": 21.96,
-              "end": 29.06,
+              "start": 22.32,
+              "end": 29.52,
               "text": "Regulators, topics — then save"
             }
           ]
