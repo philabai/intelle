@@ -101,14 +101,21 @@ async function main() {
     const reqStart = Date.now();
     const vecs = await embedWithRetry(texts);
 
-    const writes = await Promise.all(
-      rows.map((r, i) =>
-        svc.from("regulatory_items").update({ embedding: toPgVectorLiteral(vecs[i]) }).eq("id", r.id),
-      ),
-    );
-    for (const w of writes) {
-      if (w.error) { failed++; if (failed <= 3) console.log(`  ✗ write: ${w.error.message}`); }
-      else done++;
+    // SEQUENTIAL writes — earlier this fired the whole batch as concurrent
+    // UPDATEs, and the burst of connections intermittently starved the Supabase
+    // pool and failed unrelated page loads on the live site. One at a time keeps
+    // DB pressure flat (the Voyage rate limit already paces the loop).
+    for (let i = 0; i < rows.length; i++) {
+      const w = await svc
+        .from("regulatory_items")
+        .update({ embedding: toPgVectorLiteral(vecs[i]) })
+        .eq("id", rows[i].id as string);
+      if (w.error) {
+        failed++;
+        if (failed <= 3) console.log(`  ✗ write: ${w.error.message}`);
+      } else {
+        done++;
+      }
     }
     batches++;
     if (batches % 5 === 0 || rows.length < PAGE) {
