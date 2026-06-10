@@ -7,13 +7,16 @@ import {
   getEvidenceFileSignedUrl,
 } from "@/lib/regwatch/evidence-actions";
 import type { EvidenceFileRecord } from "@/lib/regwatch/evidence";
+import type { EvidenceHumanEvaluation } from "@/lib/regwatch/evidence-actions";
 import { FindingsPanel } from "./FindingsPanel";
+import { EvidenceHumanEval } from "./EvidenceHumanEval";
 import { useConfirmDialog } from "@/components/regwatch/PromptDialog";
 
 interface Props {
   file: EvidenceFileRecord;
   canManage: boolean;
   canDelete: boolean;
+  humanEvaluation?: EvidenceHumanEvaluation | null;
   onChanged?: () => void;
 }
 
@@ -53,6 +56,7 @@ export function EvidenceFileCard({
   file,
   canManage,
   canDelete,
+  humanEvaluation = null,
   onChanged,
 }: Props) {
   const [pending, startTransition] = useTransition();
@@ -237,6 +241,19 @@ export function EvidenceFileCard({
 
       {file.analysisStatus === "completed" && (
         <div className="mt-3 space-y-3">
+          <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-amber-300">
+              ⚠ AI-generated analysis — verify before relying on it
+            </p>
+            <p className="mt-1.5 text-xs leading-relaxed text-foreground/90">
+              The summary and findings below were produced by an AI model from
+              the uploaded {KIND_LABEL[file.fileKind].toLowerCase()}. They can
+              miss or misread evidence and are{" "}
+              <span className="underline">not a compliance determination</span>.
+              A qualified reviewer must evaluate them before they inform any
+              sign-off.
+            </p>
+          </div>
           {file.analysisSummary && (
             <p className="rounded-md border border-card-border bg-card-bg/30 p-2.5 text-xs text-foreground/90">
               {file.analysisSummary}
@@ -257,6 +274,12 @@ export function EvidenceFileCard({
             findings={file.analysisFindings}
             canAcknowledge={canManage}
             onChanged={onChanged}
+          />
+          <EvidenceHumanEval
+            obligationId={file.obligationId}
+            evidenceFileId={file.id}
+            evaluation={humanEvaluation}
+            canManage={canManage}
           />
         </div>
       )}

@@ -13,6 +13,7 @@ import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
 import { ObligationWorkflow } from "@/components/regwatch/obligations/ObligationWorkflow";
 import { EvidenceDropzone } from "@/components/regwatch/obligations/EvidenceDropzone";
 import { listEvidenceForObligation } from "@/lib/regwatch/evidence";
+import type { EvidenceHumanEvaluation } from "@/lib/regwatch/evidence-actions";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -181,6 +182,11 @@ export default async function ObligationDetailPage({ params }: Props) {
                 initialFiles={evidenceFiles}
                 canManage={canManageEvidence}
                 canDelete={isAdmin}
+                evaluations={
+                  (obligation.reviewNotes?.evidence_evaluations as
+                    | Record<string, EvidenceHumanEvaluation>
+                    | undefined) ?? {}
+                }
               />
             </section>
 

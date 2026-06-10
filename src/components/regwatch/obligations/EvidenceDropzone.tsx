@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { uploadObligationEvidenceFile } from "@/lib/regwatch/evidence-actions";
+import {
+  uploadObligationEvidenceFile,
+  type EvidenceHumanEvaluation,
+} from "@/lib/regwatch/evidence-actions";
 import type { EvidenceFileRecord } from "@/lib/regwatch/evidence";
 import { EvidenceFileCard } from "./EvidenceFileCard";
 
@@ -14,6 +17,8 @@ interface Props {
   canManage: boolean;
   /** Current user can delete files (admin only). */
   canDelete: boolean;
+  /** Per-file human evaluations, keyed by evidence file id. */
+  evaluations?: Record<string, EvidenceHumanEvaluation>;
   /** Called when the file list changes (so the workflow can re-check). */
   onFilesChanged?: (count: number) => void;
 }
@@ -37,6 +42,7 @@ export function EvidenceDropzone({
   initialFiles,
   canManage,
   canDelete,
+  evaluations,
   onFilesChanged,
 }: Props) {
   const router = useRouter();
@@ -175,6 +181,7 @@ export function EvidenceDropzone({
               file={f}
               canManage={canManage}
               canDelete={canDelete}
+              humanEvaluation={evaluations?.[f.id] ?? null}
               onChanged={() => router.refresh()}
             />
           ))}

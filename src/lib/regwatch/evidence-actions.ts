@@ -48,6 +48,74 @@ async function ensureEvidenceContext(): Promise<
   };
 }
 
+const evalSchema = z.object({
+  obligationId: z.string().uuid(),
+  evidenceFileId: z.string().uuid(),
+  text: z.string().max(8000),
+});
+
+export interface EvidenceHumanEvaluation {
+  text: string;
+  by_name: string;
+  at: string;
+}
+
+/**
+ * Save (or clear, when text is empty) a reviewer's human evaluation of one
+ * evidence file's AI analysis. Stored on the obligation's review_notes JSONB
+ * under `evidence_evaluations[fileId]` so no schema change is needed. Only an
+ * admin or the assigned reviewer can write one.
+ */
+export async function saveEvidenceEvaluation(
+  input: z.infer<typeof evalSchema>,
+): Promise<ActionResult> {
+  const parsed = evalSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid input" };
+  const ctx = await ensureEvidenceContext();
+  if (!ctx.ok) return ctx;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: obl, error: e1 } = await supabase
+    .from("compliance_obligations")
+    .select("review_notes, assigned_reviewer_user_id")
+    .eq("id", parsed.data.obligationId)
+    .maybeSingle();
+  if (e1 || !obl) return { ok: false, error: e1?.message ?? "Obligation not found" };
+
+  const isReviewer = obl.assigned_reviewer_user_id === ctx.userId;
+  if (!ctx.isAdmin && !isReviewer) {
+    return { ok: false, error: "Only the assigned reviewer or an admin can add an evaluation." };
+  }
+
+  const notes = (obl.review_notes as Record<string, unknown>) ?? {};
+  const evals = { ...((notes.evidence_evaluations as Record<string, unknown>) ?? {}) };
+  const text = parsed.data.text.trim();
+  const name =
+    (user?.user_metadata?.full_name as string | undefined) ?? user?.email ?? "Reviewer";
+  if (text) {
+    evals[parsed.data.evidenceFileId] = {
+      text,
+      by_name: name,
+      by_user_id: ctx.userId,
+      at: new Date().toISOString(),
+    };
+  } else {
+    delete evals[parsed.data.evidenceFileId];
+  }
+
+  const { error: e2 } = await supabase
+    .from("compliance_obligations")
+    .update({ review_notes: { ...notes, evidence_evaluations: evals } })
+    .eq("id", parsed.data.obligationId);
+  if (e2) return { ok: false, error: e2.message };
+
+  revalidatePath(`/regwatch/obligations/${parsed.data.obligationId}`);
+  return { ok: true };
+}
+
 /**
  * Upload a single evidence file for an obligation. The reviewer-facing UI
  * calls this once per file from a multi-file dropzone; each call writes
