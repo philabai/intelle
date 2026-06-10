@@ -51,7 +51,7 @@
     {
       "slug": "topics",
       "title": "Explore by topic",
-      "segments": [{ "in": 90, "out": 106 }, { "in": 106, "out": 115 }],
+      "segments": [{ "in": 90, "out": 106 }, { "in": 106, "out": 110 }],
       "steps": [
         {
           "caption": "Explore by topic",
@@ -66,7 +66,7 @@
     {
       "slug": "search",
       "title": "Search with Iris",
-      "segments": [{ "in": 116, "out": 126 }, { "in": 126, "out": 150 }, { "in": 175, "out": 185 }],
+      "segments": [{ "in": 116, "out": 126 }, { "in": 126, "out": 150 }, { "in": 175, "out": 181 }],
       "steps": [
         {
           "caption": "Search the whole corpus",

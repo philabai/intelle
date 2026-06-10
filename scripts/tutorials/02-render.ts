@@ -114,10 +114,26 @@ async function main() {
     await ff(["-hide_banner", "-y", "-f", "concat", "-safe", "0", "-i", listFile, "-c:a", "libmp3lame", "-q:a", "3", audioOut]);
 
     // 3. Build the silent video: trim+concat kept segments, time-fit to N, normalise.
-    const R = sec.segments.reduce((n, s) => n + (s.out - s.in), 0);
-    const factor = N / R; // setpts multiplier: >1 slows, <1 speeds
-    const trims = sec.segments.map((s, i) => `[0:v]trim=start=${s.in}:end=${s.out},setpts=PTS-STARTPTS[v${i}]`);
-    const cat = sec.segments.map((_, i) => `[v${i}]`).join("");
+    // Cap the speed-up: never play faster than MAX_SPEED. When the kept footage is
+    // too long for the narration, trim the excess from the LONGEST (slowest-scroll)
+    // segment so meaningful short moments (clicks, "save search") stay intact.
+    const MAX_SPEED = 1.3;
+    const segs = sec.segments.map((s) => ({ in: s.in, out: s.out }));
+    let R = segs.reduce((n, s) => n + (s.out - s.in), 0);
+    let excess = R - N * MAX_SPEED;
+    while (excess > 0.05) {
+      let li = 0;
+      for (let i = 1; i < segs.length; i++)
+        if (segs[i].out - segs[i].in > segs[li].out - segs[li].in) li = i;
+      const cut = Math.min(excess, segs[li].out - segs[li].in - 1.0);
+      if (cut <= 0) break;
+      segs[li].out -= cut;
+      excess -= cut;
+    }
+    R = segs.reduce((n, s) => n + (s.out - s.in), 0);
+    const factor = N / R; // setpts multiplier: >1 slows, <1 speeds (>= 1/MAX_SPEED)
+    const trims = segs.map((s, i) => `[0:v]trim=start=${s.in}:end=${s.out},setpts=PTS-STARTPTS[v${i}]`);
+    const cat = segs.map((_, i) => `[v${i}]`).join("");
     const filter = [
       ...trims,
       `${cat}concat=n=${sec.segments.length}:v=1:a=0[vc]`,
