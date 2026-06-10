@@ -259,6 +259,83 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "author",
+      "title": "Authoring Documents",
+      "description": "Write company SOPs and policies from templates, cite regulations as you draft, and move them through review with an audit trail.",
+      "sections": [
+        {
+          "slug": "gallery",
+          "title": "Your company documents",
+          "file": "tutorials/author/01-gallery.mp4",
+          "durationSec": 10.01,
+          "cues": [
+            {
+              "start": 0,
+              "end": 10.01,
+              "text": "Your company documents"
+            }
+          ]
+        },
+        {
+          "slug": "template",
+          "title": "Start from a template",
+          "file": "tutorials/author/02-template.mp4",
+          "durationSec": 9.5,
+          "cues": [
+            {
+              "start": 0,
+              "end": 9.5,
+              "text": "Start from a template"
+            }
+          ]
+        },
+        {
+          "slug": "editor",
+          "title": "Write in the editor",
+          "file": "tutorials/author/03-editor.mp4",
+          "durationSec": 8.86,
+          "cues": [
+            {
+              "start": 0,
+              "end": 8.86,
+              "text": "Write in the editor"
+            }
+          ]
+        },
+        {
+          "slug": "crosswalk",
+          "title": "Crosswalk clauses to regulations",
+          "file": "tutorials/author/04-crosswalk.mp4",
+          "durationSec": 10.37,
+          "cues": [
+            {
+              "start": 0,
+              "end": 10.37,
+              "text": "Crosswalk clauses to regulations"
+            }
+          ]
+        },
+        {
+          "slug": "review",
+          "title": "Link, review and sign off",
+          "file": "tutorials/author/05-review.mp4",
+          "durationSec": 13.7,
+          "cues": [
+            {
+              "start": 0,
+              "end": 6.5,
+              "text": "Link to regulations and assets"
+            },
+            {
+              "start": 6.5,
+              "end": 13.7,
+              "text": "Review and sign off"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

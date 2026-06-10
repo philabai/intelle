@@ -1,0 +1,68 @@
+{
+  "course": "author",
+  "title": "Authoring Documents",
+  "description": "Write company SOPs and policies from templates, cite regulations as you draft, and move them through review with an audit trail.",
+  "source": "Authoring Documents.mov",
+  "voice": "nova",
+  "sections": [
+    {
+      "slug": "gallery",
+      "title": "Your company documents",
+      "segments": [{ "in": 10, "out": 26 }],
+      "steps": [
+        {
+          "caption": "Your company documents",
+          "narration": "The Author tab is where your team writes company documents — SOPs, policies, permits and standards — organised into project folders."
+        }
+      ]
+    },
+    {
+      "slug": "template",
+      "title": "Start from a template",
+      "segments": [{ "in": 50, "out": 64 }],
+      "steps": [
+        {
+          "caption": "Start from a template",
+          "narration": "Start a new document from a template — like an ISO 9001 standard operating procedure — so it's structured correctly from the very first draft."
+        }
+      ]
+    },
+    {
+      "slug": "editor",
+      "title": "Write in the editor",
+      "segments": [{ "in": 352, "out": 368 }],
+      "steps": [
+        {
+          "caption": "Write in the editor",
+          "narration": "Write and format in the built-in editor — headings, tables and lists, just like a word processor, but versioned and fully audited."
+        }
+      ]
+    },
+    {
+      "slug": "crosswalk",
+      "title": "Crosswalk clauses to regulations",
+      "segments": [{ "in": 200, "out": 214 }],
+      "steps": [
+        {
+          "caption": "Crosswalk clauses to regulations",
+          "narration": "Open the Clause Crosswalk to map each section of your document to the exact regulation clause it satisfies — the traceability matrix auditors expect."
+        }
+      ]
+    },
+    {
+      "slug": "review",
+      "title": "Link, review and sign off",
+      "segments": [{ "in": 110, "out": 122 }, { "in": 280, "out": 292 }],
+      "steps": [
+        {
+          "caption": "Link to regulations and assets",
+          "narration": "Link the document to the regulations and assets it covers, so it's connected to your compliance picture."
+        },
+        {
+          "caption": "Review and sign off",
+          "narration": "Add review comments, then move it through the approval workflow with an electronic signature and a full audit trail."
+        }
+      ]
+    }
+  ]
+}
