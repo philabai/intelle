@@ -9,7 +9,7 @@
       "slug": "hub",
       "title": "Your compliance cockpit",
       "steps": [
-        { "caption": "Your compliance cockpit", "segment": { "in": 13, "out": 24 },
+        { "caption": "Your compliance cockpit", "segment": { "in": 7, "out": 12 },
           "narration": "The Comply tab is your compliance cockpit — one view of your reviewer inbox, obligations, asset hierarchy and footprint." }
       ]
     },
@@ -17,7 +17,7 @@
       "slug": "inbox",
       "title": "The reviewer inbox",
       "steps": [
-        { "caption": "The reviewer inbox", "segment": { "in": 26, "out": 42 },
+        { "caption": "The reviewer inbox", "segment": { "in": 13, "out": 24 },
           "narration": "The reviewer inbox lists every obligation waiting on you, so nothing falls through the cracks." }
       ]
     },
@@ -25,11 +25,11 @@
       "slug": "obligations",
       "title": "Obligations & evidence",
       "steps": [
-        { "caption": "Create an obligation", "segment": { "in": 54, "out": 66 },
+        { "caption": "Create an obligation", "segment": { "in": 28, "out": 44 },
           "narration": "Create an obligation by pinning a regulation to one of your assets, then set its severity and compliance status." },
-        { "caption": "Attach evidence", "segment": { "in": 400, "out": 412 },
-          "narration": "Reviewers attach evidence — a photo, a document, a recording — and Vantage's AI helps evaluate it." },
-        { "caption": "Review and sign off", "segment": { "in": 452, "out": 461 },
+        { "caption": "Attach evidence", "segment": { "in": 415, "out": 427 },
+          "narration": "Reviewers attach evidence — a photo or a document — and Vantage's AI helps evaluate it." },
+        { "caption": "Review and sign off", "segment": { "in": 444, "out": 454 },
           "narration": "Then they sign off through the workflow, with a full audit trail." }
       ]
     },
@@ -45,10 +45,8 @@
       "slug": "footprint",
       "title": "Configure your footprint",
       "steps": [
-        { "caption": "Configure your footprint", "segment": { "in": 300, "out": 316 },
-          "narration": "Configure your operations footprint — your geographies, industries, substances, and the regulators and topics you monitor." },
-        { "caption": "It scores your feed", "segment": { "in": 350, "out": 358 },
-          "narration": "That footprint is what scores your Relevance Feed." }
+        { "caption": "Configure your footprint", "segment": { "in": 260, "out": 276 },
+          "narration": "Configure your operations footprint — geographies, industries, substances, and the regulators and topics you monitor. That footprint is what scores your Relevance Feed." }
       ]
     }
   ]

@@ -29,10 +29,10 @@
       "slug": "saved",
       "title": "Saved searches",
       "steps": [
-        { "caption": "Save a search", "segment": { "in": 52, "out": 59 },
-          "narration": "Run a search you care about, then save it with one click." },
-        { "caption": "Find them under My Vantage", "segment": { "in": 88, "out": 98 },
-          "narration": "Your saved searches live under My Vantage, ready to re-run any time — and they can feed your alerts." }
+        { "caption": "Run a search", "segment": { "in": 52, "out": 60 },
+          "narration": "Run a search you care about, straight from the corpus." },
+        { "caption": "Save it to My Vantage", "segment": { "in": 86, "out": 88 },
+          "narration": "Save it, and it lands under My Vantage — ready to re-run any time, and it can feed your alerts." }
       ]
     },
     {

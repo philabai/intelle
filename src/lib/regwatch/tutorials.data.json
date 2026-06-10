@@ -102,17 +102,17 @@
           "slug": "today",
           "title": "Your Relevance Feed",
           "file": "tutorials/monitor/01-today.mp4",
-          "durationSec": 16.97,
-          "rev": 1781115186537,
+          "durationSec": 17.16,
+          "rev": 1781116390952,
           "cues": [
             {
               "start": 0,
-              "end": 9.46,
+              "end": 9.41,
               "text": "Your Relevance Feed"
             },
             {
-              "start": 9.46,
-              "end": 16.97,
+              "start": 9.41,
+              "end": 17.16,
               "text": "Sort, filter, triage"
             }
           ]
@@ -121,17 +121,17 @@
           "slug": "recap",
           "title": "The weekly recap",
           "file": "tutorials/monitor/02-recap.mp4",
-          "durationSec": 13.42,
-          "rev": 1781115186537,
+          "durationSec": 13.68,
+          "rev": 1781116390952,
           "cues": [
             {
               "start": 0,
-              "end": 8.81,
+              "end": 8.71,
               "text": "The weekly recap"
             },
             {
-              "start": 8.81,
-              "end": 13.42,
+              "start": 8.71,
+              "end": 13.68,
               "text": "Catch up fast"
             }
           ]
@@ -140,18 +140,18 @@
           "slug": "saved",
           "title": "Saved searches",
           "file": "tutorials/monitor/03-saved.mp4",
-          "durationSec": 10.61,
-          "rev": 1781115186537,
+          "durationSec": 10.06,
+          "rev": 1781116390952,
           "cues": [
             {
               "start": 0,
-              "end": 3.55,
-              "text": "Save a search"
+              "end": 3.6,
+              "text": "Run a search"
             },
             {
-              "start": 3.55,
-              "end": 10.61,
-              "text": "Find them under My Vantage"
+              "start": 3.6,
+              "end": 10.06,
+              "text": "Save it to My Vantage"
             }
           ]
         },
@@ -159,17 +159,17 @@
           "slug": "alerts",
           "title": "Alerts & digests",
           "file": "tutorials/monitor/04-alerts.mp4",
-          "durationSec": 15.31,
-          "rev": 1781115186537,
+          "durationSec": 13.77,
+          "rev": 1781116390952,
           "cues": [
             {
               "start": 0,
-              "end": 7.1,
+              "end": 6.31,
               "text": "Set your alerts"
             },
             {
-              "start": 7.1,
-              "end": 15.31,
+              "start": 6.31,
+              "end": 13.77,
               "text": "Preview the digest"
             }
           ]
@@ -185,12 +185,12 @@
           "slug": "hub",
           "title": "Your compliance cockpit",
           "file": "tutorials/comply/01-hub.mp4",
-          "durationSec": 8.02,
-          "rev": 1781115238547,
+          "durationSec": 7.75,
+          "rev": 1781116399721,
           "cues": [
             {
               "start": 0,
-              "end": 8.02,
+              "end": 7.75,
               "text": "Your compliance cockpit"
             }
           ]
@@ -199,12 +199,12 @@
           "slug": "inbox",
           "title": "The reviewer inbox",
           "file": "tutorials/comply/02-inbox.mp4",
-          "durationSec": 5.9,
-          "rev": 1781115238547,
+          "durationSec": 6.22,
+          "rev": 1781116399721,
           "cues": [
             {
               "start": 0,
-              "end": 5.9,
+              "end": 6.22,
               "text": "The reviewer inbox"
             }
           ]
@@ -213,22 +213,22 @@
           "slug": "obligations",
           "title": "Obligations & evidence",
           "file": "tutorials/comply/03-obligations.mp4",
-          "durationSec": 18.06,
-          "rev": 1781115238547,
+          "durationSec": 17.24,
+          "rev": 1781116399721,
           "cues": [
             {
               "start": 0,
-              "end": 7.1,
+              "end": 6.96,
               "text": "Create an obligation"
             },
             {
-              "start": 7.1,
-              "end": 13.96,
+              "start": 6.96,
+              "end": 12.82,
               "text": "Attach evidence"
             },
             {
-              "start": 13.96,
-              "end": 18.06,
+              "start": 12.82,
+              "end": 17.24,
               "text": "Review and sign off"
             }
           ]
@@ -237,12 +237,12 @@
           "slug": "assets",
           "title": "Build your asset hierarchy",
           "file": "tutorials/comply/04-assets.mp4",
-          "durationSec": 11.95,
-          "rev": 1781115238547,
+          "durationSec": 11.02,
+          "rev": 1781116399721,
           "cues": [
             {
               "start": 0,
-              "end": 11.95,
+              "end": 11.02,
               "text": "Build your asset hierarchy"
             }
           ]
@@ -251,18 +251,13 @@
           "slug": "footprint",
           "title": "Configure your footprint",
           "file": "tutorials/comply/05-footprint.mp4",
-          "durationSec": 10.61,
-          "rev": 1781115238547,
+          "durationSec": 10.25,
+          "rev": 1781116399721,
           "cues": [
             {
               "start": 0,
-              "end": 7.2,
+              "end": 10.25,
               "text": "Configure your footprint"
-            },
-            {
-              "start": 7.2,
-              "end": 10.61,
-              "text": "It scores your feed"
             }
           ]
         }
