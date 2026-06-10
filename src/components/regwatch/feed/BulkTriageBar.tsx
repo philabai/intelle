@@ -18,6 +18,7 @@ interface Props {
 export function BulkTriageBar({ totalUnseen }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [refreshing, startRefresh] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
 
   function onMarkAll() {
@@ -58,10 +59,11 @@ export function BulkTriageBar({ totalUnseen }: Props) {
         </button>
         <button
           type="button"
-          onClick={() => router.refresh()}
-          className="rounded-md border border-card-border bg-card-bg px-3 py-1 text-muted hover:text-foreground"
+          onClick={() => startRefresh(() => router.refresh())}
+          disabled={refreshing}
+          className="rounded-md border border-card-border bg-card-bg px-3 py-1 text-muted hover:text-foreground disabled:opacity-60"
         >
-          Refresh
+          {refreshing ? "Refreshing…" : "Refresh"}
         </button>
       </div>
       {message && (

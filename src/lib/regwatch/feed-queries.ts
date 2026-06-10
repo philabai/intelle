@@ -129,6 +129,7 @@ export async function listMyFeed(
 
 export interface FeedCounts {
   total: number;
+  unseen: number;
   critical: number;
   high: number;
   normal: number;
@@ -143,6 +144,7 @@ export async function getMyFeedCounts(): Promise<FeedCounts> {
   const supabase = await createClient();
   const counts: FeedCounts = {
     total: 0,
+    unseen: 0,
     critical: 0,
     high: 0,
     normal: 0,
@@ -156,7 +158,7 @@ export async function getMyFeedCounts(): Promise<FeedCounts> {
   const { data, error } = await supabase
     .from("footprint_matches")
     .select(
-      `severity, resolved_at,
+      `severity, resolved_at, seen_at,
        item:regulatory_items!inner ( effective_date, consultation_closes_at )`,
     );
   if (error) {
@@ -168,6 +170,9 @@ export async function getMyFeedCounts(): Promise<FeedCounts> {
   const day = 24 * 60 * 60 * 1000;
   for (const row of data ?? []) {
     counts.total += 1;
+    // Unseen = not yet acknowledged and not resolved — drives the bell badge
+    // and the bulk-triage bar.
+    if (!row.resolved_at && !row.seen_at) counts.unseen += 1;
     if (row.resolved_at) counts.resolved += 1;
     else if (row.severity === "critical") counts.critical += 1;
     else if (row.severity === "high") counts.high += 1;

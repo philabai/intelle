@@ -118,11 +118,7 @@ export default async function FeedPage({ searchParams }: Props) {
           <EmptyFeed hasFootprint={hasFootprint} />
         ) : (
           <div className="overflow-hidden rounded-xl border border-card-border bg-background">
-            <BulkTriageBar
-              totalUnseen={
-                counts.critical + counts.high + counts.normal + counts.low
-              }
-            />
+            <BulkTriageBar totalUnseen={counts.unseen} />
             <Suspense fallback={null}>
               <FeedFilters counts={counts} />
             </Suspense>
