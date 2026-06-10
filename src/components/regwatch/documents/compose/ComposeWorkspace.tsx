@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEditor, EditorContent } from "@tiptap/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { Group, Panel, Separator } from "react-resizable-panels";
 import {
@@ -63,6 +63,13 @@ export function ComposeWorkspace({
   const [commitPending, setCommitPending] = useState(false);
   const [commitError, setCommitError] = useState<string | null>(null);
   const [citeError, setCiteError] = useState<string | null>(null);
+  // Right-pane document zoom (0.6–2.0). CSS `zoom` keeps ProseMirror's
+  // click/caret mapping correct in Chromium and grows scrollHeight so the
+  // zoomed page still scrolls.
+  const [zoom, setZoom] = useState(1);
+  const adjustZoom = useCallback((delta: number) => {
+    setZoom((z) => Math.min(2, Math.max(0.6, Math.round((z + delta) * 100) / 100)));
+  }, []);
   const expectedUpdatedAtRef = useRef(initialUpdatedAt);
   const lastSavedDocRef = useRef<string>(JSON.stringify(initialBodyDoc ?? null));
   const autosaveTimerRef = useRef<number | null>(null);
@@ -276,9 +283,49 @@ export function ComposeWorkspace({
           </Panel>
           <Separator className="w-1 bg-card-border hover:bg-brand-blue/50" />
           <Panel defaultSize={58} minSize={35}>
-            <div className="h-full overflow-y-auto bg-[#0a0e1a] py-8">
-              <div className="mx-auto max-w-[8.5in] px-6">
-                <EditorContent editor={editor} />
+            <div className="flex h-full flex-col">
+              {/* Document zoom controls (kept outside the zoomed content). */}
+              <div className="flex items-center justify-end gap-1 border-b border-card-border bg-card-bg/30 px-3 py-1">
+                <span className="mr-1 text-[10px] font-medium uppercase tracking-wider text-muted">
+                  Document
+                </span>
+                <button
+                  type="button"
+                  onClick={() => adjustZoom(-0.1)}
+                  disabled={zoom <= 0.6}
+                  title="Zoom out"
+                  aria-label="Zoom out"
+                  className="rounded border border-card-border bg-background px-2 py-0.5 text-sm leading-none text-foreground/90 hover:border-brand-blue hover:text-brand-blue disabled:opacity-40"
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setZoom(1)}
+                  title="Reset zoom to 100%"
+                  className="rounded border border-card-border bg-background px-2 py-0.5 text-[11px] tabular-nums text-foreground/90 hover:border-brand-blue hover:text-brand-blue"
+                >
+                  {Math.round(zoom * 100)}%
+                </button>
+                <button
+                  type="button"
+                  onClick={() => adjustZoom(0.1)}
+                  disabled={zoom >= 2}
+                  title="Zoom in"
+                  aria-label="Zoom in"
+                  className="rounded border border-card-border bg-background px-2 py-0.5 text-sm leading-none text-foreground/90 hover:border-brand-blue hover:text-brand-blue disabled:opacity-40"
+                >
+                  +
+                </button>
+              </div>
+              {/* Scrollable document — overflow-auto so a zoomed-in page scrolls both ways. */}
+              <div className="min-h-0 flex-1 overflow-auto bg-[#0a0e1a] py-8">
+                <div
+                  className="mx-auto max-w-[8.5in] px-6"
+                  style={{ zoom } as CSSProperties}
+                >
+                  <EditorContent editor={editor} />
+                </div>
               </div>
             </div>
           </Panel>
