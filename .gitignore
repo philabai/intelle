@@ -64,3 +64,6 @@ supabase/.temp/
 
 # Demo video renders (hosted in Supabase Storage)
 scripts/demos/out/
+
+# Generated tutorial clips (hosted in Supabase, not committed)
+scripts/tutorials/out/

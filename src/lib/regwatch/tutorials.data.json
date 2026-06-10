@@ -1,0 +1,108 @@
+{
+  "courses": [
+    {
+      "slug": "regulations",
+      "title": "Exploring Regulations",
+      "description": "Browse the corpus by country, regulator and topic, read original and translated sources, and search with Iris.",
+      "sections": [
+        {
+          "slug": "browse",
+          "title": "Browse the corpus by country",
+          "file": "tutorials/regulations/01-browse.mp4",
+          "durationSec": 27.36,
+          "cues": [
+            {
+              "start": 0,
+              "end": 8.76,
+              "text": "Browse the global regulatory corpus"
+            },
+            {
+              "start": 8.76,
+              "end": 19.56,
+              "text": "Pick a jurisdiction"
+            },
+            {
+              "start": 19.56,
+              "end": 27.36,
+              "text": "Open a regulation to read it"
+            }
+          ]
+        },
+        {
+          "slug": "regulators",
+          "title": "Browse by regulator",
+          "file": "tutorials/regulations/02-regulators.mp4",
+          "durationSec": 31.78,
+          "cues": [
+            {
+              "start": 0,
+              "end": 9.22,
+              "text": "Browse by regulator"
+            },
+            {
+              "start": 9.22,
+              "end": 16.42,
+              "text": "Open a regulator — SASO"
+            },
+            {
+              "start": 16.42,
+              "end": 24.58,
+              "text": "Read the original source"
+            },
+            {
+              "start": 24.58,
+              "end": 31.78,
+              "text": "Auto-translated to English"
+            }
+          ]
+        },
+        {
+          "slug": "topics",
+          "title": "Explore by topic",
+          "file": "tutorials/regulations/03-topics.mp4",
+          "durationSec": 14.92,
+          "cues": [
+            {
+              "start": 0,
+              "end": 6.86,
+              "text": "Explore by topic"
+            },
+            {
+              "start": 6.86,
+              "end": 14.92,
+              "text": "Open a topic — Energy"
+            }
+          ]
+        },
+        {
+          "slug": "search",
+          "title": "Search with Iris",
+          "file": "tutorials/regulations/04-search.mp4",
+          "durationSec": 27,
+          "cues": [
+            {
+              "start": 0,
+              "end": 5.76,
+              "text": "Search the whole corpus"
+            },
+            {
+              "start": 5.76,
+              "end": 13.78,
+              "text": "Ask Iris a question"
+            },
+            {
+              "start": 13.78,
+              "end": 21.7,
+              "text": "Cited, with ranked matches"
+            },
+            {
+              "start": 21.7,
+              "end": 27,
+              "text": "Save the search"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
