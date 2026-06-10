@@ -1,7 +1,7 @@
 {
   "course": "comply",
   "title": "Managing Compliance",
-  "description": "Work your reviewer inbox, create and review obligations with evidence, build your asset hierarchy, and configure your footprint.",
+  "description": "Work your reviewer inbox, create and review obligations with AI-evaluated evidence, build your asset hierarchy, and configure your footprint.",
   "source": "03. Comply.mov",
   "voice": "nova",
   "sections": [
@@ -23,30 +23,54 @@
     },
     {
       "slug": "obligations",
-      "title": "Obligations & evidence",
+      "title": "Obligations & AI-evaluated evidence",
       "steps": [
-        { "caption": "Create an obligation", "segment": { "in": 28, "out": 44 },
-          "narration": "Create an obligation by pinning a regulation to one of your assets, then set its severity and compliance status." },
-        { "caption": "Attach evidence", "segment": { "in": 415, "out": 427 },
-          "narration": "Reviewers attach evidence — a photo or a document — and Vantage's AI helps evaluate it." },
-        { "caption": "Review and sign off", "segment": { "in": 444, "out": 454 },
-          "narration": "Then they sign off through the workflow, with a full audit trail." }
+        { "caption": "Open Obligations", "segment": { "in": 27, "out": 38 },
+          "narration": "From the Comply tab, open Obligations and create one — you pin a regulation to one of your assets." },
+        { "caption": "Set severity & reviewer", "segment": { "in": 38, "out": 52 },
+          "narration": "Set its severity and compliance status, and assign a reviewer to complete the review." },
+        { "caption": "Attach evidence — a photo", "segment": { "in": 374, "out": 389 },
+          "narration": "Reviewers upload evidence — here, a photograph of a corroded storage tank — and Vantage analyses each file in the background." },
+        { "caption": "The AI reads the photo", "segment": { "in": 398, "out": 412 },
+          "narration": "Vantage's AI inspects the image and describes what it sees — severe external corrosion across the tank underside." },
+        { "caption": "Every finding, flagged", "segment": { "in": 415, "out": 430 },
+          "narration": "It breaks the evidence into specific findings — missing inspection tags, an unprotected pipe, the limited scope of the photo — each with a suggested action." },
+        { "caption": "You review and respond", "segment": { "in": 430, "out": 444 },
+          "narration": "The human reviewer acknowledges or responds to each finding. The AI assists — it never decides." },
+        { "caption": "Sign off through the workflow", "segment": { "in": 445, "out": 458 },
+          "narration": "Then submit for approval and sign off, with severity, status and a full audit trail captured." }
       ]
     },
     {
       "slug": "assets",
       "title": "Build your asset hierarchy",
       "steps": [
-        { "caption": "Build your asset hierarchy", "segment": { "in": 152, "out": 168 },
-          "narration": "Build your asset hierarchy — sites, units and equipment — from the ISO 14224 starter pack, so each obligation attaches to the exact asset it governs." }
+        { "caption": "Open the asset hierarchy", "segment": { "in": 141, "out": 151 },
+          "narration": "From the Comply tab, open the Asset hierarchy — this is where you model your operations." },
+        { "caption": "Your sites", "segment": { "in": 151, "out": 158 },
+          "narration": "Start with your sites — refineries, plants and platforms." },
+        { "caption": "Add a site", "segment": { "in": 158, "out": 167 },
+          "narration": "Add a new site in a click — here, a North Sea drilling platform." },
+        { "caption": "Seed an ISO 14224 oil & gas hierarchy", "segment": { "in": 180, "out": 196 },
+          "narration": "Rather than build it by hand, seed an industry starter pack — the ISO fourteen-two-twenty-four oil and gas taxonomy." },
+        { "caption": "Units & equipment, auto-built", "segment": { "in": 196, "out": 210 },
+          "narration": "Vantage populates the units and equipment classes beneath the site automatically." },
+        { "caption": "Expand and refine", "segment": { "in": 210, "out": 222 },
+          "narration": "Expand the tree to refine it — every asset can then carry its own obligations and documents." }
       ]
     },
     {
       "slug": "footprint",
       "title": "Configure your footprint",
       "steps": [
-        { "caption": "Configure your footprint", "segment": { "in": 260, "out": 276 },
-          "narration": "Configure your operations footprint — geographies, industries, substances, and the regulators and topics you monitor. That footprint is what scores your Relevance Feed." }
+        { "caption": "Pick your role", "segment": { "in": 242, "out": 249 },
+          "narration": "Configure your operations footprint. Start with your role — Chief Compliance Officer, EHS Manager, and so on — which sets sensible defaults." },
+        { "caption": "Your geographies", "segment": { "in": 249, "out": 257 },
+          "narration": "Choose the geographies whose regulations apply to you — the US, the EU, the Gulf, and more." },
+        { "caption": "Industries & substances", "segment": { "in": 257, "out": 278 },
+          "narration": "Pick your industrial activities by NAICS code, and the substances you handle by CAS number." },
+        { "caption": "Regulators, topics — then save", "segment": { "in": 286, "out": 296 },
+          "narration": "Finally choose the regulators and topics to monitor, and save. This footprint is what scores your Relevance Feed." }
       ]
     }
   ]
