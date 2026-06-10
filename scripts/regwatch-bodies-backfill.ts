@@ -71,7 +71,12 @@ async function extractFederalRegister(docNum: string): Promise<string | null> {
   return parts.join("\n\n");
 }
 
-/** EUR-Lex → reconstruct CELEX from the ELI path, fetch the TXT/HTML view. */
+/**
+ * EUR-Lex → reconstruct the CELEX id from the ELI path, then fetch the document
+ * from the Publications Office "Cellar" content-negotiation endpoint. The
+ * eur-lex.europa.eu HTML views return HTTP 202 + empty body to non-browser
+ * clients (bot mitigation); Cellar is the official machine-access route.
+ */
 async function extractEurLex(url: string): Promise<string | null> {
   let celex: string | null = null;
   const eli = url.match(/eli\/(reg|dir|dec)\/(\d{4})\/(\d+)/i);
@@ -83,9 +88,24 @@ async function extractEurLex(url: string): Promise<string | null> {
     if (c) celex = c[1];
   }
   if (!celex) return null;
-  const res = await fetchText(`https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:${celex}`);
+  const res = await fetch(`http://publications.europa.eu/resource/celex/${celex}`, {
+    headers: { "User-Agent": UA, Accept: "application/xhtml+xml", "Accept-Language": "en" },
+    signal: AbortSignal.timeout(30_000),
+    redirect: "follow",
+  });
   if (!res.ok) return null;
-  return extractMainText(await res.text());
+  const html = await res.text();
+  const cleaned = html
+    .replace(/<head[\s\S]*?<\/head>/i, " ")
+    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<\/(p|div|h[1-6]|tr|li)>/gi, "\n")
+    .replace(/<br[^>]*>/gi, "\n");
+  return cleaned
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ")
+    .replace(/&#8217;/g, "’").replace(/&rsquo;/g, "’")
+    .replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").replace(/[ \t]{2,}/g, " ").trim();
 }
 
 async function extractFromUrl(url: string): Promise<string | null> {
