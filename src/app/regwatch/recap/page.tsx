@@ -9,6 +9,10 @@ import {
   type FeedItem,
 } from "@/lib/regwatch/feed-queries";
 import { getCorpusRecap, type RecapItem } from "@/lib/regwatch/recap-queries";
+import {
+  getObligationSummary,
+  getDocumentSummary,
+} from "@/lib/regwatch/compliance-summary";
 import { topicLabel } from "@/lib/regwatch/taxonomy";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 
@@ -103,12 +107,15 @@ export default async function RecapPage() {
     );
   }
 
-  const [counts, topPriorities, recentlyChanged, deadlines] = await Promise.all([
-    getMyFeedCounts(),
-    listMyFeed({ sort: "score", limit: 6 }),
-    listMyFeed({ sort: "recently_changed", limit: 6 }),
-    listApproachingDeadlines(),
-  ]);
+  const [counts, topPriorities, recentlyChanged, deadlines, obligations, documents] =
+    await Promise.all([
+      getMyFeedCounts(),
+      listMyFeed({ sort: "score", limit: 6 }),
+      listMyFeed({ sort: "recently_changed", limit: 6 }),
+      listApproachingDeadlines(),
+      getObligationSummary(),
+      getDocumentSummary(),
+    ]);
 
   // Topic breakdown across the user's active matches (from the loaded sets).
   const topicCount = new Map<string, number>();
@@ -149,6 +156,49 @@ export default async function RecapPage() {
             <SectionTitle>Approaching deadlines</SectionTitle>
             <FeedList items={deadlines.slice(0, 6)} showDeadline empty="" />
           </>
+        )}
+
+        <SectionTitle action={{ href: "/regwatch/obligations", label: "Manage obligations →" }}>
+          Compliance obligations
+        </SectionTitle>
+        {obligations.total === 0 ? (
+          <p className="text-sm text-muted">
+            No obligations yet —{" "}
+            <Link href="/regwatch/obligations" className="text-brand-teal hover:underline">
+              pin a regulation to an asset
+            </Link>{" "}
+            to start tracking.
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <Stat label="Total" value={obligations.total} />
+            <Stat label="Open" value={obligations.open} accent="teal" />
+            <Stat label="In review" value={obligations.inReview} />
+            <Stat label="Verified" value={obligations.verified} />
+            <Stat label="Critical" value={obligations.critical} accent="red" />
+            <Stat label="At risk" value={obligations.atRisk} accent="amber" />
+          </div>
+        )}
+
+        <SectionTitle action={{ href: "/regwatch/documents", label: "Open documents →" }}>
+          Company documents
+        </SectionTitle>
+        {documents.total === 0 ? (
+          <p className="text-sm text-muted">
+            No documents yet —{" "}
+            <Link href="/regwatch/documents" className="text-brand-teal hover:underline">
+              author an SOP or policy
+            </Link>{" "}
+            to get started.
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <Stat label="Total" value={documents.total} />
+            <Stat label="Drafts" value={documents.draft} accent="teal" />
+            <Stat label="In review" value={documents.inReview} accent="amber" />
+            <Stat label="Live" value={documents.live} />
+            <Stat label="Open comments" value={documents.openComments} />
+          </div>
         )}
 
         {topTopics.length > 0 && (
