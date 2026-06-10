@@ -3,7 +3,11 @@
 import { z } from "zod";
 import { createClient } from "./supabase/server";
 import { createServiceClient } from "./supabase/service";
-import { splitParagraphs, type BodyParagraph } from "./paragraph-split";
+import {
+  splitParagraphs,
+  paragraphsFromProseMirror,
+  type BodyParagraph,
+} from "./paragraph-split";
 
 export type { BodyParagraph } from "./paragraph-split";
 
@@ -58,7 +62,7 @@ export async function getInternalDocumentBody(
 
   const { data: doc, error } = await supabase
     .from("internal_documents")
-    .select("id, title, file_path, file_name, mime_type")
+    .select("id, title, file_path, file_name, mime_type, body_doc")
     .eq("id", parsed.data.id)
     .maybeSingle();
   if (error || !doc) return null;
@@ -70,15 +74,41 @@ export async function getInternalDocumentBody(
     mimeType: (doc.mime_type as string | null) ?? null,
   };
 
+  // Editor- and template-authored documents have no uploaded file; their
+  // content lives in `body_doc` (TipTap/ProseMirror JSON). Derive the
+  // crosswalk paragraphs from it so the left pane lists the document's own
+  // sections. Also used as a fallback when an uploaded file extracts thin.
+  const bodyDocParagraphs = paragraphsFromProseMirror(doc.body_doc);
+  const fromBodyDoc = (): InternalDocBody | null => {
+    const chars = bodyDocParagraphs.reduce((n, p) => n + p.text.length, 0);
+    if (
+      bodyDocParagraphs.length >= MIN_USEFUL_PARAGRAPHS &&
+      chars >= MIN_USEFUL_CHARS
+    ) {
+      return {
+        ...base,
+        paragraphs: bodyDocParagraphs,
+        extractedChars: chars,
+        usableForMapping: true,
+        fallbackReason: null,
+      };
+    }
+    return null;
+  };
+
   const filePath = (doc.file_path as string | null) ?? null;
   if (!filePath) {
+    const fromBody = fromBodyDoc();
+    if (fromBody) return fromBody;
     return {
       ...base,
-      paragraphs: [],
+      paragraphs: bodyDocParagraphs,
       extractedChars: 0,
       usableForMapping: false,
       fallbackReason:
-        "No file uploaded for this document yet — type the section anchors manually below.",
+        bodyDocParagraphs.length > 0
+          ? "This document doesn't have enough section content yet — add headings in the editor, or type the section anchors manually below."
+          : "No file uploaded for this document yet — type the section anchors manually below.",
     };
   }
 
@@ -127,6 +157,8 @@ export async function getInternalDocumentBody(
     } else if (isText) {
       extracted = buf.toString("utf8");
     } else {
+      const fromBody = fromBodyDoc();
+      if (fromBody) return fromBody;
       const ext = name.split(".").pop()?.toUpperCase() ?? "unknown";
       return {
         ...base,
@@ -141,6 +173,8 @@ export async function getInternalDocumentBody(
     // but show the user a friendly explanation — most authors have no
     // context for "DOMMatrix is not defined" or similar pdfjs errors.
     console.error("[getInternalDocumentBody] text extraction failed:", e);
+    const fromBody = fromBodyDoc();
+    if (fromBody) return fromBody;
     const isScanned = isPdf;
     return {
       ...base,
@@ -161,6 +195,8 @@ export async function getInternalDocumentBody(
   const chars = paragraphs.reduce((n, p) => n + p.text.length, 0);
 
   if (chars < MIN_USEFUL_CHARS || paragraphs.length < MIN_USEFUL_PARAGRAPHS) {
+    const fromBody = fromBodyDoc();
+    if (fromBody) return fromBody;
     return {
       ...base,
       paragraphs,

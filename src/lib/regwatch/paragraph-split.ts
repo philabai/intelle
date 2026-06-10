@@ -85,6 +85,77 @@ export function splitParagraphs(text: string): BodyParagraph[] {
 }
 
 /**
+ * Build crosswalk paragraphs directly from a TipTap/ProseMirror `body_doc`
+ * (the format editor- and template-authored documents store) instead of an
+ * uploaded file. Heading nodes become pickable section anchors (the doc's own
+ * numbering, e.g. "1. Purpose", "5.1 Normal operation"); paragraphs, list items
+ * and table rows become body paragraphs. This is what lets the clause-crosswalk
+ * left pane list sections for documents that were never uploaded as a file.
+ */
+export function paragraphsFromProseMirror(bodyDoc: unknown): BodyParagraph[] {
+  interface PMLite {
+    type?: string;
+    text?: string;
+    content?: PMLite[];
+  }
+  const root = bodyDoc as PMLite | null;
+  if (!root || !Array.isArray(root.content)) return [];
+
+  const textOf = (node: PMLite): string => {
+    const out: string[] = [];
+    (function walk(n: PMLite | undefined) {
+      if (!n) return;
+      if (n.type === "text" && typeof n.text === "string") out.push(n.text);
+      if (Array.isArray(n.content)) for (const c of n.content) walk(c);
+    })(node);
+    return out.join("").replace(/\s+/g, " ").trim();
+  };
+
+  const blocks: { text: string; isHeading: boolean }[] = [];
+  const pushText = (t: string) => {
+    const s = t.trim();
+    if (s.length > 0) blocks.push({ text: s, isHeading: false });
+  };
+
+  for (const node of root.content) {
+    switch (node.type) {
+      case "heading": {
+        const t = textOf(node);
+        if (t) blocks.push({ text: t, isHeading: true });
+        break;
+      }
+      case "bulletList":
+      case "orderedList":
+        for (const li of node.content ?? []) pushText(textOf(li));
+        break;
+      case "table":
+        for (const row of node.content ?? []) {
+          const cells = (row.content ?? []).map((c) => textOf(c)).filter(Boolean);
+          if (cells.length) pushText(cells.join(" — "));
+        }
+        break;
+      case "pageBreak":
+      case "horizontalRule":
+        break;
+      default:
+        pushText(textOf(node));
+    }
+  }
+
+  return blocks.map((b, idx) => {
+    const detected = b.isHeading
+      ? b.text.replace(/\s+/g, " ").trim().slice(0, 100)
+      : detectAnchor(b.text);
+    return {
+      index: idx + 1,
+      text: b.text,
+      detectedAnchor: detected,
+      isHeading: b.isHeading || !!detected,
+    };
+  });
+}
+
+/**
  * Canonicalises an anchor for the mapped-already badge lookup. Lowercases,
  * collapses whitespace, drops trailing punctuation. So "Article 6" typed by
  * hand matches "Article 6" produced by `detectAnchor`.
