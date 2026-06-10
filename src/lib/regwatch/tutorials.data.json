@@ -326,19 +326,39 @@
     {
       "slug": "author",
       "title": "Authoring Documents",
-      "description": "Write company SOPs and policies from templates, crosswalk regulations to your clauses, and move them through review with an audit trail.",
+      "description": "Write company SOPs from templates, format in the editor, cite and crosswalk regulations, and move documents through review with an audit trail.",
       "sections": [
         {
           "slug": "gallery",
           "title": "Your company documents",
           "file": "tutorials/author/01-gallery.mp4",
-          "durationSec": 8.66,
-          "rev": 1781115305516,
+          "durationSec": 23.28,
+          "rev": 1781121442151,
           "cues": [
             {
               "start": 0,
-              "end": 8.66,
+              "end": 7.15,
               "text": "Your company documents"
+            },
+            {
+              "start": 7.15,
+              "end": 10.51,
+              "text": "A folder for every project"
+            },
+            {
+              "start": 10.51,
+              "end": 14.33,
+              "text": "Create a folder"
+            },
+            {
+              "start": 14.33,
+              "end": 17.33,
+              "text": "SOPs, policies, permits, standards"
+            },
+            {
+              "start": 17.33,
+              "end": 23.28,
+              "text": "Status & ownership at a glance"
             }
           ]
         },
@@ -346,13 +366,33 @@
           "slug": "template",
           "title": "Start from a template",
           "file": "tutorials/author/02-template.mp4",
-          "durationSec": 9.86,
-          "rev": 1781115305516,
+          "durationSec": 30.1,
+          "rev": 1781121442151,
           "cues": [
             {
               "start": 0,
-              "end": 9.86,
-              "text": "Start from a template"
+              "end": 2.76,
+              "text": "Create a new document"
+            },
+            {
+              "start": 2.76,
+              "end": 11.38,
+              "text": "Pick a template family"
+            },
+            {
+              "start": 11.38,
+              "end": 18.24,
+              "text": "Pre-structured for you"
+            },
+            {
+              "start": 18.24,
+              "end": 23.09,
+              "text": "Create from the template"
+            },
+            {
+              "start": 23.09,
+              "end": 30.1,
+              "text": "Land on your document hub"
             }
           ]
         },
@@ -360,46 +400,101 @@
           "slug": "editor",
           "title": "Write in the editor",
           "file": "tutorials/author/03-editor.mp4",
-          "durationSec": 9.6,
-          "rev": 1781115305516,
+          "durationSec": 24.29,
+          "rev": 1781121442151,
           "cues": [
             {
               "start": 0,
-              "end": 9.6,
-              "text": "Write in the editor"
+              "end": 3.12,
+              "text": "Open the editor"
+            },
+            {
+              "start": 3.12,
+              "end": 8.47,
+              "text": "A familiar toolbar"
+            },
+            {
+              "start": 8.47,
+              "end": 13.03,
+              "text": "Add and edit sections"
+            },
+            {
+              "start": 13.03,
+              "end": 18.89,
+              "text": "A live section outline"
+            },
+            {
+              "start": 18.89,
+              "end": 24.29,
+              "text": "Tables, rows and page breaks"
             }
           ]
         },
         {
-          "slug": "crosswalk",
-          "title": "Crosswalk clauses to regulations",
-          "file": "tutorials/author/04-crosswalk.mp4",
-          "durationSec": 10.7,
-          "rev": 1781115305516,
+          "slug": "cite",
+          "title": "Cite & crosswalk regulations",
+          "file": "tutorials/author/04-cite.mp4",
+          "durationSec": 26.52,
+          "rev": 1781121442151,
           "cues": [
             {
               "start": 0,
-              "end": 10.7,
-              "text": "Crosswalk clauses to regulations"
+              "end": 4.37,
+              "text": "Compose beside the source"
+            },
+            {
+              "start": 4.37,
+              "end": 11.93,
+              "text": "Cite a clause inline"
+            },
+            {
+              "start": 11.93,
+              "end": 17.09,
+              "text": "Open the Clause Crosswalk"
+            },
+            {
+              "start": 17.09,
+              "end": 21.6,
+              "text": "Map sections to clauses"
+            },
+            {
+              "start": 21.6,
+              "end": 26.52,
+              "text": "A traceability matrix"
             }
           ]
         },
         {
           "slug": "review",
-          "title": "Link, review and sign off",
+          "title": "Link, review & sign off",
           "file": "tutorials/author/05-review.mp4",
-          "durationSec": 12.96,
-          "rev": 1781115305516,
+          "durationSec": 27.12,
+          "rev": 1781121442151,
           "cues": [
             {
               "start": 0,
-              "end": 5.71,
-              "text": "Link to regulations and assets"
+              "end": 4.92,
+              "text": "Link regulations"
             },
             {
-              "start": 5.71,
-              "end": 12.96,
-              "text": "Review and sign off"
+              "start": 4.92,
+              "end": 9.77,
+              "text": "Link assets"
+            },
+            {
+              "start": 9.77,
+              "end": 15.29,
+              "text": "Comment & resolve"
+            },
+            {
+              "start": 15.29,
+              "end": 20.81,
+              "text": "Move through review"
+            },
+            {
+              "start": 20.81,
+              "end": 27.12,
+              "text": "Sign off with an audit trail"
             }
           ]
         }

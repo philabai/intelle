@@ -1,7 +1,7 @@
 {
   "course": "author",
   "title": "Authoring Documents",
-  "description": "Write company SOPs and policies from templates, crosswalk regulations to your clauses, and move them through review with an audit trail.",
+  "description": "Write company SOPs from templates, format in the editor, cite and crosswalk regulations, and move documents through review with an audit trail.",
   "source": "Authoring Documents.mov",
   "voice": "nova",
   "sections": [
@@ -9,42 +9,80 @@
       "slug": "gallery",
       "title": "Your company documents",
       "steps": [
-        { "caption": "Your company documents", "segment": { "in": 10, "out": 26 },
-          "narration": "The Author tab is where your team writes company documents — SOPs, policies, permits and standards — organised into project folders." }
+        { "caption": "Your company documents", "segment": { "in": 9, "out": 16 },
+          "narration": "The Author tab is your company document library — SOPs, policies, permits and standards, all authored in-app." },
+        { "caption": "A folder for every project", "segment": { "in": 16, "out": 22 },
+          "narration": "Organise them into project folders down the left." },
+        { "caption": "Create a folder", "segment": { "in": 17, "out": 24 },
+          "narration": "Create a new folder whenever your work needs one." },
+        { "caption": "SOPs, policies, permits, standards", "segment": { "in": 24, "out": 30 },
+          "narration": "Every document type lives here, side by side." },
+        { "caption": "Status & ownership at a glance", "segment": { "in": 27, "out": 33 },
+          "narration": "Each card shows its version, owner, and where it sits — draft, in review, or effective." }
       ]
     },
     {
       "slug": "template",
       "title": "Start from a template",
       "steps": [
-        { "caption": "Start from a template", "segment": { "in": 50, "out": 64 },
-          "narration": "Start a new document from a template — like an ISO 9001 standard operating procedure — so it's structured correctly from the first draft." }
+        { "caption": "Create a new document", "segment": { "in": 48, "out": 53 },
+          "narration": "To start a new document, click New." },
+        { "caption": "Pick a template family", "segment": { "in": 51, "out": 56 },
+          "narration": "Choose a template family — OSHA process safety, ISO 9001 quality, FDA design controls, and more." },
+        { "caption": "Pre-structured for you", "segment": { "in": 53, "out": 59 },
+          "narration": "Each is a specific document — like an operating procedure — pre-structured with the right sections and content blocks." },
+        { "caption": "Create from the template", "segment": { "in": 59, "out": 66 },
+          "narration": "Create from the template, and your draft is scaffolded in seconds." },
+        { "caption": "Land on your document hub", "segment": { "in": 66, "out": 73 },
+          "narration": "You land on the document — workflow, linked regulations, assets and comments all one click away." }
       ]
     },
     {
       "slug": "editor",
       "title": "Write in the editor",
       "steps": [
-        { "caption": "Write in the editor", "segment": { "in": 352, "out": 368 },
-          "narration": "Write and format in the built-in editor — headings, tables and lists — just like a word processor, but versioned and fully audited." }
+        { "caption": "Open the editor", "segment": { "in": 350, "out": 357 },
+          "narration": "Click Edit to open the built-in editor." },
+        { "caption": "A familiar toolbar", "segment": { "in": 356, "out": 363 },
+          "narration": "Format like a word processor — headings, bold, lists and quotes." },
+        { "caption": "Add and edit sections", "segment": { "in": 357, "out": 365 },
+          "narration": "Add new sections — like a shutdown procedure — right inside the document." },
+        { "caption": "A live section outline", "segment": { "in": 363, "out": 370 },
+          "narration": "A live outline down the left tracks every section as you write." },
+        { "caption": "Tables, rows and page breaks", "segment": { "in": 370, "out": 377 },
+          "narration": "Insert tables, rows and columns, and page breaks for a clean, audit-ready export." }
       ]
     },
     {
-      "slug": "crosswalk",
-      "title": "Crosswalk clauses to regulations",
+      "slug": "cite",
+      "title": "Cite & crosswalk regulations",
       "steps": [
-        { "caption": "Crosswalk clauses to regulations", "segment": { "in": 200, "out": 214 },
-          "narration": "Open the Clause Crosswalk to map each section of your document to the exact regulation clause it satisfies — the traceability matrix auditors expect." }
+        { "caption": "Compose beside the source", "segment": { "in": 410, "out": 420 },
+          "narration": "In the Compose workspace, pull a regulation up beside your draft." },
+        { "caption": "Cite a clause inline", "segment": { "in": 420, "out": 432 },
+          "narration": "Cite a clause directly. The citation pins to that regulation version, and flags for review if it ever changes." },
+        { "caption": "Open the Clause Crosswalk", "segment": { "in": 200, "out": 212 },
+          "narration": "Or open the Clause Crosswalk to map your whole document, section by section." },
+        { "caption": "Map sections to clauses", "segment": { "in": 235, "out": 248 },
+          "narration": "Pick a section on the left and the matching regulation clause on the right." },
+        { "caption": "A traceability matrix", "segment": { "in": 248, "out": 260 },
+          "narration": "Save the mapping to build the clause-by-clause traceability matrix auditors expect." }
       ]
     },
     {
       "slug": "review",
-      "title": "Link, review and sign off",
+      "title": "Link, review & sign off",
       "steps": [
-        { "caption": "Link to regulations and assets", "segment": { "in": 110, "out": 122 },
-          "narration": "Link the document to the regulations and assets it covers, so it's tied into your compliance picture." },
-        { "caption": "Review and sign off", "segment": { "in": 280, "out": 292 },
-          "narration": "Add review comments, then move it through the approval workflow with an electronic signature and a full audit trail." }
+        { "caption": "Link regulations", "segment": { "in": 108, "out": 120 },
+          "narration": "Link the document to the regulations it's in scope of — pinned to the version on file." },
+        { "caption": "Link assets", "segment": { "in": 275, "out": 286 },
+          "narration": "Link the assets it governs, so it's tied into your compliance picture." },
+        { "caption": "Comment & resolve", "segment": { "in": 286, "out": 298 },
+          "narration": "Reviewers leave comments anchored to paragraphs or clauses, and resolve them as they go." },
+        { "caption": "Move through review", "segment": { "in": 95, "out": 106 },
+          "narration": "Move the document through the review workflow — submit, request changes, approve." },
+        { "caption": "Sign off with an audit trail", "segment": { "in": 100, "out": 108 },
+          "narration": "Each step captures an electronic signature, with a full audit trail you can export as a PDF." }
       ]
     }
   ]
