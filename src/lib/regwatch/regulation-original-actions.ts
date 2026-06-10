@@ -22,7 +22,12 @@ import { createServiceClient } from "./supabase/service";
 
 const BUCKET = "regwatch-public";
 const SIGNED_URL_TTL = 3600; // 1h
-const FETCH_TIMEOUT_MS = 20_000;
+// Some publishers (notably SASO) stream PDFs slowly (~6–8 s/MB), so a 20 s cap
+// aborted multi-MB originals mid-download even though the URL resolves fine in a
+// browser. 45 s covers everything up to ~6 MB; the largest files are served from
+// the pre-warmed storage cache (scripts/regwatch-saso-warm-cache.ts), so this
+// live fetch only runs on first capture or after a source change.
+const FETCH_TIMEOUT_MS = 45_000;
 const MAX_BYTES = 50 * 1024 * 1024; // 50 MB; matches bucket ceiling
 
 const inputSchema = z.object({ regId: z.string().uuid() });
