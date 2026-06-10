@@ -19,13 +19,43 @@ import {
  *
  * - Cursor-paginated by id: forward progress guaranteed even if a write fails,
  *   and the `embedding is null` filter makes re-runs idempotent (only fills gaps).
- * - Voyage calls batched at 64 (embedBatch chunks internally); rate-limit backoff.
+ * - Rate-limit aware: defaults pace for Voyage's FREE tier (3 RPM / 10K TPM —
+ *   no payment method on file). Each 429 is retried with exponential backoff
+ *   rather than crashing, so the run always makes progress. Pass --fast once a
+ *   Voyage payment method is added to finish in minutes.
  *
- *   npx tsx scripts/regwatch-embed-backfill.ts [--limit N]
+ *   npx tsx scripts/regwatch-embed-backfill.ts [--limit N] [--fast] [--batch N] [--delay MS]
  */
 
-const PAGE = 64;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const FAST = process.argv.includes("--fast");
+function argNum(flag: string, def: number): number {
+  const i = process.argv.indexOf(flag);
+  return i >= 0 ? parseInt(process.argv[i + 1], 10) || def : def;
+}
+// Free tier: small requests, ~3/min. Fast (paid): big requests, minimal pacing.
+const PAGE = argNum("--batch", FAST ? 64 : 20);
+const REQ_INTERVAL = argNum("--delay", FAST ? 300 : 21_000);
+
+/** Embed with exponential backoff on 429 / rate-limit, never throwing on limits. */
+async function embedWithRetry(texts: string[]): Promise<number[][]> {
+  let wait = 20_000;
+  for (let attempt = 1; attempt <= 7; attempt++) {
+    try {
+      return await embedBatch(texts, { inputType: "document" });
+    } catch (e) {
+      const msg = (e as Error).message;
+      if (/429|rate|quota|payment/i.test(msg) && attempt < 7) {
+        console.log(`  rate-limited (attempt ${attempt}); backing off ${wait / 1000}s…`);
+        await sleep(wait);
+        wait = Math.min(wait * 2, 120_000);
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw new Error("exhausted embedding retries");
+}
 
 async function main() {
   if (!isVoyageConfigured()) throw new Error("VOYAGE_API_KEY is not set");
@@ -68,19 +98,8 @@ async function main() {
       });
     });
 
-    let vecs: number[][];
-    try {
-      vecs = await embedBatch(texts, { inputType: "document" });
-    } catch (e) {
-      const msg = (e as Error).message;
-      if (/429|rate|quota/i.test(msg)) {
-        console.log(`  rate-limited, backing off 8s…`);
-        await sleep(8000);
-        vecs = await embedBatch(texts, { inputType: "document" });
-      } else {
-        throw e;
-      }
-    }
+    const reqStart = Date.now();
+    const vecs = await embedWithRetry(texts);
 
     const writes = await Promise.all(
       rows.map((r, i) =>
@@ -92,11 +111,13 @@ async function main() {
       else done++;
     }
     batches++;
-    if (batches % 10 === 0 || rows.length < PAGE) {
-      const rate = done / Math.max(1, (Date.now() - t0) / 1000);
-      console.log(`  …${done} embedded, ${failed} failed (${rate.toFixed(0)}/s)`);
+    if (batches % 5 === 0 || rows.length < PAGE) {
+      const mins = (Date.now() - t0) / 60000;
+      console.log(`  …${done} embedded, ${failed} failed (${(done / Math.max(mins, 0.1)).toFixed(0)}/min)`);
     }
-    await sleep(200); // gentle pacing under Voyage rate limits
+    // Pace request starts to respect the requests-per-minute ceiling.
+    const elapsed = Date.now() - reqStart;
+    if (elapsed < REQ_INTERVAL) await sleep(REQ_INTERVAL - elapsed);
   }
 
   const total = await svc.from("regulatory_items").select("id", { count: "exact", head: true }).not("embedding", "is", null);
