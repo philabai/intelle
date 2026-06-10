@@ -103,6 +103,85 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "monitor",
+      "title": "Monitoring Your Feed",
+      "description": "Your footprint-scored Relevance Feed, the weekly recap, saved searches, and alerts.",
+      "sections": [
+        {
+          "slug": "today",
+          "title": "Your Relevance Feed",
+          "file": "tutorials/monitor/01-today.mp4",
+          "durationSec": 18.63,
+          "cues": [
+            {
+              "start": 0,
+              "end": 10.42,
+              "text": "Your Relevance Feed"
+            },
+            {
+              "start": 10.42,
+              "end": 18.63,
+              "text": "Severity-scored and triageable"
+            }
+          ]
+        },
+        {
+          "slug": "recap",
+          "title": "The weekly recap",
+          "file": "tutorials/monitor/02-recap.mp4",
+          "durationSec": 13.37,
+          "cues": [
+            {
+              "start": 0,
+              "end": 9.05,
+              "text": "The weekly recap"
+            },
+            {
+              "start": 9.05,
+              "end": 13.37,
+              "text": "Catch up in a minute"
+            }
+          ]
+        },
+        {
+          "slug": "saved",
+          "title": "Saved searches",
+          "file": "tutorials/monitor/03-saved.mp4",
+          "durationSec": 11.02,
+          "cues": [
+            {
+              "start": 0,
+              "end": 4.25,
+              "text": "Save a search"
+            },
+            {
+              "start": 4.25,
+              "end": 11.02,
+              "text": "Find them under My Vantage"
+            }
+          ]
+        },
+        {
+          "slug": "alerts",
+          "title": "Alerts & digests",
+          "file": "tutorials/monitor/04-alerts.mp4",
+          "durationSec": 14.01,
+          "cues": [
+            {
+              "start": 0,
+              "end": 6.55,
+              "text": "Set your alerts"
+            },
+            {
+              "start": 6.55,
+              "end": 14.01,
+              "text": "Preview the digest"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

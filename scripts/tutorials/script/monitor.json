@@ -1,0 +1,69 @@
+{
+  "course": "monitor",
+  "title": "Monitoring Your Feed",
+  "description": "Your footprint-scored Relevance Feed, the weekly recap, saved searches, and alerts.",
+  "source": "02. Monitor.mov",
+  "voice": "nova",
+  "sections": [
+    {
+      "slug": "today",
+      "title": "Your Relevance Feed",
+      "segments": [{ "in": 2, "out": 23 }],
+      "steps": [
+        {
+          "caption": "Your Relevance Feed",
+          "narration": "The Monitor tab opens your Relevance Feed — every new regulation, scored against your organisation's footprint, so the changes that matter to you rise to the top."
+        },
+        {
+          "caption": "Severity-scored and triageable",
+          "narration": "Each item shows why it matched and how severe it is. Sort, filter and triage them in bulk to keep your feed clear."
+        }
+      ]
+    },
+    {
+      "slug": "recap",
+      "title": "The weekly recap",
+      "segments": [{ "in": 25, "out": 50 }],
+      "steps": [
+        {
+          "caption": "The weekly recap",
+          "narration": "The weekly recap rolls everything up — how many regulations changed, the most significant updates, and where your obligations and documents stand."
+        },
+        {
+          "caption": "Catch up in a minute",
+          "narration": "It's the one place to catch up on a busy week across the whole corpus."
+        }
+      ]
+    },
+    {
+      "slug": "saved",
+      "title": "Saved searches",
+      "segments": [{ "in": 52, "out": 59 }, { "in": 88, "out": 98 }],
+      "steps": [
+        {
+          "caption": "Save a search",
+          "narration": "Run a search you care about, then save it with one click."
+        },
+        {
+          "caption": "Find them under My Vantage",
+          "narration": "Your saved searches live under My Vantage, ready to re-run any time — and they can feed your alerts."
+        }
+      ]
+    },
+    {
+      "slug": "alerts",
+      "title": "Alerts & digests",
+      "segments": [{ "in": 99, "out": 117 }, { "in": 121, "out": 127 }],
+      "steps": [
+        {
+          "caption": "Set your alerts",
+          "narration": "Under Alerts, choose how you want to hear about new matches — in-app, an email digest, or web push."
+        },
+        {
+          "caption": "Preview the digest",
+          "narration": "Preview your digest to see exactly what lands in your inbox — here, twenty-five regulatory matches from the last twenty-four hours."
+        }
+      ]
+    }
+  ]
+}
