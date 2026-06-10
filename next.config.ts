@@ -32,8 +32,10 @@ const nextConfig: NextConfig = {
             value: "strict-origin-when-cross-origin",
           },
           {
+            // microphone=(self) enables in-field voice capture for the
+            // evidence human-evaluation recorder; camera/geolocation stay off.
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
+            value: "camera=(), microphone=(self), geolocation=()",
           },
         ],
       },

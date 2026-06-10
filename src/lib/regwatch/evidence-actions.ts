@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import OpenAI, { toFile } from "openai";
 import { createClient } from "./supabase/server";
 import { createServiceClient } from "./supabase/service";
 import { getMyMembership } from "./members";
@@ -114,6 +115,41 @@ export async function saveEvidenceEvaluation(
 
   revalidatePath(`/regwatch/obligations/${parsed.data.obligationId}`);
   return { ok: true };
+}
+
+/**
+ * Transcribe a short voice recording into text for the human-evaluation field.
+ * Uses Whisper's translation endpoint so a note dictated in any language
+ * (common in the field) comes back as English the reviewer can edit + save.
+ */
+export async function transcribeEvidenceAudio(
+  formData: FormData,
+): Promise<{ ok: boolean; text?: string; error?: string }> {
+  const ctx = await ensureEvidenceContext();
+  if (!ctx.ok) return ctx;
+  const audio = formData.get("audio");
+  if (!(audio instanceof File)) return { ok: false, error: "No audio supplied" };
+  if (audio.size < 1200) return { ok: false, error: "Recording too short — try again." };
+  if (audio.size > 25 * 1024 * 1024) {
+    return { ok: false, error: "Recording too long (max ~25 MB / a few minutes)." };
+  }
+  if (!process.env.OPENAI_API_KEY) {
+    return { ok: false, error: "Voice transcription isn't configured." };
+  }
+  try {
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const file = await toFile(
+      Buffer.from(await audio.arrayBuffer()),
+      audio.name || "recording.webm",
+      { type: audio.type || "audio/webm" },
+    );
+    const res = await openai.audio.translations.create({ file, model: "whisper-1" });
+    const text = (res.text ?? "").trim();
+    if (!text) return { ok: false, error: "Couldn't make out any speech — try again." };
+    return { ok: true, text };
+  } catch (e) {
+    return { ok: false, error: `Transcription failed: ${(e as Error).message}` };
+  }
 }
 
 /**
