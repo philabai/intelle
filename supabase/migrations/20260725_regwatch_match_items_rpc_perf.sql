@@ -118,9 +118,9 @@ begin
       max(u.vector_score) as vector_score,
       max(u.fts_score)    as fts_score
     from (
-      select id, vector_score, 0::double precision as fts_score from vec
+      select vec.id, vec.vector_score, 0::double precision as fts_score from vec
       union all
-      select id, 0::double precision, fts_score from fts
+      select fts.id, 0::double precision, fts.fts_score from fts
     ) u
     group by u.id
   ),
