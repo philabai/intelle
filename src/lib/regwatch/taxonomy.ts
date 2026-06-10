@@ -33,6 +33,17 @@ export const TOPIC_TAXONOMY: { value: string; label: string }[] = [
   { value: "medical-devices", label: "Medical devices" },
   { value: "cosmetics", label: "Cosmetics" },
   { value: "tobacco", label: "Tobacco" },
+  // IEA policy themes
+  { value: "fuels", label: "Fuels" },
+  { value: "power", label: "Power" },
+  { value: "industry", label: "Industry" },
+  { value: "buildings", label: "Buildings" },
+  { value: "transport", label: "Transport" },
+  { value: "critical-minerals", label: "Critical minerals" },
+  { value: "energy-efficiency", label: "Energy efficiency" },
+  { value: "energy-transition", label: "Energy transition" },
+  { value: "renewables", label: "Renewables" },
+  { value: "innovation", label: "Technology R&D" },
 ];
 
 export const INSTRUMENT_TYPE_TAXONOMY: { value: string; label: string }[] = [
@@ -44,6 +55,7 @@ export const INSTRUMENT_TYPE_TAXONOMY: { value: string; label: string }[] = [
   { value: "standard", label: "Standard" },
   { value: "proposed-rule", label: "Proposed rule" },
   { value: "final-rule", label: "Final rule" },
+  { value: "policy", label: "Policy" },
   { value: "notice", label: "Notice" },
 ];
 

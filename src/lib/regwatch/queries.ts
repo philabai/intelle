@@ -114,44 +114,49 @@ export async function getJurisdictionSummaries(): Promise<JurisdictionSummary[]>
   return (data ?? []) as JurisdictionSummary[];
 }
 
-export async function listRegulations(
+/**
+ * Apply the shared browse facets to a regulatory_items query builder. Used by
+ * both listRegulations (data) and countRegulations (total), so the count always
+ * matches the filtered list exactly.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function applyBrowseFilters<T extends { eq: any; neq: any; contains: any; textSearch: any }>(
+  query: T,
   filters: BrowseFilters,
-  limit = 50,
-): Promise<RegulationListItem[]> {
-  const supabase = await createClient();
-  let query = supabase
-    .from("regulatory_items")
-    .select(ITEM_LIST_COLUMNS)
-    .order("last_changed_at", { ascending: false })
-    .limit(limit);
-
+): T {
+  let q = query;
   if (filters.jurisdiction) {
-    query = query.eq("jurisdiction_code", filters.jurisdiction.toUpperCase());
+    q = q.eq("jurisdiction_code", filters.jurisdiction.toUpperCase());
   }
-  if (filters.regulator) {
-    query = query.eq("regulator.slug", filters.regulator);
-  }
-  if (filters.status) {
-    query = query.eq("status", filters.status);
-  }
-  if (filters.instrument_type) {
-    query = query.eq("instrument_type", filters.instrument_type);
-  }
-  if (filters.hideNews) {
-    query = query.neq("instrument_type", "notice");
-  }
-  if (filters.topic) {
-    query = query.contains("topics", [filters.topic]);
-  }
+  if (filters.regulator) q = q.eq("regulator.slug", filters.regulator);
+  if (filters.status) q = q.eq("status", filters.status);
+  if (filters.instrument_type) q = q.eq("instrument_type", filters.instrument_type);
+  if (filters.hideNews) q = q.neq("instrument_type", "notice");
+  if (filters.topic) q = q.contains("topics", [filters.topic]);
   if (filters.q) {
     // websearch_to_tsquery is the most forgiving FTS parser — handles plain
     // text queries without users having to know boolean syntax.
-    query = query.textSearch("body_search", filters.q, {
+    q = q.textSearch("body_search", filters.q, {
       type: "websearch",
       config: "english",
     });
   }
+  return q;
+}
 
+export async function listRegulations(
+  filters: BrowseFilters,
+  limit = 50,
+  offset = 0,
+): Promise<RegulationListItem[]> {
+  const supabase = await createClient();
+  const base = supabase
+    .from("regulatory_items")
+    .select(ITEM_LIST_COLUMNS)
+    .order("last_changed_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  const query = applyBrowseFilters(base, filters);
   const { data, error } = await query;
   if (error) {
     console.error("[regwatch] listRegulations error:", error);
@@ -162,6 +167,27 @@ export async function listRegulations(
     ...row,
     regulator: Array.isArray(row.regulator) ? row.regulator[0] : row.regulator,
   })) as RegulationListItem[];
+}
+
+/** Total count of regulations matching the same browse facets (for pagination). */
+export async function countRegulations(filters: BrowseFilters): Promise<number> {
+  const supabase = await createClient();
+  // Embed the regulator inner-join so a regulator-slug facet can constrain the
+  // count exactly as it does the list (every item has a regulator, so the join
+  // doesn't change the total when that facet is absent).
+  const base = supabase
+    .from("regulatory_items")
+    .select("id, regulator:regulators!inner ( slug )", {
+      count: "exact",
+      head: true,
+    });
+  const query = applyBrowseFilters(base, filters);
+  const { count, error } = await query;
+  if (error) {
+    console.error("[regwatch] countRegulations error:", error);
+    return 0;
+  }
+  return count ?? 0;
 }
 
 /**

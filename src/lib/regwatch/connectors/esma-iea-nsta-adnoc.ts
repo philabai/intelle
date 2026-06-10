@@ -6,8 +6,8 @@ import { makePressPageConnector } from "./_press-page";
  *
  * Each was verified live (the index URL returns scrapable static HTML with
  * article anchors using the documented prefix). Bot-blocked publishers
- * (ECHA, IRENA) and dynamically-rendered pages (IFRS) are NOT included
- * here — see project memory `regwatch-blocked-publishers-backlog` for the
+ * (ECHA) and dynamically-rendered pages (IFRS) are NOT included here —
+ * see project memory `regwatch-blocked-publishers-backlog` for the
  * forward plan on those.
  *
  * All four follow the same shape: scrape index → emit one item per article →

@@ -1,8 +1,10 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import {
   getJurisdictionSummaries,
   listRegulations,
+  countRegulations,
   listRegulators,
   type BrowseFilters as BrowseFiltersInput,
 } from "@/lib/regwatch/queries";
@@ -53,16 +55,36 @@ export default async function BrowsePage({ searchParams }: Props) {
     !!filters.status ||
     !!filters.q;
 
+  const PAGE_SIZE = 50;
+  const pageParam = parseInt(pickFilter(raw, "page") ?? "1", 10);
+  const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+  const offset = (page - 1) * PAGE_SIZE;
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [summaries, regulators, items] = await Promise.all([
+  const [summaries, regulators, items, totalCount] = await Promise.all([
     getJurisdictionSummaries(),
     listRegulators(),
-    hasActiveFilters ? listRegulations(filters) : Promise.resolve([]),
+    hasActiveFilters
+      ? listRegulations(filters, PAGE_SIZE, offset)
+      : Promise.resolve([]),
+    hasActiveFilters ? countRegulations(filters) : Promise.resolve(0),
   ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const pageHref = (n: number) => {
+    const sp = new URLSearchParams();
+    for (const [k, v] of Object.entries(raw)) {
+      if (k === "page" || v == null) continue;
+      sp.set(k, Array.isArray(v) ? (v[0] ?? "") : v);
+    }
+    if (n > 1) sp.set("page", String(n));
+    const qs = sp.toString();
+    return `/regwatch/browse${qs ? `?${qs}` : ""}`;
+  };
 
   const totalItems = summaries.reduce((acc, s) => acc + Number(s.item_count), 0);
   const totalRegulators = summaries.reduce((acc, s) => acc + Number(s.regulator_count), 0);
@@ -115,7 +137,15 @@ export default async function BrowsePage({ searchParams }: Props) {
 
         <section>
           {hasActiveFilters ? (
-            <ResultList items={items} filters={filters} />
+            <ResultList
+              items={items}
+              filters={filters}
+              page={page}
+              pageSize={PAGE_SIZE}
+              totalCount={totalCount}
+              totalPages={totalPages}
+              pageHref={pageHref}
+            />
           ) : (
             <TileGrid summaries={summaries} />
           )}
@@ -155,9 +185,19 @@ function TileGrid({
 function ResultList({
   items,
   filters,
+  page,
+  pageSize,
+  totalCount,
+  totalPages,
+  pageHref,
 }: {
   items: Awaited<ReturnType<typeof listRegulations>>;
   filters: BrowseFiltersInput;
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  pageHref: (n: number) => string;
 }) {
   if (items.length === 0) {
     return (
@@ -171,10 +211,14 @@ function ResultList({
       />
     );
   }
+  const rangeStart = (page - 1) * pageSize + 1;
+  const rangeEnd = (page - 1) * pageSize + items.length;
   return (
     <>
       <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted">
-        Showing {items.length} {items.length === 1 ? "regulation" : "regulations"}
+        Showing {rangeStart.toLocaleString()}–{rangeEnd.toLocaleString()} of{" "}
+        {totalCount.toLocaleString()}{" "}
+        {totalCount === 1 ? "regulation" : "regulations"}
         {filters.q && (
           <>
             {" "}for <span className="text-foreground">&ldquo;{filters.q}&rdquo;</span>
@@ -186,6 +230,37 @@ function ResultList({
           <RegulationRow key={item.id} item={item} />
         ))}
       </div>
+      {totalPages > 1 && (
+        <nav className="mt-6 flex items-center justify-between text-sm">
+          {page > 1 ? (
+            <Link
+              href={pageHref(page - 1)}
+              className="rounded-md border border-card-border px-3 py-1.5 text-muted hover:text-foreground"
+            >
+              ← Previous
+            </Link>
+          ) : (
+            <span className="rounded-md border border-card-border/40 px-3 py-1.5 text-muted/40">
+              ← Previous
+            </span>
+          )}
+          <span className="text-xs text-muted">
+            Page {page.toLocaleString()} of {totalPages.toLocaleString()}
+          </span>
+          {page < totalPages ? (
+            <Link
+              href={pageHref(page + 1)}
+              className="rounded-md border border-card-border px-3 py-1.5 text-muted hover:text-foreground"
+            >
+              Next →
+            </Link>
+          ) : (
+            <span className="rounded-md border border-card-border/40 px-3 py-1.5 text-muted/40">
+              Next →
+            </span>
+          )}
+        </nav>
+      )}
     </>
   );
 }

@@ -8,6 +8,7 @@ import { SASO_CONNECTORS } from "./saso-scraper";
 import { CNSC_CONNECTORS } from "./cnsc-scraper";
 import { CER_CONNECTORS } from "./cer-act";
 import { ECFR_TITLE_CONNECTORS } from "./ecfr-title";
+import { IEA_POLICY_CONNECTORS } from "./iea-policies";
 import {
   attachEcfrHierarchy,
   FEDERAL_REGISTER_ECFR_SCOPES,
@@ -28,7 +29,6 @@ for (const c of FEDERAL_REGISTER_CONNECTORS) {
  *
  * Backlog (publishers not yet covered):
  *  - ECHA news + REACH restriction intentions — bot-blocked (Cloudflare 403)
- *  - IRENA news — bot-blocked
  *  - IFRS / ISSB news — JS-rendered, no static index
  *  - MEWA (Saudi), QPSA (Qatar) — site URLs unstable / 404 / connection-refused
  *  - eCFR point-in-time deltas — needs a real diff strategy
@@ -46,6 +46,22 @@ export const REGWATCH_CONNECTORS: Connector[] = [
   ...ECFR_TITLE_CONNECTORS,
 ];
 
+/**
+ * Heavy / low-churn connectors kept OUT of the every-15-minutes crawl loop and
+ * refreshed by their own dedicated cron instead. IEA fetches the whole ~20 MB
+ * policies catalogue per run, so it runs once daily via
+ * `/api/cron/regwatch-crawl?only=iea-policies&lookback=30`.
+ */
+export const SCHEDULED_ONLY_CONNECTORS: Connector[] = [
+  ...IEA_POLICY_CONNECTORS,
+];
+
+/** Every connector, including the scheduled-only ones — used for lookup. */
+export const ALL_CONNECTORS: Connector[] = [
+  ...REGWATCH_CONNECTORS,
+  ...SCHEDULED_ONLY_CONNECTORS,
+];
+
 export function findConnector(id: string): Connector | undefined {
-  return REGWATCH_CONNECTORS.find((c) => c.id === id);
+  return ALL_CONNECTORS.find((c) => c.id === id);
 }

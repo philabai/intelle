@@ -131,9 +131,6 @@ values
   ('int-iea',      'International Energy Agency',                      'IEA',   'INT','International',  'int','international-body','https://www.iea.org',
    'Energy policy guidance, methane abatement frameworks, transition tracking.',
    '{methane,emissions,carbon-market}'::text[]),
-  ('int-irena',    'International Renewable Energy Agency',            'IRENA', 'INT','International',  'int','international-body','https://www.irena.org',
-   'Renewable energy standards and policy frameworks.',
-   '{emissions,carbon-market}'::text[]),
   ('int-issb',     'International Sustainability Standards Board',     'ISSB',  'INT','International',  'int','standards-body',    'https://www.ifrs.org/groups/international-sustainability-standards-board/',
    'IFRS S1 and IFRS S2 sustainability and climate-related disclosure standards.',
    '{reporting,carbon-market}'::text[])

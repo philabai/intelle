@@ -5,6 +5,7 @@ import { createClient } from "@/lib/regwatch/supabase/server";
 import {
   getJurisdictionSummaries,
   listRegulations,
+  countRegulations,
   listRegulators,
   type BrowseFilters as BrowseFiltersInput,
 } from "@/lib/regwatch/queries";
@@ -86,7 +87,34 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
           ? "tree"
           : "list";
 
-  const items = view === "list" ? await listRegulations(filters, 100) : [];
+  const PAGE_SIZE = 50;
+  const pageParam = parseInt(pickFilter(raw, "page") ?? "1", 10);
+  const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+  const offset = (page - 1) * PAGE_SIZE;
+  const [items, totalCount]: [
+    Awaited<ReturnType<typeof listRegulations>>,
+    number,
+  ] =
+    view === "list"
+      ? await Promise.all([
+          listRegulations(filters, PAGE_SIZE, offset),
+          countRegulations(filters),
+        ])
+      : [[], 0];
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const rangeStart = totalCount === 0 ? 0 : offset + 1;
+  const rangeEnd = offset + items.length;
+  // Build a page-N href that preserves every other active query param.
+  const pageHref = (n: number) => {
+    const sp = new URLSearchParams();
+    for (const [k, v] of Object.entries(raw)) {
+      if (k === "page" || v == null) continue;
+      sp.set(k, Array.isArray(v) ? (v[0] ?? "") : v);
+    }
+    if (n > 1) sp.set("page", String(n));
+    const qs = sp.toString();
+    return `/regwatch/browse/${jurisdiction}${qs ? `?${qs}` : ""}`;
+  };
 
   const jurisdictionOptions = summaries.map((s) => ({
     code: s.jurisdiction_code,
@@ -179,13 +207,46 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
             ) : (
               <>
                 <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted">
-                  Showing {items.length} {items.length === 1 ? "regulation" : "regulations"}
+                  Showing {rangeStart.toLocaleString()}–{rangeEnd.toLocaleString()} of{" "}
+                  {totalCount.toLocaleString()}{" "}
+                  {totalCount === 1 ? "regulation" : "regulations"}
                 </p>
                 <div className="overflow-hidden rounded-xl border border-card-border bg-background">
                   {items.map((item) => (
                     <RegulationRow key={item.id} item={item} />
                   ))}
                 </div>
+                {totalPages > 1 && (
+                  <nav className="mt-6 flex items-center justify-between text-sm">
+                    {page > 1 ? (
+                      <Link
+                        href={pageHref(page - 1)}
+                        className="rounded-md border border-card-border px-3 py-1.5 text-muted hover:text-foreground"
+                      >
+                        ← Previous
+                      </Link>
+                    ) : (
+                      <span className="rounded-md border border-card-border/40 px-3 py-1.5 text-muted/40">
+                        ← Previous
+                      </span>
+                    )}
+                    <span className="text-xs text-muted">
+                      Page {page.toLocaleString()} of {totalPages.toLocaleString()}
+                    </span>
+                    {page < totalPages ? (
+                      <Link
+                        href={pageHref(page + 1)}
+                        className="rounded-md border border-card-border px-3 py-1.5 text-muted hover:text-foreground"
+                      >
+                        Next →
+                      </Link>
+                    ) : (
+                      <span className="rounded-md border border-card-border/40 px-3 py-1.5 text-muted/40">
+                        Next →
+                      </span>
+                    )}
+                  </nav>
+                )}
               </>
             )}
           </section>

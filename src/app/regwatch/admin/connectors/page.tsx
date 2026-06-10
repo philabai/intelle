@@ -80,7 +80,7 @@ export default async function AdminConnectorsPage() {
           <p className="mt-2 max-w-2xl rounded-md border border-amber-500/30 bg-amber-500/5 p-2 text-[11px] text-amber-300">
             Heavy operation — runs against live regulator sites. Be
             mindful of rate limits. Each run takes 5–60s; some sites
-            (ECHA, IRENA) are bot-blocked and will return 0 items.
+            (ECHA) are bot-blocked and will return 0 items.
           </p>
         </div>
       </header>

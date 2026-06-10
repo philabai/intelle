@@ -18,6 +18,7 @@ export type InstrumentType =
   | "standard"
   | "proposed-rule"
   | "final-rule"
+  | "policy"
   | "notice";
 
 export type ItemStatus =
