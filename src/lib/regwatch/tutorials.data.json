@@ -185,12 +185,12 @@
           "slug": "hub",
           "title": "Your compliance cockpit",
           "file": "tutorials/comply/01-hub.mp4",
-          "durationSec": 8.57,
-          "rev": 1781120421838,
+          "durationSec": 8.11,
+          "rev": 1781121681005,
           "cues": [
             {
               "start": 0,
-              "end": 8.57,
+              "end": 8.11,
               "text": "Your compliance cockpit"
             }
           ]
@@ -199,12 +199,12 @@
           "slug": "inbox",
           "title": "The reviewer inbox",
           "file": "tutorials/comply/02-inbox.mp4",
-          "durationSec": 6.86,
-          "rev": 1781120421838,
+          "durationSec": 6.65,
+          "rev": 1781121681005,
           "cues": [
             {
               "start": 0,
-              "end": 6.86,
+              "end": 6.65,
               "text": "The reviewer inbox"
             }
           ]
@@ -213,42 +213,42 @@
           "slug": "obligations",
           "title": "Obligations & AI-evaluated evidence",
           "file": "tutorials/comply/03-obligations.mp4",
-          "durationSec": 51.6,
-          "rev": 1781120421838,
+          "durationSec": 51.29,
+          "rev": 1781121681005,
           "cues": [
             {
               "start": 0,
-              "end": 6.96,
+              "end": 6.82,
               "text": "Open Obligations"
             },
             {
-              "start": 6.96,
-              "end": 12.67,
+              "start": 6.82,
+              "end": 12.39,
               "text": "Set severity & reviewer"
             },
             {
-              "start": 12.67,
-              "end": 20.47,
+              "start": 12.39,
+              "end": 20.14,
               "text": "Attach evidence — a photo"
             },
             {
-              "start": 20.47,
-              "end": 28.87,
+              "start": 20.14,
+              "end": 28.25,
               "text": "The AI reads the photo"
             },
             {
-              "start": 28.87,
-              "end": 38.78,
+              "start": 28.25,
+              "end": 37.75,
               "text": "Every finding, flagged"
             },
             {
-              "start": 38.78,
-              "end": 45.38,
+              "start": 37.75,
+              "end": 44.47,
               "text": "You review and respond"
             },
             {
-              "start": 45.38,
-              "end": 51.6,
+              "start": 44.47,
+              "end": 51.29,
               "text": "Sign off through the workflow"
             }
           ]
@@ -257,37 +257,37 @@
           "slug": "assets",
           "title": "Build your asset hierarchy",
           "file": "tutorials/comply/04-assets.mp4",
-          "durationSec": 36.72,
-          "rev": 1781120421838,
+          "durationSec": 34.2,
+          "rev": 1781121681005,
           "cues": [
             {
               "start": 0,
-              "end": 6.77,
+              "end": 6.5,
               "text": "Open the asset hierarchy"
             },
             {
-              "start": 6.77,
-              "end": 11.23,
+              "start": 6.5,
+              "end": 10.87,
               "text": "Your sites"
             },
             {
-              "start": 11.23,
-              "end": 16.25,
+              "start": 10.87,
+              "end": 15.48,
               "text": "Add a site"
             },
             {
-              "start": 16.25,
-              "end": 24,
+              "start": 15.48,
+              "end": 23.23,
               "text": "Seed an ISO 14224 oil & gas hierarchy"
             },
             {
-              "start": 24,
-              "end": 29.86,
+              "start": 23.23,
+              "end": 27.79,
               "text": "Units & equipment, auto-built"
             },
             {
-              "start": 29.86,
-              "end": 36.72,
+              "start": 27.79,
+              "end": 34.2,
               "text": "Expand and refine"
             }
           ]
@@ -296,27 +296,27 @@
           "slug": "footprint",
           "title": "Configure your footprint",
           "file": "tutorials/comply/05-footprint.mp4",
-          "durationSec": 28.54,
-          "rev": 1781120421838,
+          "durationSec": 29.06,
+          "rev": 1781121681005,
           "cues": [
             {
               "start": 0,
-              "end": 9.91,
+              "end": 9.6,
               "text": "Pick your role"
             },
             {
-              "start": 9.91,
-              "end": 15.77,
+              "start": 9.6,
+              "end": 16.25,
               "text": "Your geographies"
             },
             {
-              "start": 15.77,
-              "end": 21.63,
+              "start": 16.25,
+              "end": 21.96,
               "text": "Industries & substances"
             },
             {
-              "start": 21.63,
-              "end": 28.54,
+              "start": 21.96,
+              "end": 29.06,
               "text": "Regulators, topics — then save"
             }
           ]

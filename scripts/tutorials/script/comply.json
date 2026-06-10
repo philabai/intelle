@@ -63,9 +63,9 @@
       "slug": "footprint",
       "title": "Configure your footprint",
       "steps": [
-        { "caption": "Pick your role", "segment": { "in": 242, "out": 249 },
+        { "caption": "Pick your role", "segment": { "in": 234, "out": 242 },
           "narration": "Configure your operations footprint. Start with your role — Chief Compliance Officer, EHS Manager, and so on — which sets sensible defaults." },
-        { "caption": "Your geographies", "segment": { "in": 249, "out": 257 },
+        { "caption": "Your geographies", "segment": { "in": 244, "out": 256 },
           "narration": "Choose the geographies whose regulations apply to you — the US, the EU, the Gulf, and more." },
         { "caption": "Industries & substances", "segment": { "in": 257, "out": 278 },
           "narration": "Pick your industrial activities by NAICS code, and the substances you handle by CAS number." },
