@@ -9,27 +9,27 @@ import OpenAI from "openai";
 /**
  * Stage 3 — render one course's section clips from its approved script JSON.
  *
- * Per section: TTS each step's narration (Nova) → concatenate → section audio of
- * length N (and per-step caption cue boundaries). Concatenate the kept source
- * `segments` (raw length R), then time-fit the video to N (setpts = N/R — this is
- * what speeds up the slow/idle stretches), normalise to 1920×1080/30fps, and mux
- * the narration. Captions are emitted as a cue track for the in-app player (not
- * burned in).
+ * PER-STEP alignment: each step has its OWN source segment + narration. We TTS
+ * each step (Nova) to get its duration d, then build that step's video from its
+ * segment fit to exactly d — so the voice and the screen stay in lock-step
+ * (the previous section-level fit let them drift apart). Speed is capped at
+ * MAX_SPEED (1.7x — the original snappy pace); when a segment is shorter than
+ * its narration we hold the last frame instead of slowing it down. Captions are
+ * emitted as a cue track for the in-app player (not burned in).
  *
  *   npx tsx scripts/tutorials/02-render.ts <course>
- *
- * Output: scripts/tutorials/out/<course>/<NN>-<slug>.mp4 + out/<course>/cues.json
  */
 
 const SRC_DIR =
   "/Users/arnabghosh/Desktop/01. Arnab/00. Business/01. Intelle/01. Documents/Media/Tutorial Videos";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const FFMPEG = require("ffmpeg-static") as string;
+const MAX_SPEED = 1.7;
 const TTS_INSTRUCTIONS =
   "Warm, friendly, and clear — a calm female product-walkthrough narrator. Natural conversational pace, not rushed, gentle enthusiasm.";
 
-interface Step { caption: string; narration: string }
-interface Section { slug: string; title: string; segments: { in: number; out: number }[]; steps: Step[] }
+interface Step { caption: string; narration: string; segment: { in: number; out: number } }
+interface Section { slug: string; title: string; steps: Step[] }
 interface Script { course: string; title: string; description: string; source: string; voice: string; sections: Section[] }
 
 function ff(args: string[]): Promise<string> {
@@ -38,12 +38,11 @@ function ff(args: string[]): Promise<string> {
     let err = "";
     p.stderr.on("data", (d) => (err += d.toString()));
     p.on("error", reject);
-    p.on("close", (c) => (c === 0 ? resolve(err) : reject(new Error(err.slice(-700)))));
+    p.on("close", (c) => (c === 0 ? resolve(err) : reject(new Error(err.slice(-900)))));
   });
 }
 
 async function probeDuration(file: string): Promise<number> {
-  // ffmpeg prints Duration: HH:MM:SS.ss to stderr; parse it.
   let err = "";
   await new Promise<void>((resolve) => {
     const p = spawn(FFMPEG, ["-i", file], { stdio: ["ignore", "ignore", "pipe"] });
@@ -71,15 +70,12 @@ async function tts(openai: OpenAI, voice: string, text: string, out: string) {
 
 async function main() {
   const course = process.argv[2];
-  const scriptPath = `scripts/tutorials/script/${course}.json`;
-  const script = JSON.parse(readFileSync(scriptPath, "utf8")) as Script;
+  const script = JSON.parse(readFileSync(`scripts/tutorials/script/${course}.json`, "utf8")) as Script;
   const src = `${SRC_DIR}/${script.source}`;
   const outDir = `scripts/tutorials/out/${course}`;
   const tmp = `/tmp/tut-tts/${course}`;
-  rmSync(outDir, { recursive: true, force: true });
-  mkdirSync(outDir, { recursive: true });
-  rmSync(tmp, { recursive: true, force: true });
-  mkdirSync(tmp, { recursive: true });
+  rmSync(outDir, { recursive: true, force: true }); mkdirSync(outDir, { recursive: true });
+  rmSync(tmp, { recursive: true, force: true }); mkdirSync(tmp, { recursive: true });
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   const manifest: {
@@ -92,71 +88,71 @@ async function main() {
     const nn = String(si + 1).padStart(2, "0");
     console.log(`\n=== ${nn} ${sec.slug} ===`);
 
-    // 1. TTS each step → durations + caption cues.
     const stepAudios: string[] = [];
     const cues: { start: number; end: number; text: string }[] = [];
+    const filters: string[] = [];
     let cursor = 0;
-    for (let i = 0; i < sec.steps.length; i++) {
-      const a = `${tmp}/${nn}-${i}.mp3`;
-      await tts(openai, script.voice, sec.steps[i].narration, a);
-      const d = await probeDuration(a);
-      cues.push({ start: +cursor.toFixed(2), end: +(cursor + d).toFixed(2), text: sec.steps[i].caption });
-      cursor += d;
-      stepAudios.push(a);
-      console.log(`  step ${i + 1}: "${sec.steps[i].caption}" (${d.toFixed(1)}s)`);
-    }
-    const N = cursor; // total narration seconds
 
-    // 2. Concatenate step audios → section audio.
+    for (let i = 0; i < sec.steps.length; i++) {
+      const step = sec.steps[i];
+      // 1. TTS this step → its duration d drives both audio and video length.
+      const a = `${tmp}/${nn}-${i}.mp3`;
+      await tts(openai, script.voice, step.narration, a);
+      const d = await probeDuration(a);
+      stepAudios.push(a);
+      cues.push({ start: +cursor.toFixed(2), end: +(cursor + d).toFixed(2), text: step.caption });
+      cursor += d;
+
+      // 2. Fit this step's segment to exactly d seconds.
+      const seg = step.segment;
+      const raw = seg.out - seg.in;
+      let usedOut = seg.out, pad = 0, dur0: number;
+      if (raw / d > MAX_SPEED) {
+        usedOut = seg.in + d * MAX_SPEED; dur0 = d * MAX_SPEED; // trim tail, play at MAX
+      } else if (raw < d) {
+        dur0 = raw; pad = d - raw; // hold last frame for the remainder
+      } else {
+        dur0 = raw; // fit exactly
+      }
+      const mult = d / dur0; // setpts multiplier so dur0 → d
+      let chain = `[0:v]trim=start=${seg.in}:end=${usedOut},setpts=${mult.toFixed(6)}*(PTS-STARTPTS)`;
+      if (pad > 0.04) chain += `,tpad=stop_mode=clone:stop_duration=${pad.toFixed(3)}`;
+      chain += `[p${i}]`;
+      filters.push(chain);
+      const speed = raw / Math.min(dur0, raw) * (pad > 0 ? 1 : 1); // for logging only
+      console.log(`  step ${i + 1}: "${step.caption}" ${d.toFixed(1)}s  (${(raw / d).toFixed(2)}x${pad > 0.04 ? ", hold" : ""})`);
+      void speed;
+    }
+    const N = cursor;
+
+    // 3. Concat step videos → section video, then normalise.
+    const cat = sec.steps.map((_, i) => `[p${i}]`).join("");
+    const filter = [
+      ...filters,
+      `${cat}concat=n=${sec.steps.length}:v=1:a=0[c]`,
+      `[c]fps=30,scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:color=0x0a0e1a,setsar=1[vout]`,
+    ].join(";");
+    const videoOut = `${tmp}/${nn}-video.mp4`;
+    await ff(["-hide_banner", "-y", "-i", src, "-filter_complex", filter, "-map", "[vout]",
+      "-c:v", "libx264", "-preset", "medium", "-crf", "22", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-an", videoOut]);
+
+    // 4. Concat step audios + mux.
     const listFile = `${tmp}/${nn}-list.txt`;
     writeFileSync(listFile, stepAudios.map((f) => `file '${f}'`).join("\n"));
     const audioOut = `${tmp}/${nn}-audio.mp3`;
     await ff(["-hide_banner", "-y", "-f", "concat", "-safe", "0", "-i", listFile, "-c:a", "libmp3lame", "-q:a", "3", audioOut]);
 
-    // 3. Build the silent video: trim+concat kept segments, time-fit to N, normalise.
-    // Cap the speed-up: never play faster than MAX_SPEED. When the kept footage is
-    // too long for the narration, trim the excess from the LONGEST (slowest-scroll)
-    // segment so meaningful short moments (clicks, "save search") stay intact.
-    const MAX_SPEED = 1.3;
-    const segs = sec.segments.map((s) => ({ in: s.in, out: s.out }));
-    let R = segs.reduce((n, s) => n + (s.out - s.in), 0);
-    let excess = R - N * MAX_SPEED;
-    while (excess > 0.05) {
-      let li = 0;
-      for (let i = 1; i < segs.length; i++)
-        if (segs[i].out - segs[i].in > segs[li].out - segs[li].in) li = i;
-      const cut = Math.min(excess, segs[li].out - segs[li].in - 1.0);
-      if (cut <= 0) break;
-      segs[li].out -= cut;
-      excess -= cut;
-    }
-    R = segs.reduce((n, s) => n + (s.out - s.in), 0);
-    const factor = N / R; // setpts multiplier: >1 slows, <1 speeds (>= 1/MAX_SPEED)
-    const trims = segs.map((s, i) => `[0:v]trim=start=${s.in}:end=${s.out},setpts=PTS-STARTPTS[v${i}]`);
-    const cat = segs.map((_, i) => `[v${i}]`).join("");
-    const filter = [
-      ...trims,
-      `${cat}concat=n=${sec.segments.length}:v=1:a=0[vc]`,
-      `[vc]setpts=${factor.toFixed(6)}*PTS,fps=30,scale=1920:1080:force_original_aspect_ratio=decrease,` +
-        `pad=1920:1080:(ow-iw)/2:(oh-ih)/2:color=0x0a0e1a,setsar=1[vout]`,
-    ].join(";");
-    const videoOut = `${tmp}/${nn}-video.mp4`;
-    await ff(["-hide_banner", "-y", "-i", src, "-filter_complex", filter, "-map", "[vout]",
-      "-c:v", "libx264", "-preset", "medium", "-crf", "22", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-an", videoOut]);
-    console.log(`  video: ${R}s raw → ${N.toFixed(1)}s (${(1 / factor).toFixed(2)}x speed)`);
-
-    // 4. Mux narration onto the video.
     const file = `${nn}-${sec.slug}.mp4`;
     await ff(["-hide_banner", "-y", "-i", videoOut, "-i", audioOut,
       "-map", "0:v:0", "-map", "1:a:0", "-c:v", "copy", "-c:a", "aac", "-b:a", "128k",
       "-movflags", "+faststart", "-shortest", `${outDir}/${file}`]);
 
     manifest.sections.push({ slug: sec.slug, title: sec.title, file, durationSec: +N.toFixed(2), cues });
-    console.log(`  ✓ ${file}`);
+    console.log(`  ✓ ${file} (${N.toFixed(1)}s)`);
   }
 
   writeFileSync(`${outDir}/cues.json`, JSON.stringify(manifest, null, 2));
-  console.log(`\n✓ done — ${manifest.sections.length} sections → ${outDir} (+ cues.json)`);
+  console.log(`\n✓ done — ${manifest.sections.length} sections → ${outDir}`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

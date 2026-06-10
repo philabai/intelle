@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  tutorialUrl,
+  sectionVideoUrl,
   type TutorialCourse,
 } from "@/lib/regwatch/tutorials";
 
@@ -81,7 +81,7 @@ export function TutorialPlayer({ course }: { course: TutorialCourse }) {
       <div className="relative overflow-hidden rounded-xl border border-card-border bg-black">
         <video
           ref={videoRef}
-          src={tutorialUrl(section.file)}
+          src={sectionVideoUrl(section)}
           preload="metadata"
           playsInline
           controls={started}

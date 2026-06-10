@@ -4,86 +4,49 @@
   "description": "Browse the corpus by country, regulator and topic, read original and translated sources, and search with Iris.",
   "source": "01. Regulations.mov",
   "voice": "nova",
-  "_note": "Timeline reconstructed from 1fps contact sheets. 'segments' are source in/out seconds (dead time excluded); the renderer time-fits the kept video to the narration length per section. 'steps' are the narration spine — each step's caption shows as a banner while its narration plays. REVIEW: edit captions/narration freely; nudge segment in/out if a cut feels off.",
   "sections": [
     {
       "slug": "browse",
       "title": "Browse the corpus by country",
-      "segments": [{ "in": 9, "out": 19 }, { "in": 19, "out": 31 }],
       "steps": [
-        {
-          "caption": "Browse the global regulatory corpus",
-          "narration": "Vantage tracks over eleven thousand regulations from regulators around the world. From the Regulations menu, you can browse the entire corpus by country."
-        },
-        {
-          "caption": "Pick a jurisdiction",
-          "narration": "Each tile is a jurisdiction — the United States, the European Union, Canada, Saudi Arabia and more — showing how many regulations it covers and how many changed this month."
-        },
-        {
-          "caption": "Open a regulation to read it",
-          "narration": "Click any regulation to open it. Vantage extracts the full text into clean, readable articles, right inside the app."
-        }
+        { "caption": "Browse the global corpus", "segment": { "in": 9, "out": 19 },
+          "narration": "Vantage tracks over eleven thousand regulations from regulators worldwide. Browse the whole corpus by country — every tile is a jurisdiction, showing how many regulations it covers." },
+        { "caption": "Open a regulation to read it", "segment": { "in": 19, "out": 30 },
+          "narration": "Click any regulation to open it, and Vantage extracts the full text into clean, readable articles." }
       ]
     },
     {
       "slug": "regulators",
       "title": "Browse by regulator",
-      "segments": [{ "in": 34, "out": 52 }, { "in": 54, "out": 64 }, { "in": 64, "out": 78 }],
       "steps": [
-        {
-          "caption": "Browse by regulator",
-          "narration": "You can also browse by regulator. Vantage organises publishers by region — North America, Europe, the Gulf, and international bodies."
-        },
-        {
-          "caption": "Open a regulator — SASO",
-          "narration": "Here we open Saudi Standards, the S-A-S-O authority, to see every technical regulation it publishes."
-        },
-        {
-          "caption": "Read the original source",
-          "narration": "Open a regulation and switch to the Original tab to see the publisher's own source document — in this case, the Arabic PDF for hydrogen vehicles."
-        },
-        {
-          "caption": "Auto-translated to English",
-          "narration": "Vantage automatically translates non-English sources, so you can read the official text in English without leaving the page."
-        }
+        { "caption": "Browse by regulator", "segment": { "in": 34, "out": 46 },
+          "narration": "You can also browse by regulator — Vantage organises publishers by region: North America, Europe, the Gulf, and international bodies." },
+        { "caption": "Open a regulator — SASO", "segment": { "in": 54, "out": 64 },
+          "narration": "Open a regulator, like Saudi Standards, to see every technical regulation it publishes." },
+        { "caption": "Original + English translation", "segment": { "in": 64, "out": 78 },
+          "narration": "Switch to the Original tab for the publisher's own source — here, the Arabic PDF — which Vantage automatically translates to English, in place." }
       ]
     },
     {
       "slug": "topics",
       "title": "Explore by topic",
-      "segments": [{ "in": 90, "out": 106 }, { "in": 106, "out": 110 }],
       "steps": [
-        {
-          "caption": "Explore by topic",
-          "narration": "Every regulation is tagged by topic, so you can follow exactly the themes that matter to your operations."
-        },
-        {
-          "caption": "Open a topic — Energy",
-          "narration": "Open a topic like Energy to see all the related regulations, across every jurisdiction, in one place."
-        }
+        { "caption": "Explore by topic", "segment": { "in": 90, "out": 104 },
+          "narration": "Every regulation is tagged by topic, so you can follow exactly the themes that matter to your operations." },
+        { "caption": "Open a topic — Energy", "segment": { "in": 104, "out": 110 },
+          "narration": "Open a topic like Energy to see all the related regulations, across every jurisdiction, in one place." }
       ]
     },
     {
       "slug": "search",
       "title": "Search with Iris",
-      "segments": [{ "in": 116, "out": 126 }, { "in": 126, "out": 150 }, { "in": 175, "out": 181 }],
       "steps": [
-        {
-          "caption": "Search the whole corpus",
-          "narration": "The Search page combines keyword search with Iris, our AI assistant, in a single box."
-        },
-        {
-          "caption": "Ask Iris a question",
-          "narration": "Type a question — like, methane emission reduction in oil and gas — and Iris reads the corpus and writes a grounded answer."
-        },
-        {
-          "caption": "Cited, with ranked matches",
-          "narration": "Every claim is cited to its source, and the most relevant regulations are ranked below — vector and keyword search, combined."
-        },
-        {
-          "caption": "Save the search",
-          "narration": "Save any search to revisit it later, or to be alerted when new regulations match it."
-        }
+        { "caption": "Search with Iris", "segment": { "in": 116, "out": 126 },
+          "narration": "The Search page combines keyword search with Iris, our AI assistant, in one box — type a question, like methane emission reduction in oil and gas." },
+        { "caption": "A cited answer", "segment": { "in": 128, "out": 150 },
+          "narration": "Iris reads the corpus and writes a grounded answer, with every claim cited to its source, and the most relevant regulations ranked below." },
+        { "caption": "Save the search", "segment": { "in": 175, "out": 181 },
+          "narration": "Save any search to revisit later, or to be alerted when new regulations match." }
       ]
     }
   ]

@@ -36,12 +36,14 @@ async function main() {
   for (const s of manifest.sections) {
     const path = `tutorials/${course}/${s.file}`;
     const body = readFileSync(`${outDir}/${s.file}`);
-    const up = await sb.storage.from(BUCKET).upload(path, body, { contentType: "video/mp4", upsert: true, cacheControl: "3600" });
+    const up = await sb.storage.from(BUCKET).upload(path, body, { contentType: "video/mp4", upsert: true, cacheControl: "300" });
     if (up.error) throw new Error(`upload ${path}: ${up.error.message}`);
     console.log(`  ✓ ${path} (${(body.length / 1024 / 1024).toFixed(1)} MB)`);
   }
 
   // Merge into the committed player config (replace this course, keep others).
+  // `rev` cache-busts the public URL so re-uploads bypass the browser/CDN cache.
+  const rev = Date.now();
   const courseConfig = {
     slug: manifest.course,
     title: manifest.title,
@@ -51,6 +53,7 @@ async function main() {
       title: s.title,
       file: `tutorials/${course}/${s.file}`,
       durationSec: s.durationSec,
+      rev,
       cues: s.cues,
     })),
   };

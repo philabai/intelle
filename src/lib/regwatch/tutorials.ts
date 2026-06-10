@@ -23,6 +23,8 @@ export interface TutorialSection {
   /** object path within the public bucket, e.g. "tutorials/regulations/01-browse.mp4" */
   file: string;
   durationSec: number;
+  /** Upload revision — appended as ?v= to bust browser/CDN cache after re-uploads. */
+  rev?: number;
   cues: Cue[];
 }
 export interface TutorialCourse {
@@ -77,6 +79,12 @@ export const TUTORIAL_COURSES: TutorialCourse[] = COURSE_META.map((m) => {
 export function tutorialUrl(file: string): string {
   const base = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/$/, "");
   return `${base}/storage/v1/object/public/${TUTORIAL_BUCKET}/${file}`;
+}
+
+/** Cache-busted public URL for a section clip (appends the upload revision). */
+export function sectionVideoUrl(section: TutorialSection): string {
+  const url = tutorialUrl(section.file);
+  return section.rev ? `${url}?v=${section.rev}` : url;
 }
 
 /** Human duration label across a course's sections. */

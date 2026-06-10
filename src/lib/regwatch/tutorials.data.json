@@ -9,21 +9,17 @@
           "slug": "browse",
           "title": "Browse the corpus by country",
           "file": "tutorials/regulations/01-browse.mp4",
-          "durationSec": 28.48,
+          "durationSec": 17.57,
+          "rev": 1781115142880,
           "cues": [
             {
               "start": 0,
-              "end": 8.9,
-              "text": "Browse the global regulatory corpus"
+              "end": 10.92,
+              "text": "Browse the global corpus"
             },
             {
-              "start": 8.9,
-              "end": 20.42,
-              "text": "Pick a jurisdiction"
-            },
-            {
-              "start": 20.42,
-              "end": 28.48,
+              "start": 10.92,
+              "end": 17.57,
               "text": "Open a regulation to read it"
             }
           ]
@@ -32,27 +28,23 @@
           "slug": "regulators",
           "title": "Browse by regulator",
           "file": "tutorials/regulations/02-regulators.mp4",
-          "durationSec": 32.76,
+          "durationSec": 24.22,
+          "rev": 1781115142880,
           "cues": [
             {
               "start": 0,
-              "end": 9.41,
+              "end": 8.57,
               "text": "Browse by regulator"
             },
             {
-              "start": 9.41,
-              "end": 16.13,
+              "start": 8.57,
+              "end": 14.62,
               "text": "Open a regulator — SASO"
             },
             {
-              "start": 16.13,
-              "end": 25.9,
-              "text": "Read the original source"
-            },
-            {
-              "start": 25.9,
-              "end": 32.76,
-              "text": "Auto-translated to English"
+              "start": 14.62,
+              "end": 24.22,
+              "text": "Original + English translation"
             }
           ]
         },
@@ -60,16 +52,17 @@
           "slug": "topics",
           "title": "Explore by topic",
           "file": "tutorials/regulations/03-topics.mp4",
-          "durationSec": 15.22,
+          "durationSec": 13.18,
+          "rev": 1781115142880,
           "cues": [
             {
               "start": 0,
-              "end": 7.97,
+              "end": 6.12,
               "text": "Explore by topic"
             },
             {
-              "start": 7.97,
-              "end": 15.22,
+              "start": 6.12,
+              "end": 13.18,
               "text": "Open a topic — Energy"
             }
           ]
@@ -78,26 +71,22 @@
           "slug": "search",
           "title": "Search with Iris",
           "file": "tutorials/regulations/04-search.mp4",
-          "durationSec": 27.87,
+          "durationSec": 23.16,
+          "rev": 1781115142880,
           "cues": [
             {
               "start": 0,
-              "end": 5.76,
-              "text": "Search the whole corpus"
+              "end": 9.6,
+              "text": "Search with Iris"
             },
             {
-              "start": 5.76,
-              "end": 14.62,
-              "text": "Ask Iris a question"
+              "start": 9.6,
+              "end": 17.95,
+              "text": "A cited answer"
             },
             {
-              "start": 14.62,
-              "end": 22.42,
-              "text": "Cited, with ranked matches"
-            },
-            {
-              "start": 22.42,
-              "end": 27.87,
+              "start": 17.95,
+              "end": 23.16,
               "text": "Save the search"
             }
           ]
@@ -113,17 +102,18 @@
           "slug": "today",
           "title": "Your Relevance Feed",
           "file": "tutorials/monitor/01-today.mp4",
-          "durationSec": 18.63,
+          "durationSec": 16.97,
+          "rev": 1781115186537,
           "cues": [
             {
               "start": 0,
-              "end": 10.42,
+              "end": 9.46,
               "text": "Your Relevance Feed"
             },
             {
-              "start": 10.42,
-              "end": 18.63,
-              "text": "Severity-scored and triageable"
+              "start": 9.46,
+              "end": 16.97,
+              "text": "Sort, filter, triage"
             }
           ]
         },
@@ -131,17 +121,18 @@
           "slug": "recap",
           "title": "The weekly recap",
           "file": "tutorials/monitor/02-recap.mp4",
-          "durationSec": 13.37,
+          "durationSec": 13.42,
+          "rev": 1781115186537,
           "cues": [
             {
               "start": 0,
-              "end": 9.05,
+              "end": 8.81,
               "text": "The weekly recap"
             },
             {
-              "start": 9.05,
-              "end": 13.37,
-              "text": "Catch up in a minute"
+              "start": 8.81,
+              "end": 13.42,
+              "text": "Catch up fast"
             }
           ]
         },
@@ -149,16 +140,17 @@
           "slug": "saved",
           "title": "Saved searches",
           "file": "tutorials/monitor/03-saved.mp4",
-          "durationSec": 11.02,
+          "durationSec": 10.61,
+          "rev": 1781115186537,
           "cues": [
             {
               "start": 0,
-              "end": 4.25,
+              "end": 3.55,
               "text": "Save a search"
             },
             {
-              "start": 4.25,
-              "end": 11.02,
+              "start": 3.55,
+              "end": 10.61,
               "text": "Find them under My Vantage"
             }
           ]
@@ -167,16 +159,17 @@
           "slug": "alerts",
           "title": "Alerts & digests",
           "file": "tutorials/monitor/04-alerts.mp4",
-          "durationSec": 14.01,
+          "durationSec": 15.31,
+          "rev": 1781115186537,
           "cues": [
             {
               "start": 0,
-              "end": 6.55,
+              "end": 7.1,
               "text": "Set your alerts"
             },
             {
-              "start": 6.55,
-              "end": 14.01,
+              "start": 7.1,
+              "end": 15.31,
               "text": "Preview the digest"
             }
           ]
@@ -192,11 +185,12 @@
           "slug": "hub",
           "title": "Your compliance cockpit",
           "file": "tutorials/comply/01-hub.mp4",
-          "durationSec": 8.11,
+          "durationSec": 8.02,
+          "rev": 1781115238547,
           "cues": [
             {
               "start": 0,
-              "end": 8.11,
+              "end": 8.02,
               "text": "Your compliance cockpit"
             }
           ]
@@ -205,11 +199,12 @@
           "slug": "inbox",
           "title": "The reviewer inbox",
           "file": "tutorials/comply/02-inbox.mp4",
-          "durationSec": 5.86,
+          "durationSec": 5.9,
+          "rev": 1781115238547,
           "cues": [
             {
               "start": 0,
-              "end": 5.86,
+              "end": 5.9,
               "text": "The reviewer inbox"
             }
           ]
@@ -218,17 +213,23 @@
           "slug": "obligations",
           "title": "Obligations & evidence",
           "file": "tutorials/comply/03-obligations.mp4",
-          "durationSec": 18.63,
+          "durationSec": 18.06,
+          "rev": 1781115238547,
           "cues": [
             {
               "start": 0,
-              "end": 8.81,
+              "end": 7.1,
               "text": "Create an obligation"
             },
             {
-              "start": 8.81,
-              "end": 18.63,
-              "text": "Review with evidence"
+              "start": 7.1,
+              "end": 13.96,
+              "text": "Attach evidence"
+            },
+            {
+              "start": 13.96,
+              "end": 18.06,
+              "text": "Review and sign off"
             }
           ]
         },
@@ -236,11 +237,12 @@
           "slug": "assets",
           "title": "Build your asset hierarchy",
           "file": "tutorials/comply/04-assets.mp4",
-          "durationSec": 11.16,
+          "durationSec": 11.95,
+          "rev": 1781115238547,
           "cues": [
             {
               "start": 0,
-              "end": 11.16,
+              "end": 11.95,
               "text": "Build your asset hierarchy"
             }
           ]
@@ -249,12 +251,18 @@
           "slug": "footprint",
           "title": "Configure your footprint",
           "file": "tutorials/comply/05-footprint.mp4",
-          "durationSec": 11.86,
+          "durationSec": 10.61,
+          "rev": 1781115238547,
           "cues": [
             {
               "start": 0,
-              "end": 11.86,
+              "end": 7.2,
               "text": "Configure your footprint"
+            },
+            {
+              "start": 7.2,
+              "end": 10.61,
+              "text": "It scores your feed"
             }
           ]
         }
@@ -263,17 +271,18 @@
     {
       "slug": "author",
       "title": "Authoring Documents",
-      "description": "Write company SOPs and policies from templates, cite regulations as you draft, and move them through review with an audit trail.",
+      "description": "Write company SOPs and policies from templates, crosswalk regulations to your clauses, and move them through review with an audit trail.",
       "sections": [
         {
           "slug": "gallery",
           "title": "Your company documents",
           "file": "tutorials/author/01-gallery.mp4",
-          "durationSec": 10.01,
+          "durationSec": 8.66,
+          "rev": 1781115305516,
           "cues": [
             {
               "start": 0,
-              "end": 10.01,
+              "end": 8.66,
               "text": "Your company documents"
             }
           ]
@@ -282,11 +291,12 @@
           "slug": "template",
           "title": "Start from a template",
           "file": "tutorials/author/02-template.mp4",
-          "durationSec": 9.5,
+          "durationSec": 9.86,
+          "rev": 1781115305516,
           "cues": [
             {
               "start": 0,
-              "end": 9.5,
+              "end": 9.86,
               "text": "Start from a template"
             }
           ]
@@ -295,11 +305,12 @@
           "slug": "editor",
           "title": "Write in the editor",
           "file": "tutorials/author/03-editor.mp4",
-          "durationSec": 8.86,
+          "durationSec": 9.6,
+          "rev": 1781115305516,
           "cues": [
             {
               "start": 0,
-              "end": 8.86,
+              "end": 9.6,
               "text": "Write in the editor"
             }
           ]
@@ -308,11 +319,12 @@
           "slug": "crosswalk",
           "title": "Crosswalk clauses to regulations",
           "file": "tutorials/author/04-crosswalk.mp4",
-          "durationSec": 10.37,
+          "durationSec": 10.7,
+          "rev": 1781115305516,
           "cues": [
             {
               "start": 0,
-              "end": 10.37,
+              "end": 10.7,
               "text": "Crosswalk clauses to regulations"
             }
           ]
@@ -321,16 +333,17 @@
           "slug": "review",
           "title": "Link, review and sign off",
           "file": "tutorials/author/05-review.mp4",
-          "durationSec": 13.7,
+          "durationSec": 12.96,
+          "rev": 1781115305516,
           "cues": [
             {
               "start": 0,
-              "end": 6.5,
+              "end": 5.71,
               "text": "Link to regulations and assets"
             },
             {
-              "start": 6.5,
-              "end": 13.7,
+              "start": 5.71,
+              "end": 12.96,
               "text": "Review and sign off"
             }
           ]

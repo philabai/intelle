@@ -8,65 +8,47 @@
     {
       "slug": "hub",
       "title": "Your compliance cockpit",
-      "segments": [{ "in": 13, "out": 24 }],
       "steps": [
-        {
-          "caption": "Your compliance cockpit",
-          "narration": "The Comply tab is your compliance cockpit — one view of your reviewer inbox, obligations, asset hierarchy and footprint."
-        }
+        { "caption": "Your compliance cockpit", "segment": { "in": 13, "out": 24 },
+          "narration": "The Comply tab is your compliance cockpit — one view of your reviewer inbox, obligations, asset hierarchy and footprint." }
       ]
     },
     {
       "slug": "inbox",
       "title": "The reviewer inbox",
-      "segments": [{ "in": 26, "out": 42 }],
       "steps": [
-        {
-          "caption": "The reviewer inbox",
-          "narration": "The reviewer inbox lists every obligation waiting on you, so nothing falls through the cracks."
-        }
+        { "caption": "The reviewer inbox", "segment": { "in": 26, "out": 42 },
+          "narration": "The reviewer inbox lists every obligation waiting on you, so nothing falls through the cracks." }
       ]
     },
     {
       "slug": "obligations",
       "title": "Obligations & evidence",
-      "segments": [
-        { "in": 54, "out": 66 },
-        { "in": 108, "out": 117 },
-        { "in": 400, "out": 412 },
-        { "in": 452, "out": 461 }
-      ],
       "steps": [
-        {
-          "caption": "Create an obligation",
-          "narration": "Create an obligation by pinning a regulation to one of your assets, then set its severity and compliance status."
-        },
-        {
-          "caption": "Review with evidence",
-          "narration": "Reviewers attach evidence — a photo, a document, a recording — and Vantage's AI helps evaluate it. Then they sign off, with a full audit trail."
-        }
+        { "caption": "Create an obligation", "segment": { "in": 54, "out": 66 },
+          "narration": "Create an obligation by pinning a regulation to one of your assets, then set its severity and compliance status." },
+        { "caption": "Attach evidence", "segment": { "in": 400, "out": 412 },
+          "narration": "Reviewers attach evidence — a photo, a document, a recording — and Vantage's AI helps evaluate it." },
+        { "caption": "Review and sign off", "segment": { "in": 452, "out": 461 },
+          "narration": "Then they sign off through the workflow, with a full audit trail." }
       ]
     },
     {
       "slug": "assets",
       "title": "Build your asset hierarchy",
-      "segments": [{ "in": 152, "out": 168 }],
       "steps": [
-        {
-          "caption": "Build your asset hierarchy",
-          "narration": "Build your asset hierarchy — sites, units and equipment — from the ISO 14224 starter pack, so each obligation attaches to the exact asset it governs."
-        }
+        { "caption": "Build your asset hierarchy", "segment": { "in": 152, "out": 168 },
+          "narration": "Build your asset hierarchy — sites, units and equipment — from the ISO 14224 starter pack, so each obligation attaches to the exact asset it governs." }
       ]
     },
     {
       "slug": "footprint",
       "title": "Configure your footprint",
-      "segments": [{ "in": 300, "out": 316 }, { "in": 350, "out": 358 }],
       "steps": [
-        {
-          "caption": "Configure your footprint",
-          "narration": "Finally, configure your operations footprint — your geographies, industries, substances, and the regulators and topics you monitor. That footprint is what scores your Relevance Feed."
-        }
+        { "caption": "Configure your footprint", "segment": { "in": 300, "out": 316 },
+          "narration": "Configure your operations footprint — your geographies, industries, substances, and the regulators and topics you monitor." },
+        { "caption": "It scores your feed", "segment": { "in": 350, "out": 358 },
+          "narration": "That footprint is what scores your Relevance Feed." }
       ]
     }
   ]
