@@ -81,6 +81,7 @@ export default async function SavedPage() {
                   id={s.id}
                   query={s.query}
                   label={s.label}
+                  filters={s.filters}
                   resultCountAtSave={s.resultCountAtSave}
                   createdAt={s.createdAt}
                 />

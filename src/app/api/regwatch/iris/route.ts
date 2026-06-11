@@ -39,9 +39,9 @@ const messageSchema = z.object({
 const filterFields = {
   /** instrument_type allow-list. Empty array = match nothing (no sources picked). */
   instrumentTypes: z.array(z.string().max(60)).max(20).optional(),
-  regulator: z.string().max(120).optional(),
-  topic: z.string().max(120).optional(),
-  status: z.string().max(60).optional(),
+  regulators: z.array(z.string().max(120)).max(50).optional(),
+  topics: z.array(z.string().max(120)).max(50).optional(),
+  statuses: z.array(z.string().max(60)).max(20).optional(),
 };
 
 const requestSchema = z.union([
@@ -164,9 +164,9 @@ export async function POST(request: Request) {
   // Source/facet filters (present on both shapes; absent for the chatbot widget).
   const filters = {
     instrumentTypes: parsed.instrumentTypes,
-    regulator: parsed.regulator,
-    topic: parsed.topic,
-    status: parsed.status,
+    regulators: parsed.regulators,
+    topics: parsed.topics,
+    statuses: parsed.statuses,
   };
 
   // Latest user message drives retrieval.
@@ -337,9 +337,9 @@ export async function POST(request: Request) {
       match_limit: 6,
       alpha: 0.65,
       filter_instrument_types: filters.instrumentTypes ?? null,
-      filter_regulator: filters.regulator ?? null,
-      filter_topic: filters.topic ?? null,
-      filter_status: filters.status ?? null,
+      filter_regulators: filters.regulators ?? null,
+      filter_topics: filters.topics ?? null,
+      filter_statuses: filters.statuses ?? null,
     });
     if (error) {
       // The hybrid RPC can time out on a large corpus. Degrade to fast pure
@@ -359,9 +359,9 @@ export async function POST(request: Request) {
         });
       if (filters.instrumentTypes)
         fbQuery = fbQuery.in("instrument_type", filters.instrumentTypes);
-      if (filters.regulator) fbQuery = fbQuery.eq("regulator.slug", filters.regulator);
-      if (filters.topic) fbQuery = fbQuery.contains("topics", [filters.topic]);
-      if (filters.status) fbQuery = fbQuery.eq("status", filters.status);
+      if (filters.regulators) fbQuery = fbQuery.in("regulator.slug", filters.regulators);
+      if (filters.topics) fbQuery = fbQuery.overlaps("topics", filters.topics);
+      if (filters.statuses) fbQuery = fbQuery.in("status", filters.statuses);
       const fb = await fbQuery
         .order("last_changed_at", { ascending: false })
         .limit(6);

@@ -6,9 +6,17 @@ import { saveSearch } from "@/lib/regwatch/saved-searches-actions";
 
 interface Props {
   query: string;
+  /** Active filter params (sources/regulator/topic/instrument_type/status). */
+  filters: Record<string, string>;
   resultCount: number;
   alreadySaved: boolean;
   authed: boolean;
+}
+
+/** Build /regwatch/search?q=…&<filters> for save + sign-in round-trips. */
+function searchHref(query: string, filters: Record<string, string>): string {
+  const params = new URLSearchParams({ q: query, ...filters });
+  return `/regwatch/search?${params.toString()}`;
 }
 
 /**
@@ -22,6 +30,7 @@ interface Props {
  */
 export function SaveSearchButton({
   query,
+  filters,
   resultCount,
   alreadySaved,
   authed,
@@ -34,7 +43,7 @@ export function SaveSearchButton({
   if (!authed) {
     return (
       <a
-        href={`/regwatch/login?next=/regwatch/search?q=${encodeURIComponent(query)}`}
+        href={`/regwatch/login?next=${encodeURIComponent(searchHref(query, filters))}`}
         className="inline-flex items-center gap-1.5 rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-muted hover:border-brand-blue hover:text-foreground"
         title="Sign in to save searches"
       >
@@ -46,7 +55,7 @@ export function SaveSearchButton({
   function onClick() {
     setError(null);
     startTransition(async () => {
-      const res = await saveSearch({ query, resultCountAtSave: resultCount });
+      const res = await saveSearch({ query, filters, resultCountAtSave: resultCount });
       if (!res.ok) {
         setError(res.error ?? "Could not save");
         return;

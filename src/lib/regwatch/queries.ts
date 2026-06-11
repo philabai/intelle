@@ -82,6 +82,10 @@ export interface BrowseFilters {
    * with the single `instrument_type` facet above.
    */
   instrumentTypes?: string[];
+  /** Multi-select facets from the Search page (AND across facets, OR within). */
+  regulators?: string[];
+  topics?: string[];
+  statuses?: string[];
 }
 
 const ITEM_LIST_COLUMNS = `
@@ -126,7 +130,7 @@ export async function getJurisdictionSummaries(): Promise<JurisdictionSummary[]>
  * matches the filtered list exactly.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function applyBrowseFilters<T extends { eq: any; neq: any; in: any; contains: any; textSearch: any }>(
+function applyBrowseFilters<T extends { eq: any; neq: any; in: any; contains: any; overlaps: any; textSearch: any }>(
   query: T,
   filters: BrowseFilters,
 ): T {
@@ -138,6 +142,10 @@ function applyBrowseFilters<T extends { eq: any; neq: any; in: any; contains: an
   if (filters.status) q = q.eq("status", filters.status);
   if (filters.instrument_type) q = q.eq("instrument_type", filters.instrument_type);
   if (filters.instrumentTypes) q = q.in("instrument_type", filters.instrumentTypes);
+  // Multi-select facets (Search page). OR within a facet, AND across facets.
+  if (filters.regulators) q = q.in("regulator.slug", filters.regulators);
+  if (filters.topics) q = q.overlaps("topics", filters.topics);
+  if (filters.statuses) q = q.in("status", filters.statuses);
   if (filters.hideNews) q = q.neq("instrument_type", "notice");
   if (filters.topic) q = q.contains("topics", [filters.topic]);
   if (filters.q) {
@@ -212,9 +220,9 @@ export async function countRegulations(filters: BrowseFilters): Promise<number> 
 export interface HybridSearchFilters {
   /** instrument_type allow-list (from the source picker ∩ instrument-type facet). */
   instrumentTypes?: string[];
-  regulator?: string;
-  topic?: string;
-  status?: string;
+  regulators?: string[];
+  topics?: string[];
+  statuses?: string[];
 }
 
 export async function listRegulationsHybrid(
@@ -245,9 +253,9 @@ export async function listRegulationsHybrid(
     match_limit: limit,
     alpha,
     filter_instrument_types: filters.instrumentTypes ?? null,
-    filter_regulator: filters.regulator ?? null,
-    filter_topic: filters.topic ?? null,
-    filter_status: filters.status ?? null,
+    filter_regulators: filters.regulators ?? null,
+    filter_topics: filters.topics ?? null,
+    filter_statuses: filters.statuses ?? null,
   });
   if (error) {
     // The hybrid RPC can time out on a large corpus. Degrade gracefully to
@@ -259,9 +267,9 @@ export async function listRegulationsHybrid(
       {
         q: query,
         instrumentTypes: filters.instrumentTypes,
-        regulator: filters.regulator,
-        topic: filters.topic,
-        status: filters.status,
+        regulators: filters.regulators,
+        topics: filters.topics,
+        statuses: filters.statuses,
       },
       limit,
     );

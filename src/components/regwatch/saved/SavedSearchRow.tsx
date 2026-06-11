@@ -13,14 +13,26 @@ interface Props {
   id: string;
   query: string;
   label: string | null;
+  filters: Record<string, unknown>;
   resultCountAtSave: number | null;
   createdAt: string;
+}
+
+/** Rebuild the search URL from the saved query + stored filter params. */
+function runHref(query: string, filters: Record<string, unknown>): string {
+  const params = new URLSearchParams({ q: query });
+  for (const k of ["sources", "regulator", "topic", "instrument_type", "status"]) {
+    const v = filters?.[k];
+    if (typeof v === "string" && v) params.set(k, v);
+  }
+  return `/regwatch/search?${params.toString()}`;
 }
 
 export function SavedSearchRow({
   id,
   query,
   label,
+  filters,
   resultCountAtSave,
   createdAt,
 }: Props) {
@@ -125,7 +137,7 @@ export function SavedSearchRow({
         </div>
         <div className="flex items-center gap-1">
           <Link
-            href={`/regwatch/search?q=${encodeURIComponent(query)}`}
+            href={runHref(query, filters)}
             className="rounded-md border border-card-border bg-background px-2.5 py-1 text-[11px] text-foreground hover:border-brand-blue"
           >
             Run →

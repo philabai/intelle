@@ -125,6 +125,15 @@ export function serializeSources(sources: string[]): string {
   return sources.length === 0 ? "none" : sources.join(",");
 }
 
+/** Parse a comma-separated multi-select facet param into a list of values. */
+export function parseCsv(param: string | undefined | null): string[] {
+  if (!param) return [];
+  return param
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 /** The set of instrument_type values covered by the selected sources. */
 export function instrumentTypesForSources(sources: string[]): string[] {
   const set = new Set<string>();

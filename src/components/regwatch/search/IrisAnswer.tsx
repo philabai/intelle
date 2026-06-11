@@ -31,9 +31,9 @@ interface StreamEvent {
  */
 interface IrisFilters {
   instrumentTypes?: string[];
-  regulator?: string;
-  topic?: string;
-  status?: string;
+  regulators?: string[];
+  topics?: string[];
+  statuses?: string[];
 }
 
 export function IrisAnswer({
@@ -70,9 +70,9 @@ export function IrisAnswer({
           body: JSON.stringify({
             query,
             instrumentTypes: filters?.instrumentTypes,
-            regulator: filters?.regulator,
-            topic: filters?.topic,
-            status: filters?.status,
+            regulators: filters?.regulators,
+            topics: filters?.topics,
+            statuses: filters?.statuses,
           }),
           signal: controller.signal,
         });

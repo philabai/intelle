@@ -7,6 +7,7 @@ import {
 } from "@/lib/regwatch/queries";
 import {
   parseSources,
+  parseCsv,
   instrumentTypesForSources,
 } from "@/lib/regwatch/taxonomy";
 import { isSavedQuery } from "@/lib/regwatch/saved-searches";
@@ -38,21 +39,32 @@ export default async function SearchPage({ searchParams }: Props) {
   const query = pickFilter(raw, "q") ?? "";
 
   // Source picker (Regulations / Policies / News) → instrument_type allow-list,
-  // intersected with the optional fine-grained instrument_type facet.
+  // intersected with the multi-select instrument_type facet.
   const sources = parseSources(pickFilter(raw, "sources"));
-  const fineInstrumentType = pickFilter(raw, "instrument_type");
+  const fineInstrumentTypes = parseCsv(pickFilter(raw, "instrument_type"));
   let instrumentTypes = instrumentTypesForSources(sources);
-  if (fineInstrumentType) {
-    instrumentTypes = instrumentTypes.filter((t) => t === fineInstrumentType);
+  if (fineInstrumentTypes.length) {
+    instrumentTypes = instrumentTypes.filter((t) => fineInstrumentTypes.includes(t));
   }
+  const selRegulators = parseCsv(pickFilter(raw, "regulator"));
+  const selTopics = parseCsv(pickFilter(raw, "topic"));
+  const selStatuses = parseCsv(pickFilter(raw, "status"));
   const filters: HybridSearchFilters = {
     instrumentTypes,
-    regulator: pickFilter(raw, "regulator"),
-    topic: pickFilter(raw, "topic"),
-    status: pickFilter(raw, "status"),
+    regulators: selRegulators.length ? selRegulators : undefined,
+    topics: selTopics.length ? selTopics : undefined,
+    statuses: selStatuses.length ? selStatuses : undefined,
   };
-  // Re-run Iris when the query OR any filter changes (forces remount).
-  const filterKey = `${instrumentTypes.join(",")}|${filters.regulator ?? ""}|${filters.topic ?? ""}|${filters.status ?? ""}`;
+  // Captured into a saved search (and used to re-run it). The raw URL param
+  // values, minus the query itself.
+  const activeFilterParams: Record<string, string> = {};
+  for (const k of ["sources", "regulator", "topic", "instrument_type", "status"]) {
+    const v = pickFilter(raw, k);
+    if (v) activeFilterParams[k] = v;
+  }
+  // Signature that changes when the query OR any filter changes (forces the
+  // controls + Iris to remount/re-run on external navigation).
+  const filterKey = `${instrumentTypes.join(",")}|${selRegulators.join(",")}|${selTopics.join(",")}|${selStatuses.join(",")}`;
 
   const supabase = await createClient();
   const {
@@ -87,12 +99,17 @@ export default async function SearchPage({ searchParams }: Props) {
 
         <div className="mt-8">
           <Suspense fallback={null}>
-            <SearchControls regulators={regulators} initialQuery={query} />
+            <SearchControls
+              key={`${query}|${filterKey}`}
+              regulators={regulators}
+              initialQuery={query}
+            />
           </Suspense>
           {query && (
             <div className="mt-3 flex items-center justify-end">
               <SaveSearchButton
                 query={query}
+                filters={activeFilterParams}
                 resultCount={items.length}
                 alreadySaved={alreadySaved}
                 authed={!!user}
