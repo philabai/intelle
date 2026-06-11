@@ -138,9 +138,11 @@ begin
     join regwatch.regulators r on r.id = ri.regulator_id
     where
       (filter_instrument_types is null or ri.instrument_type = any(filter_instrument_types))
-      and (filter_regulators is null or r.slug = any(filter_regulators))
-      and (filter_topics is null or ri.topics && filter_topics)
-      and (filter_statuses is null or ri.status = any(filter_statuses))
+      -- Multi-select facets: an empty array (cardinality 0) means "no filter on
+      -- this facet" (= all), never `= any('{}')` which would match nothing.
+      and (filter_regulators is null or cardinality(filter_regulators) = 0 or r.slug = any(filter_regulators))
+      and (filter_topics is null or cardinality(filter_topics) = 0 or ri.topics && filter_topics)
+      and (filter_statuses is null or cardinality(filter_statuses) = 0 or ri.status = any(filter_statuses))
   ),
   scaled as (
     select

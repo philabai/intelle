@@ -337,9 +337,10 @@ export async function POST(request: Request) {
       match_limit: 6,
       alpha: 0.65,
       filter_instrument_types: filters.instrumentTypes ?? null,
-      filter_regulators: filters.regulators ?? null,
-      filter_topics: filters.topics ?? null,
-      filter_statuses: filters.statuses ?? null,
+      // Empty array → null so the RPC treats an empty facet as "no filter".
+      filter_regulators: filters.regulators?.length ? filters.regulators : null,
+      filter_topics: filters.topics?.length ? filters.topics : null,
+      filter_statuses: filters.statuses?.length ? filters.statuses : null,
     });
     if (error) {
       // The hybrid RPC can time out on a large corpus. Degrade to fast pure
@@ -359,9 +360,10 @@ export async function POST(request: Request) {
         });
       if (filters.instrumentTypes)
         fbQuery = fbQuery.in("instrument_type", filters.instrumentTypes);
-      if (filters.regulators) fbQuery = fbQuery.in("regulator.slug", filters.regulators);
-      if (filters.topics) fbQuery = fbQuery.overlaps("topics", filters.topics);
-      if (filters.statuses) fbQuery = fbQuery.in("status", filters.statuses);
+      if (filters.regulators?.length)
+        fbQuery = fbQuery.in("regulator.slug", filters.regulators);
+      if (filters.topics?.length) fbQuery = fbQuery.overlaps("topics", filters.topics);
+      if (filters.statuses?.length) fbQuery = fbQuery.in("status", filters.statuses);
       const fb = await fbQuery
         .order("last_changed_at", { ascending: false })
         .limit(6);

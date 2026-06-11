@@ -141,11 +141,13 @@ function applyBrowseFilters<T extends { eq: any; neq: any; in: any; contains: an
   if (filters.regulator) q = q.eq("regulator.slug", filters.regulator);
   if (filters.status) q = q.eq("status", filters.status);
   if (filters.instrument_type) q = q.eq("instrument_type", filters.instrument_type);
-  if (filters.instrumentTypes) q = q.in("instrument_type", filters.instrumentTypes);
-  // Multi-select facets (Search page). OR within a facet, AND across facets.
-  if (filters.regulators) q = q.in("regulator.slug", filters.regulators);
-  if (filters.topics) q = q.overlaps("topics", filters.topics);
-  if (filters.statuses) q = q.in("status", filters.statuses);
+  // Multi-select facets (Search page). `.length` guards matter: an empty array
+  // is truthy in JS, so `if (arr)` would apply `IN ()` and match NOTHING. An
+  // empty selection must mean "no filter on this facet" (= all).
+  if (filters.instrumentTypes?.length) q = q.in("instrument_type", filters.instrumentTypes);
+  if (filters.regulators?.length) q = q.in("regulator.slug", filters.regulators);
+  if (filters.topics?.length) q = q.overlaps("topics", filters.topics);
+  if (filters.statuses?.length) q = q.in("status", filters.statuses);
   if (filters.hideNews) q = q.neq("instrument_type", "notice");
   if (filters.topic) q = q.contains("topics", [filters.topic]);
   if (filters.q) {
@@ -232,8 +234,10 @@ export async function listRegulationsHybrid(
   alpha = 0.65,
 ): Promise<RegulationListItem[]> {
   if (!query || query.trim().length === 0) return [];
-  // An empty allow-list means the user deselected every source — match nothing
-  // without round-tripping the RPC.
+  // instrumentTypes is undefined = no source restriction (all sources). An empty
+  // ARRAY here only happens when the source bucket and the instrument-type facet
+  // were both set but don't overlap (a genuine contradiction, e.g. source=Policies
+  // + type=Guidance) → match nothing, without round-tripping the RPC.
   if (filters.instrumentTypes && filters.instrumentTypes.length === 0) return [];
   const supabase = await createClient();
 
@@ -253,9 +257,11 @@ export async function listRegulationsHybrid(
     match_limit: limit,
     alpha,
     filter_instrument_types: filters.instrumentTypes ?? null,
-    filter_regulators: filters.regulators ?? null,
-    filter_topics: filters.topics ?? null,
-    filter_statuses: filters.statuses ?? null,
+    // `.length ? : null` (not `?? null`): an empty array must become null so the
+    // RPC treats it as "no filter on this facet", never `slug = any('{}')`.
+    filter_regulators: filters.regulators?.length ? filters.regulators : null,
+    filter_topics: filters.topics?.length ? filters.topics : null,
+    filter_statuses: filters.statuses?.length ? filters.statuses : null,
   });
   if (error) {
     // The hybrid RPC can time out on a large corpus. Degrade gracefully to
