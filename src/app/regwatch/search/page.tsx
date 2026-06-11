@@ -40,11 +40,22 @@ export default async function SearchPage({ searchParams }: Props) {
 
   // Source picker (Regulations / Policies / News) → instrument_type allow-list,
   // intersected with the multi-select instrument_type facet.
+  //
+  // Filter semantics: an EMPTY source selection means "no restriction" (search
+  // every source), NOT "match nothing". A non-empty selection restricts to those
+  // sources. (Absent param defaults to Regulations-only — see parseSources.)
   const sources = parseSources(pickFilter(raw, "sources"));
   const fineInstrumentTypes = parseCsv(pickFilter(raw, "instrument_type"));
-  let instrumentTypes = instrumentTypesForSources(sources);
+  const sourceTypes = sources.length === 0 ? null : instrumentTypesForSources(sources);
+  let instrumentTypes: string[] | undefined;
   if (fineInstrumentTypes.length) {
-    instrumentTypes = instrumentTypes.filter((t) => fineInstrumentTypes.includes(t));
+    // Fine instrument-type facet ANDs with the source bucket (intersection).
+    instrumentTypes = sourceTypes
+      ? sourceTypes.filter((t) => fineInstrumentTypes.includes(t))
+      : fineInstrumentTypes;
+  } else {
+    // null source bucket (empty selection) → undefined = no instrument_type filter.
+    instrumentTypes = sourceTypes ?? undefined;
   }
   const selRegulators = parseCsv(pickFilter(raw, "regulator"));
   const selTopics = parseCsv(pickFilter(raw, "topic"));
@@ -64,7 +75,7 @@ export default async function SearchPage({ searchParams }: Props) {
   }
   // Signature that changes when the query OR any filter changes (forces the
   // controls + Iris to remount/re-run on external navigation).
-  const filterKey = `${instrumentTypes.join(",")}|${selRegulators.join(",")}|${selTopics.join(",")}|${selStatuses.join(",")}`;
+  const filterKey = `${(instrumentTypes ?? ["all"]).join(",")}|${selRegulators.join(",")}|${selTopics.join(",")}|${selStatuses.join(",")}`;
 
   const supabase = await createClient();
   const {

@@ -161,7 +161,12 @@ export function SearchControls({
             );
           })}
           {sources.length === 0 && (
-            <span className="text-[11px] text-amber-400">Pick a source to search.</span>
+            <span
+              className="text-[11px] text-muted"
+              title="No source selected — searching every source (regulations, policies & news)"
+            >
+              All sources
+            </span>
           )}
         </div>
 
