@@ -23,10 +23,8 @@ import {
 import { UNFILED_TOKEN } from "@/components/regwatch/search/FolderPicker";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { SearchControls } from "@/components/regwatch/search/SearchControls";
-import { IrisAnswer } from "@/components/regwatch/search/IrisAnswer";
+import { SearchExperience } from "@/components/regwatch/search/SearchExperience";
 import { SaveSearchButton } from "@/components/regwatch/search/SaveSearchButton";
-import { RegulationRow } from "@/components/regwatch/RegulationRow";
-import { CompanyDocRow } from "@/components/regwatch/search/CompanyDocRow";
 import { EmptyState } from "@/components/regwatch/EmptyState";
 
 export const metadata = { title: "Search" };
@@ -179,62 +177,20 @@ export default async function SearchPage({ searchParams }: Props) {
             />
           </div>
         ) : (
-          <div className="mt-10 space-y-12">
-            <Suspense
-              fallback={<div className="h-32 animate-pulse rounded-xl bg-card-bg" />}
-            >
-              <IrisAnswer
-                key={`${query}|${filterKey}`}
-                query={query}
-                filters={filters}
-                docScope={
-                  authed && docsOn
-                    ? { folderIds: docFolderIds, includeUnfiled }
-                    : undefined
-                }
-              />
-            </Suspense>
-
-            <section>
-              <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
-                {items.length} hybrid {items.length === 1 ? "match" : "matches"} in the
-                corpus
-              </p>
-              {items.length === 0 ? (
-                <EmptyState
-                  title="No corpus rows matched your keywords."
-                  description="Iris may still be able to answer from related items — see the synthesis above. Try a broader query, add a source in the picker, or check the Browse page for jurisdiction-level coverage."
-                />
-              ) : (
-                <div className="overflow-hidden rounded-xl border border-card-border bg-background">
-                  {items.map((item) => (
-                    <RegulationRow key={item.id} item={item} />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {docsOn && (
-              <section>
-                <p className="mb-3 text-xs font-medium uppercase tracking-wider text-brand-teal">
-                  {docResults.length}{" "}
-                  {docResults.length === 1 ? "match" : "matches"} in your company
-                  documents
-                </p>
-                {docResults.length === 0 ? (
-                  <EmptyState
-                    title="No company documents matched."
-                    description="Try a broader query, widen the folder selection, or check that the document has body text in the editor."
-                  />
-                ) : (
-                  <div className="overflow-hidden rounded-xl border border-brand-teal/30 bg-background">
-                    {docResults.map((d) => (
-                      <CompanyDocRow key={d.id} doc={d} />
-                    ))}
-                  </div>
-                )}
-              </section>
-            )}
+          <div className="mt-8">
+            <SearchExperience
+              key={`${query}|${filterKey}`}
+              query={query}
+              filters={filters}
+              docScope={
+                authed && docsOn
+                  ? { folderIds: docFolderIds, includeUnfiled }
+                  : undefined
+              }
+              regulations={items}
+              companyDocs={docResults}
+              docsOn={docsOn}
+            />
           </div>
         )}
       </div>
