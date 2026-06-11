@@ -1,0 +1,39 @@
+{
+  "course": "dashboard",
+  "title": "Your Dashboard",
+  "description": "The Vantage command center — headline numbers, your personal queue, compliance posture, a card per business line, and a live activity feed.",
+  "source": "new-dashboard.mp4",
+  "voice": "nova",
+  "sections": [
+    {
+      "slug": "overview",
+      "title": "Your command center",
+      "steps": [
+        { "caption": "Your command center", "segment": { "in": 11.6, "out": 15 },
+          "narration": "Signing in lands you on your command center — your whole compliance picture, at a glance." },
+        { "caption": "What needs you, first", "segment": { "in": 15.4, "out": 18.5 },
+          "narration": "Up top, the headline numbers — critical regulations, reviews waiting on you, overdue obligations, and deadlines this week." },
+        { "caption": "Your personal queue", "segment": { "in": 19, "out": 22.4 },
+          "narration": "My queue gathers every review assigned to you, across obligations and documents." },
+        { "caption": "Your compliance posture", "segment": { "in": 23, "out": 27.4 },
+          "narration": "A posture score and a status bar show how compliant your obligations are." }
+      ]
+    },
+    {
+      "slug": "lines",
+      "title": "Every business line",
+      "steps": [
+        { "caption": "Obligations", "segment": { "in": 28, "out": 31.7 },
+          "narration": "Every business line gets a card — obligations, broken down by severity and status." },
+        { "caption": "Assets, hottest first", "segment": { "in": 32.2, "out": 35.5 },
+          "narration": "Your assets, with the highest-risk ones — the hot assets — surfaced first." },
+        { "caption": "Company documents", "segment": { "in": 36, "out": 40 },
+          "narration": "And your documents — what's in review, open comments, and what's due for review." },
+        { "caption": "A live activity feed", "segment": { "in": 40.6, "out": 46 },
+          "narration": "A live feed shows what's changed across your workspace — approvals, comments, status moves." },
+        { "caption": "One click into the detail", "segment": { "in": 46.8, "out": 50 },
+          "narration": "And every card clicks straight through to the full view." }
+      ]
+    }
+  ]
+}

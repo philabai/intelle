@@ -38,6 +38,18 @@ export interface TutorialCourse {
 // Stable course list (order + copy). Sections merge in from the generated data.
 const COURSE_META: { slug: string; title: string; description: string }[] = [
   {
+    slug: "dashboard",
+    title: "Your Dashboard",
+    description:
+      "The Vantage command center — headline numbers, your personal queue, compliance posture, a card per business line, and a live activity feed.",
+  },
+  {
+    slug: "search",
+    title: "AI Search",
+    description:
+      "One box to search regulations, policies, news, your company documents and assets — with Iris writing a cited answer and a side preview drawer.",
+  },
+  {
     slug: "regulations",
     title: "Exploring Regulations",
     description:

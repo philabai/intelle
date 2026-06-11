@@ -353,6 +353,7 @@ function RegRow({
     <button
       type="button"
       onClick={onOpen}
+      data-testid="search-result"
       className="block w-full border-b border-card-border px-4 py-3 text-left last:border-b-0 hover:bg-card-bg/50"
     >
       <div className="flex flex-wrap items-center gap-2">

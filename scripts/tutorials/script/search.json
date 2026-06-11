@@ -1,0 +1,45 @@
+{
+  "course": "search",
+  "title": "AI Search",
+  "description": "One box to search regulations, policies, news, your company documents and assets — with Iris writing a cited answer and a preview drawer.",
+  "source": "new-search.mp4",
+  "voice": "nova",
+  "sections": [
+    {
+      "slug": "sources",
+      "title": "Sources & filters",
+      "steps": [
+        { "caption": "One box for everything", "segment": { "in": 6, "out": 11 },
+          "narration": "Search is a single box — ask a question, paste a citation, or just type keywords." },
+        { "caption": "Ask in plain English", "segment": { "in": 12, "out": 16.5 },
+          "narration": "Type what you're looking for, the way you'd ask a colleague." },
+        { "caption": "Choose your sources", "segment": { "in": 17, "out": 21 },
+          "narration": "Choose what to search — regulations, policies, news, your company documents, even your assets." },
+        { "caption": "Narrow with filters", "segment": { "in": 22, "out": 30 },
+          "narration": "Open Advanced search to narrow by regulator, topic, status or instrument type." }
+      ]
+    },
+    {
+      "slug": "answers",
+      "title": "AI answers & preview",
+      "steps": [
+        { "caption": "Iris answers, with citations", "segment": { "in": 32, "out": 40 },
+          "narration": "Iris reads the matching excerpts and writes a grounded answer — every claim cited to its source." },
+        { "caption": "Preview without leaving", "segment": { "in": 41, "out": 47.5 },
+          "narration": "Click any citation or result to preview it in a side drawer, then open the full document." }
+      ]
+    },
+    {
+      "slug": "internal",
+      "title": "Your documents & assets",
+      "steps": [
+        { "caption": "Search your own documents", "segment": { "in": 49, "out": 57 },
+          "narration": "Switch on Company Docs to search your own SOPs and policies — and pick which folders to look in." },
+        { "caption": "Ranked, with highlights", "segment": { "in": 60, "out": 71 },
+          "narration": "Your matching documents appear in their own section, with the wording highlighted." },
+        { "caption": "Find any asset", "segment": { "in": 72.8, "out": 76.5 },
+          "narration": "And switch on Assets to find any asset by name or code." }
+      ]
+    }
+  ]
+}

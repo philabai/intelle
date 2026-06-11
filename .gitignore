@@ -67,3 +67,5 @@ scripts/demos/out/
 
 # Generated tutorial clips (hosted in Supabase, not committed)
 scripts/tutorials/out/
+# Raw recorded footage (re-recordable via record-new.ts, hosted in Supabase)
+scripts/tutorials/raw/

@@ -1,6 +1,155 @@
 {
   "courses": [
     {
+      "slug": "search",
+      "title": "AI Search",
+      "description": "One box to search regulations, policies, news, your company documents and assets — with Iris writing a cited answer and a preview drawer.",
+      "sections": [
+        {
+          "slug": "sources",
+          "title": "Sources & filters",
+          "file": "tutorials/search/01-sources.mp4",
+          "durationSec": 22.99,
+          "rev": 1781188601061,
+          "cues": [
+            {
+              "start": 0,
+              "end": 6.72,
+              "text": "One box for everything"
+            },
+            {
+              "start": 6.72,
+              "end": 10.32,
+              "text": "Ask in plain English"
+            },
+            {
+              "start": 10.32,
+              "end": 17.33,
+              "text": "Choose your sources"
+            },
+            {
+              "start": 17.33,
+              "end": 22.99,
+              "text": "Narrow with filters"
+            }
+          ]
+        },
+        {
+          "slug": "answers",
+          "title": "AI answers & preview",
+          "file": "tutorials/search/02-answers.mp4",
+          "durationSec": 13.08,
+          "rev": 1781188601061,
+          "cues": [
+            {
+              "start": 0,
+              "end": 6.36,
+              "text": "Iris answers, with citations"
+            },
+            {
+              "start": 6.36,
+              "end": 13.08,
+              "text": "Preview without leaving"
+            }
+          ]
+        },
+        {
+          "slug": "internal",
+          "title": "Your documents & assets",
+          "file": "tutorials/search/03-internal.mp4",
+          "durationSec": 15.93,
+          "rev": 1781188601061,
+          "cues": [
+            {
+              "start": 0,
+              "end": 6.31,
+              "text": "Search your own documents"
+            },
+            {
+              "start": 6.31,
+              "end": 11.23,
+              "text": "Ranked, with highlights"
+            },
+            {
+              "start": 11.23,
+              "end": 15.93,
+              "text": "Find any asset"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "dashboard",
+      "title": "Your Dashboard",
+      "description": "The Vantage command center — headline numbers, your personal queue, compliance posture, a card per business line, and a live activity feed.",
+      "sections": [
+        {
+          "slug": "overview",
+          "title": "Your command center",
+          "file": "tutorials/dashboard/01-overview.mp4",
+          "durationSec": 22.75,
+          "rev": 1781188614560,
+          "cues": [
+            {
+              "start": 0,
+              "end": 5.21,
+              "text": "Your command center"
+            },
+            {
+              "start": 5.21,
+              "end": 13.27,
+              "text": "What needs you, first"
+            },
+            {
+              "start": 13.27,
+              "end": 18.33,
+              "text": "Your personal queue"
+            },
+            {
+              "start": 18.33,
+              "end": 22.75,
+              "text": "Your compliance posture"
+            }
+          ]
+        },
+        {
+          "slug": "lines",
+          "title": "Every business line",
+          "file": "tutorials/dashboard/02-lines.mp4",
+          "durationSec": 25.71,
+          "rev": 1781188614560,
+          "cues": [
+            {
+              "start": 0,
+              "end": 5.52,
+              "text": "Obligations"
+            },
+            {
+              "start": 5.52,
+              "end": 10.78,
+              "text": "Assets, hottest first"
+            },
+            {
+              "start": 10.78,
+              "end": 16.08,
+              "text": "Company documents"
+            },
+            {
+              "start": 16.08,
+              "end": 21.94,
+              "text": "A live activity feed"
+            },
+            {
+              "start": 21.94,
+              "end": 25.71,
+              "text": "One click into the detail"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "slug": "regulations",
       "title": "Exploring Regulations",
       "description": "Browse the corpus by country, regulator and topic, read original and translated sources, and search with Iris.",
@@ -64,30 +213,6 @@
               "start": 6.12,
               "end": 13.18,
               "text": "Open a topic — Energy"
-            }
-          ]
-        },
-        {
-          "slug": "search",
-          "title": "Search with Iris",
-          "file": "tutorials/regulations/04-search.mp4",
-          "durationSec": 23.16,
-          "rev": 1781115142880,
-          "cues": [
-            {
-              "start": 0,
-              "end": 9.6,
-              "text": "Search with Iris"
-            },
-            {
-              "start": 9.6,
-              "end": 17.95,
-              "text": "A cited answer"
-            },
-            {
-              "start": 17.95,
-              "end": 23.16,
-              "text": "Save the search"
             }
           ]
         }
