@@ -4,18 +4,29 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export interface PreviewTarget {
-  kind: "regulation" | "doc";
+  kind: "regulation" | "doc" | "asset";
   id: string;
 }
 
 interface PreviewData {
-  kind: "regulation" | "doc";
+  kind: "regulation" | "doc" | "asset";
   title: string;
   meta: string;
   bodyText: string;
   href: string;
   sourceUrl: string | null;
 }
+
+const KIND_LABEL: Record<PreviewData["kind"], string> = {
+  regulation: "Regulation",
+  doc: "Company document",
+  asset: "Asset",
+};
+const KIND_NOUN: Record<PreviewData["kind"], string> = {
+  regulation: "regulation",
+  doc: "document",
+  asset: "asset hierarchy",
+};
 
 /**
  * Right-side preview drawer (~half page). Opens when a citation, source card, or
@@ -85,7 +96,7 @@ export function PreviewDrawer({
             {data ? (
               <>
                 <p className="text-[11px] font-medium uppercase tracking-wider text-brand-teal">
-                  {data.kind === "doc" ? "Company document" : "Regulation"}
+                  {KIND_LABEL[data.kind]}
                 </p>
                 <h2 className="mt-0.5 text-base font-semibold leading-snug text-foreground">
                   {data.title}
@@ -135,7 +146,7 @@ export function PreviewDrawer({
               href={data.href}
               className="rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90"
             >
-              Open full {data.kind === "doc" ? "document" : "regulation"} →
+              Open {data.kind === "asset" ? "in" : "full"} {KIND_NOUN[data.kind]} →
             </Link>
             {data.sourceUrl && (
               <a

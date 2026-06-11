@@ -75,6 +75,7 @@ export function SearchControls({
   const appliedStatuses = parseCsv(params.get("status"));
   const appliedDocs = params.get("docs") === "1";
   const appliedDocFolders = parseCsv(params.get("docfolders"));
+  const appliedAssets = params.get("assets") === "1";
 
   // Pending (local) state — seeded once from the applied state on mount.
   const [query, setQuery] = useState(initialQuery);
@@ -85,6 +86,7 @@ export function SearchControls({
   const [statusSel, setStatusSel] = useState<string[]>(appliedStatuses);
   const [companyDocs, setCompanyDocs] = useState(appliedDocs);
   const [docFolders, setDocFolders] = useState<string[]>(appliedDocFolders);
+  const [assets, setAssets] = useState(appliedAssets);
 
   const activeFacetGroups = [regulatorSel, topicSel, instrumentSel, statusSel].filter(
     (a) => a.length > 0,
@@ -100,7 +102,8 @@ export function SearchControls({
     !sameSet(instrumentSel, appliedInstrumentTypes) ||
     !sameSet(statusSel, appliedStatuses) ||
     companyDocs !== appliedDocs ||
-    !sameSet(docFolders, appliedDocFolders);
+    !sameSet(docFolders, appliedDocFolders) ||
+    assets !== appliedAssets;
 
   function buildUrl(q: string): string {
     const next = new URLSearchParams();
@@ -118,6 +121,7 @@ export function SearchControls({
       next.set("docs", "1");
       if (docFolders.length) next.set("docfolders", docFolders.join(","));
     }
+    if (assets) next.set("assets", "1");
     return `${pathname}?${next.toString()}`;
   }
 
@@ -145,6 +149,7 @@ export function SearchControls({
     setStatusSel([]);
     setCompanyDocs(false);
     setDocFolders([]);
+    setAssets(false);
   }
 
   return (
@@ -220,6 +225,27 @@ export function SearchControls({
                     {docFolders.length}
                   </span>
                 )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAssets((v) => !v)}
+                aria-pressed={assets}
+                title="Also search your organisation's assets by name"
+                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition ${
+                  assets
+                    ? "border-brand-teal bg-brand-teal/15 text-foreground"
+                    : "border-card-border bg-card-bg text-muted hover:border-brand-teal/50 hover:text-foreground"
+                }`}
+              >
+                <span
+                  className={`grid h-3.5 w-3.5 place-items-center rounded-[3px] border text-[9px] leading-none ${
+                    assets ? "border-brand-teal bg-brand-teal text-white" : "border-card-border"
+                  }`}
+                >
+                  {assets ? "✓" : ""}
+                </span>
+                Assets
               </button>
             </>
           )}

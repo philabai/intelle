@@ -20,6 +20,7 @@ import {
   searchInternalDocuments,
   type CompanyDocResult,
 } from "@/lib/regwatch/internal-document-search";
+import { searchAssets, type AssetSearchResult } from "@/lib/regwatch/assets";
 import { UNFILED_TOKEN } from "@/components/regwatch/search/FolderPicker";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { SearchControls } from "@/components/regwatch/search/SearchControls";
@@ -83,6 +84,9 @@ export default async function SearchPage({ searchParams }: Props) {
   const docFolderIds = docFolderSel.filter((x) => x !== UNFILED_TOKEN);
   const includeUnfiled = docFolderSel.includes(UNFILED_TOKEN);
 
+  // Assets source — search org assets by name/code.
+  const assetsOn = pickFilter(raw, "assets") === "1";
+
   // Captured into a saved search (and used to re-run it). The raw URL param
   // values, minus the query itself.
   const activeFilterParams: Record<string, string> = {};
@@ -94,13 +98,14 @@ export default async function SearchPage({ searchParams }: Props) {
     "status",
     "docs",
     "docfolders",
+    "assets",
   ]) {
     const v = pickFilter(raw, k);
     if (v) activeFilterParams[k] = v;
   }
   // Signature that changes when the query OR any filter changes (forces the
   // controls + Iris to remount/re-run on external navigation).
-  const filterKey = `${(instrumentTypes ?? ["all"]).join(",")}|${selRegulators.join(",")}|${selTopics.join(",")}|${selStatuses.join(",")}|${docsOn ? "docs" : ""}:${docFolderSel.join(",")}`;
+  const filterKey = `${(instrumentTypes ?? ["all"]).join(",")}|${selRegulators.join(",")}|${selTopics.join(",")}|${selStatuses.join(",")}|${docsOn ? "docs" : ""}:${docFolderSel.join(",")}|${assetsOn ? "assets" : ""}`;
 
   const supabase = await createClient();
   const {
@@ -110,7 +115,7 @@ export default async function SearchPage({ searchParams }: Props) {
 
   // Regulators + folder tree load always (the controls are always shown to
   // authed users). The doc search only runs when Company Docs is on.
-  const [regulators, items, alreadySaved, folders, unfiledCount, docResults] =
+  const [regulators, items, alreadySaved, folders, unfiledCount, docResults, assetResults] =
     await Promise.all([
       listRegulatorOptions(),
       query ? listRegulationsHybrid(query, 25, filters) : Promise.resolve([]),
@@ -123,6 +128,9 @@ export default async function SearchPage({ searchParams }: Props) {
             includeUnfiled,
           })
         : Promise.resolve([] as CompanyDocResult[]),
+      query && authed && assetsOn
+        ? searchAssets(query)
+        : Promise.resolve([] as AssetSearchResult[]),
     ]);
   const folderTree = buildFolderTree(folders);
 
@@ -190,6 +198,8 @@ export default async function SearchPage({ searchParams }: Props) {
               regulations={items}
               companyDocs={docResults}
               docsOn={docsOn}
+              assets={assetResults}
+              assetsOn={assetsOn}
             />
           </div>
         )}

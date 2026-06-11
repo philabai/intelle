@@ -67,6 +67,58 @@ function mapRow(row: Record<string, unknown>): AssetNode {
   };
 }
 
+export interface AssetSearchResult {
+  id: string;
+  name: string;
+  code: string | null;
+  level: AssetLevel;
+  assetType: string | null;
+}
+
+/** Default per-level labels (org may customise these in HierarchyConfig). */
+export const ASSET_LEVEL_LABELS: Record<number, string> = {
+  2: "Site",
+  3: "Area",
+  4: "Asset class",
+  5: "Asset",
+  6: "Component",
+};
+
+/**
+ * Name/code search over the caller's org assets ("Assets" source on the Search
+ * page). RLS-scoped. Small per-org corpora, so a simple ILIKE is plenty — no
+ * index / RPC needed.
+ */
+export async function searchAssets(
+  query: string,
+  limit = 15,
+): Promise<AssetSearchResult[]> {
+  if (!query || query.trim().length === 0) return [];
+  const supabase = await createClient();
+  // Strip characters that would break the PostgREST `.or()` filter grammar.
+  const safe = query.trim().replace(/[,()*%]/g, " ").trim();
+  if (!safe) return [];
+  const { data, error } = await supabase
+    .from("assets")
+    .select("id, name, code, level, asset_type")
+    .is("archived_at", null)
+    .or(`name.ilike.*${safe}*,code.ilike.*${safe}*`)
+    .order("level", { ascending: true })
+    .order("name", { ascending: true })
+    .limit(limit);
+  if (error) {
+    console.error("[regwatch] searchAssets:", error);
+    return [];
+  }
+  return (data ?? []).map((r) => ({
+    id: r.id as string,
+    name: r.name as string,
+    code: (r.code as string | null) ?? null,
+    level: r.level as AssetLevel,
+    assetType: (r.asset_type as string | null) ?? null,
+  }));
+}
+
 /**
  * Returns every asset in the caller's org as a flat list, oldest-first.
  * Archived assets are omitted by default — pass `includeArchived` to read

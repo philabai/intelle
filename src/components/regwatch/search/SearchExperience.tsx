@@ -3,7 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import type { RegulationListItem } from "@/lib/regwatch/queries";
 import type { CompanyDocResult } from "@/lib/regwatch/internal-document-search";
+import type { AssetSearchResult } from "@/lib/regwatch/assets";
 import { PreviewDrawer, type PreviewTarget } from "./PreviewDrawer";
+
+const ASSET_LEVEL_LABEL: Record<number, string> = {
+  2: "Site",
+  3: "Area",
+  4: "Asset class",
+  5: "Asset",
+  6: "Component",
+};
 
 interface CitationSource {
   id: string;
@@ -51,6 +60,8 @@ export function SearchExperience({
   regulations,
   companyDocs,
   docsOn,
+  assets,
+  assetsOn,
 }: {
   query: string;
   filters?: IrisFilters;
@@ -58,6 +69,8 @@ export function SearchExperience({
   regulations: RegulationListItem[];
   companyDocs: CompanyDocResult[];
   docsOn: boolean;
+  assets: AssetSearchResult[];
+  assetsOn: boolean;
 }) {
   const [text, setText] = useState("");
   const [sources, setSources] = useState<CitationSource[]>([]);
@@ -67,7 +80,8 @@ export function SearchExperience({
   const sig = JSON.stringify({ filters: filters ?? {}, docScope: docScope ?? null });
 
   const [preview, setPreview] = useState<PreviewTarget | null>(null);
-  const open = (kind: "regulation" | "doc", id: string) => setPreview({ kind, id });
+  const open = (kind: "regulation" | "doc" | "asset", id: string) =>
+    setPreview({ kind, id });
 
   useEffect(() => {
     const runKey = `${query}|${sig}`;
@@ -229,6 +243,19 @@ export function SearchExperience({
               ))}
             </ResultSection>
           )}
+
+          {assetsOn && (
+            <ResultSection
+              accent
+              label={`${assets.length} ${assets.length === 1 ? "match" : "matches"} in your assets`}
+              empty={assets.length === 0}
+              emptyText="No assets matched that name or code. Try a different term."
+            >
+              {assets.map((a) => (
+                <AssetRow key={a.id} asset={a} onOpen={() => open("asset", a.id)} />
+              ))}
+            </ResultSection>
+          )}
         </div>
 
         {/* SIDEBAR — sources, sticky + self-scrolling so it never pushes results down */}
@@ -365,6 +392,29 @@ function DocRow({ doc, onOpen }: { doc: CompanyDocResult; onOpen: () => void }) 
       {doc.snippet && (
         <p className="mt-0.5 line-clamp-2 text-xs text-muted">{renderSnippet(doc.snippet)}</p>
       )}
+    </button>
+  );
+}
+
+function AssetRow({ asset, onOpen }: { asset: AssetSearchResult; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="block w-full border-b border-card-border px-4 py-3 text-left last:border-b-0 hover:bg-card-bg/50"
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="rounded-md bg-brand-teal/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-brand-teal">
+          {ASSET_LEVEL_LABEL[asset.level] ?? `Level ${asset.level}`}
+        </span>
+        {asset.code && (
+          <span className="font-mono text-[11px] text-muted">{asset.code}</span>
+        )}
+        {asset.assetType && (
+          <span className="ml-auto text-[10px] text-muted">{asset.assetType}</span>
+        )}
+      </div>
+      <p className="mt-1 text-sm font-medium text-foreground">{asset.name}</p>
     </button>
   );
 }
