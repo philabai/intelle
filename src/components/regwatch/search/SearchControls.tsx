@@ -11,7 +11,6 @@ import {
   serializeSources,
   parseCsv,
 } from "@/lib/regwatch/taxonomy";
-import { MultiSelect } from "./MultiSelect";
 
 interface RegulatorOption {
   slug: string;
@@ -257,7 +256,7 @@ export function SearchControls({
           <div className="rounded-xl border border-card-border bg-card-bg/50 p-4">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {regulators.length > 0 && (
-                <MultiSelect
+                <CheckboxFacet
                   label="Regulator"
                   value={regulatorSel}
                   onChange={setRegulatorSel}
@@ -267,19 +266,19 @@ export function SearchControls({
                   }))}
                 />
               )}
-              <MultiSelect
+              <CheckboxFacet
                 label="Topic"
                 value={topicSel}
                 onChange={setTopicSel}
                 options={TOPIC_TAXONOMY}
               />
-              <MultiSelect
+              <CheckboxFacet
                 label="Instrument type"
                 value={instrumentSel}
                 onChange={setInstrumentSel}
                 options={INSTRUMENT_TYPE_TAXONOMY}
               />
-              <MultiSelect
+              <CheckboxFacet
                 label="Status"
                 value={statusSel}
                 onChange={setStatusSel}
@@ -301,5 +300,68 @@ export function SearchControls({
         </div>
       </div>
     </form>
+  );
+}
+
+/**
+ * A facet rendered as a fully-visible checkbox list — every option shown with a
+ * checkbox beside it (no search box; users shouldn't need to know the values).
+ * Long lists scroll within a bounded height. Local/controlled.
+ */
+function CheckboxFacet({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: { value: string; label: string }[];
+  value: string[];
+  onChange: (v: string[]) => void;
+}) {
+  const selected = new Set(value);
+
+  function toggle(v: string) {
+    const next = new Set(value);
+    if (next.has(v)) next.delete(v);
+    else next.add(v);
+    onChange([...next]);
+  }
+
+  return (
+    <div className="rounded-lg border border-card-border bg-background/40">
+      <div className="flex items-center justify-between border-b border-card-border px-3 py-2">
+        <span className="text-xs font-medium uppercase tracking-wider text-muted">
+          {label}
+        </span>
+        {value.length > 0 && (
+          <button
+            type="button"
+            onClick={() => onChange([])}
+            className="text-[10px] text-muted hover:text-foreground"
+          >
+            Clear ({value.length})
+          </button>
+        )}
+      </div>
+      <ul className="max-h-52 overflow-auto p-1.5">
+        {options.map((o) => {
+          const checked = selected.has(o.value);
+          return (
+            <li key={o.value}>
+              <label className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-xs hover:bg-card-bg">
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => toggle(o.value)}
+                  className="h-3.5 w-3.5 shrink-0 rounded border-card-border bg-card-bg accent-brand-blue focus:ring-brand-blue"
+                />
+                <span className="text-foreground">{o.label}</span>
+              </label>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
