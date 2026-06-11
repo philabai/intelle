@@ -103,7 +103,7 @@ export async function RegwatchNav({ authed }: { authed: boolean }) {
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-3 sm:px-6">
         <div className="flex min-w-0 items-center gap-2">
           <RegwatchLogo
-            href={authed ? "/regwatch/monitor/today" : "/regwatch/discover"}
+            href={authed ? "/regwatch/dashboard" : "/regwatch/discover"}
           />
         </div>
 

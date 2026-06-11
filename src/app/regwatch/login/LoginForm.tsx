@@ -7,7 +7,7 @@ import { createClient } from "@/lib/regwatch/supabase/client";
 export function RegwatchLoginForm() {
   const router = useRouter();
   const search = useSearchParams();
-  const nextPath = search.get("next") || "/regwatch/feed";
+  const nextPath = search.get("next") || "/regwatch/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

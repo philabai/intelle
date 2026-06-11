@@ -8,7 +8,7 @@ import { createClient } from "@/lib/regwatch/supabase/server";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const next = url.searchParams.get("next") || "/regwatch/feed";
+  const next = url.searchParams.get("next") || "/regwatch/dashboard";
 
   if (!code) {
     return NextResponse.redirect(new URL("/regwatch/login?error=missing-code", url.origin));
