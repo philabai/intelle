@@ -139,17 +139,15 @@ export default async function SearchPage({ searchParams }: Props) {
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <header>
           <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-            Search the corpus
+            AI Search
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Keyword + Iris Q&amp;A in one input
+            Ask anything, powered by AI
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-muted">
-            Type a question, paste a legal citation, or run a keyword search. Iris
-            synthesises a grounded answer from the matching corpus excerpts; the ranked
-            list below is hybrid retrieval — voyage-3-large vector similarity blended
-            with Postgres FTS, so paraphrases (&ldquo;ammonia&rdquo; finds &ldquo;NH3&rdquo;) surface alongside
-            exact-keyword matches.
+            Ask a question in plain English, paste a citation, or search by keyword —
+            and get an instant, source-cited answer across regulations, policies, news,
+            your company documents and assets.
           </p>
         </header>
 
