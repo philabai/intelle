@@ -1,9 +1,18 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/regwatch/supabase/server";
-import { listRegulationsHybrid } from "@/lib/regwatch/queries";
+import {
+  listRegulationsHybrid,
+  listRegulatorOptions,
+  type HybridSearchFilters,
+} from "@/lib/regwatch/queries";
+import {
+  parseSources,
+  instrumentTypesForSources,
+} from "@/lib/regwatch/taxonomy";
 import { isSavedQuery } from "@/lib/regwatch/saved-searches";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { SearchInput } from "@/components/regwatch/search/SearchInput";
+import { SearchFilters } from "@/components/regwatch/search/SearchFilters";
 import { IrisAnswer } from "@/components/regwatch/search/IrisAnswer";
 import { SaveSearchButton } from "@/components/regwatch/search/SaveSearchButton";
 import { RegulationRow } from "@/components/regwatch/RegulationRow";
@@ -29,17 +38,35 @@ export default async function SearchPage({ searchParams }: Props) {
   const raw = await searchParams;
   const query = pickFilter(raw, "q") ?? "";
 
+  // Source picker (Regulations / Policies / News) → instrument_type allow-list,
+  // intersected with the optional fine-grained instrument_type facet.
+  const sources = parseSources(pickFilter(raw, "sources"));
+  const fineInstrumentType = pickFilter(raw, "instrument_type");
+  let instrumentTypes = instrumentTypesForSources(sources);
+  if (fineInstrumentType) {
+    instrumentTypes = instrumentTypes.filter((t) => t === fineInstrumentType);
+  }
+  const filters: HybridSearchFilters = {
+    instrumentTypes,
+    regulator: pickFilter(raw, "regulator"),
+    topic: pickFilter(raw, "topic"),
+    status: pickFilter(raw, "status"),
+  };
+  // Re-run Iris when the query OR any filter changes (forces remount).
+  const filterKey = `${instrumentTypes.join(",")}|${filters.regulator ?? ""}|${filters.topic ?? ""}|${filters.status ?? ""}`;
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [items, alreadySaved] = query
+  const [items, alreadySaved, regulators] = query
     ? await Promise.all([
-        listRegulationsHybrid(query, 25),
+        listRegulationsHybrid(query, 25, filters),
         isSavedQuery(query),
+        listRegulatorOptions(),
       ])
-    : [[], false];
+    : [[], false, []];
 
   return (
     <RegwatchAppShell authed={!!user}>
@@ -84,33 +111,39 @@ export default async function SearchPage({ searchParams }: Props) {
             />
           </div>
         ) : (
-          <div className="mt-10 space-y-12">
-            <Suspense
-              fallback={
-                <div className="h-32 animate-pulse rounded-xl bg-card-bg" />
-              }
-            >
-              <IrisAnswer key={query} query={query} />
-            </Suspense>
+          <div className="mt-10 grid gap-8 lg:grid-cols-[230px_minmax(0,1fr)]">
+            <div className="lg:sticky lg:top-20 lg:self-start">
+              <SearchFilters regulators={regulators} />
+            </div>
 
-            <section>
-              <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
-                {items.length} hybrid {items.length === 1 ? "match" : "matches"} in the
-                corpus
-              </p>
-              {items.length === 0 ? (
-                <EmptyState
-                  title="No corpus rows matched your keywords."
-                  description="Iris may still be able to answer from related items — see the synthesis above. Try a broader query or check the Browse page for jurisdiction-level coverage."
-                />
-              ) : (
-                <div className="overflow-hidden rounded-xl border border-card-border bg-background">
-                  {items.map((item) => (
-                    <RegulationRow key={item.id} item={item} />
-                  ))}
-                </div>
-              )}
-            </section>
+            <div className="min-w-0 space-y-12">
+              <Suspense
+                fallback={
+                  <div className="h-32 animate-pulse rounded-xl bg-card-bg" />
+                }
+              >
+                <IrisAnswer key={`${query}|${filterKey}`} query={query} filters={filters} />
+              </Suspense>
+
+              <section>
+                <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
+                  {items.length} hybrid {items.length === 1 ? "match" : "matches"} in the
+                  corpus
+                </p>
+                {items.length === 0 ? (
+                  <EmptyState
+                    title="No corpus rows matched your keywords."
+                    description="Iris may still be able to answer from related items — see the synthesis above. Try a broader query, add a source in the picker, or check the Browse page for jurisdiction-level coverage."
+                  />
+                ) : (
+                  <div className="overflow-hidden rounded-xl border border-card-border bg-background">
+                    {items.map((item) => (
+                      <RegulationRow key={item.id} item={item} />
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
           </div>
         )}
       </div>

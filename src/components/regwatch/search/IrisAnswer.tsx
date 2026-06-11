@@ -29,16 +29,33 @@ interface StreamEvent {
  * primed with, and Claude is instructed to reference them as [n] tokens. The
  * client then renders [n] → hover-preview anchored to sources[n-1].
  */
-export function IrisAnswer({ query }: { query: string }) {
+interface IrisFilters {
+  instrumentTypes?: string[];
+  regulator?: string;
+  topic?: string;
+  status?: string;
+}
+
+export function IrisAnswer({
+  query,
+  filters,
+}: {
+  query: string;
+  filters?: IrisFilters;
+}) {
   const [text, setText] = useState("");
   const [sources, setSources] = useState<CitationSource[]>([]);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const startedRef = useRef<string | null>(null);
+  // Stable signature so the retrieval re-runs when the source/facet picker
+  // changes (in addition to the parent remounting via its key).
+  const filtersSig = JSON.stringify(filters ?? {});
 
   useEffect(() => {
-    if (!query || startedRef.current === query) return;
-    startedRef.current = query;
+    const runKey = `${query}|${filtersSig}`;
+    if (!query || startedRef.current === runKey) return;
+    startedRef.current = runKey;
     setText("");
     setSources([]);
     setDone(false);
@@ -50,7 +67,13 @@ export function IrisAnswer({ query }: { query: string }) {
         const res = await fetch("/api/regwatch/iris", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query }),
+          body: JSON.stringify({
+            query,
+            instrumentTypes: filters?.instrumentTypes,
+            regulator: filters?.regulator,
+            topic: filters?.topic,
+            status: filters?.status,
+          }),
           signal: controller.signal,
         });
         if (!res.body) throw new Error("No response body");
@@ -97,7 +120,7 @@ export function IrisAnswer({ query }: { query: string }) {
     })();
 
     return () => controller.abort();
-  }, [query]);
+  }, [query, filtersSig]);
 
   const rendered = renderCitations(text, sources);
   // Citations the model actually used inline. Sources that came back from

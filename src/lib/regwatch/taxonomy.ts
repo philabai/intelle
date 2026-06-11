@@ -59,6 +59,81 @@ export const INSTRUMENT_TYPE_TAXONOMY: { value: string; label: string }[] = [
   { value: "notice", label: "Notice" },
 ];
 
+/**
+ * Coarse "source" grouping over instrument_type, used by the Search page's
+ * source picker. Three buckets the corpus naturally splits into:
+ *   - News      → instrument_type 'notice' (regulator press releases)
+ *   - Policies  → instrument_type 'policy'  (e.g. the IEA policies database)
+ *   - Regulations → everything else (the eight legislative/rule types)
+ *
+ * "Regulations" is defined as the COMPLEMENT of the two tagged buckets, so any
+ * future instrument type added to INSTRUMENT_TYPE_TAXONOMY automatically counts
+ * as a regulation unless it's explicitly news/policy.
+ */
+export const NEWS_INSTRUMENT_TYPES = ["notice"] as const;
+export const POLICY_INSTRUMENT_TYPES = ["policy"] as const;
+export const REGULATION_INSTRUMENT_TYPES = INSTRUMENT_TYPE_TAXONOMY.map((t) => t.value).filter(
+  (v) => !NEWS_INSTRUMENT_TYPES.includes(v as never) && !POLICY_INSTRUMENT_TYPES.includes(v as never),
+);
+
+export const SOURCE_TAXONOMY: {
+  value: string;
+  label: string;
+  description: string;
+  types: readonly string[];
+}[] = [
+  {
+    value: "regulations",
+    label: "Regulations",
+    description: "Laws, rules, guidance, standards & enforcement",
+    types: REGULATION_INSTRUMENT_TYPES,
+  },
+  {
+    value: "policies",
+    label: "Policies",
+    description: "Policy database entries (e.g. IEA)",
+    types: POLICY_INSTRUMENT_TYPES,
+  },
+  {
+    value: "news",
+    label: "News",
+    description: "Regulator press releases & notices",
+    types: NEWS_INSTRUMENT_TYPES,
+  },
+];
+
+/** Sources searched by default before the user touches the picker. */
+export const DEFAULT_SOURCES = ["regulations"] as const;
+
+/**
+ * Parse the `sources` URL param into a list of selected source values.
+ * Absent → default (regulations only). The literal "none" → empty (the user
+ * unchecked everything → match nothing).
+ */
+export function parseSources(param: string | undefined | null): string[] {
+  if (param === undefined || param === null) return [...DEFAULT_SOURCES];
+  if (param === "none" || param.trim() === "") return [];
+  const valid = new Set(SOURCE_TAXONOMY.map((s) => s.value));
+  return param
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => valid.has(s));
+}
+
+/** Serialise selected sources back to a URL param value ("none" when empty). */
+export function serializeSources(sources: string[]): string {
+  return sources.length === 0 ? "none" : sources.join(",");
+}
+
+/** The set of instrument_type values covered by the selected sources. */
+export function instrumentTypesForSources(sources: string[]): string[] {
+  const set = new Set<string>();
+  for (const s of sources) {
+    SOURCE_TAXONOMY.find((x) => x.value === s)?.types.forEach((t) => set.add(t));
+  }
+  return [...set];
+}
+
 export const STATUS_TAXONOMY: { value: string; label: string }[] = [
   { value: "in-force", label: "In force" },
   { value: "amended", label: "Amended" },

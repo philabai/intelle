@@ -34,14 +34,25 @@ const messageSchema = z.object({
   content: z.string().min(1).max(4000),
 });
 
+// Source/facet filters from the Search page picker. Optional on both request
+// shapes; the floating chatbot widget omits them (→ searches the whole corpus).
+const filterFields = {
+  /** instrument_type allow-list. Empty array = match nothing (no sources picked). */
+  instrumentTypes: z.array(z.string().max(60)).max(20).optional(),
+  regulator: z.string().max(120).optional(),
+  topic: z.string().max(120).optional(),
+  status: z.string().max(60).optional(),
+};
+
 const requestSchema = z.union([
-  z.object({ query: z.string().min(2).max(1500) }),
+  z.object({ query: z.string().min(2).max(1500), ...filterFields }),
   z.object({
     messages: z.array(messageSchema).min(1).max(20),
     scopedItemId: z.string().uuid().optional(),
     /** "corpus" = Iris answers from the regulatory corpus (default).
      *  "help"   = Iris answers about how Vantage works (product Q&A). */
     mode: z.enum(["corpus", "help"]).optional(),
+    ...filterFields,
   }),
 ]);
 
@@ -149,6 +160,14 @@ export async function POST(request: Request) {
     scopedItemId = parsed.scopedItemId;
     mode = parsed.mode ?? "corpus";
   }
+
+  // Source/facet filters (present on both shapes; absent for the chatbot widget).
+  const filters = {
+    instrumentTypes: parsed.instrumentTypes,
+    regulator: parsed.regulator,
+    topic: parsed.topic,
+    status: parsed.status,
+  };
 
   // Latest user message drives retrieval.
   const latestUser = [...messages].reverse().find((m) => m.role === "user");
@@ -317,23 +336,33 @@ export async function POST(request: Request) {
       query_text: latestUser.content,
       match_limit: 6,
       alpha: 0.65,
+      filter_instrument_types: filters.instrumentTypes ?? null,
+      filter_regulator: filters.regulator ?? null,
+      filter_topic: filters.topic ?? null,
+      filter_status: filters.status ?? null,
     });
     if (error) {
       // The hybrid RPC can time out on a large corpus. Degrade to fast pure
       // FTS (GIN-indexed) so Iris still answers from keyword matches instead
       // of surfacing a "Corpus query failed: …timeout" error to the user.
       console.error("[regwatch] iris hybrid rpc error — FTS fallback:", error);
-      const fb = await supabase
+      let fbQuery = supabase
         .from("regulatory_items")
         .select(
           `id, citation, slug, title, summary, instrument_type, status,
            effective_date, jurisdiction_code, source_url, body_text,
-           regulator:regulators!inner ( name, short_name )`,
+           regulator:regulators!inner ( name, short_name, slug )`,
         )
         .textSearch("body_search", latestUser.content, {
           type: "websearch",
           config: "english",
-        })
+        });
+      if (filters.instrumentTypes)
+        fbQuery = fbQuery.in("instrument_type", filters.instrumentTypes);
+      if (filters.regulator) fbQuery = fbQuery.eq("regulator.slug", filters.regulator);
+      if (filters.topic) fbQuery = fbQuery.contains("topics", [filters.topic]);
+      if (filters.status) fbQuery = fbQuery.eq("status", filters.status);
+      const fb = await fbQuery
         .order("last_changed_at", { ascending: false })
         .limit(6);
       if (fb.error)

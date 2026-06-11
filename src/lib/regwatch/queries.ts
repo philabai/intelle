@@ -76,6 +76,12 @@ export interface BrowseFilters {
   q?: string;
   /** When true, excludes items with instrument_type='notice' (press releases). */
   hideNews?: boolean;
+  /**
+   * Allow-list of instrument_type values (from the Search source picker). When
+   * set, only these types are returned; an empty array matches nothing. ANDs
+   * with the single `instrument_type` facet above.
+   */
+  instrumentTypes?: string[];
 }
 
 const ITEM_LIST_COLUMNS = `
@@ -120,7 +126,7 @@ export async function getJurisdictionSummaries(): Promise<JurisdictionSummary[]>
  * matches the filtered list exactly.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function applyBrowseFilters<T extends { eq: any; neq: any; contains: any; textSearch: any }>(
+function applyBrowseFilters<T extends { eq: any; neq: any; in: any; contains: any; textSearch: any }>(
   query: T,
   filters: BrowseFilters,
 ): T {
@@ -131,6 +137,7 @@ function applyBrowseFilters<T extends { eq: any; neq: any; contains: any; textSe
   if (filters.regulator) q = q.eq("regulator.slug", filters.regulator);
   if (filters.status) q = q.eq("status", filters.status);
   if (filters.instrument_type) q = q.eq("instrument_type", filters.instrument_type);
+  if (filters.instrumentTypes) q = q.in("instrument_type", filters.instrumentTypes);
   if (filters.hideNews) q = q.neq("instrument_type", "notice");
   if (filters.topic) q = q.contains("topics", [filters.topic]);
   if (filters.q) {
@@ -201,12 +208,25 @@ export async function countRegulations(filters: BrowseFilters): Promise<number> 
  *
  * Returns rows in the same RegulationListItem shape as listRegulations.
  */
+/** Source/facet filters applied to hybrid retrieval before ranking. */
+export interface HybridSearchFilters {
+  /** instrument_type allow-list (from the source picker ∩ instrument-type facet). */
+  instrumentTypes?: string[];
+  regulator?: string;
+  topic?: string;
+  status?: string;
+}
+
 export async function listRegulationsHybrid(
   query: string,
   limit = 25,
+  filters: HybridSearchFilters = {},
   alpha = 0.65,
 ): Promise<RegulationListItem[]> {
   if (!query || query.trim().length === 0) return [];
+  // An empty allow-list means the user deselected every source — match nothing
+  // without round-tripping the RPC.
+  if (filters.instrumentTypes && filters.instrumentTypes.length === 0) return [];
   const supabase = await createClient();
 
   let qvecLiteral: string | null = null;
@@ -224,13 +244,27 @@ export async function listRegulationsHybrid(
     query_text: query,
     match_limit: limit,
     alpha,
+    filter_instrument_types: filters.instrumentTypes ?? null,
+    filter_regulator: filters.regulator ?? null,
+    filter_topic: filters.topic ?? null,
+    filter_status: filters.status ?? null,
   });
   if (error) {
     // The hybrid RPC can time out on a large corpus. Degrade gracefully to
     // fast pure-FTS (GIN-indexed via listRegulations) so Search still returns
-    // results instead of an error / empty state.
+    // results instead of an error / empty state. The same source/facet filters
+    // carry over so the fallback honours the picker too.
     console.error("[regwatch] listRegulationsHybrid rpc error — FTS fallback:", error);
-    return listRegulations({ q: query }, limit);
+    return listRegulations(
+      {
+        q: query,
+        instrumentTypes: filters.instrumentTypes,
+        regulator: filters.regulator,
+        topic: filters.topic,
+        status: filters.status,
+      },
+      limit,
+    );
   }
   // The RPC returns flat columns; reshape to RegulationListItem so the
   // existing RegulationRow component can render without changes.
@@ -268,6 +302,32 @@ export async function listRegulationsHybrid(
       short_name: row.regulator_short,
     },
   })) as RegulationListItem[];
+}
+
+export interface RegulatorOption {
+  slug: string;
+  name: string;
+  short_name: string | null;
+  jurisdiction_code: string;
+}
+
+/**
+ * Lightweight regulator list for filter dropdowns — slug + name only, no item
+ * counts (those require a full-corpus scan; the Search sidebar doesn't need
+ * them). Sorted by display name.
+ */
+export async function listRegulatorOptions(): Promise<RegulatorOption[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("regulators")
+    .select("slug, name, short_name, jurisdiction_code")
+    .eq("is_active", true)
+    .order("name", { ascending: true });
+  if (error) {
+    console.error("[regwatch] listRegulatorOptions error:", error);
+    return [];
+  }
+  return (data ?? []) as RegulatorOption[];
 }
 
 export async function getRegulation(
