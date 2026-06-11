@@ -109,6 +109,14 @@ export async function RegwatchNav({ authed }: { authed: boolean }) {
 
         {/* Desktop nav — hidden below md, replaced by the hamburger sheet. */}
         <div className="hidden items-center gap-1 md:flex">
+          {authed && (
+            <Link
+              href="/regwatch/dashboard"
+              className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-card-bg/60"
+            >
+              Dashboard
+            </Link>
+          )}
           {CLUSTERS.filter((c) => !c.authedOnly || authed).map((c) => (
             <NavDropdown key={c.label} label={c.label} items={c.items} />
           ))}

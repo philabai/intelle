@@ -46,6 +46,89 @@ export interface DocSummary {
   recent: { id: string; title: string; reviewState: string; updatedAt: string }[];
 }
 
+export interface ActivityEvent {
+  id: string;
+  kind: "doc" | "obligation";
+  actor: string;
+  action: string;
+  target: string;
+  href: string;
+  when: string;
+}
+
+const DOC_EVENT_LABEL: Record<string, string> = {
+  created: "created",
+  updated_metadata: "updated",
+  revision_saved: "saved a draft of",
+  revision_committed: "saved a new version of",
+  uploaded_file: "uploaded a file to",
+  submitted_for_review: "submitted for review",
+  reviewer_assigned: "assigned a reviewer on",
+  approver_assigned: "assigned an approver on",
+  reviewer_completed: "completed review of",
+  changes_requested: "requested changes on",
+  approved: "approved",
+  marked_effective: "marked effective",
+  comment_added: "commented on",
+  comment_resolved: "resolved a comment on",
+  superseded: "superseded",
+  retired: "retired",
+};
+
+/** Recent cross-area activity — internal-document audit events + obligation
+ * status changes, merged into one timeline. RLS-scoped to the caller's org. */
+export async function getRecentActivity(limit = 8): Promise<ActivityEvent[]> {
+  const supabase = await createClient();
+  const [docEv, oblEv] = await Promise.all([
+    supabase
+      .from("internal_document_audit_events")
+      .select(
+        "id, event_type, actor_display_snapshot, occurred_at, internal_document_id, doc:internal_documents!inner ( title )",
+      )
+      .order("occurred_at", { ascending: false })
+      .limit(limit),
+    supabase
+      .from("obligation_state_history")
+      .select(
+        "id, to_status, created_at, obligation_id, obl:compliance_obligations!inner ( asset:assets ( name ) )",
+      )
+      .order("created_at", { ascending: false })
+      .limit(limit),
+  ]);
+
+  const events: ActivityEvent[] = [];
+  for (const e of (docEv.data ?? []) as Record<string, unknown>[]) {
+    const doc = Array.isArray(e.doc) ? e.doc[0] : e.doc;
+    events.push({
+      id: `doc-${e.id}`,
+      kind: "doc",
+      actor: (e.actor_display_snapshot as string) ?? "Someone",
+      action:
+        DOC_EVENT_LABEL[e.event_type as string] ??
+        (e.event_type as string).replace(/_/g, " "),
+      target: (doc as { title?: string })?.title ?? "a document",
+      href: `/regwatch/documents/${e.internal_document_id}`,
+      when: e.occurred_at as string,
+    });
+  }
+  for (const e of (oblEv.data ?? []) as Record<string, unknown>[]) {
+    const obl = Array.isArray(e.obl) ? e.obl[0] : e.obl;
+    const assetRel = (obl as { asset?: unknown })?.asset;
+    const asset = Array.isArray(assetRel) ? assetRel[0] : assetRel;
+    const assetName = (asset as { name?: string })?.name;
+    events.push({
+      id: `obl-${e.id}`,
+      kind: "obligation",
+      actor: "",
+      action: `moved to ${(e.to_status as string).replace(/-/g, " ")}`,
+      target: assetName ? `obligation · ${assetName}` : "an obligation",
+      href: "/regwatch/obligations",
+      when: e.created_at as string,
+    });
+  }
+  return events.sort((a, b) => (a.when < b.when ? 1 : -1)).slice(0, limit);
+}
+
 export interface DashboardData {
   orgName: string;
   tier: string;
@@ -77,6 +160,8 @@ export interface DashboardData {
   docs: DocSummary;
 
   coverage: { regulators: number; topics: number };
+
+  activity: ActivityEvent[];
 }
 
 export async function getDashboardData(): Promise<DashboardData> {
@@ -105,6 +190,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     dueDocsR,
     openCommentsR,
     recentDocsR,
+    activity,
   ] = await Promise.all([
     getMyOrganization(),
     getMyFootprint(),
@@ -139,6 +225,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       .neq("status", "retired")
       .order("updated_at", { ascending: false })
       .limit(5),
+    getRecentActivity(8),
   ]);
 
   // --- Obligations roll-up + hot-asset derivation -------------------------
@@ -247,5 +334,6 @@ export async function getDashboardData(): Promise<DashboardData> {
       regulators: footprint?.monitored_regulator_slugs.length ?? 0,
       topics: footprint?.monitored_topics.length ?? 0,
     },
+    activity,
   };
 }

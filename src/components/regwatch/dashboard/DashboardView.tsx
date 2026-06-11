@@ -523,33 +523,30 @@ function DocumentsCard({ data, isFree }: { data: DashboardData; isFree: boolean 
 /* ──────────────────────── Activity ──────────────────────── */
 
 function RecentActivity({ data }: { data: DashboardData }) {
-  const events: { id: string; text: string; href: string; when: string; tag: string }[] = [
-    ...data.docs.recent.slice(0, 4).map((d) => ({
-      id: `doc-${d.id}`,
-      text: d.title,
-      href: `/regwatch/documents/${d.id}`,
-      when: d.updatedAt,
-      tag: d.reviewState.replace(/[-_]/g, " "),
-    })),
-    ...data.topAlerts.slice(0, 4).map((a) => ({
-      id: `alert-${a.matchId}`,
-      text: a.title,
-      href: `/regwatch/r/${a.jurisdictionCode.toLowerCase()}/${a.slug}`,
-      when: a.matchedAt,
-      tag: "alert",
-    })),
-  ]
-    .sort((a, b) => (a.when < b.when ? 1 : -1))
-    .slice(0, 6);
-
-  if (events.length === 0) return null;
+  if (data.activity.length === 0) return null;
   return (
     <Card title="Recent activity" accent="violet">
-      <div className="-mx-2">
-        {events.map((e) => (
-          <RowLink key={e.id} href={e.href} title={e.text} meta={ago(e.when)} pill={e.tag} pillTone="muted" />
+      <ul className="-mx-1 space-y-0.5">
+        {data.activity.map((e) => (
+          <li key={e.id}>
+            <Link
+              href={e.href}
+              className="flex items-baseline gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-card-bg/60"
+            >
+              <span
+                className={`mt-0.5 h-1.5 w-1.5 shrink-0 self-center rounded-full ${
+                  e.kind === "doc" ? "bg-brand-teal" : "bg-amber-400"
+                }`}
+              />
+              <span className="min-w-0 flex-1 truncate text-foreground">
+                {e.actor && <span className="text-muted">{e.actor} </span>}
+                {e.action} <span className="font-medium">{e.target}</span>
+              </span>
+              <span className="shrink-0 text-[10px] text-muted">{ago(e.when)}</span>
+            </Link>
+          </li>
         ))}
-      </div>
+      </ul>
     </Card>
   );
 }

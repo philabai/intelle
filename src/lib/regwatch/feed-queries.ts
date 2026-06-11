@@ -142,6 +142,28 @@ export interface FeedCounts {
 
 export async function getMyFeedCounts(): Promise<FeedCounts> {
   const supabase = await createClient();
+
+  // Fast path — single server-side aggregation (no row transfer). Falls through
+  // to the row-scan below if the RPC isn't deployed yet.
+  {
+    const { data: agg, error: aggErr } = await supabase.rpc("get_my_feed_counts");
+    if (!aggErr && Array.isArray(agg) && agg[0]) {
+      const r = agg[0] as Record<keyof FeedCounts, number>;
+      return {
+        total: r.total,
+        unseen: r.unseen,
+        critical: r.critical,
+        high: r.high,
+        normal: r.normal,
+        low: r.low,
+        resolved: r.resolved,
+        hits_30d: r.hits_30d,
+        hits_60d: r.hits_60d,
+        hits_90d: r.hits_90d,
+      };
+    }
+  }
+
   const counts: FeedCounts = {
     total: 0,
     unseen: 0,
