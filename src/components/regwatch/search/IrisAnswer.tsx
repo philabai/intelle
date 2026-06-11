@@ -5,12 +5,20 @@ import Link from "next/link";
 
 interface CitationSource {
   id: string;
+  kind: "regulation" | "doc";
   citation: string;
   title: string;
   jurisdiction_code: string;
   slug: string;
   regulator: string;
   source_url: string;
+}
+
+/** Link target for a cited source — regulation detail vs internal document. */
+function sourceHref(s: CitationSource): string {
+  return s.kind === "doc"
+    ? `/regwatch/documents/${s.id}`
+    : `/regwatch/r/${s.jurisdiction_code.toLowerCase()}/${s.slug}`;
 }
 
 interface StreamEvent {
@@ -36,12 +44,20 @@ interface IrisFilters {
   statuses?: string[];
 }
 
+interface DocScope {
+  folderIds: string[];
+  includeUnfiled: boolean;
+}
+
 export function IrisAnswer({
   query,
   filters,
+  docScope,
 }: {
   query: string;
   filters?: IrisFilters;
+  /** When set, Iris also retrieves + cites the org's company documents. */
+  docScope?: DocScope;
 }) {
   const [text, setText] = useState("");
   const [sources, setSources] = useState<CitationSource[]>([]);
@@ -50,7 +66,7 @@ export function IrisAnswer({
   const startedRef = useRef<string | null>(null);
   // Stable signature so the retrieval re-runs when the source/facet picker
   // changes (in addition to the parent remounting via its key).
-  const filtersSig = JSON.stringify(filters ?? {});
+  const filtersSig = JSON.stringify({ filters: filters ?? {}, docScope: docScope ?? null });
 
   useEffect(() => {
     const runKey = `${query}|${filtersSig}`;
@@ -73,6 +89,9 @@ export function IrisAnswer({
             regulators: filters?.regulators,
             topics: filters?.topics,
             statuses: filters?.statuses,
+            docs: !!docScope,
+            docFolderIds: docScope?.folderIds,
+            includeUnfiled: docScope?.includeUnfiled,
           }),
           signal: controller.signal,
         });
@@ -174,7 +193,7 @@ export function IrisAnswer({
                 {unused.map(({ n, s }) => (
                   <a
                     key={s.id}
-                    href={`/regwatch/r/${s.jurisdiction_code.toLowerCase()}/${s.slug}`}
+                    href={sourceHref(s)}
                     title={`${s.regulator} — ${s.title}`}
                     className="inline-flex items-center gap-1 rounded border border-card-border bg-card-bg/60 px-1.5 py-0.5 text-[11px] text-muted hover:border-brand-teal hover:text-brand-teal"
                   >
@@ -209,8 +228,14 @@ export function IrisAnswer({
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-mono text-brand-teal">[{idx + 1}]</span>
-                  <span className="rounded-md bg-brand-navy/60 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted">
-                    {s.jurisdiction_code}
+                  <span
+                    className={`rounded-md px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
+                      s.kind === "doc"
+                        ? "bg-brand-teal/20 text-brand-teal"
+                        : "bg-brand-navy/60 text-muted"
+                    }`}
+                  >
+                    {s.kind === "doc" ? "Doc" : s.jurisdiction_code}
                   </span>
                 </div>
                 <p className="mt-1 font-medium text-foreground">{s.title}</p>
@@ -218,19 +243,21 @@ export function IrisAnswer({
                 <p className="text-[11px] text-muted">{s.regulator}</p>
                 <div className="mt-2 flex gap-2">
                   <Link
-                    href={`/regwatch/r/${s.jurisdiction_code.toLowerCase()}/${s.slug}`}
+                    href={sourceHref(s)}
                     className="text-brand-teal hover:underline"
                   >
                     Open
                   </Link>
-                  <a
-                    href={s.source_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted hover:text-foreground"
-                  >
-                    Source ↗
-                  </a>
+                  {s.source_url && (
+                    <a
+                      href={s.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted hover:text-foreground"
+                    >
+                      Source ↗
+                    </a>
+                  )}
                 </div>
               </li>
             ))}
@@ -257,7 +284,7 @@ function renderCitations(text: string, sources: CitationSource[]): React.ReactNo
     return (
       <a
         key={idx}
-        href={`/regwatch/r/${src.jurisdiction_code.toLowerCase()}/${src.slug}`}
+        href={sourceHref(src)}
         title={`${src.regulator} — ${src.title}`}
         className="inline-flex items-baseline rounded bg-brand-teal/15 px-1 py-0 font-mono text-[11px] font-semibold text-brand-teal no-underline hover:bg-brand-teal/30"
       >

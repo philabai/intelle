@@ -11,6 +11,8 @@ import {
   serializeSources,
   parseCsv,
 } from "@/lib/regwatch/taxonomy";
+import type { DocumentFolderTreeNode } from "@/lib/regwatch/document-folders";
+import { FolderPicker } from "./FolderPicker";
 
 interface RegulatorOption {
   slug: string;
@@ -49,9 +51,16 @@ function sameSet(a: string[], b: string[]): boolean {
 export function SearchControls({
   regulators,
   initialQuery = "",
+  authed = false,
+  folderTree = [],
+  unfiledCount = 0,
 }: {
   regulators: RegulatorOption[];
   initialQuery?: string;
+  /** Company Docs source is only offered to signed-in org members. */
+  authed?: boolean;
+  folderTree?: DocumentFolderTreeNode[];
+  unfiledCount?: number;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -64,6 +73,8 @@ export function SearchControls({
   const appliedTopics = parseCsv(params.get("topic"));
   const appliedInstrumentTypes = parseCsv(params.get("instrument_type"));
   const appliedStatuses = parseCsv(params.get("status"));
+  const appliedDocs = params.get("docs") === "1";
+  const appliedDocFolders = parseCsv(params.get("docfolders"));
 
   // Pending (local) state — seeded once from the applied state on mount.
   const [query, setQuery] = useState(initialQuery);
@@ -72,6 +83,8 @@ export function SearchControls({
   const [topicSel, setTopicSel] = useState<string[]>(appliedTopics);
   const [instrumentSel, setInstrumentSel] = useState<string[]>(appliedInstrumentTypes);
   const [statusSel, setStatusSel] = useState<string[]>(appliedStatuses);
+  const [companyDocs, setCompanyDocs] = useState(appliedDocs);
+  const [docFolders, setDocFolders] = useState<string[]>(appliedDocFolders);
 
   const activeFacetGroups = [regulatorSel, topicSel, instrumentSel, statusSel].filter(
     (a) => a.length > 0,
@@ -85,7 +98,9 @@ export function SearchControls({
     !sameSet(regulatorSel, appliedRegulators) ||
     !sameSet(topicSel, appliedTopics) ||
     !sameSet(instrumentSel, appliedInstrumentTypes) ||
-    !sameSet(statusSel, appliedStatuses);
+    !sameSet(statusSel, appliedStatuses) ||
+    companyDocs !== appliedDocs ||
+    !sameSet(docFolders, appliedDocFolders);
 
   function buildUrl(q: string): string {
     const next = new URLSearchParams();
@@ -99,6 +114,10 @@ export function SearchControls({
     if (topicSel.length) next.set("topic", topicSel.join(","));
     if (instrumentSel.length) next.set("instrument_type", instrumentSel.join(","));
     if (statusSel.length) next.set("status", statusSel.join(","));
+    if (companyDocs) {
+      next.set("docs", "1");
+      if (docFolders.length) next.set("docfolders", docFolders.join(","));
+    }
     return `${pathname}?${next.toString()}`;
   }
 
@@ -124,6 +143,8 @@ export function SearchControls({
     setTopicSel([]);
     setInstrumentSel([]);
     setStatusSel([]);
+    setCompanyDocs(false);
+    setDocFolders([]);
   }
 
   return (
@@ -168,6 +189,40 @@ export function SearchControls({
               All sources
             </span>
           )}
+
+          {/* Company Docs — a separate corpus (your org's internal documents),
+              only offered to signed-in members. Toggling it reveals a folder
+              picker below. */}
+          {authed && (
+            <>
+              <span className="mx-1 h-4 w-px bg-card-border" aria-hidden="true" />
+              <button
+                type="button"
+                onClick={() => setCompanyDocs((v) => !v)}
+                aria-pressed={companyDocs}
+                title="Also search your organisation's internal documents"
+                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition ${
+                  companyDocs
+                    ? "border-brand-teal bg-brand-teal/15 text-foreground"
+                    : "border-card-border bg-card-bg text-muted hover:border-brand-teal/50 hover:text-foreground"
+                }`}
+              >
+                <span
+                  className={`grid h-3.5 w-3.5 place-items-center rounded-[3px] border text-[9px] leading-none ${
+                    companyDocs ? "border-brand-teal bg-brand-teal text-white" : "border-card-border"
+                  }`}
+                >
+                  {companyDocs ? "✓" : ""}
+                </span>
+                Company Docs
+                {companyDocs && docFolders.length > 0 && (
+                  <span className="rounded-full bg-brand-teal/25 px-1.5 text-[10px] font-semibold text-brand-teal">
+                    {docFolders.length}
+                  </span>
+                )}
+              </button>
+            </>
+          )}
         </div>
 
         <button
@@ -198,6 +253,25 @@ export function SearchControls({
           </svg>
         </button>
       </div>
+
+      {/* Company Docs folder picker — slides open below the source row when the
+          Company Docs chip is on. */}
+      {authed && (
+        <div
+          className={`grid transition-all duration-300 ease-out ${
+            companyDocs ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          }`}
+        >
+          <div className="overflow-hidden">
+            <FolderPicker
+              tree={folderTree}
+              unfiledCount={unfiledCount}
+              selected={docFolders}
+              onChange={setDocFolders}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Row 2 — query input + Search button */}
       <div className="flex flex-col gap-2 sm:flex-row">

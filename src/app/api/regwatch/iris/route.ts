@@ -10,6 +10,7 @@ import {
   isVoyageConfigured,
   toPgVectorLiteral,
 } from "@/lib/regwatch/voyage";
+import { searchInternalDocuments } from "@/lib/regwatch/internal-document-search";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -42,6 +43,10 @@ const filterFields = {
   regulators: z.array(z.string().max(120)).max(50).optional(),
   topics: z.array(z.string().max(120)).max(50).optional(),
   statuses: z.array(z.string().max(60)).max(20).optional(),
+  /** Company Docs source — also retrieve + cite the org's internal documents. */
+  docs: z.boolean().optional(),
+  docFolderIds: z.array(z.string().uuid()).max(200).optional(),
+  includeUnfiled: z.boolean().optional(),
 };
 
 const requestSchema = z.union([
@@ -58,6 +63,7 @@ const requestSchema = z.union([
 
 interface CitationSource {
   id: string;
+  kind: "regulation" | "doc";
   citation: string;
   title: string;
   jurisdiction_code: string;
@@ -167,6 +173,9 @@ export async function POST(request: Request) {
     regulators: parsed.regulators,
     topics: parsed.topics,
     statuses: parsed.statuses,
+    docs: parsed.docs ?? false,
+    docFolderIds: parsed.docFolderIds,
+    includeUnfiled: parsed.includeUnfiled ?? false,
   };
 
   // Latest user message drives retrieval.
@@ -412,8 +421,9 @@ export async function POST(request: Request) {
     }
   }
 
-  const sources: CitationSource[] = hits.map((row) => ({
+  let sources: CitationSource[] = hits.map((row) => ({
     id: row.id,
+    kind: "regulation" as const,
     citation: row.citation,
     title: row.title,
     jurisdiction_code: row.jurisdiction_code,
@@ -422,12 +432,66 @@ export async function POST(request: Request) {
     source_url: row.source_url,
   }));
 
-  const corpusBlock = hits
+  let corpusBlock = hits
     .map((row, i) => {
       const excerpt = (row.body_text ?? row.summary ?? "").slice(0, 800);
       return `[${i + 1}] ${row.regulator?.name ?? ""} — ${row.title} (${row.citation}, ${row.jurisdiction_code}, ${row.status})\nEffective: ${row.effective_date ?? "n/a"}\n${excerpt}`;
     })
     .join("\n\n---\n\n");
+
+  // Company Docs — when enabled (Search page, signed-in member, not a scoped
+  // single-regulation question), also retrieve the org's internal documents
+  // (RLS-scoped) and append them as additional cited sources [n].
+  if (filters.docs && irisUser && !scopedItemId) {
+    try {
+      const docHits = (
+        await searchInternalDocuments(latestUser.content, {
+          folderIds: filters.docFolderIds,
+          includeUnfiled: filters.includeUnfiled,
+        })
+      ).slice(0, 4);
+      if (docHits.length > 0) {
+        const { data: bodyRows } = await supabase
+          .from("internal_documents")
+          .select(
+            "id, rev:internal_document_revisions!current_revision_id ( body_text )",
+          )
+          .in(
+            "id",
+            docHits.map((d) => d.id),
+          );
+        const bodyById = new Map<string, string>();
+        for (const r of bodyRows ?? []) {
+          const rev = (r as { rev?: { body_text?: string | null } | { body_text?: string | null }[] }).rev;
+          const bt = Array.isArray(rev) ? rev[0]?.body_text : rev?.body_text;
+          if (bt) bodyById.set((r as { id: string }).id, bt);
+        }
+        const offset = sources.length;
+        const docSources: CitationSource[] = docHits.map((d) => ({
+          id: d.id,
+          kind: "doc" as const,
+          citation: d.internalCode ?? d.docKind,
+          title: d.title,
+          jurisdiction_code: "",
+          slug: "",
+          regulator: d.folderName ? `Company doc · ${d.folderName}` : "Company document",
+          source_url: "",
+        }));
+        const docBlock = docHits
+          .map((d, i) => {
+            const excerpt = (bodyById.get(d.id) ?? d.snippet ?? "")
+              .replace(/⟦|⟧/g, "")
+              .slice(0, 800);
+            return `[${offset + i + 1}] [COMPANY DOCUMENT] ${d.title} (${d.internalCode ?? ""}, ${d.docKind})\n${excerpt}`;
+          })
+          .join("\n\n---\n\n");
+        sources = [...sources, ...docSources];
+        corpusBlock = corpusBlock ? `${corpusBlock}\n\n---\n\n${docBlock}` : docBlock;
+      }
+    } catch (e) {
+      console.error("[regwatch] iris company-docs retrieval failed:", e);
+    }
+  }
 
   // Inject retrieved corpus as a system-style trailer on the LAST user message
   // so Claude sees the right context for its next reply. Earlier turns retain

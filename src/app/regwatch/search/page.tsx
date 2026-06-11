@@ -11,11 +11,22 @@ import {
   instrumentTypesForSources,
 } from "@/lib/regwatch/taxonomy";
 import { isSavedQuery } from "@/lib/regwatch/saved-searches";
+import {
+  listFolders,
+  buildFolderTree,
+  countUnfiledDocuments,
+} from "@/lib/regwatch/document-folders";
+import {
+  searchInternalDocuments,
+  type CompanyDocResult,
+} from "@/lib/regwatch/internal-document-search";
+import { UNFILED_TOKEN } from "@/components/regwatch/search/FolderPicker";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { SearchControls } from "@/components/regwatch/search/SearchControls";
 import { IrisAnswer } from "@/components/regwatch/search/IrisAnswer";
 import { SaveSearchButton } from "@/components/regwatch/search/SaveSearchButton";
 import { RegulationRow } from "@/components/regwatch/RegulationRow";
+import { CompanyDocRow } from "@/components/regwatch/search/CompanyDocRow";
 import { EmptyState } from "@/components/regwatch/EmptyState";
 
 export const metadata = { title: "Search" };
@@ -66,28 +77,56 @@ export default async function SearchPage({ searchParams }: Props) {
     topics: selTopics.length ? selTopics : undefined,
     statuses: selStatuses.length ? selStatuses : undefined,
   };
+
+  // Company Docs source (internal documents). `docfolders` carries the picked
+  // folder ids plus the "unfiled" token; no selection = all company docs.
+  const docsOn = pickFilter(raw, "docs") === "1";
+  const docFolderSel = parseCsv(pickFilter(raw, "docfolders"));
+  const docFolderIds = docFolderSel.filter((x) => x !== UNFILED_TOKEN);
+  const includeUnfiled = docFolderSel.includes(UNFILED_TOKEN);
+
   // Captured into a saved search (and used to re-run it). The raw URL param
   // values, minus the query itself.
   const activeFilterParams: Record<string, string> = {};
-  for (const k of ["sources", "regulator", "topic", "instrument_type", "status"]) {
+  for (const k of [
+    "sources",
+    "regulator",
+    "topic",
+    "instrument_type",
+    "status",
+    "docs",
+    "docfolders",
+  ]) {
     const v = pickFilter(raw, k);
     if (v) activeFilterParams[k] = v;
   }
   // Signature that changes when the query OR any filter changes (forces the
   // controls + Iris to remount/re-run on external navigation).
-  const filterKey = `${(instrumentTypes ?? ["all"]).join(",")}|${selRegulators.join(",")}|${selTopics.join(",")}|${selStatuses.join(",")}`;
+  const filterKey = `${(instrumentTypes ?? ["all"]).join(",")}|${selRegulators.join(",")}|${selTopics.join(",")}|${selStatuses.join(",")}|${docsOn ? "docs" : ""}:${docFolderSel.join(",")}`;
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const authed = !!user;
 
-  // Regulators load always (the source/facet controls are always shown).
-  const [regulators, items, alreadySaved] = await Promise.all([
-    listRegulatorOptions(),
-    query ? listRegulationsHybrid(query, 25, filters) : Promise.resolve([]),
-    query ? isSavedQuery(query) : Promise.resolve(false),
-  ]);
+  // Regulators + folder tree load always (the controls are always shown to
+  // authed users). The doc search only runs when Company Docs is on.
+  const [regulators, items, alreadySaved, folders, unfiledCount, docResults] =
+    await Promise.all([
+      listRegulatorOptions(),
+      query ? listRegulationsHybrid(query, 25, filters) : Promise.resolve([]),
+      query ? isSavedQuery(query) : Promise.resolve(false),
+      authed ? listFolders() : Promise.resolve([]),
+      authed ? countUnfiledDocuments() : Promise.resolve(0),
+      query && authed && docsOn
+        ? searchInternalDocuments(query, {
+            folderIds: docFolderIds,
+            includeUnfiled,
+          })
+        : Promise.resolve([] as CompanyDocResult[]),
+    ]);
+  const folderTree = buildFolderTree(folders);
 
   return (
     <RegwatchAppShell authed={!!user}>
@@ -114,6 +153,9 @@ export default async function SearchPage({ searchParams }: Props) {
               key={`${query}|${filterKey}`}
               regulators={regulators}
               initialQuery={query}
+              authed={authed}
+              folderTree={folderTree}
+              unfiledCount={unfiledCount}
             />
           </Suspense>
           {query && (
@@ -141,7 +183,16 @@ export default async function SearchPage({ searchParams }: Props) {
             <Suspense
               fallback={<div className="h-32 animate-pulse rounded-xl bg-card-bg" />}
             >
-              <IrisAnswer key={`${query}|${filterKey}`} query={query} filters={filters} />
+              <IrisAnswer
+                key={`${query}|${filterKey}`}
+                query={query}
+                filters={filters}
+                docScope={
+                  authed && docsOn
+                    ? { folderIds: docFolderIds, includeUnfiled }
+                    : undefined
+                }
+              />
             </Suspense>
 
             <section>
@@ -162,6 +213,28 @@ export default async function SearchPage({ searchParams }: Props) {
                 </div>
               )}
             </section>
+
+            {docsOn && (
+              <section>
+                <p className="mb-3 text-xs font-medium uppercase tracking-wider text-brand-teal">
+                  {docResults.length}{" "}
+                  {docResults.length === 1 ? "match" : "matches"} in your company
+                  documents
+                </p>
+                {docResults.length === 0 ? (
+                  <EmptyState
+                    title="No company documents matched."
+                    description="Try a broader query, widen the folder selection, or check that the document has body text in the editor."
+                  />
+                ) : (
+                  <div className="overflow-hidden rounded-xl border border-brand-teal/30 bg-background">
+                    {docResults.map((d) => (
+                      <CompanyDocRow key={d.id} doc={d} />
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
           </div>
         )}
       </div>
