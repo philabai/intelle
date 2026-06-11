@@ -3,6 +3,14 @@ import { createServiceClient } from "@/lib/supabase/service";
 
 const BASE_URL = "https://intelle.io";
 
+// Render on-demand, NOT at build time. The sitemap queries Supabase for
+// published articles; baking it into the static export meant a Supabase blip at
+// build time hung past the 60s page-gen limit and failed the whole deploy. As a
+// dynamic route the build never depends on the DB — it renders per request,
+// bounded by the abort timeout below, and degrades to the static URL list if
+// Supabase is unreachable.
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages = [
     "",
@@ -41,10 +49,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let articlePages: MetadataRoute.Sitemap = [];
   try {
     const supabase = createServiceClient();
-    const { data } = await supabase
+    // Hard-bounded query: race the Supabase fetch against an 8s timeout so a
+    // slow/unreachable DB can never hang the response (abortSignal alone didn't
+    // reliably unblock a stalled connection). On timeout we ship the static URL
+    // list and move on.
+    const query = supabase
       .from("articles")
       .select("slug, published_at, updated_at")
-      .eq("status", "published");
+      .eq("status", "published")
+      .abortSignal(AbortSignal.timeout(8000));
+    const data = await Promise.race([
+      query.then(
+        (r) => r.data,
+        () => null,
+      ),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 8500)),
+    ]);
 
     if (data) {
       articlePages = data.map((article) => ({
