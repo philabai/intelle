@@ -177,6 +177,73 @@ export function buildTree(flat: AssetNode[]): AssetTreeNode[] {
   return roots;
 }
 
+/**
+ * Per-asset compliance "traffic light":
+ *   red   — has an open obligation that is non-compliant or critical/catastrophic
+ *   amber — has any other open obligation (in progress)
+ *   green — has obligations, but none open (all addressed)
+ *   (absent) — no obligations anywhere in the subtree
+ *
+ * Rolled UP the hierarchy: a parent reflects the worst light among itself and
+ * all descendants, so a Site glows red whenever anything beneath it needs
+ * attention. "Open" = review_status not in (closed, not-applicable, verified),
+ * matching the obligations list "open-all" filter.
+ */
+export type AssetTrafficLight = "red" | "amber" | "green";
+
+const CLOSED_REVIEW_STATUSES = new Set([
+  "closed",
+  "not-applicable",
+  "verified",
+]);
+
+export async function getAssetComplianceLights(
+  roots: AssetTreeNode[],
+): Promise<Record<string, AssetTrafficLight>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("compliance_obligations")
+    .select("asset_id, severity, compliance_status, review_status");
+  if (error) {
+    console.error("[regwatch] getAssetComplianceLights:", error);
+    return {};
+  }
+
+  // Direct rank per asset — 3 red, 2 amber, 1 green, 0 none.
+  const directRank: Record<string, number> = {};
+  for (const row of data ?? []) {
+    const id = row.asset_id as string;
+    const open = !CLOSED_REVIEW_STATUSES.has(row.review_status as string);
+    let rank = 1; // an obligation exists → at least green
+    if (open) {
+      const sev = row.severity as string;
+      const red =
+        row.compliance_status === "non-compliant" ||
+        sev === "critical" ||
+        sev === "catastrophic";
+      rank = red ? 3 : 2;
+    }
+    directRank[id] = Math.max(directRank[id] ?? 0, rank);
+  }
+
+  // Roll up: each node = max(own rank, descendants' ranks).
+  const RANK_LIGHT: Record<number, AssetTrafficLight> = {
+    3: "red",
+    2: "amber",
+    1: "green",
+  };
+  const out: Record<string, AssetTrafficLight> = {};
+  const visit = (node: AssetTreeNode): number => {
+    let rank = directRank[node.id] ?? 0;
+    for (const child of node.children) rank = Math.max(rank, visit(child));
+    const light = RANK_LIGHT[rank];
+    if (light) out[node.id] = light;
+    return rank;
+  };
+  roots.forEach(visit);
+  return out;
+}
+
 export async function getAsset(id: string): Promise<AssetNode | null> {
   const supabase = await createClient();
   const { data, error } = await supabase

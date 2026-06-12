@@ -7,6 +7,7 @@ import {
   getHierarchyConfig,
   listAssetTree,
   getAssetCounts,
+  getAssetComplianceLights,
 } from "@/lib/regwatch/assets";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
@@ -48,6 +49,8 @@ export default async function AssetsPage() {
     5: config.level5Label,
     6: config.level6Label ?? "Component",
   };
+  // Per-asset compliance traffic-light, rolled up the hierarchy.
+  const lights = await getAssetComplianceLights(tree);
 
   return (
     <RegwatchAppShell authed>
@@ -108,7 +111,27 @@ export default async function AssetsPage() {
         </div>
 
         <section className="rounded-xl border border-card-border bg-card-bg/40 p-4 sm:p-6">
-          <AssetTreeView roots={tree} levelLabels={labels} linkable />
+          <div className="mb-4 flex flex-wrap items-center gap-4 text-[11px] text-muted">
+            <span className="uppercase tracking-wider">Compliance</span>
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_8px_2px_rgba(239,68,68,0.75)]" />
+              Non-compliant / critical
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_2px_rgba(251,191,36,0.7)]" />
+              Open, in progress
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_7px_2px_rgba(52,211,153,0.6)]" />
+              All addressed
+            </span>
+          </div>
+          <AssetTreeView
+            roots={tree}
+            levelLabels={labels}
+            linkable
+            complianceLightByAssetId={lights}
+          />
         </section>
       </div>
     </RegwatchAppShell>

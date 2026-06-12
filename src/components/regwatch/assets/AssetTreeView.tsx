@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { AssetTreeNode } from "@/lib/regwatch/assets";
+import type { AssetTreeNode, AssetTrafficLight } from "@/lib/regwatch/assets";
 
 interface Props {
   roots: AssetTreeNode[];
@@ -11,6 +11,8 @@ interface Props {
   linkable?: boolean;
   /** When set, nodes display a count badge from the parent. */
   obligationCountByAssetId?: Record<string, number>;
+  /** When set, nodes show a glowing compliance traffic-light (rolled up). */
+  complianceLightByAssetId?: Record<string, AssetTrafficLight>;
 }
 
 const LEVEL_ACCENT: Record<number, string> = {
@@ -21,11 +23,25 @@ const LEVEL_ACCENT: Record<number, string> = {
   6: "text-muted",
 };
 
+/** Glowing dot styles per traffic-light state. Red/amber pulse for attention. */
+const LIGHT_STYLE: Record<AssetTrafficLight, string> = {
+  red: "bg-red-500 shadow-[0_0_8px_2px_rgba(239,68,68,0.75)] animate-pulse",
+  amber: "bg-amber-400 shadow-[0_0_8px_2px_rgba(251,191,36,0.7)] animate-pulse",
+  green: "bg-emerald-400 shadow-[0_0_7px_2px_rgba(52,211,153,0.6)]",
+};
+
+const LIGHT_TITLE: Record<AssetTrafficLight, string> = {
+  red: "Open compliance item — non-compliant or critical",
+  amber: "Open compliance item — in progress",
+  green: "All compliance items addressed",
+};
+
 export function AssetTreeView({
   roots,
   levelLabels,
   linkable = false,
   obligationCountByAssetId,
+  complianceLightByAssetId,
 }: Props) {
   if (roots.length === 0) {
     return (
@@ -50,6 +66,7 @@ export function AssetTreeView({
           levelLabels={levelLabels}
           linkable={linkable}
           obligationCountByAssetId={obligationCountByAssetId}
+          complianceLightByAssetId={complianceLightByAssetId}
         />
       ))}
     </ul>
@@ -61,18 +78,29 @@ function AssetRow({
   levelLabels,
   linkable,
   obligationCountByAssetId,
+  complianceLightByAssetId,
 }: {
   node: AssetTreeNode;
   levelLabels: Record<2 | 3 | 4 | 5 | 6, string>;
   linkable: boolean;
   obligationCountByAssetId?: Record<string, number>;
+  complianceLightByAssetId?: Record<string, AssetTrafficLight>;
 }) {
   const [open, setOpen] = useState(node.level <= 3);
   const accent = LEVEL_ACCENT[node.level] ?? "text-foreground";
   const obligations = obligationCountByAssetId?.[node.id] ?? 0;
+  const light = complianceLightByAssetId?.[node.id];
   const levelLabel = levelLabels[node.level as 2 | 3 | 4 | 5 | 6];
   const labelEl = (
     <>
+      {light && (
+        <span
+          className={`mr-2 inline-block h-2.5 w-2.5 shrink-0 rounded-full ${LIGHT_STYLE[light]}`}
+          title={LIGHT_TITLE[light]}
+          aria-label={LIGHT_TITLE[light]}
+          role="img"
+        />
+      )}
       <span className={`font-medium ${accent}`}>{node.name}</span>
       {node.code && (
         <span className="ml-2 font-mono text-[10px] text-muted">
@@ -129,6 +157,7 @@ function AssetRow({
               levelLabels={levelLabels}
               linkable={linkable}
               obligationCountByAssetId={obligationCountByAssetId}
+              complianceLightByAssetId={complianceLightByAssetId}
             />
           ))}
         </ul>
