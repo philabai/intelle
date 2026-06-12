@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { AssetTreeNode, AssetTrafficLight } from "@/lib/regwatch/assets";
+import { AssetComplianceDrawer } from "./AssetComplianceDrawer";
 
 interface Props {
   roots: AssetTreeNode[];
@@ -13,6 +14,11 @@ interface Props {
   obligationCountByAssetId?: Record<string, number>;
   /** When set, nodes show a glowing compliance traffic-light (rolled up). */
   complianceLightByAssetId?: Record<string, AssetTrafficLight>;
+  /**
+   * When true, clicking a node opens a right-side slider with that asset's
+   * compliance obligations (instead of navigating to the asset page).
+   */
+  complianceDrawer?: boolean;
 }
 
 const LEVEL_ACCENT: Record<number, string> = {
@@ -42,7 +48,10 @@ export function AssetTreeView({
   linkable = false,
   obligationCountByAssetId,
   complianceLightByAssetId,
+  complianceDrawer = false,
 }: Props) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   if (roots.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-6 text-center text-sm text-muted">
@@ -58,18 +67,27 @@ export function AssetTreeView({
     );
   }
   return (
-    <ul className="space-y-1">
-      {roots.map((n) => (
-        <AssetRow
-          key={n.id}
-          node={n}
-          levelLabels={levelLabels}
-          linkable={linkable}
-          obligationCountByAssetId={obligationCountByAssetId}
-          complianceLightByAssetId={complianceLightByAssetId}
+    <>
+      <ul className="space-y-1">
+        {roots.map((n) => (
+          <AssetRow
+            key={n.id}
+            node={n}
+            levelLabels={levelLabels}
+            linkable={linkable}
+            obligationCountByAssetId={obligationCountByAssetId}
+            complianceLightByAssetId={complianceLightByAssetId}
+            onSelect={complianceDrawer ? setSelectedId : undefined}
+          />
+        ))}
+      </ul>
+      {complianceDrawer && (
+        <AssetComplianceDrawer
+          assetId={selectedId}
+          onClose={() => setSelectedId(null)}
         />
-      ))}
-    </ul>
+      )}
+    </>
   );
 }
 
@@ -79,12 +97,14 @@ function AssetRow({
   linkable,
   obligationCountByAssetId,
   complianceLightByAssetId,
+  onSelect,
 }: {
   node: AssetTreeNode;
   levelLabels: Record<2 | 3 | 4 | 5 | 6, string>;
   linkable: boolean;
   obligationCountByAssetId?: Record<string, number>;
   complianceLightByAssetId?: Record<string, AssetTrafficLight>;
+  onSelect?: (assetId: string) => void;
 }) {
   const [open, setOpen] = useState(node.level <= 3);
   const accent = LEVEL_ACCENT[node.level] ?? "text-foreground";
@@ -137,7 +157,15 @@ function AssetRow({
         ) : (
           <span className="inline-block h-4 w-4" aria-hidden />
         )}
-        {linkable ? (
+        {onSelect ? (
+          <button
+            type="button"
+            onClick={() => onSelect(node.id)}
+            className="flex items-center gap-1 text-left hover:underline"
+          >
+            {labelEl}
+          </button>
+        ) : linkable ? (
           <Link
             href={`/regwatch/assets/${node.id}`}
             className="flex items-center gap-1 hover:underline"
@@ -158,6 +186,7 @@ function AssetRow({
               linkable={linkable}
               obligationCountByAssetId={obligationCountByAssetId}
               complianceLightByAssetId={complianceLightByAssetId}
+              onSelect={onSelect}
             />
           ))}
         </ul>
