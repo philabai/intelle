@@ -1,39 +1,26 @@
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { GradientText } from "@/components/ui/GradientText";
 
-const steps = [
-  {
-    num: "01",
-    title: "Intelligence Requirements",
-    description: "We define exactly what you need to decide -- not a generic brief.",
-  },
-  {
-    num: "02",
-    title: "Multi-Source Research",
-    description: "Proprietary databases, public datasets, expert networks, and primary interviews.",
-  },
-  {
-    num: "03",
-    title: "Practitioner Validation",
-    description: "Findings reviewed by someone who has operated in your industry.",
-  },
-  {
-    num: "04",
-    title: "Actionable Delivery",
-    description: "Decision-ready intelligence, not shelfware.",
-  },
-];
-
-export function MethodologyPreview() {
+export async function MethodologyPreview() {
+  const t = await getTranslations("home");
+  const steps = [
+    { num: "01", title: t("methodStep1Title"), description: t("methodStep1Desc") },
+    { num: "02", title: t("methodStep2Title"), description: t("methodStep2Desc") },
+    { num: "03", title: t("methodStep3Title"), description: t("methodStep3Desc") },
+    { num: "04", title: t("methodStep4Title"), description: t("methodStep4Desc") },
+  ];
   return (
     <section className="py-16 border-t border-card-border">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <p className="text-sm font-semibold uppercase tracking-widest text-brand-teal mb-3">
-            Our Approach
+            {t("methodEyebrow")}
           </p>
           <h2 className="text-2xl font-bold text-heading sm:text-3xl">
-            How We Deliver <GradientText>Intelligence</GradientText>
+            {t.rich("methodTitle", {
+              grad: (chunks) => <GradientText>{chunks}</GradientText>,
+            })}
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -57,7 +44,7 @@ export function MethodologyPreview() {
             href="/about"
             className="text-sm text-brand-teal hover:text-brand-teal/80 transition-colors"
           >
-            Learn more about our approach &rarr;
+            {t("methodLink")}
           </Link>
         </div>
       </div>

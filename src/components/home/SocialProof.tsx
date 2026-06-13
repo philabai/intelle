@@ -1,4 +1,7 @@
-export function SocialProof() {
+import { getTranslations } from "next-intl/server";
+
+export async function SocialProof() {
+  const t = await getTranslations("home");
   const clients = [
     "Aramco",
     "ADNOC",
@@ -15,7 +18,7 @@ export function SocialProof() {
     <section className="py-12 border-t border-card-border">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
         <p className="text-sm uppercase tracking-widest text-muted mb-8">
-          Trusted by engineering teams at
+          {t("socialProofHeading")}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           {clients.map((client) => (

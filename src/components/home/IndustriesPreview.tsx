@@ -1,16 +1,18 @@
+import { getTranslations } from "next-intl/server";
 import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { INDUSTRIES } from "@/lib/constants";
 
-export function IndustriesPreview() {
+export async function IndustriesPreview() {
+  const t = await getTranslations("home");
   return (
     <section className="py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          label="Industries"
-          title="Deep Domain Expertise"
-          description="Published author, conference speaker, and recognized expert across four major industry verticals"
+          label={t("industriesLabel")}
+          title={t("industriesTitle")}
+          description={t("industriesDesc")}
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

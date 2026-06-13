@@ -1,17 +1,19 @@
+import { getTranslations } from "next-intl/server";
 import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { Button } from "@/components/ui/Button";
 import { RESEARCH_SERVICES, ENGINEERING_SERVICES } from "@/lib/constants";
 
-export function ServiceOverview() {
+export async function ServiceOverview() {
+  const t = await getTranslations("home");
   return (
     <section className="py-20 bg-brand-navy">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          label="What We Do"
-          title="Two Service Tracks"
-          description="Spanning the full research and engineering intelligence lifecycle"
+          label={t("serviceOverviewLabel")}
+          title={t("serviceOverviewTitle")}
+          description={t("serviceOverviewDesc")}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -26,12 +28,11 @@ export function ServiceOverview() {
                 />
               </div>
               <h3 className="text-xl font-semibold text-heading">
-                Research & Innovation Services
+                {t("researchCardTitle")}
               </h3>
             </div>
             <p className="text-muted text-sm mb-6">
-              Bespoke intelligence across energy, standards, AI, technology
-              scouting, market intelligence, and patent analytics.
+              {t("researchCardDesc")}
             </p>
             <div className="grid grid-cols-2 gap-3 mb-6">
               {RESEARCH_SERVICES.map((service) => (
@@ -49,7 +50,7 @@ export function ServiceOverview() {
               ))}
             </div>
             <Button href="/research" variant="outline" size="sm">
-              View Research Services
+              {t("researchCardCta")}
             </Button>
           </Card>
 
@@ -64,12 +65,11 @@ export function ServiceOverview() {
                 />
               </div>
               <h3 className="text-xl font-semibold text-heading">
-                Implementation Services
+                {t("implCardTitle")}
               </h3>
             </div>
             <p className="text-muted text-sm mb-6">
-              Implementation, integration, and consulting services that help
-              engineering organizations extract maximum value from their tools.
+              {t("implCardDesc")}
             </p>
             <div className="grid grid-cols-2 gap-3 mb-6">
               {ENGINEERING_SERVICES.map((service) => (
@@ -87,7 +87,7 @@ export function ServiceOverview() {
               ))}
             </div>
             <Button href="/engineering" variant="outline" size="sm">
-              View Implementation Services
+              {t("implCardCta")}
             </Button>
           </Card>
         </div>
