@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { CREDENTIALS } from "@/lib/constants";
 
 function AnimatedValue({ value }: { value: string }) {
@@ -35,6 +36,7 @@ function AnimatedValue({ value }: { value: string }) {
 }
 
 export function CredentialsStrip() {
+  const t = useTranslations("home");
   return (
     <section className="py-16 border-y border-card-border">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -42,7 +44,7 @@ export function CredentialsStrip() {
           {CREDENTIALS.map((cred) => (
             <div key={cred.label}>
               <AnimatedValue value={cred.value} />
-              <p className="mt-2 text-sm text-muted">{cred.label}</p>
+              <p className="mt-2 text-sm text-muted">{t(cred.key)}</p>
             </div>
           ))}
         </div>
