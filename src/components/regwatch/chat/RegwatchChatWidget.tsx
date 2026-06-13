@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
+import { usePathname } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 
 /**
  * Floating Iris chatbot. Bubble in the bottom-right, click to open a chat

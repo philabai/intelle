@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Modal } from "@/components/regwatch/Modal";
 import { createDocumentFromTemplate } from "@/lib/regwatch/internal-document-revision-actions";
 import { createDocument } from "@/lib/regwatch/internal-documents-actions";

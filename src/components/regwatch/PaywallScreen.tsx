@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { TIERS, type Tier } from "@/lib/regwatch/stripe";
 import { FEATURE_DESCRIPTIONS, type GatedFeature } from "@/lib/regwatch/tier";
 

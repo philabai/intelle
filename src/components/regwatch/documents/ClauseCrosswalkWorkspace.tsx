@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { linkDocumentToRegulation } from "@/lib/regwatch/internal-documents-actions";
 import { getRegulationBody } from "@/lib/regwatch/regulation-body-actions";
 import type {

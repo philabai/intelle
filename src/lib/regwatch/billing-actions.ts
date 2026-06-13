@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+// Plain redirect — these targets are EXTERNAL Stripe URLs, never locale-prefixed.
 import { redirect } from "next/navigation";
 import { createClient } from "./supabase/server";
 import { createServiceClient } from "./supabase/service";

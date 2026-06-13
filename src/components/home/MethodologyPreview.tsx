@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { GradientText } from "@/components/ui/GradientText";
 
 const steps = [

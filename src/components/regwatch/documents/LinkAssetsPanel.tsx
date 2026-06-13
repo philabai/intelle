@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { setDocumentAssetLinks } from "@/lib/regwatch/internal-documents-actions";
 import { AssetCheckboxTree } from "@/components/regwatch/AssetCheckboxTree";
 

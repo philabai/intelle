@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 const HINT_SESSION_KEY = "iris-hint-dismissed";
 const HINT_AUTO_DISMISS_MS = 10_000;

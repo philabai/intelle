@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
+import { usePathname } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import dynamic from "next/dynamic";
 import {
   TOUR_CATALOGUE,

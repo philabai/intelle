@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { createObligation } from "@/lib/regwatch/obligations-actions";
 import { RegulationPicker } from "@/components/regwatch/RegulationPicker";
 import { AssetPicker } from "@/components/regwatch/AssetPicker";

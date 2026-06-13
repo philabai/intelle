@@ -1,0 +1,10 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "search": "Search",
+    "bookCall": "Book a call"
+  }
+}

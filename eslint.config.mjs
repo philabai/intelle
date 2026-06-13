@@ -29,6 +29,36 @@ const eslintConfig = defineConfig([
       "react-hooks/purity": "warn",
     },
   },
+  // i18n guard: locale-aware navigation must go through @/i18n/navigation, never
+  // raw next/link or next/navigation's router/pathname (which drop the locale
+  // prefix). `redirect` is intentionally allowed (external URLs use it).
+  {
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "next/link",
+              message:
+                "Use `import { Link } from '@/i18n/navigation'` so links keep the locale prefix.",
+            },
+            {
+              name: "next/navigation",
+              importNames: ["useRouter", "usePathname"],
+              message:
+                "Use `@/i18n/navigation` (useRouter/usePathname) so navigation keeps the locale prefix.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // The i18n module itself + the proxy are the one place these may be referenced.
+  {
+    files: ["src/i18n/**", "src/proxy.ts"],
+    rules: { "no-restricted-imports": "off" },
+  },
 ]);
 
 export default eslintConfig;

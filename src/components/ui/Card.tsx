@@ -1,5 +1,5 @@
 import { cn } from "@/lib/cn";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 interface CardProps {
   children: React.ReactNode;

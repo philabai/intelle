@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import type { FeedItem } from "@/lib/regwatch/feed-queries";
 import { markSeen, markResolved, undoResolved } from "@/lib/regwatch/feed-actions";

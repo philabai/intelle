@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { moveDocumentToFolder } from "@/lib/regwatch/document-folders-actions";
 import type { DocumentFolderTreeNode } from "@/lib/regwatch/document-folders";
 

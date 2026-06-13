@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { RegwatchLogo } from "./Logo";
 import { NotificationBell } from "./NotificationBell";

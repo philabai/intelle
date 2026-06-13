@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Modal } from "@/components/regwatch/Modal";
 import { assignReviewerOrApprover } from "@/lib/regwatch/internal-document-workflow-actions";
 

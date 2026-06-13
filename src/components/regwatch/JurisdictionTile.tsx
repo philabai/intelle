@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import type { JurisdictionSummary } from "@/lib/regwatch/queries";
 
 const REGION_LABEL: Record<string, string> = {

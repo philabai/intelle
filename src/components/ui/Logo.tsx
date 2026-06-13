@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 const LOGO_SRC = "/intelle-logo.png";
 // Source asset is 540x536 (close to square). Render at the size requested.

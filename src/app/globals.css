@@ -42,13 +42,14 @@
   --color-card-border: var(--card-border);
   --color-muted: var(--muted);
   --color-heading: var(--heading);
-  --font-sans: var(--font-poppins);
+  /* On Arabic, --font-arabic is injected on <html> and wins; en/fr fall back to Poppins. */
+  --font-sans: var(--font-arabic, var(--font-poppins));
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-poppins), system-ui, sans-serif;
+  font-family: var(--font-arabic, var(--font-poppins)), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

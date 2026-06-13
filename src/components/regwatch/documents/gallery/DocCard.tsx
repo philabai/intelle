@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import { createServiceClient } from "@/lib/regwatch/supabase/service";
 import {

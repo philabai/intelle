@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import type { SectionNode } from "@/lib/regwatch/regulatory-sections";
 import { loadSectionChildren } from "@/lib/regwatch/section-children-actions";
 

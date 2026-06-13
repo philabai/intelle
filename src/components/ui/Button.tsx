@@ -1,5 +1,5 @@
 import { cn } from "@/lib/cn";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 type ButtonVariant = "primary" | "secondary" | "outline" | "ghost";
 type ButtonSize = "sm" | "md" | "lg";

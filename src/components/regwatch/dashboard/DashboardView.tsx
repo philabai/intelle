@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import type { DashboardData } from "@/lib/regwatch/dashboard-queries";
 import { Card, Stat, RowLink, SetupState, StackedBar } from "./parts";

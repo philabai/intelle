@@ -6,7 +6,12 @@ import type { MetadataRoute } from "next";
  * permitted to index for AEO (answer-engine optimisation).
  */
 export default function robots(): MetadataRoute.Robots {
-  const disallow = ["/admin/", "/api/", "/auth/", "/dashboard/"];
+  // Cover both legacy un-prefixed and locale-prefixed (/en/, /fr/, /ar/) paths.
+  const protectedPaths = ["admin", "auth", "dashboard"];
+  const disallow = [
+    "/api/",
+    ...protectedPaths.flatMap((p) => [`/${p}/`, `/*/${p}/`]),
+  ];
   const aiBots = [
     "GPTBot",
     "ChatGPT-User",

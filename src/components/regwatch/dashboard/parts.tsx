@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 /** Card shell with a title, optional "View →" link, and a body. */
 export function Card({

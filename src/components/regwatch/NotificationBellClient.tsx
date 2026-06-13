@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useTransition } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import type { NotificationItem } from "@/lib/regwatch/alerts";
 import type { Severity } from "@/lib/regwatch/match";

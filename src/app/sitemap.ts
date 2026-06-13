@@ -1,7 +1,33 @@
 import type { MetadataRoute } from "next";
 import { createServiceClient } from "@/lib/supabase/service";
+import { routing } from "@/i18n/routing";
 
 const BASE_URL = "https://intelle.io";
+
+/**
+ * Expand one un-prefixed path into one sitemap entry per locale, each carrying
+ * hreflang `alternates` (incl. x-default → en). localePrefix is "always", so
+ * every public URL is locale-prefixed.
+ */
+function localizedEntries(
+  path: string,
+  opts: {
+    lastModified: Date;
+    changeFrequency: "monthly" | "weekly";
+    priority: number;
+  },
+): MetadataRoute.Sitemap {
+  const languages: Record<string, string> = {};
+  for (const l of routing.locales) languages[l] = `${BASE_URL}/${l}${path}`;
+  languages["x-default"] = `${BASE_URL}/${routing.defaultLocale}${path}`;
+  return routing.locales.map((l) => ({
+    url: `${BASE_URL}/${l}${path}`,
+    lastModified: opts.lastModified,
+    changeFrequency: opts.changeFrequency,
+    priority: opts.priority,
+    alternates: { languages },
+  }));
+}
 
 // Render on-demand, NOT at build time. The sitemap queries Supabase for
 // published articles; baking it into the static export meant a Supabase blip at
@@ -39,12 +65,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/privacy",
     "/terms",
     "/cookies",
-  ].map((path) => ({
-    url: `${BASE_URL}${path}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: path === "" ? 1 : path.split("/").length <= 2 ? 0.8 : 0.6,
-  }));
+  ].flatMap((path) =>
+    localizedEntries(path, {
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: path === "" ? 1 : path.split("/").length <= 2 ? 0.8 : 0.6,
+    }),
+  );
 
   let articlePages: MetadataRoute.Sitemap = [];
   try {
@@ -67,12 +94,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]);
 
     if (data) {
-      articlePages = data.map((article) => ({
-        url: `${BASE_URL}/insights/${article.slug}`,
-        lastModified: new Date(article.updated_at || article.published_at),
-        changeFrequency: "weekly" as const,
-        priority: 0.7,
-      }));
+      articlePages = data.flatMap((article) =>
+        localizedEntries(`/insights/${article.slug}`, {
+          lastModified: new Date(article.updated_at || article.published_at),
+          changeFrequency: "weekly",
+          priority: 0.7,
+        }),
+      );
     }
   } catch {
     // Supabase not configured yet -- skip dynamic pages

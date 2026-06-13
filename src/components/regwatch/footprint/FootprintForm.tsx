@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { saveFootprint, updateMyRole } from "@/lib/regwatch/footprint-actions";
 import { rematchMyFootprint } from "@/lib/regwatch/feed-actions";
 import { RolePicker } from "./RolePicker";

@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Group, Panel, Separator } from "react-resizable-panels";
 import {
   commitDocumentRevision,
