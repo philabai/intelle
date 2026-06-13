@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Card } from "@/components/ui/Card";
@@ -32,6 +33,8 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function InsightsPage() {
+  const t = await getTranslations("insightsPage");
+  const format = await getFormatter();
   const supabase = await createClient();
   const { data: articles } = await supabase
     .from("articles")
@@ -54,15 +57,13 @@ export default async function InsightsPage() {
         <HeroBackdrop variant="teal" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-brand-teal mb-4">
-            Insights
+            {t("heroEyebrow")}
           </p>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-heading">
-            Practitioner-grade thinking.
+            {t("heroTitle")}
           </h1>
           <p className="mt-5 text-base sm:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
-            Industrial AI, energy transition, standards, technology scouting, and the
-            mechanics of engineering research — written for the people who have to act
-            on it.
+            {t("heroSubtitle")}
           </p>
         </div>
       </section>
@@ -70,13 +71,13 @@ export default async function InsightsPage() {
       <section className="py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          label="Insights"
-          title="Latest Research & Thinking"
-          description="Explore our latest articles, whitepapers, and industry perspectives"
+          label={t("headingLabel")}
+          title={t("headingTitle")}
+          description={t("headingDesc")}
         />
 
         {items.length === 0 ? (
-          <p className="text-center text-muted py-12">No published articles yet. Check back soon.</p>
+          <p className="text-center text-muted py-12">{t("noArticles")}</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {items.map((article) => (
@@ -89,7 +90,7 @@ export default async function InsightsPage() {
                   <h3 className="mt-3 text-lg font-semibold text-heading line-clamp-2">{article.title}</h3>
                   {article.excerpt && <p className="mt-2 text-sm text-muted line-clamp-2">{article.excerpt}</p>}
                   <p className="mt-4 text-xs text-muted/60">
-                    {article.published_at ? new Date(article.published_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : ""}
+                    {article.published_at ? format.dateTime(new Date(article.published_at), { year: "numeric", month: "long", day: "numeric" }) : ""}
                   </p>
                 </div>
               </Card>
