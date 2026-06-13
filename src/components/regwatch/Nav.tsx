@@ -9,6 +9,7 @@ import {
   type DropdownItem,
 } from "./NavInteractive";
 import { HelpButton } from "./help/HelpButton";
+import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
 
 /**
  * Vantage's internal app nav. Server Component — NotificationBell needs
@@ -129,6 +130,7 @@ export async function RegwatchNav({ authed }: { authed: boolean }) {
           >
             ← intelle.io
           </Link>
+          <LocaleSwitcher className="hidden sm:inline-flex" />
           <HelpButton />
           {authed && <NotificationBell authed={authed} />}
           {authed ? (

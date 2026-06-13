@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { usePathname } from "@/i18n/navigation";
 import { Logo } from "@/components/ui/Logo";
 import { Button } from "@/components/ui/Button";
+import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
 import { NAV_LINKS } from "@/lib/constants";
 import { cn } from "@/lib/cn";
 
@@ -104,6 +105,7 @@ export function SiteNav() {
           </div>
 
           <div className="hidden lg:flex items-center gap-2">
+            <LocaleSwitcher />
             <Button href="/regwatch" size="sm" variant="outline">
               Vantage
             </Button>
@@ -176,6 +178,7 @@ export function SiteNav() {
               </div>
             ))}
             <div className="mt-4 px-3 flex flex-col gap-2">
+              <LocaleSwitcher className="self-start" />
               <Button href="/regwatch" size="sm" variant="outline" className="w-full">
                 Vantage
               </Button>
