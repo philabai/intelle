@@ -90,8 +90,8 @@ export const NAV_LINKS = [
   },
   { label: "Industries", key: "industries", href: "/industries" },
   { label: "Insights", key: "insights", href: "/insights" },
-  { label: "About", key: "about", href: "/about" },
-  { label: "Contact", key: "contact", href: "/contact" },
+  // About + Contact intentionally omitted from the top nav (they live in the
+  // footer) — keeps the bar from wrapping with longer localized labels.
 ] as const;
 
 // `key` indexes into the `home` message namespace; `label` is the English fallback.
