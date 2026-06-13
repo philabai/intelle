@@ -115,7 +115,7 @@ function AssetRow({
     <>
       {light && (
         <span
-          className={`mr-2 inline-block h-2.5 w-2.5 shrink-0 rounded-full ${LIGHT_STYLE[light]}`}
+          className={`me-2 inline-block h-2.5 w-2.5 shrink-0 rounded-full ${LIGHT_STYLE[light]}`}
           title={LIGHT_TITLE[light]}
           aria-label={LIGHT_TITLE[light]}
           role="img"
@@ -123,15 +123,15 @@ function AssetRow({
       )}
       <span className={`font-medium ${accent}`}>{node.name}</span>
       {node.code && (
-        <span className="ml-2 font-mono text-[10px] text-muted">
+        <span className="ms-2 font-mono text-[10px] text-muted">
           {node.code}
         </span>
       )}
-      <span className="ml-2 text-[10px] uppercase tracking-wider text-muted">
+      <span className="ms-2 text-[10px] uppercase tracking-wider text-muted">
         {levelLabel}
       </span>
       {obligations > 0 && (
-        <span className="ml-2 rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[10px] text-amber-300">
+        <span className="ms-2 rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[10px] text-amber-300">
           {obligations}
         </span>
       )}
@@ -161,7 +161,7 @@ function AssetRow({
           <button
             type="button"
             onClick={() => onSelect(node.id)}
-            className="flex items-center gap-1 text-left hover:underline"
+            className="flex items-center gap-1 text-start hover:underline"
           >
             {labelEl}
           </button>

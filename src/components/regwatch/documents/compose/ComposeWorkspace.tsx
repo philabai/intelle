@@ -286,7 +286,7 @@ export function ComposeWorkspace({
             <div className="flex h-full flex-col">
               {/* Document zoom controls (kept outside the zoomed content). */}
               <div className="flex items-center justify-end gap-1 border-b border-card-border bg-card-bg/30 px-3 py-1">
-                <span className="mr-1 text-[10px] font-medium uppercase tracking-wider text-muted">
+                <span className="me-1 text-[10px] font-medium uppercase tracking-wider text-muted">
                   Document
                 </span>
                 <button

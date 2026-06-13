@@ -13,7 +13,7 @@ export function RegwatchLogo({ href = "/regwatch" }: { href?: string }) {
       />
       <span>
         <span className="text-brand-teal">Vantage</span>
-        <span className="ml-1 text-muted">by intelle.io</span>
+        <span className="ms-1 text-muted">by intelle.io</span>
       </span>
     </Link>
   );

@@ -95,7 +95,7 @@ export function AssignReviewerDialog({
                 name="role"
                 checked={role === r}
                 onChange={() => setRole(r)}
-                className="mr-2"
+                className="me-2"
               />
               <span className="font-medium uppercase tracking-wider text-foreground">
                 {r}
@@ -132,7 +132,7 @@ export function AssignReviewerDialog({
                 key={m.userId}
                 type="button"
                 onClick={() => setUserId(m.userId)}
-                className={`flex w-full items-center justify-between gap-2 border-b border-card-border px-3 py-2 text-left last:border-0 ${
+                className={`flex w-full items-center justify-between gap-2 border-b border-card-border px-3 py-2 text-start last:border-0 ${
                   userId === m.userId
                     ? "bg-brand-blue/15"
                     : "hover:bg-card-bg/60"

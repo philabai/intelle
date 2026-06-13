@@ -277,7 +277,7 @@ export function AssetTreeBuilder({
                   type="button"
                   onClick={() => handleSeedPack(p.id)}
                   disabled={pending}
-                  className={`w-full rounded-md border px-3 py-2 text-left text-xs transition disabled:opacity-50 ${
+                  className={`w-full rounded-md border px-3 py-2 text-start text-xs transition disabled:opacity-50 ${
                     activeStarterPack === p.id
                       ? "border-brand-teal bg-brand-teal/10 text-foreground"
                       : "border-card-border bg-card-bg text-foreground hover:border-brand-blue"
@@ -387,7 +387,7 @@ function BuilderRow({
         <button
           type="button"
           onClick={() => onSelect(node.id)}
-          className="flex flex-1 items-center gap-2 text-left"
+          className="flex flex-1 items-center gap-2 text-start"
         >
           <span className={`font-medium ${isSelected ? "text-brand-teal" : ""}`}>
             {node.name}

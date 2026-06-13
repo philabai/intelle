@@ -33,7 +33,7 @@ export function RolePicker({ value, onChange }: Props) {
               />
               {r.label}
             </span>
-            <span className="pl-6 text-xs text-muted">{r.description}</span>
+            <span className="ps-6 text-xs text-muted">{r.description}</span>
           </label>
         );
       })}

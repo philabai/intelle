@@ -63,7 +63,7 @@ export function SiteNav() {
                     </Link>
 
                     {openDropdown === link.label && (
-                      <div className="absolute top-full left-0 w-72 pt-2">
+                      <div className="absolute top-full start-0 w-72 pt-2">
                         <div className="rounded-xl border border-card-border bg-card-bg p-2 shadow-2xl">
                         {link.children.map((child) => (
                           <Link
@@ -114,7 +114,7 @@ export function SiteNav() {
 
           {/* Mobile hamburger */}
           <button
-            className="lg:hidden p-3 -mr-1 text-muted hover:text-heading"
+            className="lg:hidden p-3 -me-1 text-muted hover:text-heading"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -167,7 +167,7 @@ export function SiteNav() {
                     <Link
                       key={child.href}
                       href={child.href}
-                      className="block pl-8 pr-3 py-2 text-sm text-muted/70 hover:text-white"
+                      className="block ps-8 pe-3 py-2 text-sm text-muted/70 hover:text-white"
                       onClick={() => setMobileOpen(false)}
                     >
                       {child.label}

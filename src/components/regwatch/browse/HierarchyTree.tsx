@@ -211,7 +211,7 @@ function TreeRow({
           <button
             type="button"
             onClick={() => hasChildren && onToggle(node)}
-            className="flex-1 truncate text-left"
+            className="flex-1 truncate text-start"
           >
             {headerInner}
           </button>

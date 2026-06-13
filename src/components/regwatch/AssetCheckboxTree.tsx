@@ -160,7 +160,7 @@ function CheckRow({
         <button
           type="button"
           onClick={() => onToggle(node)}
-          className="flex flex-1 items-center gap-2 text-left"
+          className="flex flex-1 items-center gap-2 text-start"
         >
           <CheckBox state={tristate} />
           <span className="font-medium text-foreground">{node.name}</span>
@@ -171,7 +171,7 @@ function CheckRow({
             {levelLabels[node.level]}
           </span>
           {tristate === "partial" && (
-            <span className="ml-auto rounded bg-amber-500/20 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-amber-300">
+            <span className="ms-auto rounded bg-amber-500/20 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-amber-300">
               partial
             </span>
           )}

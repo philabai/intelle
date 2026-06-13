@@ -214,7 +214,7 @@ function FolderRow({
   return (
     <li>
       <div
-        className={`group flex items-center gap-1 rounded-md py-1 pl-1 pr-2 text-sm transition ${
+        className={`group flex items-center gap-1 rounded-md py-1 ps-1 pe-2 text-sm transition ${
           isActive ? "bg-brand-teal/10" : "hover:bg-card-bg"
         }`}
       >
@@ -239,7 +239,7 @@ function FolderRow({
           }`}
         >
           <span className="truncate">{node.name}</span>
-          <span className="ml-2 text-[10px] text-muted">
+          <span className="ms-2 text-[10px] text-muted">
             {node.totalDocumentCount}
           </span>
         </Link>
@@ -279,7 +279,7 @@ function FolderRow({
         )}
       </div>
       {open && node.children.length > 0 && (
-        <ul className="ml-4 space-y-1 border-l border-card-border/40 pl-1">
+        <ul className="ms-4 space-y-1 border-s border-card-border/40 ps-1">
           {node.children.map((c) => (
             <FolderRow
               key={c.id}

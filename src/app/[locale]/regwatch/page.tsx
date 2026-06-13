@@ -139,7 +139,7 @@ export default async function RegwatchLanding() {
                             className="text-muted hover:text-brand-teal"
                           >
                             {r.short_name ?? r.name}
-                            <span className="ml-1 font-mono text-[10px] text-muted/70">
+                            <span className="ms-1 font-mono text-[10px] text-muted/70">
                               {r.item_count}
                             </span>
                           </Link>

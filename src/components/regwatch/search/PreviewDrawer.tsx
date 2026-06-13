@@ -87,8 +87,8 @@ export function PreviewDrawer({
       <aside
         role="dialog"
         aria-modal="true"
-        className={`fixed inset-y-0 right-0 z-50 flex w-full max-w-3xl transform flex-col bg-background shadow-2xl shadow-black/50 transition-transform duration-300 ease-out sm:w-[88vw] lg:w-[50vw] ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed inset-y-0 end-0 z-50 flex w-full max-w-3xl transform flex-col bg-background shadow-2xl shadow-black/50 transition-transform duration-300 ease-out sm:w-[88vw] lg:w-[50vw] ${
+          isOpen ? "translate-x-0" : "translate-x-full rtl:-translate-x-full"
         }`}
       >
         <header className="flex items-start justify-between gap-3 border-b border-card-border p-4">

@@ -79,7 +79,7 @@ export function RegulationTabsClient({
             highlight
           />
         )}
-        <span className="ml-auto pb-1 text-[10px] text-muted">
+        <span className="ms-auto pb-1 text-[10px] text-muted">
           {showTranslation
             ? "Original is canonical · English is a machine-translation aid only"
             : "Extracted view for reading · Original for compliance evidence"}
@@ -122,7 +122,7 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`-mb-px border-b-2 px-4 py-2 text-left text-xs transition ${
+      className={`-mb-px border-b-2 px-4 py-2 text-start text-xs transition ${
         active
           ? "border-brand-blue text-foreground"
           : "border-transparent text-muted hover:text-foreground"

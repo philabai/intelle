@@ -188,7 +188,7 @@ export default async function ObligationsPage({ searchParams }: Props) {
         ) : (
           <div className="overflow-x-auto rounded-xl border border-card-border bg-background">
             <table className="w-full min-w-[640px] text-sm">
-              <thead className="border-b border-card-border bg-card-bg/40 text-left text-[10px] uppercase tracking-wider text-muted">
+              <thead className="border-b border-card-border bg-card-bg/40 text-start text-[10px] uppercase tracking-wider text-muted">
                 <tr>
                   <th className="px-4 py-3">Regulation</th>
                   <th className="px-4 py-3">Asset</th>
@@ -232,7 +232,7 @@ function ObligationRow({
                 {o.regulationCitation}
               </span>
               {o.clauseAnchor && (
-                <span className="ml-1 text-[10px] text-muted">
+                <span className="ms-1 text-[10px] text-muted">
                   · {o.clauseAnchor}
                 </span>
               )}

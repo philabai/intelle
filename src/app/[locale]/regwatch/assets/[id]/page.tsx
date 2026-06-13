@@ -163,7 +163,7 @@ export default async function AssetDetailPage({ params }: Props) {
                                 {o.regulationCitation}
                               </span>
                               {o.clauseAnchor && (
-                                <span className="ml-1 text-[10px] text-muted">
+                                <span className="ms-1 text-[10px] text-muted">
                                   · {o.clauseAnchor}
                                 </span>
                               )}
@@ -266,7 +266,7 @@ export default async function AssetDetailPage({ params }: Props) {
                           {c.name}
                         </span>
                         {c.code && (
-                          <span className="ml-2 font-mono text-[10px] text-muted">
+                          <span className="ms-2 font-mono text-[10px] text-muted">
                             {c.code}
                           </span>
                         )}

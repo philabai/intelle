@@ -519,7 +519,7 @@ export function ObligationWorkflow({
                     {unacknowledgedHighSeverityFindings.map((f) => (
                       <li key={`${f.evidenceFileId}-${f.findingId}`}>
                         <span
-                          className={`mr-1.5 rounded px-1 py-0.5 text-[9px] font-medium uppercase tracking-wider ${
+                          className={`me-1.5 rounded px-1 py-0.5 text-[9px] font-medium uppercase tracking-wider ${
                             f.severity === "critical"
                               ? "bg-red-600/40 text-red-100"
                               : "bg-amber-500/30 text-amber-100"
@@ -528,7 +528,7 @@ export function ObligationWorkflow({
                           {f.severity}
                         </span>
                         <span className="font-medium">{f.title}</span>
-                        <span className="ml-1 text-amber-200/70">
+                        <span className="ms-1 text-amber-200/70">
                           ({f.fileName})
                         </span>
                       </li>

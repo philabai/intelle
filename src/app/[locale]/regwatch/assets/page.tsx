@@ -78,7 +78,7 @@ export default async function AssetsPage() {
               them to reviewers.
             </p>
           </div>
-          <div className="text-right">
+          <div className="text-end">
             <p className="text-xs uppercase tracking-wider text-muted">Total</p>
             <p className="font-mono text-2xl font-semibold text-foreground">
               {counts.total}
@@ -125,7 +125,7 @@ export default async function AssetsPage() {
               <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_7px_2px_rgba(52,211,153,0.6)]" />
               All addressed
             </span>
-            <span className="ml-auto italic">Click an asset to view its compliance →</span>
+            <span className="ms-auto italic">Click an asset to view its compliance →</span>
           </div>
           <AssetTreeView
             roots={tree}

@@ -174,7 +174,7 @@ export function NavDropdown({
         <div
           role="menu"
           className={`absolute top-full z-50 mt-1 w-56 overflow-hidden rounded-md border border-card-border bg-card-bg shadow-xl ${
-            align === "right" ? "right-0" : "left-0"
+            align === "right" ? "end-0" : "start-0"
           }`}
           onMouseEnter={cancelClose}
           onMouseLeave={scheduleClose}

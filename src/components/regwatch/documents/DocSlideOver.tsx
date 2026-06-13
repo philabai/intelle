@@ -54,7 +54,7 @@ export function DocSlideOver({
       />
       <aside
         ref={panelRef}
-        className={`fixed right-0 top-0 z-50 flex h-[100dvh] w-full ${widthClass} flex-col border-l border-card-border bg-card-bg shadow-2xl shadow-black/60`}
+        className={`fixed end-0 top-0 z-50 flex h-[100dvh] w-full ${widthClass} flex-col border-s border-card-border bg-card-bg shadow-2xl shadow-black/60`}
       >
         <header className="flex items-start justify-between gap-3 border-b border-card-border bg-card-bg/80 px-5 py-3">
           <div className="min-w-0">

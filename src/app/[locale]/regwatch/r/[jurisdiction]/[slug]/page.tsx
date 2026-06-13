@@ -261,7 +261,7 @@ function MetaRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-2">
       <dt className="text-xs text-muted">{label}</dt>
-      <dd className="text-right text-xs text-foreground">{value}</dd>
+      <dd className="text-end text-xs text-foreground">{value}</dd>
     </div>
   );
 }

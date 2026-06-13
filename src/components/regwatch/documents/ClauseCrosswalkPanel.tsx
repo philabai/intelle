@@ -69,7 +69,7 @@ export function ClauseCrosswalkPanel({ existingLinks }: Props) {
           <col className="w-[30%]" />
           <col className="w-[12%]" />
         </colgroup>
-        <thead className="border-b border-card-border bg-card-bg/40 text-left text-[10px] uppercase tracking-wider text-muted">
+        <thead className="border-b border-card-border bg-card-bg/40 text-start text-[10px] uppercase tracking-wider text-muted">
           <tr>
             <th className="px-3 py-2">Your document section</th>
             <th className="px-3 py-2">Regulation clause</th>
@@ -108,7 +108,7 @@ export function ClauseCrosswalkPanel({ existingLinks }: Props) {
               <td className="break-words px-3 py-2 align-top text-[11px] text-foreground/85">
                 {l.linkRationale ?? <span className="text-muted">—</span>}
               </td>
-              <td className="px-3 py-2 text-right align-top">
+              <td className="px-3 py-2 text-end align-top">
                 <button
                   type="button"
                   onClick={() => onUnlink(l.id)}

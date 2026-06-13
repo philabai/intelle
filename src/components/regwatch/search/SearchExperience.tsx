@@ -177,7 +177,7 @@ export function SearchExperience({
                 <p className="text-xs font-medium uppercase tracking-wider text-brand-violet">
                   Iris synthesis
                 </p>
-                {!done && <span className="ml-2 text-xs text-muted">streaming…</span>}
+                {!done && <span className="ms-2 text-xs text-muted">streaming…</span>}
               </div>
               {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
               {sources.length > 0 && (
@@ -274,7 +274,7 @@ export function SearchExperience({
                   <button
                     type="button"
                     onClick={() => open(s.kind, s.id)}
-                    className="w-full rounded-md border border-card-border bg-card-bg p-2.5 text-left text-xs transition hover:border-brand-teal/60"
+                    className="w-full rounded-md border border-card-border bg-card-bg p-2.5 text-start text-xs transition hover:border-brand-teal/60"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="font-mono text-brand-teal">[{idx + 1}]</span>
@@ -354,14 +354,14 @@ function RegRow({
       type="button"
       onClick={onOpen}
       data-testid="search-result"
-      className="block w-full border-b border-card-border px-4 py-3 text-left last:border-b-0 hover:bg-card-bg/50"
+      className="block w-full border-b border-card-border px-4 py-3 text-start last:border-b-0 hover:bg-card-bg/50"
     >
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-md bg-brand-navy/60 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted">
           {item.jurisdiction_code}
         </span>
         <span className="font-mono text-[11px] text-muted">{item.citation}</span>
-        <span className="ml-auto text-[10px] text-muted">
+        <span className="ms-auto text-[10px] text-muted">
           {item.regulator?.short_name ?? item.regulator?.name}
         </span>
       </div>
@@ -378,7 +378,7 @@ function DocRow({ doc, onOpen }: { doc: CompanyDocResult; onOpen: () => void }) 
     <button
       type="button"
       onClick={onOpen}
-      className="block w-full border-b border-card-border px-4 py-3 text-left last:border-b-0 hover:bg-card-bg/50"
+      className="block w-full border-b border-card-border px-4 py-3 text-start last:border-b-0 hover:bg-card-bg/50"
     >
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-md bg-brand-teal/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-brand-teal">
@@ -387,7 +387,7 @@ function DocRow({ doc, onOpen }: { doc: CompanyDocResult; onOpen: () => void }) 
         {doc.internalCode && (
           <span className="font-mono text-[11px] text-muted">{doc.internalCode}</span>
         )}
-        <span className="ml-auto text-[10px] text-muted">{doc.folderName ?? "Unfiled"}</span>
+        <span className="ms-auto text-[10px] text-muted">{doc.folderName ?? "Unfiled"}</span>
       </div>
       <p className="mt-1 text-sm font-medium text-foreground">{doc.title}</p>
       {doc.snippet && (
@@ -402,7 +402,7 @@ function AssetRow({ asset, onOpen }: { asset: AssetSearchResult; onOpen: () => v
     <button
       type="button"
       onClick={onOpen}
-      className="block w-full border-b border-card-border px-4 py-3 text-left last:border-b-0 hover:bg-card-bg/50"
+      className="block w-full border-b border-card-border px-4 py-3 text-start last:border-b-0 hover:bg-card-bg/50"
     >
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-md bg-brand-teal/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-brand-teal">
@@ -412,7 +412,7 @@ function AssetRow({ asset, onOpen }: { asset: AssetSearchResult; onOpen: () => v
           <span className="font-mono text-[11px] text-muted">{asset.code}</span>
         )}
         {asset.assetType && (
-          <span className="ml-auto text-[10px] text-muted">{asset.assetType}</span>
+          <span className="ms-auto text-[10px] text-muted">{asset.assetType}</span>
         )}
       </div>
       <p className="mt-1 text-sm font-medium text-foreground">{asset.name}</p>

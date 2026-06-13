@@ -219,7 +219,7 @@ export function CreateObligationForm({
         <button
           type="submit"
           disabled={pending || !assetId || !regulation}
-          className="ml-auto rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="ms-auto rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending ? "Creating…" : "Create obligation"}
         </button>

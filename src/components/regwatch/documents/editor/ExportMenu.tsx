@@ -69,11 +69,11 @@ export function ExportMenu({ documentId, onBeforeExport }: Props) {
         {pending ? "Exporting…" : "Export ▾"}
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-30 mt-1 w-56 overflow-hidden rounded-md border border-card-border bg-card-bg shadow-xl">
+        <div className="absolute end-0 top-full z-30 mt-1 w-56 overflow-hidden rounded-md border border-card-border bg-card-bg shadow-xl">
           <button
             type="button"
             onClick={() => run("docx")}
-            className="block w-full px-3 py-2 text-left text-xs text-foreground hover:bg-brand-navy/40"
+            className="block w-full px-3 py-2 text-start text-xs text-foreground hover:bg-brand-navy/40"
           >
             <p className="font-medium">Save as DOCX</p>
             <p className="mt-0.5 text-[10px] text-muted">
@@ -83,7 +83,7 @@ export function ExportMenu({ documentId, onBeforeExport }: Props) {
           <button
             type="button"
             onClick={() => run("pdf")}
-            className="block w-full border-t border-card-border px-3 py-2 text-left text-xs text-foreground hover:bg-brand-navy/40"
+            className="block w-full border-t border-card-border px-3 py-2 text-start text-xs text-foreground hover:bg-brand-navy/40"
           >
             <p className="font-medium">Save as PDF</p>
             <p className="mt-0.5 text-[10px] text-muted">

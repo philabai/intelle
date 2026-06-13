@@ -59,7 +59,7 @@ export function UnicodeFormatHelpers({ textareaRef, onChange }: Props) {
       >
         𝐼
       </button>
-      <span className="text-muted/60 ml-2">
+      <span className="text-muted/60 ms-2">
         Select text first, then click a button. Unicode formatting renders on LinkedIn but is inaccessible to screen readers — use sparingly.
       </span>
     </div>

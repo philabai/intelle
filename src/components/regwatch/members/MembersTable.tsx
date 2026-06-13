@@ -90,7 +90,7 @@ export function MembersTable({ members, callerCanManage }: Props) {
                   <p className="truncate text-sm text-foreground">
                     {m.email ?? <span className="text-muted">no email</span>}
                     {m.isMe && (
-                      <span className="ml-2 rounded bg-brand-teal/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-brand-teal">
+                      <span className="ms-2 rounded bg-brand-teal/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-brand-teal">
                         You
                       </span>
                     )}
@@ -130,7 +130,7 @@ export function MembersTable({ members, callerCanManage }: Props) {
                     addSuffix: true,
                   })}
                 </p>
-                <div className="text-right">
+                <div className="text-end">
                   {callerCanManage && !m.isMe && (
                     <button
                       type="button"

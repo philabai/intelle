@@ -141,7 +141,7 @@ export function RichEditor({ value, onChange }: Props) {
         <Divider />
         <ToolbarButton onClick={() => editor.chain().focus().undo().run()}>↶</ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().redo().run()}>↷</ToolbarButton>
-        <div className="ml-auto">
+        <div className="ms-auto">
           <ToolbarButton
             active={showSource}
             onClick={() => setShowSource((s) => !s)}

@@ -231,7 +231,7 @@ export function DocActionsClient(props: Props) {
           </button>
 
           {/* Spacer pushes preview controls to the right */}
-          <div className="ml-auto flex flex-wrap items-center gap-2">
+          <div className="ms-auto flex flex-wrap items-center gap-2">
             {props.hasBody && (
               <div
                 className={`${BTN_BASE} ${BTN_SECONDARY} gap-0 overflow-hidden p-0`}

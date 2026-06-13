@@ -17,7 +17,7 @@ export function DiagramComparison({ spec }: { spec: ComparisonSpec }) {
           </p>
           <ol className="space-y-4 list-none m-0 p-0">
             {spec.left.items.map((it, i) => (
-              <li key={i} className="text-sm border-l-4 border-brand-teal/70 pl-3">
+              <li key={i} className="text-sm border-s-4 border-brand-teal/70 ps-3">
                 <span className="block text-[10px] font-bold text-brand-teal/80 tracking-widest mb-0.5">
                   {String(i + 1).padStart(2, "0")}
                 </span>
@@ -39,7 +39,7 @@ export function DiagramComparison({ spec }: { spec: ComparisonSpec }) {
           </p>
           <ol className="space-y-4 list-none m-0 p-0">
             {spec.right.items.map((it, i) => (
-              <li key={i} className="text-sm border-l-4 border-red-400/70 pl-3">
+              <li key={i} className="text-sm border-s-4 border-red-400/70 ps-3">
                 <span className="block text-[10px] font-bold text-red-400/80 tracking-widest mb-0.5">
                   {String(i + 1).padStart(2, "0")}
                 </span>

@@ -26,7 +26,7 @@ export function Card({
           : "before:bg-brand-blue";
   return (
     <section
-      className={`relative flex flex-col overflow-hidden rounded-xl border border-card-border bg-card-bg/40 p-4 before:absolute before:inset-y-0 before:left-0 before:w-0.5 ${bar} ${className ?? ""}`}
+      className={`relative flex flex-col overflow-hidden rounded-xl border border-card-border bg-card-bg/40 p-4 before:absolute before:inset-y-0 before:start-0 before:w-0.5 ${bar} ${className ?? ""}`}
     >
       <header className="mb-3 flex items-center justify-between gap-2">
         <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">

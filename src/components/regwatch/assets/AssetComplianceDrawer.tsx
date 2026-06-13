@@ -113,8 +113,8 @@ export function AssetComplianceDrawer({
       <aside
         role="dialog"
         aria-modal="true"
-        className={`fixed inset-y-0 right-0 z-50 flex w-full max-w-2xl transform flex-col bg-background shadow-2xl shadow-black/50 transition-transform duration-300 ease-out sm:w-[88vw] lg:w-[46vw] ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed inset-y-0 end-0 z-50 flex w-full max-w-2xl transform flex-col bg-background shadow-2xl shadow-black/50 transition-transform duration-300 ease-out sm:w-[88vw] lg:w-[46vw] ${
+          isOpen ? "translate-x-0" : "translate-x-full rtl:-translate-x-full"
         }`}
       >
         <header className="flex items-start justify-between gap-3 border-b border-card-border p-4">
@@ -186,7 +186,7 @@ export function AssetComplianceDrawer({
                           <p className="truncate text-sm text-foreground">
                             <span className="font-mono">{o.regulationCitation}</span>
                             {o.clauseAnchor && (
-                              <span className="ml-1 text-[10px] text-muted">
+                              <span className="ms-1 text-[10px] text-muted">
                                 · {o.clauseAnchor}
                               </span>
                             )}
@@ -219,7 +219,7 @@ export function AssetComplianceDrawer({
                         {o.reviewStatus}
                       </span>
                       {o.assignedReviewerName && (
-                        <span className="ml-auto text-[10px] text-muted">
+                        <span className="ms-auto text-[10px] text-muted">
                           {o.assignedReviewerName}
                         </span>
                       )}

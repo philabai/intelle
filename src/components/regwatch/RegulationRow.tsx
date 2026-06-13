@@ -36,7 +36,7 @@ export function RegulationRow({ item }: { item: RegulationListItem }) {
             <p className="mt-1 line-clamp-2 text-xs text-muted">{item.summary}</p>
           )}
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-2 text-right text-[11px] text-muted">
+        <div className="flex shrink-0 flex-col items-end gap-2 text-end text-[11px] text-muted">
           <span>{changedAgo} ago</span>
           {item.effective_date && (
             <span>

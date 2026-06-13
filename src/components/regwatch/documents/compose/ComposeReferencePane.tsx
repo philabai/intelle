@@ -141,7 +141,7 @@ export function ComposeReferencePane({ onCite }: Props) {
                     type="button"
                     onClick={() => handleCite(p)}
                     title="Insert this clause as a cited pill in the editor"
-                    className="ml-auto rounded-md border border-card-border bg-background px-2 py-1 text-[10px] font-medium text-foreground/90 opacity-100 transition hover:border-brand-teal hover:text-brand-teal focus:opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                    className="ms-auto rounded-md border border-card-border bg-background px-2 py-1 text-[10px] font-medium text-foreground/90 opacity-100 transition hover:border-brand-teal hover:text-brand-teal focus:opacity-100 md:opacity-0 md:group-hover:opacity-100"
                   >
                     🔗 Cite this clause
                   </button>

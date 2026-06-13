@@ -170,7 +170,7 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
                 </Link>
                 <Link
                   href={`/regwatch/browse/${jurisdiction}?view=list`}
-                  className={`border-l border-card-border px-3 py-1.5 ${
+                  className={`border-s border-card-border px-3 py-1.5 ${
                     view === "list"
                       ? "bg-brand-blue/15 font-medium text-foreground"
                       : "text-muted hover:text-foreground"

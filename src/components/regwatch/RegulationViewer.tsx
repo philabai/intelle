@@ -121,7 +121,7 @@ export function RegulationViewer({
                 </h2>
                 <p className="text-[11px] text-muted">
                   <span className="font-mono">{body.citation}</span>
-                  {body.status && <span className="ml-2">· {body.status}</span>}
+                  {body.status && <span className="ms-2">· {body.status}</span>}
                 </p>
               </>
             ) : (
@@ -156,7 +156,7 @@ export function RegulationViewer({
         <div className="flex min-h-0 flex-1">
           {/* Left rail — headings */}
           {body && body.paragraphs.some((p) => p.isHeading) && (
-            <aside className="hidden w-48 shrink-0 overflow-auto border-r border-card-border bg-card-bg/30 px-3 py-3 md:block">
+            <aside className="hidden w-48 shrink-0 overflow-auto border-e border-card-border bg-card-bg/30 px-3 py-3 md:block">
               <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted">
                 Headings
               </p>

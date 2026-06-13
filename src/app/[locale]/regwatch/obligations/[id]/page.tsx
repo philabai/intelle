@@ -149,7 +149,7 @@ export default async function ObligationDetailPage({ params }: Props) {
             <p className="mt-1 text-sm text-muted">
               <span className="font-mono">{obligation.regulationCitation}</span>
               {obligation.clauseAnchor && (
-                <span className="ml-2">· clause {obligation.clauseAnchor}</span>
+                <span className="ms-2">· clause {obligation.clauseAnchor}</span>
               )}
             </p>
           )}
@@ -222,7 +222,7 @@ export default async function ObligationDetailPage({ params }: Props) {
                   {history.map((h) => (
                     <li
                       key={h.id}
-                      className="border-l-2 border-card-border pl-3"
+                      className="border-s-2 border-card-border ps-3"
                     >
                       <div className="flex flex-wrap items-center gap-2 text-xs">
                         <span className="rounded bg-brand-navy/40 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-muted">

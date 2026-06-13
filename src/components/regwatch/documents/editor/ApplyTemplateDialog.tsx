@@ -93,7 +93,7 @@ export function ApplyTemplateDialog({
               key={f}
               type="button"
               onClick={() => pickFamily(f)}
-              className={`block w-full rounded-md px-2.5 py-1.5 text-left text-[11px] ${
+              className={`block w-full rounded-md px-2.5 py-1.5 text-start text-[11px] ${
                 activeFamily === f
                   ? "bg-brand-blue/15 text-foreground"
                   : "text-muted hover:bg-card-bg/60 hover:text-foreground"
@@ -114,7 +114,7 @@ export function ApplyTemplateDialog({
                   setSelectedKey(t.key);
                   setConfirming(false);
                 }}
-                className={`block w-full rounded-md p-2 text-left ${
+                className={`block w-full rounded-md p-2 text-start ${
                   selectedKey === t.key
                     ? "bg-brand-blue/15"
                     : "hover:bg-card-bg/60"

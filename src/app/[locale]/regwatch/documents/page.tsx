@@ -179,7 +179,7 @@ export default async function DocumentsPage({ searchParams }: Props) {
           </div>
           <div className="flex flex-col items-end gap-2">
             {canCreate && <NewDocumentButton defaultFolderId={folderId} />}
-            <div className="text-right">
+            <div className="text-end">
               <p className="text-[10px] uppercase tracking-wider text-muted">
                 {showAll ? "Total" : "In view"}
               </p>

@@ -117,7 +117,7 @@ export function MoveDocumentMenu({
           <button
             type="button"
             onClick={() => move(null)}
-            className={`block w-full px-3 py-1.5 text-left text-xs ${
+            className={`block w-full px-3 py-1.5 text-start text-xs ${
               currentFolderId === null
                 ? "bg-brand-teal/10 text-brand-teal"
                 : "text-foreground hover:bg-brand-navy/40"
@@ -132,7 +132,7 @@ export function MoveDocumentMenu({
                   key={f.id}
                   type="button"
                   onClick={() => move(f.id)}
-                  className={`block w-full px-3 py-1.5 text-left text-xs ${
+                  className={`block w-full px-3 py-1.5 text-start text-xs ${
                     currentFolderId === f.id
                       ? "bg-brand-teal/10 text-brand-teal"
                       : "text-foreground hover:bg-brand-navy/40"

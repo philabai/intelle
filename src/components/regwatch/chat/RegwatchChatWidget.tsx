@@ -414,7 +414,7 @@ function SuggestionButton({
     <button
       type="button"
       onClick={() => onPick(text)}
-      className="rounded-md border border-card-border bg-card-bg p-2 text-left text-[11px] text-foreground hover:border-brand-teal"
+      className="rounded-md border border-card-border bg-card-bg p-2 text-start text-[11px] text-foreground hover:border-brand-teal"
     >
       {text}
     </button>

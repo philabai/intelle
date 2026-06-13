@@ -311,7 +311,7 @@ export function IrisWidget() {
           className="fixed bottom-24 right-6 z-40 max-w-[260px] sm:bottom-28 sm:right-8"
           role="status"
         >
-          <div className="relative rounded-2xl rounded-br-sm bg-gradient-to-br from-brand-teal to-brand-blue p-4 pr-9 text-white shadow-xl shadow-brand-teal/30">
+          <div className="relative rounded-2xl rounded-ee-sm bg-gradient-to-br from-brand-teal to-brand-blue p-4 pe-9 text-white shadow-xl shadow-brand-teal/30">
             <button
               onClick={dismissHint}
               aria-label="Dismiss"
@@ -388,7 +388,7 @@ export function IrisWidget() {
               <button
                 onClick={() => setIsOpen(false)}
                 aria-label="Close chat"
-                className="rounded-md p-3 -mr-1 text-muted hover:text-heading hover:bg-card-bg"
+                className="rounded-md p-3 -me-1 text-muted hover:text-heading hover:bg-card-bg"
               >
                 <svg
                   className="h-5 w-5"
@@ -510,7 +510,7 @@ function MessageRow({
   if (message.role === "user") {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-brand-blue/15 px-3 py-2 text-sm text-heading">
+        <div className="max-w-[85%] rounded-2xl rounded-se-sm bg-brand-blue/15 px-3 py-2 text-sm text-heading">
           {message.text}
         </div>
       </div>
@@ -528,7 +528,7 @@ function MessageRow({
         if (block.type === "text") {
           return (
             <div key={i} className="max-w-[90%]">
-              <div className="rounded-2xl rounded-tl-sm bg-card-bg border border-card-border px-3 py-2 text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
+              <div className="rounded-2xl rounded-ss-sm bg-card-bg border border-card-border px-3 py-2 text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
                 {block.text}
               </div>
             </div>

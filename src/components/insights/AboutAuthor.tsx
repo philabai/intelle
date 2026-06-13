@@ -2,7 +2,7 @@ import { SITE } from "@/lib/constants";
 
 export function AboutAuthor({ authorName }: { authorName: string }) {
   return (
-    <aside className="mt-16 rounded-xl bg-brand-blue/5 border-l-4 border-brand-blue/40 p-6 sm:p-8">
+    <aside className="mt-16 rounded-xl bg-brand-blue/5 border-s-4 border-brand-blue/40 p-6 sm:p-8">
       <p className="text-xs font-semibold tracking-[0.2em] text-brand-blue mb-3">
         ABOUT THE AUTHOR
       </p>

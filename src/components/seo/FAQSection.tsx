@@ -26,7 +26,7 @@ export function FAQSection({
               <button
                 type="button"
                 onClick={() => setOpen(isOpen ? null : i)}
-                className="w-full flex items-center justify-between gap-4 p-5 text-left cursor-pointer hover:bg-card-bg/60"
+                className="w-full flex items-center justify-between gap-4 p-5 text-start cursor-pointer hover:bg-card-bg/60"
                 aria-expanded={isOpen}
               >
                 <span className="text-sm sm:text-base font-semibold text-foreground">

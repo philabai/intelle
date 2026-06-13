@@ -150,7 +150,7 @@ export function SECIDiagram() {
 
           <div className="flex">
             {/* Left axis label */}
-            <div className="hidden md:flex items-center mr-3">
+            <div className="hidden md:flex items-center me-3">
               <span
                 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted whitespace-nowrap"
                 style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
@@ -219,7 +219,7 @@ export function SECIDiagram() {
             </div>
 
             {/* Right axis label */}
-            <div className="hidden md:flex items-center ml-3">
+            <div className="hidden md:flex items-center ms-3">
               <span
                 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted whitespace-nowrap"
                 style={{ writingMode: "vertical-rl" }}
@@ -247,7 +247,7 @@ export function SECIDiagram() {
           <span aria-hidden>→</span>
           <span aria-hidden>I</span>
           <span aria-hidden>↻</span>
-          <span className="ml-2">The knowledge-creation spiral</span>
+          <span className="ms-2">The knowledge-creation spiral</span>
         </div>
 
         <p className="text-xs text-muted text-center mt-8 italic">

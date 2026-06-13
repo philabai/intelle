@@ -158,7 +158,7 @@ export function FootprintForm({
             : "Nothing configured yet — pick a few items above."}
           {message && (
             <span
-              className={`ml-3 ${message.kind === "ok" ? "text-brand-teal" : "text-red-400"}`}
+              className={`ms-3 ${message.kind === "ok" ? "text-brand-teal" : "text-red-400"}`}
             >
               {message.text}
             </span>

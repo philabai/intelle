@@ -242,7 +242,7 @@ function CommentThreadCard({
       )}
       <CommentRow node={thread.root} />
       {thread.replies.length > 0 && (
-        <ul className="mt-2 space-y-2 border-l-2 border-card-border pl-3">
+        <ul className="mt-2 space-y-2 border-s-2 border-card-border ps-3">
           {thread.replies.map((reply) => (
             <li key={reply.id}>
               <CommentRow node={reply} />
@@ -270,7 +270,7 @@ function CommentThreadCard({
             type="button"
             onClick={() => onToggleResolve(thread.root.id, isResolved)}
             disabled={pending}
-            className="ml-auto text-[10px] text-muted hover:text-foreground disabled:opacity-50"
+            className="ms-auto text-[10px] text-muted hover:text-foreground disabled:opacity-50"
           >
             {isResolved ? "Re-open" : "Resolve"}
           </button>

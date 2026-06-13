@@ -85,7 +85,7 @@ export function NotificationBellClient({ initialCount, items }: Props) {
         <div
           role="dialog"
           aria-label="Notifications"
-          className="absolute right-0 z-50 mt-2 w-[360px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-card-border bg-background shadow-2xl"
+          className="absolute end-0 z-50 mt-2 w-[360px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-card-border bg-background shadow-2xl"
         >
           <header className="flex items-center justify-between gap-2 border-b border-card-border bg-card-bg/60 px-4 py-3">
             <div>

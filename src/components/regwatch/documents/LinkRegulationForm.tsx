@@ -166,7 +166,7 @@ export function LinkRegulationForm({ documentId, existingLinks }: Props) {
             type="submit"
             disabled={pending || !picked}
             title="Save this whole-regulation link"
-            className="ml-auto rounded-md bg-brand-blue px-3 py-1.5 text-xs text-white hover:bg-brand-blue/90 disabled:opacity-50"
+            className="ms-auto rounded-md bg-brand-blue px-3 py-1.5 text-xs text-white hover:bg-brand-blue/90 disabled:opacity-50"
           >
             {pending ? "Linking…" : "Link"}
           </button>

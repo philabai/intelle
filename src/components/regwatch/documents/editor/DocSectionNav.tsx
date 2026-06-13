@@ -72,7 +72,7 @@ export function DocSectionNav({ editor, onClose }: Props) {
   }
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r border-card-border bg-card-bg/20">
+    <aside className="flex w-60 shrink-0 flex-col border-e border-card-border bg-card-bg/20">
       <div className="flex items-center justify-between gap-2 border-b border-card-border bg-card-bg/40 px-3 py-2">
         <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
           Outline
@@ -99,7 +99,7 @@ export function DocSectionNav({ editor, onClose }: Props) {
             {headings.map((h, i) => {
               const isActive = activePos === h.pos;
               const indent =
-                h.level === 1 ? "pl-3" : h.level === 2 ? "pl-6" : "pl-9";
+                h.level === 1 ? "ps-3" : h.level === 2 ? "ps-6" : "ps-9";
               const size =
                 h.level === 1
                   ? "text-[12px] font-medium"
@@ -112,10 +112,10 @@ export function DocSectionNav({ editor, onClose }: Props) {
                     type="button"
                     onClick={() => scrollTo(h)}
                     title={h.text}
-                    className={`block w-full truncate ${indent} pr-3 py-1 text-left ${size} ${
+                    className={`block w-full truncate ${indent} pe-3 py-1 text-start ${size} ${
                       isActive
-                        ? "border-l-2 border-brand-teal bg-brand-teal/10 text-brand-teal"
-                        : "border-l-2 border-transparent text-foreground/80 hover:bg-card-bg/60 hover:text-foreground"
+                        ? "border-s-2 border-brand-teal bg-brand-teal/10 text-brand-teal"
+                        : "border-s-2 border-transparent text-foreground/80 hover:bg-card-bg/60 hover:text-foreground"
                     }`}
                   >
                     {h.text}

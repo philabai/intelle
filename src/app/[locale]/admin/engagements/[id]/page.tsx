@@ -125,7 +125,7 @@ export default function ManageEngagementPage() {
           </select>
           <button
             onClick={handleDelete}
-            className="text-sm text-red-400 hover:text-red-300 cursor-pointer ml-auto"
+            className="text-sm text-red-400 hover:text-red-300 cursor-pointer ms-auto"
           >
             Delete engagement
           </button>
@@ -146,7 +146,7 @@ export default function ManageEngagementPage() {
               type="file"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               required
-              className="text-sm text-muted file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border file:border-card-border file:bg-background file:text-foreground file:cursor-pointer"
+              className="text-sm text-muted file:me-3 file:px-3 file:py-1.5 file:rounded-lg file:border file:border-card-border file:bg-background file:text-foreground file:cursor-pointer"
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

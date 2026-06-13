@@ -287,7 +287,7 @@ export function ClauseCrosswalkWorkspace({
       {/* Two-pane body */}
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-2">
         {/* Left pane — your document */}
-        <section className="flex min-h-0 flex-col border-b border-card-border lg:border-b-0 lg:border-r">
+        <section className="flex min-h-0 flex-col border-b border-card-border lg:border-b-0 lg:border-e">
           <div className="border-b border-card-border bg-card-bg/20 px-3 py-2">
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
               Your document

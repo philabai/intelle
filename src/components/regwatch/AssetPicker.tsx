@@ -109,7 +109,7 @@ export function AssetPicker({ flat, levelLabels, value, onChange }: Props) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between rounded-md border border-card-border bg-card-bg px-3 py-2 text-left text-sm text-foreground hover:border-brand-blue"
+        className="flex w-full items-center justify-between rounded-md border border-card-border bg-card-bg px-3 py-2 text-start text-sm text-foreground hover:border-brand-blue"
       >
         {picked ? (
           <span className="flex items-center gap-2">
@@ -201,7 +201,7 @@ function PickerRow({
         <button
           type="button"
           onClick={() => onPick(node.id)}
-          className="flex flex-1 items-center gap-2 text-left"
+          className="flex flex-1 items-center gap-2 text-start"
         >
           <span className={`font-medium ${isSelected ? "text-brand-teal" : ""}`}>
             {node.name}

@@ -82,7 +82,7 @@ export default async function FootprintSettingsPage() {
               your Relevance Feed automatically.
             </p>
           </div>
-          <div className="flex flex-col items-end gap-1 text-right">
+          <div className="flex flex-col items-end gap-1 text-end">
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted">
               Role
             </span>

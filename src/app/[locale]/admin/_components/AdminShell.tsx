@@ -26,7 +26,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background flex">
-      <aside className="w-64 border-r border-card-border bg-card-bg flex flex-col shrink-0">
+      <aside className="w-64 border-e border-card-border bg-card-bg flex flex-col shrink-0">
         <div className="p-4 border-b border-card-border">
           <Link href="/admin" className="flex items-center gap-2">
             <LogoMark size={28} />
@@ -57,7 +57,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <Link href="/" className="block px-3 py-2 text-sm text-muted hover:text-white transition-colors mb-1">
             View Site
           </Link>
-          <button onClick={handleSignOut} className="w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300 transition-colors cursor-pointer">
+          <button onClick={handleSignOut} className="w-full text-start px-3 py-2 text-sm text-red-400 hover:text-red-300 transition-colors cursor-pointer">
             Sign Out
           </button>
         </div>

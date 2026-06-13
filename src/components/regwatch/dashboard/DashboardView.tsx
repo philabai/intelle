@@ -142,7 +142,7 @@ function FocusCallout({ data }: { data: DashboardData }) {
       className="flex items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-200 hover:bg-amber-500/10"
     >
       <span>
-        <span className="mr-2">⚡</span>
+        <span className="me-2">⚡</span>
         {text}
       </span>
       <span className="shrink-0 text-amber-300">Review →</span>

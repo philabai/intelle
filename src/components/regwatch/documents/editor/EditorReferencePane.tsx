@@ -58,7 +58,7 @@ export function EditorReferencePane({ onClose }: Props) {
   }, [regulation]);
 
   return (
-    <aside className="flex w-full min-w-0 flex-col border-r border-card-border bg-card-bg/20 lg:w-2/5">
+    <aside className="flex w-full min-w-0 flex-col border-e border-card-border bg-card-bg/20 lg:w-2/5">
       <div className="flex items-center justify-between gap-2 border-b border-card-border bg-card-bg/40 px-3 py-2">
         <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
           Reference

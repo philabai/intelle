@@ -188,7 +188,7 @@ export function DigitalThreadDiagram() {
         </div>
 
         {/* Change-cascade callout */}
-        <div className="mt-10 rounded-xl border-l-4 border-brand-blue bg-brand-blue/10 p-5 sm:p-6">
+        <div className="mt-10 rounded-xl border-s-4 border-brand-blue bg-brand-blue/10 p-5 sm:p-6">
           <p className="text-xs font-bold tracking-[0.2em] text-brand-blue mb-2">
             CHANGE CASCADE
           </p>

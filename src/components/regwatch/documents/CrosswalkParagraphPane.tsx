@@ -84,7 +84,7 @@ export function CrosswalkParagraphPane({
       </div>
       <div className="flex min-h-0 flex-1">
         {headings.length > 0 && (
-          <nav className="hidden w-40 shrink-0 overflow-y-auto border-r border-card-border bg-card-bg/20 py-2 text-[11px] md:block">
+          <nav className="hidden w-40 shrink-0 overflow-y-auto border-e border-card-border bg-card-bg/20 py-2 text-[11px] md:block">
             {headings.map((h) => (
               <a
                 key={h.index}
@@ -142,7 +142,7 @@ export function CrosswalkParagraphPane({
                     <button
                       type="button"
                       onClick={() => onPick(anchor, p.text)}
-                      className="ml-auto rounded-md border border-card-border bg-background px-2 py-1 text-[10px] font-medium text-foreground/90 opacity-100 transition hover:border-brand-blue hover:text-brand-blue focus:opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                      className="ms-auto rounded-md border border-card-border bg-background px-2 py-1 text-[10px] font-medium text-foreground/90 opacity-100 transition hover:border-brand-blue hover:text-brand-blue focus:opacity-100 md:opacity-0 md:group-hover:opacity-100"
                     >
                       {pickLabel}
                     </button>

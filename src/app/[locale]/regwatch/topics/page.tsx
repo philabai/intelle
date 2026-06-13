@@ -286,9 +286,9 @@ function TopicTile({ slug, label, total, recent30d, styles }: TileProps) {
       {/* Left accent bar */}
       <span
         aria-hidden
-        className={`absolute left-0 top-0 h-full w-1 ${styles.bg.replace("/5", "")}`}
+        className={`absolute start-0 top-0 h-full w-1 ${styles.bg.replace("/5", "")}`}
       />
-      <div className="flex items-start justify-between gap-2 pl-2">
+      <div className="flex items-start justify-between gap-2 ps-2">
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-base font-semibold tracking-tight text-foreground">
             {label}
@@ -305,7 +305,7 @@ function TopicTile({ slug, label, total, recent30d, styles }: TileProps) {
           </span>
         )}
       </div>
-      <div className="mt-4 flex items-baseline justify-between pl-2">
+      <div className="mt-4 flex items-baseline justify-between ps-2">
         <p className="font-mono text-2xl font-semibold text-foreground">
           {total}
         </p>
@@ -313,7 +313,7 @@ function TopicTile({ slug, label, total, recent30d, styles }: TileProps) {
           {total === 1 ? "item" : "items"}
         </p>
       </div>
-      <p className="mt-2 pl-2 text-[11px] text-muted opacity-0 transition-opacity group-hover:opacity-100">
+      <p className="mt-2 ps-2 text-[11px] text-muted opacity-0 transition-opacity group-hover:opacity-100">
         View topic feed →
       </p>
     </Link>

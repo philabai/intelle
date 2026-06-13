@@ -291,7 +291,7 @@ export function CreateDocumentForm({
                   setFile(null);
                   if (fileInputRef.current) fileInputRef.current.value = "";
                 }}
-                className="ml-2 text-muted hover:text-red-300"
+                className="ms-2 text-muted hover:text-red-300"
                 title="Remove the picked file (the document metadata will still be saved)"
               >
                 ✕

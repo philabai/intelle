@@ -100,7 +100,7 @@ export function LinkAssetsPanel({
                     {levelLabels[l.assetLevel as 2 | 3 | 4 | 5 | 6] ??
                       `L${l.assetLevel}`}
                     {l.assetCode && (
-                      <span className="ml-2 font-mono normal-case">
+                      <span className="ms-2 font-mono normal-case">
                         {l.assetCode}
                       </span>
                     )}

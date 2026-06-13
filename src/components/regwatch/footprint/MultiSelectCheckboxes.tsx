@@ -220,7 +220,7 @@ function CheckboxRow({
       <span className="flex-1 text-xs text-foreground">
         {option.label}
         {option.hint && (
-          <span className="ml-1 font-mono text-[10px] text-muted">{option.hint}</span>
+          <span className="ms-1 font-mono text-[10px] text-muted">{option.hint}</span>
         )}
       </span>
     </label>

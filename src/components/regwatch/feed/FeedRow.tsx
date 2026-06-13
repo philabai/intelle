@@ -146,7 +146,7 @@ export function FeedRow({ feedItem: f, assigneeOptions = [] }: Props) {
             <p className="mt-1 line-clamp-1 text-xs text-muted">{f.item.summary}</p>
           )}
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-1 text-right text-[11px] text-muted">
+        <div className="flex shrink-0 flex-col items-end gap-1 text-end text-[11px] text-muted">
           <span>{changedAgo} ago</span>
           {deadlineLabel && (
             <span className="text-foreground/80">

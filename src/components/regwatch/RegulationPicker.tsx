@@ -207,7 +207,7 @@ export function RegulationPicker({
                       <button
                         type="button"
                         onClick={() => pick(r)}
-                        className="block w-full px-3 py-2 text-left text-sm hover:bg-brand-navy/30"
+                        className="block w-full px-3 py-2 text-start text-sm hover:bg-brand-navy/30"
                       >
                         <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
                           <span className="rounded bg-brand-navy/60 px-1.5 py-0.5 font-medium uppercase tracking-wider text-muted">

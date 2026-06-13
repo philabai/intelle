@@ -38,7 +38,7 @@ export function PaywallScreen({
           <p className="mx-auto mt-3 max-w-xl text-xs text-amber-300">{extra}</p>
         )}
 
-        <div className="mx-auto mt-8 max-w-md rounded-xl border border-card-border bg-card-bg p-5 text-left">
+        <div className="mx-auto mt-8 max-w-md rounded-xl border border-card-border bg-card-bg p-5 text-start">
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="text-lg font-semibold text-foreground">
               {requiredDef.label}

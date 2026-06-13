@@ -47,7 +47,7 @@ export default function ArticlesPage() {
         <div className="rounded-xl border border-card-border overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-card-bg">
-              <tr className="text-left text-muted">
+              <tr className="text-start text-muted">
                 <th className="px-4 py-3 font-medium">Title</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Pillar</th>

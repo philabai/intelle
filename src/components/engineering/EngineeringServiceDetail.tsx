@@ -140,7 +140,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
               <div className={`absolute left-4 top-0 bottom-0 w-px ${accent.bg} hidden md:block`} />
               <div className="space-y-4">
                 {service.implementationTimeline.map((phase, i) => (
-                  <div key={i} className="flex items-start gap-4 p-5 rounded-xl bg-card-bg border border-card-border md:ml-8 relative">
+                  <div key={i} className="flex items-start gap-4 p-5 rounded-xl bg-card-bg border border-card-border md:ms-8 relative">
                     {/* Connector dot */}
                     <div className={`hidden md:block absolute -left-[calc(2rem+4.5px)] top-6 w-2.5 h-2.5 rounded-full ${accent.ring} ring-4 ring-background`} />
                     <div className={`w-10 h-10 rounded-full ${accent.bg} flex items-center justify-center shrink-0`}>
@@ -323,7 +323,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
             )}
 
             {service.implementationFocus && (
-              <aside className={`mb-8 rounded-xl border-l-4 border-brand-teal ${accent.softBg} p-5 sm:p-6`}>
+              <aside className={`mb-8 rounded-xl border-s-4 border-brand-teal ${accent.softBg} p-5 sm:p-6`}>
                 <p className="text-xs font-bold tracking-[0.2em] text-brand-teal mb-2">
                   {service.implementationFocus.title.toUpperCase()}
                 </p>
@@ -352,14 +352,14 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
                   <table className="w-full text-sm min-w-[480px]">
                     <thead className="bg-brand-navy text-white">
                       <tr>
-                        <th className="px-5 py-3 text-left font-bold tracking-wide text-xs uppercase w-1/4">
+                        <th className="px-5 py-3 text-start font-bold tracking-wide text-xs uppercase w-1/4">
                           Category
                         </th>
-                        <th className="px-5 py-3 text-left font-bold tracking-wide text-xs uppercase">
+                        <th className="px-5 py-3 text-start font-bold tracking-wide text-xs uppercase">
                           Vendors we evaluate
                         </th>
                         {showExperience && (
-                          <th className="px-5 py-3 text-left font-bold tracking-wide text-xs uppercase w-48 hidden md:table-cell">
+                          <th className="px-5 py-3 text-start font-bold tracking-wide text-xs uppercase w-48 hidden md:table-cell">
                             Our delivery role
                           </th>
                         )}
@@ -460,7 +460,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
         <section className="py-12 sm:py-16 border-t border-card-border">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <aside
-              className={`rounded-xl border-l-4 ${accent.borderL} ${accent.softBg} p-6 sm:p-8`}
+              className={`rounded-xl border-s-4 ${accent.borderL} ${accent.softBg} p-6 sm:p-8`}
             >
               <p
                 className={`text-xs font-bold uppercase tracking-wider ${accent.text} mb-2`}

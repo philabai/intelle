@@ -117,7 +117,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
                       </p>
                     </div>
                     {trend.stat && (
-                      <div className="shrink-0 text-right">
+                      <div className="shrink-0 text-end">
                         <p className="text-2xl font-bold text-brand-teal">
                           {trend.stat}
                         </p>

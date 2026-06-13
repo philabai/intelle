@@ -167,7 +167,7 @@ export function TutorialPlayer({ course }: { course: TutorialCourse }) {
                 type="button"
                 onClick={() => jumpTo(i)}
                 disabled={!started}
-                className={`flex w-full items-start gap-2 rounded-md border px-3 py-2 text-left text-xs transition disabled:opacity-60 ${
+                className={`flex w-full items-start gap-2 rounded-md border px-3 py-2 text-start text-xs transition disabled:opacity-60 ${
                   active
                     ? "border-brand-blue/60 bg-brand-blue/10 text-foreground"
                     : "border-card-border bg-card-bg/30 text-muted hover:border-card-border/80 hover:text-foreground"
