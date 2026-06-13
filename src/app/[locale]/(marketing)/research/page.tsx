@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
@@ -29,7 +30,8 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Engineering Research & Innovation Services" },
 };
 
-export default function ResearchPage() {
+export default async function ResearchPage() {
+  const t = await getTranslations("researchPage");
   return (
     <>
       <JsonLd
@@ -45,15 +47,13 @@ export default function ResearchPage() {
         <HeroBackdrop variant="teal" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-brand-teal mb-4">
-            Research &amp; Innovation Services
+            {t("heroEyebrow")}
           </p>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-heading">
-            Bespoke intelligence, delivered fast.
+            {t("heroTitle")}
           </h1>
           <p className="mt-5 text-base sm:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
-            Seven specialty areas — energy, standards, AI, technology scouting, market
-            intelligence, patent IP, and strategic engagements — led personally by a
-            senior practitioner.
+            {t("heroSubtitle")}
           </p>
         </div>
       </section>
@@ -61,9 +61,9 @@ export default function ResearchPage() {
       <section className="py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
-            label="Research & Innovation"
-            title="Seven Service Categories"
-            description="Spanning the full research and innovation lifecycle"
+            label={t("headingLabel")}
+            title={t("headingTitle")}
+            description={t("headingDesc")}
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {RESEARCH_SERVICES.map((service) => (

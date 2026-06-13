@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
@@ -29,7 +30,8 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Engineering Implementation Services" },
 };
 
-export default function EngineeringPage() {
+export default async function EngineeringPage() {
+  const t = await getTranslations("engineeringPage");
   return (
     <>
       <JsonLd
@@ -45,16 +47,13 @@ export default function EngineeringPage() {
         <HeroBackdrop variant="blue" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-brand-blue mb-4">
-            Implementation Services
+            {t("heroEyebrow")}
           </p>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-heading">
-            Where strategy meets execution.
+            {t("heroTitle")}
           </h1>
           <p className="mt-5 text-base sm:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
-            Five service lines that turn engineering ambition into operating reality —
-            adoption &amp; value realisation, digital threading, knowledge management
-            strategy and implementation, and standards advisory. Led by a senior
-            practitioner, delivered end to end.
+            {t("heroSubtitle")}
           </p>
         </div>
       </section>
@@ -62,9 +61,9 @@ export default function EngineeringPage() {
       <section className="py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          label="Implementation Services"
-          title="Five Service Lines"
-          description="Helping engineering organizations extract maximum value from their standards management and knowledge platforms"
+          label={t("headingLabel")}
+          title={t("headingTitle")}
+          description={t("headingDesc")}
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {ENGINEERING_SERVICES.map((service) => (

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
@@ -28,7 +29,8 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Industries We Serve" },
 };
 
-export default function IndustriesPage() {
+export default async function IndustriesPage() {
+  const t = await getTranslations("industriesPage");
   return (
     <>
       <JsonLd
@@ -44,15 +46,13 @@ export default function IndustriesPage() {
         <HeroBackdrop variant="teal" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-brand-teal mb-4">
-            Industries Served
+            {t("heroEyebrow")}
           </p>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-heading">
-            Deep domain expertise.
+            {t("heroTitle")}
           </h1>
           <p className="mt-5 text-base sm:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
-            Published author, conference speaker, and recognised practitioner across
-            four major verticals — Oil &amp; Gas, Aerospace &amp; Defense, Medical
-            Devices, and Advanced Manufacturing — with GCC and India delivery depth.
+            {t("heroSubtitle")}
           </p>
         </div>
       </section>
@@ -60,9 +60,9 @@ export default function IndustriesPage() {
       <section className="py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          label="Industries"
-          title="Four Verticals We Know Deeply"
-          description="Published author, conference speaker, and recognized expert across four major industry verticals"
+          label={t("headingLabel")}
+          title={t("headingTitle")}
+          description={t("headingDesc")}
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {INDUSTRIES.map((industry) => (

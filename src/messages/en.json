@@ -181,5 +181,29 @@
     "ctaTitle": "Let's work together",
     "ctaPara": "Whether you need bespoke research, engineering consulting, or strategic intelligence — every engagement starts with a free diagnostic call.",
     "ctaButton": "Book a Discovery Call"
+  },
+  "researchPage": {
+    "heroEyebrow": "Research & Innovation Services",
+    "heroTitle": "Bespoke intelligence, delivered fast.",
+    "heroSubtitle": "Seven specialty areas — energy, standards, AI, technology scouting, market intelligence, patent IP, and strategic engagements — led personally by a senior practitioner.",
+    "headingLabel": "Research & Innovation",
+    "headingTitle": "Seven Service Categories",
+    "headingDesc": "Spanning the full research and innovation lifecycle"
+  },
+  "engineeringPage": {
+    "heroEyebrow": "Implementation Services",
+    "heroTitle": "Where strategy meets execution.",
+    "heroSubtitle": "Five service lines that turn engineering ambition into operating reality — adoption & value realisation, digital threading, knowledge management strategy and implementation, and standards advisory. Led by a senior practitioner, delivered end to end.",
+    "headingLabel": "Implementation Services",
+    "headingTitle": "Five Service Lines",
+    "headingDesc": "Helping engineering organizations extract maximum value from their standards management and knowledge platforms"
+  },
+  "industriesPage": {
+    "heroEyebrow": "Industries Served",
+    "heroTitle": "Deep domain expertise.",
+    "heroSubtitle": "Published author, conference speaker, and recognised practitioner across four major verticals — Oil & Gas, Aerospace & Defense, Medical Devices, and Advanced Manufacturing — with GCC and India delivery depth.",
+    "headingLabel": "Industries",
+    "headingTitle": "Four Verticals We Know Deeply",
+    "headingDesc": "Published author, conference speaker, and recognized expert across four major industry verticals"
   }
 }

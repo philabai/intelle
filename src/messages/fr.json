@@ -181,5 +181,29 @@
     "ctaTitle": "Travaillons ensemble",
     "ctaPara": "Que vous ayez besoin de recherche sur mesure, de conseil en ingénierie ou d'intelligence stratégique — chaque collaboration commence par un appel diagnostique gratuit.",
     "ctaButton": "Réserver un appel découverte"
+  },
+  "researchPage": {
+    "heroEyebrow": "Services de Recherche & Innovation",
+    "heroTitle": "Intelligence sur mesure, livrée rapidement.",
+    "heroSubtitle": "Sept domaines de spécialité — énergie, normes, IA, veille technologique, intelligence de marché, propriété intellectuelle & brevets, et engagements stratégiques — pilotés personnellement par un praticien senior.",
+    "headingLabel": "Recherche & Innovation",
+    "headingTitle": "Sept Catégories de Services",
+    "headingDesc": "Couvrant l'intégralité du cycle de vie de la recherche et de l'innovation"
+  },
+  "engineeringPage": {
+    "heroEyebrow": "Services de Mise en Œuvre",
+    "heroTitle": "Là où la stratégie rencontre l'exécution.",
+    "heroSubtitle": "Cinq lignes de services qui transforment les ambitions d'ingénierie en réalité opérationnelle — adoption & valorisation, fil numérique, stratégie et mise en œuvre de la gestion des connaissances, et conseil en normalisation. Pilotés par un praticien senior, livrés de bout en bout.",
+    "headingLabel": "Services de Mise en Œuvre",
+    "headingTitle": "Cinq Lignes de Services",
+    "headingDesc": "Aider les organisations d'ingénierie à maximiser la valeur de leurs plateformes de gestion des normes et des connaissances"
+  },
+  "industriesPage": {
+    "heroEyebrow": "Secteurs Desservis",
+    "heroTitle": "Une expertise métier approfondie.",
+    "heroSubtitle": "Auteur publié, conférencier et praticien reconnu dans quatre grands secteurs verticaux — Pétrole & Gaz, Aérospatiale & Défense, Dispositifs Médicaux et Fabrication Avancée — avec une expertise de livraison au CCG et en Inde.",
+    "headingLabel": "Secteurs",
+    "headingTitle": "Quatre Verticaux que Nous Maîtrisons",
+    "headingDesc": "Auteur publié, conférencier et expert reconnu dans quatre grands secteurs industriels verticaux"
   }
 }
