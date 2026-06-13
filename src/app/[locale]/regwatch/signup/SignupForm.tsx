@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/regwatch/supabase/client";
 
 export function RegwatchSignupForm() {
+  const t = useTranslations("regwatch.auth");
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -46,7 +48,7 @@ export function RegwatchSignupForm() {
       router.push("/regwatch/onboarding");
       router.refresh();
     } else {
-      setInfo(`Check ${email} to confirm your account.`);
+      setInfo(t("checkEmailConfirm", { email }));
     }
   }
 
@@ -54,7 +56,7 @@ export function RegwatchSignupForm() {
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted">First name</span>
+          <span className="text-muted">{t("firstName")}</span>
           <input
             type="text"
             required
@@ -65,7 +67,7 @@ export function RegwatchSignupForm() {
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted">Last name</span>
+          <span className="text-muted">{t("lastName")}</span>
           <input
             type="text"
             required
@@ -77,7 +79,7 @@ export function RegwatchSignupForm() {
         </label>
       </div>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="text-muted">Work email</span>
+        <span className="text-muted">{t("workEmail")}</span>
         <input
           type="email"
           required
@@ -88,7 +90,7 @@ export function RegwatchSignupForm() {
         />
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="text-muted">Password</span>
+        <span className="text-muted">{t("password")}</span>
         <input
           type="password"
           required
@@ -98,15 +100,15 @@ export function RegwatchSignupForm() {
           onChange={(e) => setPassword(e.target.value)}
           className="rounded-md border border-card-border bg-card-bg px-3 py-2 text-foreground focus:border-brand-blue focus:outline-none"
         />
-        <span className="text-xs text-muted">10 characters minimum.</span>
+        <span className="text-xs text-muted">{t("passwordMin")}</span>
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="text-muted">Organisation name (optional)</span>
+        <span className="text-muted">{t("orgNameOptional")}</span>
         <input
           type="text"
           value={orgName}
           onChange={(e) => setOrgName(e.target.value)}
-          placeholder="Inferred from your email if blank"
+          placeholder={t("orgNamePlaceholder")}
           className="rounded-md border border-card-border bg-card-bg px-3 py-2 text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
         />
       </label>
@@ -115,7 +117,7 @@ export function RegwatchSignupForm() {
         disabled={pending}
         className="rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {pending ? "Creating account…" : "Create account"}
+        {pending ? t("creatingAccount") : t("createAccountBtn")}
       </button>
       {error && <p className="text-sm text-red-400">{error}</p>}
       {info && <p className="text-sm text-brand-teal">{info}</p>}

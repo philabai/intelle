@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/regwatch/supabase/client";
 
 export function RegwatchLoginForm() {
+  const t = useTranslations("regwatch.auth");
   const router = useRouter();
   const search = useSearchParams();
   const nextPath = search.get("next") || "/regwatch/dashboard";
@@ -44,14 +46,14 @@ export function RegwatchLoginForm() {
         setError(err.message);
         return;
       }
-      setInfo(`Check ${email} for a sign-in link.`);
+      setInfo(t("checkEmailLink", { email }));
     }
   }
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
       <label className="flex flex-col gap-1 text-sm">
-        <span className="text-muted">Email</span>
+        <span className="text-muted">{t("email")}</span>
         <input
           type="email"
           required
@@ -63,7 +65,7 @@ export function RegwatchLoginForm() {
       </label>
       {mode === "password" && (
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted">Password</span>
+          <span className="text-muted">{t("password")}</span>
           <input
             type="password"
             required
@@ -79,7 +81,7 @@ export function RegwatchLoginForm() {
         disabled={pending}
         className="rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {pending ? "Working…" : mode === "password" ? "Sign in" : "Email me a link"}
+        {pending ? t("working") : mode === "password" ? t("signInBtn") : t("emailMeLink")}
       </button>
       <button
         type="button"
@@ -90,7 +92,7 @@ export function RegwatchLoginForm() {
           setInfo(null);
         }}
       >
-        {mode === "password" ? "Use a magic link instead" : "Use a password instead"}
+        {mode === "password" ? t("useMagicLink") : t("usePassword")}
       </button>
       {error && <p className="text-sm text-red-400">{error}</p>}
       {info && <p className="text-sm text-brand-teal">{info}</p>}

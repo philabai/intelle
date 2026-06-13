@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { RegwatchLogo } from "./Logo";
@@ -29,32 +30,53 @@ import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
  * NavDropdown row and the mobile MobileNavSheet — no duplication.
  */
 
-const REGULATIONS_ITEMS: DropdownItem[] = [
-  { href: "/regwatch/discover", label: "Country" },
-  { href: "/regwatch/regulators", label: "Regulators" },
-  { href: "/regwatch/topics", label: "Topics" },
-  { href: "/regwatch/search", label: "Search" },
+// Structure with message keys (into the `regwatch.nav` namespace); labels are
+// resolved per-locale in the server component before being passed to the client
+// nav components.
+type ItemKey = { href: string; key: string };
+type ClusterKey = { key: string; items: ItemKey[]; authedOnly?: boolean };
+
+const NAV_STRUCTURE: ClusterKey[] = [
+  {
+    key: "regulations",
+    items: [
+      { href: "/regwatch/discover", key: "country" },
+      { href: "/regwatch/regulators", key: "regulators" },
+      { href: "/regwatch/topics", key: "topics" },
+      { href: "/regwatch/search", key: "search" },
+    ],
+  },
+  {
+    key: "monitor",
+    authedOnly: true,
+    items: [
+      { href: "/regwatch/monitor/today", key: "today" },
+      { href: "/regwatch/recap", key: "weeklyRecap" },
+      { href: "/regwatch/saved", key: "saved" },
+      { href: "/regwatch/settings/alerts", key: "alerts" },
+    ],
+  },
+  {
+    key: "comply",
+    authedOnly: true,
+    items: [
+      { href: "/regwatch/comply", key: "complyHub" },
+      { href: "/regwatch/comply/inbox", key: "reviewerInbox" },
+      { href: "/regwatch/obligations", key: "obligations" },
+      { href: "/regwatch/assets", key: "assetHierarchy" },
+      { href: "/regwatch/settings/footprint", key: "footprint" },
+    ],
+  },
+  {
+    key: "author",
+    authedOnly: true,
+    items: [{ href: "/regwatch/documents", key: "companyDocuments" }],
+  },
 ];
-const MONITOR_ITEMS: DropdownItem[] = [
-  { href: "/regwatch/monitor/today", label: "Today (relevance feed)" },
-  { href: "/regwatch/recap", label: "Weekly recap" },
-  { href: "/regwatch/saved", label: "Saved" },
-  { href: "/regwatch/settings/alerts", label: "Alerts" },
-];
-const COMPLY_ITEMS: DropdownItem[] = [
-  { href: "/regwatch/comply", label: "Comply hub" },
-  { href: "/regwatch/comply/inbox", label: "Reviewer Inbox" },
-  { href: "/regwatch/obligations", label: "Obligations" },
-  { href: "/regwatch/assets", label: "Asset hierarchy" },
-  { href: "/regwatch/settings/footprint", label: "Footprint" },
-];
-const AUTHOR_ITEMS: DropdownItem[] = [
-  { href: "/regwatch/documents", label: "Company documents" },
-];
-const ACCOUNT_ITEMS: DropdownItem[] = [
-  { href: "/regwatch/settings/account", label: "Profile" },
-  { href: "/regwatch/settings/billing", label: "Billing" },
-  { href: "/regwatch/settings/members", label: "Members" },
+const ACCOUNT_STRUCTURE: ItemKey[] = [
+  { href: "/regwatch/settings/account", key: "profile" },
+  { href: "/regwatch/settings/billing", key: "billing" },
+  { href: "/regwatch/settings/members", key: "members" },
 ];
 
 /**
@@ -82,15 +104,19 @@ function firstNameFromUser(user: {
   return "Account";
 }
 
-const CLUSTERS: NavCluster[] = [
-  { label: "Regulations", items: REGULATIONS_ITEMS },
-  { label: "Monitor", items: MONITOR_ITEMS, authedOnly: true },
-  { label: "Comply", items: COMPLY_ITEMS, authedOnly: true },
-  { label: "Author", items: AUTHOR_ITEMS, authedOnly: true },
-];
-
 export async function RegwatchNav({ authed }: { authed: boolean }) {
-  let accountLabel = "Account";
+  const tn = await getTranslations("regwatch.nav");
+  const CLUSTERS: NavCluster[] = NAV_STRUCTURE.map((c) => ({
+    label: tn(c.key),
+    authedOnly: c.authedOnly,
+    items: c.items.map((i) => ({ href: i.href, label: tn(i.key) })),
+  }));
+  const ACCOUNT_ITEMS: DropdownItem[] = ACCOUNT_STRUCTURE.map((i) => ({
+    href: i.href,
+    label: tn(i.key),
+  }));
+
+  let accountLabel = tn("account");
   if (authed) {
     const supabase = await createClient();
     const {
@@ -115,7 +141,7 @@ export async function RegwatchNav({ authed }: { authed: boolean }) {
               href="/regwatch/dashboard"
               className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-card-bg/60"
             >
-              Dashboard
+              {tn("dashboard")}
             </Link>
           )}
           {CLUSTERS.filter((c) => !c.authedOnly || authed).map((c) => (
@@ -128,7 +154,7 @@ export async function RegwatchNav({ authed }: { authed: boolean }) {
             href="/"
             className="hidden rounded-md px-2 py-1.5 text-xs text-muted hover:text-foreground lg:inline"
           >
-            ← intelle.io
+            ← {tn("backToIntelle")}
           </Link>
           <LocaleSwitcher className="hidden sm:inline-flex" />
           <HelpButton />
@@ -148,13 +174,13 @@ export async function RegwatchNav({ authed }: { authed: boolean }) {
                 href="/regwatch/login"
                 className="hidden rounded-md px-3 py-1.5 text-sm text-muted hover:text-foreground sm:inline"
               >
-                Sign in
+                {tn("signIn")}
               </Link>
               <Link
                 href="/regwatch/signup"
                 className="hidden rounded-md bg-brand-blue px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-blue/90 sm:inline"
               >
-                Get started
+                {tn("getStarted")}
               </Link>
             </>
           )}
