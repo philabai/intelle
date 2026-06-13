@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { usePathname } from "@/i18n/navigation";
 import { Logo } from "@/components/ui/Logo";
@@ -11,6 +12,7 @@ import { cn } from "@/lib/cn";
 
 export function SiteNav() {
   const pathname = usePathname();
+  const t = useTranslations("nav");
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -44,7 +46,7 @@ export function SiteNav() {
                           : "text-muted hover:text-heading"
                       )}
                     >
-                      {link.label}
+                      {t(link.key)}
                       <svg
                         className={cn(
                           "w-3.5 h-3.5 transition-transform",
@@ -77,7 +79,7 @@ export function SiteNav() {
                                 : "text-muted hover:text-heading hover:bg-white/5"
                             )}
                           >
-                            {child.label}
+                            {t(child.key)}
                           </Link>
                         ))}
                         </div>
@@ -98,7 +100,7 @@ export function SiteNav() {
                       : "text-muted hover:text-heading"
                   )}
                 >
-                  {link.label}
+                  {t(link.key)}
                 </Link>
               );
             })}
@@ -107,10 +109,10 @@ export function SiteNav() {
           <div className="hidden lg:flex items-center gap-2">
             <LocaleSwitcher />
             <Button href="/regwatch" size="sm" variant="outline">
-              Vantage
+              {t("vantage")}
             </Button>
             <Button href="/book" size="sm">
-              Book a Call
+              {t("bookCall")}
             </Button>
           </div>
 
@@ -162,7 +164,7 @@ export function SiteNav() {
                   className="block px-3 py-2.5 text-sm font-medium text-muted hover:text-heading"
                   onClick={() => setMobileOpen(false)}
                 >
-                  {link.label}
+                  {t(link.key)}
                 </Link>
                 {"children" in link &&
                   link.children?.map((child) => (
@@ -172,7 +174,7 @@ export function SiteNav() {
                       className="block ps-8 pe-3 py-2 text-sm text-muted/70 hover:text-white"
                       onClick={() => setMobileOpen(false)}
                     >
-                      {child.label}
+                      {t(child.key)}
                     </Link>
                   ))}
               </div>
@@ -180,11 +182,11 @@ export function SiteNav() {
             <div className="mt-4 px-3 flex flex-col gap-2">
               <LocaleSwitcher className="self-start" />
               <Button href="/regwatch" size="sm" variant="outline" className="w-full">
-                Vantage
-              </Button>
+              {t("vantage")}
+            </Button>
               <Button href="/book" size="sm" className="w-full">
-                Book a Call
-              </Button>
+              {t("bookCall")}
+            </Button>
             </div>
           </div>
         )}

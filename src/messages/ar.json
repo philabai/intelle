@@ -6,5 +6,27 @@
     "close": "إغلاق",
     "search": "بحث",
     "bookCall": "احجز مكالمة"
+  },
+  "nav": {
+    "researchServices": "خدمات البحث",
+    "energyResearch": "أبحاث الطاقة",
+    "standardsRegulations": "المعايير واللوائح",
+    "aiDigitalization": "أبحاث الذكاء الاصطناعي والرقمنة",
+    "technologyScouting": "استكشاف التقنيات",
+    "marketIntelligence": "ذكاء السوق والمنافسة",
+    "patentIp": "ذكاء البراءات والملكية الفكرية",
+    "strategicCustom": "الارتباطات الاستراتيجية والمخصصة",
+    "implementationServices": "خدمات التنفيذ",
+    "adoptionValue": "التبني وتحقيق القيمة",
+    "digitalThreading": "الربط الرقمي وإمكانية التتبع",
+    "kmStrategy": "استراتيجية إدارة المعرفة",
+    "kmImplementation": "تنفيذ حلول إدارة المعرفة",
+    "standardsAdvisory": "الاستشارات المعيارية",
+    "industries": "الصناعات",
+    "insights": "رؤى",
+    "about": "عن الشركة",
+    "contact": "تواصل معنا",
+    "vantage": "Vantage",
+    "bookCall": "احجز مكالمة"
   }
 }

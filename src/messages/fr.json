@@ -6,5 +6,27 @@
     "close": "Fermer",
     "search": "Rechercher",
     "bookCall": "Réserver un appel"
+  },
+  "nav": {
+    "researchServices": "Services de recherche",
+    "energyResearch": "Recherche en énergie",
+    "standardsRegulations": "Normes & Réglementations",
+    "aiDigitalization": "Recherche en IA & Digitalisation",
+    "technologyScouting": "Veille technologique",
+    "marketIntelligence": "Intelligence marché & concurrentielle",
+    "patentIp": "Intelligence brevets & PI",
+    "strategicCustom": "Missions stratégiques & sur mesure",
+    "implementationServices": "Services de mise en œuvre",
+    "adoptionValue": "Adoption & Valorisation",
+    "digitalThreading": "Fil numérique & Traçabilité",
+    "kmStrategy": "Stratégie GC",
+    "kmImplementation": "Mise en œuvre des solutions GC",
+    "standardsAdvisory": "Conseil en normalisation",
+    "industries": "Secteurs",
+    "insights": "Analyses",
+    "about": "À propos",
+    "contact": "Contact",
+    "vantage": "Vantage",
+    "bookCall": "Réserver un appel"
   }
 }
