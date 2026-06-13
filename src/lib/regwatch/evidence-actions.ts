@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import OpenAI, { toFile } from "openai";
+import { transcribeAudio, isAsrConfigured } from "@/lib/llm/asr";
 import { createClient } from "./supabase/server";
 import { createServiceClient } from "./supabase/service";
 import { getMyMembership } from "./members";
@@ -133,18 +133,17 @@ export async function transcribeEvidenceAudio(
   if (audio.size > 25 * 1024 * 1024) {
     return { ok: false, error: "Recording too long (max ~25 MB / a few minutes)." };
   }
-  if (!process.env.OPENAI_API_KEY) {
+  if (!isAsrConfigured()) {
     return { ok: false, error: "Voice transcription isn't configured." };
   }
   try {
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const file = await toFile(
-      Buffer.from(await audio.arrayBuffer()),
-      audio.name || "recording.webm",
-      { type: audio.type || "audio/webm" },
-    );
-    const res = await openai.audio.translations.create({ file, model: "whisper-1" });
-    const text = (res.text ?? "").trim();
+    const res = await transcribeAudio({
+      audio: Buffer.from(await audio.arrayBuffer()),
+      fileName: audio.name || "recording.webm",
+      mimeType: audio.type || "audio/webm",
+      mode: "translate",
+    });
+    const text = res.text;
     if (!text) return { ok: false, error: "Couldn't make out any speech — try again." };
     return { ok: true, text };
   } catch (e) {

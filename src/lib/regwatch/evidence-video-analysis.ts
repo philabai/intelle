@@ -1,10 +1,10 @@
 import { spawn } from "node:child_process";
-import { promises as fs, createReadStream } from "node:fs";
+import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import OpenAI from "openai";
 import { getAnthropic } from "@/lib/anthropic/client";
 import { getCustomerLLM } from "@/lib/llm/gateway";
+import { transcribeAudio, isAsrConfigured } from "@/lib/llm/asr";
 import { EVIDENCE_ANALYSIS_MODEL } from "./anthropic/models";
 import { createServiceClient } from "./supabase/service";
 import { canUseFeature } from "./tier";
@@ -81,13 +81,13 @@ export async function analyseVideoEvidence(opts: {
         "Video evidence analysis is an Enterprise feature. Upgrade your plan to enable.",
     };
   }
-  if (!process.env.OPENAI_API_KEY) {
+  if (!isAsrConfigured()) {
     return {
       ok: true,
       status: "skipped",
-      model: `${EVIDENCE_ANALYSIS_MODEL}+whisper-1`,
+      model: `${EVIDENCE_ANALYSIS_MODEL}+asr`,
       error:
-        "Video transcription is not configured — OPENAI_API_KEY is not set on the server.",
+        "Video transcription is not configured — set INTELLE_ASR_BASE_URL (isolation on) or OPENAI_API_KEY.",
     };
   }
 
@@ -155,33 +155,29 @@ export async function analyseVideoEvidence(opts: {
       };
     }
 
-    // 5. Whisper transcript (best-effort; analysis continues even if it fails).
+    // 5. Transcript via ASR (best-effort; analysis continues even if it fails).
+    // Routed through the gateway — self-hosted ASR when isolation is on.
     let transcript = "";
     try {
-      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
       const audioStat = await fs.stat(audioPath).catch(() => null);
       if (audioStat && audioStat.size > 0) {
-        const trans = await openai.audio.transcriptions.create({
-          file: createReadStream(audioPath),
-          model: "whisper-1",
-          response_format: "verbose_json",
-          timestamp_granularities: ["segment"],
+        const audioBuf = await fs.readFile(audioPath);
+        const trans = await transcribeAudio({
+          audio: audioBuf,
+          fileName: "audio.mp3",
+          mimeType: "audio/mpeg",
+          mode: "transcribe",
+          segments: true,
         });
-        // The SDK types whisper-1 return as a string by default; verbose_json
-        // gives us segments + text. Type-narrow defensively.
-        const transAny = trans as unknown as {
-          text?: string;
-          segments?: { start: number; end: number; text: string }[];
-        };
-        if (transAny.segments && transAny.segments.length > 0) {
-          transcript = transAny.segments
+        if (trans.segments && trans.segments.length > 0) {
+          transcript = trans.segments
             .map(
               (s) =>
                 `[${formatTimestamp(s.start)}–${formatTimestamp(s.end)}] ${s.text.trim()}`,
             )
             .join("\n");
-        } else if (transAny.text) {
-          transcript = transAny.text;
+        } else if (trans.text) {
+          transcript = trans.text;
         }
       }
     } catch (e) {
