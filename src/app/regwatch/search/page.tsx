@@ -17,7 +17,7 @@ import {
   countUnfiledDocuments,
 } from "@/lib/regwatch/document-folders";
 import {
-  searchInternalDocuments,
+  searchInternalDocumentsHybrid,
   type CompanyDocResult,
 } from "@/lib/regwatch/internal-document-search";
 import { searchAssets, type AssetSearchResult } from "@/lib/regwatch/assets";
@@ -123,7 +123,7 @@ export default async function SearchPage({ searchParams }: Props) {
       authed ? listFolders() : Promise.resolve([]),
       authed ? countUnfiledDocuments() : Promise.resolve(0),
       query && authed && docsOn
-        ? searchInternalDocuments(query, {
+        ? searchInternalDocumentsHybrid(query, {
             folderIds: docFolderIds,
             includeUnfiled,
           })

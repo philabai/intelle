@@ -11,7 +11,7 @@ import {
   isVoyageConfigured,
   toPgVectorLiteral,
 } from "@/lib/regwatch/voyage";
-import { searchInternalDocuments } from "@/lib/regwatch/internal-document-search";
+import { searchInternalDocumentsHybrid } from "@/lib/regwatch/internal-document-search";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -452,7 +452,7 @@ export async function POST(request: Request) {
   if (filters.docs && irisUser && !scopedItemId) {
     try {
       const docHits = (
-        await searchInternalDocuments(latestUser.content, {
+        await searchInternalDocumentsHybrid(latestUser.content, {
           folderIds: filters.docFolderIds,
           includeUnfiled: filters.includeUnfiled,
         })

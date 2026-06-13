@@ -1,5 +1,7 @@
 import { createClient } from "./supabase/server";
 import { listFolders, type DocumentFolder } from "./document-folders";
+import { isIntelleEmbedEnabled } from "@/lib/llm/config";
+import { embedOneCustomer, toPgVectorLiteral } from "@/lib/llm/embeddings";
 
 /**
  * Full-text search over the caller's org internal documents ("Company Docs"
@@ -94,5 +96,78 @@ export async function searchInternalDocuments(
     updatedAt: r.updated_at,
     snippet: r.snippet,
     rank: r.rank,
+  }));
+}
+
+/**
+ * Hybrid (self-hosted vector + FTS) company-doc search. When intelleLLM
+ * isolation + the embedder are configured, embeds the query with the
+ * self-hosted embedder and runs search_internal_documents_hybrid. Otherwise —
+ * and on any embed/RPC error — falls back to the FTS-only searchInternalDocuments
+ * so behavior is unchanged while isolation is off. Customer text is NEVER sent to
+ * Voyage; query embedding only happens via the self-hosted embedder.
+ */
+export async function searchInternalDocumentsHybrid(
+  query: string,
+  opts: { folderIds?: string[]; includeUnfiled?: boolean } = {},
+): Promise<CompanyDocResult[]> {
+  if (!query || query.trim().length === 0) return [];
+  if (!isIntelleEmbedEnabled()) {
+    return searchInternalDocuments(query, opts);
+  }
+
+  let queryEmbeddingLiteral: string | null = null;
+  try {
+    const qvec = await embedOneCustomer(query);
+    queryEmbeddingLiteral = toPgVectorLiteral(qvec);
+  } catch (e) {
+    console.error("[regwatch] internal-doc query embed failed:", e);
+    return searchInternalDocuments(query, opts);
+  }
+
+  const supabase = await createClient();
+  const folders = await listFolders();
+  const expanded = opts.folderIds?.length
+    ? expandDescendants(opts.folderIds, folders)
+    : [];
+  const folderName = new Map(folders.map((f) => [f.id, f.name]));
+
+  const { data, error } = await supabase.rpc("search_internal_documents_hybrid", {
+    query_embedding: queryEmbeddingLiteral,
+    query_text: query,
+    match_limit: 6,
+    alpha: 0.6,
+    folder_ids: expanded.length ? expanded : null,
+    include_unfiled: opts.includeUnfiled ?? false,
+  });
+  if (error) {
+    console.error("[regwatch] searchInternalDocumentsHybrid rpc error:", error);
+    return searchInternalDocuments(query, opts);
+  }
+
+  type HybridRow = {
+    id: string;
+    title: string;
+    doc_kind: string;
+    internal_code: string | null;
+    version: string | null;
+    status: string;
+    folder_id: string | null;
+    updated_at: string;
+    snippet: string | null;
+    blended_score: number;
+  };
+  return (data ?? []).map((r: HybridRow) => ({
+    id: r.id,
+    title: r.title,
+    docKind: r.doc_kind,
+    internalCode: r.internal_code,
+    version: r.version,
+    status: r.status,
+    folderId: r.folder_id,
+    folderName: r.folder_id ? (folderName.get(r.folder_id) ?? null) : null,
+    updatedAt: r.updated_at,
+    snippet: r.snippet,
+    rank: r.blended_score,
   }));
 }

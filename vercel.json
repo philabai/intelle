@@ -9,6 +9,7 @@
     { "path": "/api/cron/regwatch-body-enrich", "schedule": "13,43 * * * *" },
     { "path": "/api/cron/regwatch-notify-obligations", "schedule": "*/10 * * * *" },
     { "path": "/api/cron/regwatch-analyse-evidence", "schedule": "*/3 * * * *" },
+    { "path": "/api/cron/regwatch-embed-internal-docs", "schedule": "8,38 * * * *" },
     { "path": "/api/cron/regwatch-alerts",  "schedule": "0 6 * * *" },
     { "path": "/api/cron/regwatch-hierarchy", "schedule": "30 3 * * *" },
     { "path": "/api/cron/regwatch-crawl?only=iea-policies&lookback=30", "schedule": "50 3 * * *" }
