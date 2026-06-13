@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
+import { localizeEngineeringServices } from "@/lib/constants/i18n/localize";
 import { ENGINEERING_SERVICES } from "@/lib/constants";
 import { EngineeringServiceDetail } from "@/components/engineering/EngineeringServiceDetail";
 
@@ -43,6 +45,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PLMIntegrationPage() {
-  return <EngineeringServiceDetail service={service} />;
+export default async function PLMIntegrationPage() {
+  const _localized = localizeEngineeringServices(await getLocale())[1];
+  return <EngineeringServiceDetail service={_localized} />;
 }

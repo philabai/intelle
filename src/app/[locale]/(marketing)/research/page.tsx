@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { HeroBackdrop } from "@/components/ui/HeroBackdrop";
-import { RESEARCH_SERVICES } from "@/lib/constants";
+import { localizeResearchServices } from "@/lib/constants/i18n/localize";
 import { JsonLd, itemListSchema } from "@/lib/seo/json-ld";
 
 export const metadata: Metadata = {
@@ -32,6 +32,7 @@ export const metadata: Metadata = {
 
 export default async function ResearchPage() {
   const t = await getTranslations("researchPage");
+  const RESEARCH_SERVICES = localizeResearchServices(await getLocale());
   return (
     <>
       <JsonLd

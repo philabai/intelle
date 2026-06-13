@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
+import { localizeResearchServices } from "@/lib/constants/i18n/localize";
 import { RESEARCH_SERVICES } from "@/lib/constants";
 import { ResearchServiceDetail } from "@/components/research/ResearchServiceDetail";
 
@@ -27,6 +29,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Standards & Regulations Research" },
 };
 
-export default function StandardsPage() {
-  return <ResearchServiceDetail service={service} />;
+export default async function StandardsPage() {
+  const _localized = localizeResearchServices(await getLocale())[1];
+  return <ResearchServiceDetail service={_localized} />;
 }

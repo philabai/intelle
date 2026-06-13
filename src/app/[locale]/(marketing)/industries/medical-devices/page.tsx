@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
+import { localizeIndustries } from "@/lib/constants/i18n/localize";
 import { INDUSTRIES } from "@/lib/constants";
 import { IndustryDetail } from "@/components/industries/IndustryDetail";
 
@@ -27,6 +29,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Medical Devices Engineering Intelligence" },
 };
 
-export default function MedicalDevicesPage() {
-  return <IndustryDetail industry={industry} />;
+export default async function MedicalDevicesPage() {
+  const _localized = localizeIndustries(await getLocale())[2];
+  return <IndustryDetail industry={_localized} />;
 }

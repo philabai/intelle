@@ -1,11 +1,12 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
-import { INDUSTRIES } from "@/lib/constants";
+import { localizeIndustries } from "@/lib/constants/i18n/localize";
 
 export async function IndustriesPreview() {
   const t = await getTranslations("home");
+  const INDUSTRIES = localizeIndustries(await getLocale());
   return (
     <section className="py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
