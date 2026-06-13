@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { getAnthropic } from "@/lib/anthropic/client";
+import { getCustomerLLM, getPublicLLM } from "@/lib/llm/gateway";
 import { IRIS_MODEL } from "@/lib/regwatch/anthropic/models";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { createServiceClient } from "@/lib/regwatch/supabase/service";
@@ -439,6 +440,12 @@ export async function POST(request: Request) {
     })
     .join("\n\n---\n\n");
 
+  // Tracks whether any CUSTOMER document text was injected into the prompt. When
+  // true, the completion routes to the customer LLM (intelleLLM when isolation is
+  // on) so customer data never reaches a public model. Stays false for pure
+  // public-regulation answers, which keep using Claude.
+  let companyDocsInjected = false;
+
   // Company Docs — when enabled (Search page, signed-in member, not a scoped
   // single-regulation question), also retrieve the org's internal documents
   // (RLS-scoped) and append them as additional cited sources [n].
@@ -487,6 +494,7 @@ export async function POST(request: Request) {
           .join("\n\n---\n\n");
         sources = [...sources, ...docSources];
         corpusBlock = corpusBlock ? `${corpusBlock}\n\n---\n\n${docBlock}` : docBlock;
+        companyDocsInjected = true;
       }
     } catch (e) {
       console.error("[regwatch] iris company-docs retrieval failed:", e);
@@ -519,9 +527,14 @@ export async function POST(request: Request) {
       send({ type: "sources", sources });
 
       try {
-        const anthropic = getAnthropic();
-        const apiStream = anthropic.messages.stream({
-          model: IRIS_MODEL,
+        // Route to the customer LLM (intelleLLM when isolation is on) iff any
+        // company-document text was injected; pure public-regulation answers
+        // stay on Claude. Isolation-off → both resolve to Claude + IRIS_MODEL.
+        const { client, model } = companyDocsInjected
+          ? getCustomerLLM(IRIS_MODEL)
+          : getPublicLLM(IRIS_MODEL);
+        const apiStream = client.messages.stream({
+          model,
           max_tokens: 1024,
           system: [
             {

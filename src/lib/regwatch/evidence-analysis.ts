@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { getAnthropic } from "@/lib/anthropic/client";
+import { getCustomerLLM } from "@/lib/llm/gateway";
 import { EVIDENCE_ANALYSIS_MODEL } from "./anthropic/models";
 import { createServiceClient } from "./supabase/service";
 import type {
@@ -235,9 +236,10 @@ export async function analyseOneEvidenceFile(
       clauseContext,
       // The video module reuses our Claude tool-use call so the schema
       // stays in lockstep with the doc/image path.
-      recordFindings: async ({ anthropic, content }) => {
+      recordFindings: async ({ client, model, content }) => {
         const r = await runClaudeAnalysis({
-          anthropic,
+          client,
+          model,
           regulationContext,
           clauseContext,
           fileLabel: job.fileName,
@@ -292,7 +294,7 @@ async function analyseDocument(
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
     job.fileName.toLowerCase().endsWith(".docx");
 
-  const anthropic = getAnthropic();
+  const { client, model } = getCustomerLLM(EVIDENCE_ANALYSIS_MODEL);
   const arrayBuffer = await blob.arrayBuffer();
   const buf = Buffer.from(arrayBuffer);
 
@@ -300,7 +302,8 @@ async function analyseDocument(
   if (isPdf && buf.length <= MAX_PDF_BYTES_FOR_NATIVE) {
     const base64 = buf.toString("base64");
     return runClaudeAnalysis({
-      anthropic,
+      client,
+      model,
       regulationContext,
       clauseContext,
       fileLabel: job.fileName,
@@ -348,7 +351,7 @@ async function analyseDocument(
     return {
       ok: false,
       status: "failed",
-      model: EVIDENCE_ANALYSIS_MODEL,
+      model,
       error: `Text extraction failed: ${(e as Error).message}`,
     };
   }
@@ -362,14 +365,15 @@ async function analyseDocument(
     return {
       ok: false,
       status: "failed",
-      model: EVIDENCE_ANALYSIS_MODEL,
+      model,
       error:
         "Could not extract enough text from the document. Try a PDF re-export or use an image upload of the page instead.",
     };
   }
 
   return runClaudeAnalysis({
-    anthropic,
+    client,
+    model,
     regulationContext,
     clauseContext,
     fileLabel: job.fileName,
@@ -419,7 +423,7 @@ async function analyseImage(
   regulationContext: string,
   clauseContext: string,
 ): Promise<AnalysisResult> {
-  const anthropic = getAnthropic();
+  const { client, model } = getCustomerLLM(EVIDENCE_ANALYSIS_MODEL);
   const arrayBuffer = await blob.arrayBuffer();
   const base64 = Buffer.from(arrayBuffer).toString("base64");
   const mime = (job.mimeType ?? "image/jpeg").toLowerCase();
@@ -434,7 +438,8 @@ async function analyseImage(
           : "image/jpeg";
 
   return runClaudeAnalysis({
-    anthropic,
+    client,
+    model,
     regulationContext,
     clauseContext,
     fileLabel: job.fileName,
@@ -494,7 +499,10 @@ Guidelines:
 - Always call the record_findings tool exactly once.`;
 
 interface RunArgs {
-  anthropic: ReturnType<typeof getAnthropic>;
+  /** Anthropic client — real Claude, or the intelleLLM-fronting client. */
+  client: ReturnType<typeof getAnthropic>;
+  /** Model id to use on that client. */
+  model: string;
   regulationContext: string;
   clauseContext: string;
   fileLabel: string;
@@ -505,8 +513,8 @@ interface RunArgs {
 
 async function runClaudeAnalysis(args: RunArgs): Promise<AnalysisResult> {
   try {
-    const message = await args.anthropic.messages.create({
-      model: EVIDENCE_ANALYSIS_MODEL,
+    const message = await args.client.messages.create({
+      model: args.model,
       max_tokens: 2200,
       system: [
         {
@@ -539,7 +547,7 @@ async function runClaudeAnalysis(args: RunArgs): Promise<AnalysisResult> {
       return {
         ok: false,
         status: "failed",
-        model: EVIDENCE_ANALYSIS_MODEL,
+        model: args.model,
         error: "Model did not call record_findings tool",
         tokenUsage: usageDict(message.usage),
       };
@@ -550,7 +558,7 @@ async function runClaudeAnalysis(args: RunArgs): Promise<AnalysisResult> {
       return {
         ok: false,
         status: "failed",
-        model: EVIDENCE_ANALYSIS_MODEL,
+        model: args.model,
         error: `Tool input did not match schema: ${parsed.error.issues[0]?.message}`,
         tokenUsage: usageDict(message.usage),
       };
@@ -560,15 +568,15 @@ async function runClaudeAnalysis(args: RunArgs): Promise<AnalysisResult> {
       ok: true,
       status: "completed",
       payload: parsed.data,
-      model: EVIDENCE_ANALYSIS_MODEL,
+      model: args.model,
       tokenUsage: usageDict(message.usage),
     };
   } catch (e) {
     return {
       ok: false,
       status: "failed",
-      model: EVIDENCE_ANALYSIS_MODEL,
-      error: `Claude call failed: ${(e as Error).message}`,
+      model: args.model,
+      error: `Model call failed: ${(e as Error).message}`,
     };
   }
 }

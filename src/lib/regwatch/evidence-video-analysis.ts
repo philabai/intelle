@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import OpenAI from "openai";
 import { getAnthropic } from "@/lib/anthropic/client";
+import { getCustomerLLM } from "@/lib/llm/gateway";
 import { EVIDENCE_ANALYSIS_MODEL } from "./anthropic/models";
 import { createServiceClient } from "./supabase/service";
 import { canUseFeature } from "./tier";
@@ -58,7 +59,8 @@ export async function analyseVideoEvidence(opts: {
   regulationContext: string;
   clauseContext: string;
   recordFindings: (args: {
-    anthropic: ReturnType<typeof getAnthropic>;
+    client: ReturnType<typeof getAnthropic>;
+    model: string;
     content: { type: "text"; text: string }[];
   }) => Promise<{
     ok: boolean;
@@ -213,8 +215,10 @@ export async function analyseVideoEvidence(opts: {
       batches.push(frameFiles.slice(i, i + FRAMES_PER_BATCH));
     }
 
-    // 7. Per-batch Claude vision summaries.
-    const anthropic = getAnthropic();
+    // 7. Per-batch vision summaries. Routed through the customer LLM so video
+    // frames (customer evidence) go to intelleLLM when isolation is on.
+    const { client: visionClient, model: visionModel } =
+      getCustomerLLM(EVIDENCE_ANALYSIS_MODEL);
     const batchSummaries: string[] = [];
     const totalTokenUsage = {
       input: 0,
@@ -242,8 +246,8 @@ export async function analyseVideoEvidence(opts: {
       );
 
       try {
-        const summary = await anthropic.messages.create({
-          model: EVIDENCE_ANALYSIS_MODEL,
+        const summary = await visionClient.messages.create({
+          model: visionModel,
           max_tokens: 700,
           messages: [
             {
@@ -295,7 +299,8 @@ ${transcript || "(no spoken audio detected)"}
 Based on the per-batch frame summaries above and the audio transcript, analyse whether the video supports compliance with the regulation/clause. For every finding, anchor it to the timestamp range where the issue appears (e.g. "00:24–00:30"). Don't hallucinate beyond what the summaries and transcript show. Call record_findings exactly once.`;
 
     const aggregator = await opts.recordFindings({
-      anthropic,
+      client: visionClient,
+      model: visionModel,
       content: [{ type: "text", text: aggregatorPrompt }],
     });
 
