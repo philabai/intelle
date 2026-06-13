@@ -10,6 +10,24 @@ import {
   type TourEntry,
 } from "./tours";
 import { clearAllTourFlags } from "./GuidedTour";
+import { TUTORIAL_COURSES } from "@/lib/regwatch/tutorials";
+
+/** Short labels for the video-tour summary line, by course slug. */
+const COURSE_SHORT_LABEL: Record<string, string> = {
+  dashboard: "Dashboard",
+  search: "Search",
+  regulations: "Regulations",
+  monitor: "Monitor",
+  comply: "Comply",
+  author: "Author",
+};
+
+// Only count courses that actually have rendered clips (skip "coming soon").
+const WATCHABLE_COURSES = TUTORIAL_COURSES.filter((c) => c.sections.length > 0);
+const VIDEO_TOUR_COUNT = WATCHABLE_COURSES.length;
+const VIDEO_TOUR_SUMMARY = WATCHABLE_COURSES.map(
+  (c) => COURSE_SHORT_LABEL[c.slug] ?? c.title,
+).join(" · ");
 
 const GuidedTour = dynamic(
   () => import("./GuidedTour").then((m) => m.GuidedTour),
@@ -124,13 +142,13 @@ export function HelpDrawer({ open, onClose, onAskIris }: Props) {
           >
             <div>
               <p className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">
-                Video tutorials
+                Video tours
               </p>
               <h4 className="mt-1 text-sm font-semibold text-foreground">
-                Watch the 4 product walkthroughs
+                Watch the {VIDEO_TOUR_COUNT} product walkthroughs
               </h4>
               <p className="mt-1 text-xs text-muted">
-                Regulations · Monitor · Comply · Author — ~1 min each.
+                {VIDEO_TOUR_SUMMARY} — ~1 min each.
               </p>
             </div>
             <span className="shrink-0 text-brand-teal">▶</span>
