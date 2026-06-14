@@ -1,4 +1,5 @@
 import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import type { Metadata } from "next";
@@ -21,16 +22,18 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
+  const t = await getTranslations("regwatch.widgets");
   const briefing = await getBriefing(id);
-  if (!briefing) return { title: "Briefing not found" };
+  if (!briefing) return { title: t("briefingNotFound") };
   return {
-    title: `Impact briefing — ${briefing.item.citation}`,
+    title: t("briefingMetaTitle", { citation: briefing.item.citation }),
     description: briefing.headline,
   };
 }
 
 export default async function BriefingDetailPage({ params }: Props) {
   const { id } = await params;
+  const t = await getTranslations("regwatch.widgets");
   const briefing = await getBriefing(id);
   if (!briefing) notFound();
 
@@ -65,7 +68,7 @@ export default async function BriefingDetailPage({ params }: Props) {
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/feed" className="hover:text-foreground">
-            My Feed
+            {t("briefingMyFeed")}
           </Link>
           <span className="mx-2">/</span>
           <Link
@@ -75,7 +78,7 @@ export default async function BriefingDetailPage({ params }: Props) {
             {briefing.item.citation}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-foreground">Impact briefing</span>
+          <span className="text-foreground">{t("briefingImpactBriefing")}</span>
         </nav>
 
         <header className="mt-4">
@@ -96,28 +99,27 @@ export default async function BriefingDetailPage({ params }: Props) {
             {briefing.headline}
           </h1>
           <p className="mt-2 text-xs text-muted">
-            Briefing generated {generatedAgo}. Citation-grounded synthesis from{" "}
-            {briefing.citations.length}{" "}
-            {briefing.citations.length === 1 ? "corpus source" : "corpus sources"}.
-            Verify every claim against the cited source before relying on it for
-            compliance evidence.
+            {t("briefingGeneratedNote", {
+              ago: generatedAgo,
+              count: briefing.citations.length,
+            })}
           </p>
         </header>
 
         <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_300px]">
           <article className="space-y-8">
-            <Section eyebrow="Why it matters" accent="brand-teal">
+            <Section eyebrow={t("briefingWhyItMatters")} accent="brand-teal">
               <BriefingBody
                 text={briefing.why_it_matters}
                 citations={briefing.citations}
               />
             </Section>
 
-            <Section eyebrow="Details" accent="brand-blue">
+            <Section eyebrow={t("briefingDetails")} accent="brand-blue">
               <BriefingBody text={briefing.details} citations={briefing.citations} />
             </Section>
 
-            <Section eyebrow="What to do now" accent="brand-violet">
+            <Section eyebrow={t("briefingWhatToDoNow")} accent="brand-violet">
               <BriefingBody
                 text={briefing.what_to_do_now}
                 citations={briefing.citations}
@@ -125,7 +127,7 @@ export default async function BriefingDetailPage({ params }: Props) {
             </Section>
 
             {briefing.deeper_resources && (
-              <Section eyebrow="Deeper resources" accent="muted">
+              <Section eyebrow={t("briefingDeeperResources")} accent="muted">
                 <BriefingBody
                   text={briefing.deeper_resources}
                   citations={briefing.citations}
@@ -137,10 +139,10 @@ export default async function BriefingDetailPage({ params }: Props) {
           <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
             <div className="rounded-lg border border-card-border bg-card-bg p-4">
               <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
-                Sources
+                {t("briefingSources")}
               </h2>
               {briefing.citations.length === 0 ? (
-                <p className="mt-2 text-xs text-muted">No citations recorded.</p>
+                <p className="mt-2 text-xs text-muted">{t("briefingNoCitations")}</p>
               ) : (
                 <ol className="mt-2 space-y-3">
                   {briefing.citations.map((c) => (
@@ -162,7 +164,7 @@ export default async function BriefingDetailPage({ params }: Props) {
                           href={`/regwatch/r/${c.jurisdiction_code.toLowerCase()}/${c.slug}`}
                           className="text-brand-teal hover:underline"
                         >
-                          Open
+                          {t("open")}
                         </Link>
                         <a
                           href={c.source_url}
@@ -170,7 +172,7 @@ export default async function BriefingDetailPage({ params }: Props) {
                           rel="noopener noreferrer"
                           className="text-muted hover:text-foreground"
                         >
-                          Source ↗
+                          {t("source")} ↗
                         </a>
                       </div>
                     </li>
@@ -181,13 +183,13 @@ export default async function BriefingDetailPage({ params }: Props) {
 
             <div className="rounded-lg border border-card-border bg-card-bg p-4">
               <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
-                Original regulation
+                {t("briefingOriginalRegulation")}
               </h2>
               <Link
                 href={`/regwatch/r/${briefing.item.jurisdiction_code.toLowerCase()}/${briefing.item.slug}`}
                 className="mt-2 inline-flex items-center text-sm text-brand-teal hover:underline"
               >
-                Open {briefing.item.citation} →
+                {t("briefingOpenCitation", { citation: briefing.item.citation })} →
               </Link>
               <a
                 href={briefing.item.source_url}

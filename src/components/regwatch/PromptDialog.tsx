@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Modal, ModalActions } from "./Modal";
 
 /**
@@ -37,6 +38,7 @@ export function usePromptDialog(): {
   ask: (opts: PromptOptions) => Promise<string | null>;
   dialog: React.ReactNode;
 } {
+  const t = useTranslations("regwatch.widgets");
   const [state, setState] = useState<PromptResolverState | null>(null);
   const [value, setValue] = useState("");
   const stateRef = useRef(state);
@@ -101,7 +103,7 @@ export function usePromptDialog(): {
       <ModalActions
         onCancel={() => close(null)}
         onConfirm={onConfirm}
-        confirmLabel={state.options.confirmLabel ?? "OK"}
+        confirmLabel={state.options.confirmLabel ?? t("ok")}
         confirmDisabled={
           state.options.required !== false && value.trim().length === 0
         }
@@ -130,6 +132,7 @@ export function useConfirmDialog(): {
   ask: (opts: ConfirmOptions) => Promise<boolean>;
   dialog: React.ReactNode;
 } {
+  const t = useTranslations("regwatch.widgets");
   const [state, setState] = useState<ConfirmResolverState | null>(null);
 
   function ask(options: ConfirmOptions): Promise<boolean> {
@@ -154,8 +157,8 @@ export function useConfirmDialog(): {
       <ModalActions
         onCancel={() => close(false)}
         onConfirm={() => close(true)}
-        confirmLabel={state.options.confirmLabel ?? "Confirm"}
-        cancelLabel={state.options.cancelLabel ?? "Cancel"}
+        confirmLabel={state.options.confirmLabel ?? t("confirm")}
+        cancelLabel={state.options.cancelLabel ?? t("cancel")}
         danger={state.options.danger}
       />
     </Modal>

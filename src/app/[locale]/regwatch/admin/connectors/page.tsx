@@ -1,5 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
+import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { getMyMembership } from "@/lib/regwatch/members";
@@ -7,9 +8,12 @@ import { REGWATCH_CONNECTORS } from "@/lib/regwatch/connectors";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { RunConnectorRow } from "@/components/regwatch/admin/RunConnectorRow";
 
-export const metadata: Metadata = {
-  title: "Admin · Connectors — Vantage",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("regwatch.widgets");
+  return {
+    title: t("connectorsMetaTitle"),
+  };
+}
 export const dynamic = "force-dynamic";
 
 /**
@@ -19,6 +23,7 @@ export const dynamic = "force-dynamic";
  * the cron secret holder.
  */
 export default async function AdminConnectorsPage() {
+  const t = await getTranslations("regwatch.widgets");
   const supabase = await createClient();
   const {
     data: { user },
@@ -31,16 +36,16 @@ export default async function AdminConnectorsPage() {
       <RegwatchAppShell authed>
         <div className="mx-auto max-w-2xl px-4 py-20 text-center sm:px-6">
           <h1 className="text-2xl font-semibold text-foreground">
-            Admin only
+            {t("connectorsAdminOnly")}
           </h1>
           <p className="mt-3 text-sm text-muted">
-            This page is restricted to organisation owners and admins.
+            {t("connectorsAdminOnlyDesc")}
           </p>
           <Link
             href="/regwatch/comply"
             className="mt-6 inline-block rounded-md border border-card-border bg-card-bg px-4 py-2 text-sm text-foreground hover:border-brand-blue"
           >
-            Back to Comply
+            {t("connectorsBackToComply")}
           </Link>
         </div>
       </RegwatchAppShell>
@@ -61,26 +66,25 @@ export default async function AdminConnectorsPage() {
         <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
           <nav className="text-xs text-muted">
             <Link href="/regwatch/comply" className="hover:text-foreground">
-              Comply
+              {t("connectorsComply")}
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-foreground">Admin · Connectors</span>
+            <span className="text-foreground">{t("connectorsBreadcrumb")}</span>
           </nav>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Connector runner
+            {t("connectorsTitle")}
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted">
-            Manually trigger any connector. Same code path as the nightly
-            cron — fetches the publisher&apos;s index, upserts into
-            <code className="ms-1 rounded bg-card-bg px-1 font-mono text-[11px]">
-              regulatory_items
-            </code>
-            , optionally rebuilds the hierarchy. Owner/admin only.
+            {t.rich("connectorsDescription", {
+              code: (c) => (
+                <code className="ms-1 rounded bg-card-bg px-1 font-mono text-[11px]">
+                  {c}
+                </code>
+              ),
+            })}
           </p>
           <p className="mt-2 max-w-2xl rounded-md border border-amber-500/30 bg-amber-500/5 p-2 text-[11px] text-amber-300">
-            Heavy operation — runs against live regulator sites. Be
-            mindful of rate limits. Each run takes 5–60s; some sites
-            (ECHA) are bot-blocked and will return 0 items.
+            {t("connectorsWarning")}
           </p>
         </div>
       </header>

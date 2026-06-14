@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface PickerNode {
   id: string;
@@ -72,6 +73,7 @@ function filterTree(roots: TreeNode[], q: string): TreeNode[] {
  * hierarchical inheritance the dashboard surfaces.
  */
 export function AssetPicker({ flat, levelLabels, value, onChange }: Props) {
+  const t = useTranslations("regwatch.widgets");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -122,7 +124,7 @@ export function AssetPicker({ flat, levelLabels, value, onChange }: Props) {
             )}
           </span>
         ) : (
-          <span className="text-muted">Pick an asset…</span>
+          <span className="text-muted">{t("assetPickerTrigger")}</span>
         )}
         <span className="text-muted">▾</span>
       </button>
@@ -133,7 +135,7 @@ export function AssetPicker({ flat, levelLabels, value, onChange }: Props) {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name or code…"
+              placeholder={t("assetPickerSearch")}
               autoFocus
               className="w-full rounded-md border border-card-border bg-background px-2 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
             />
@@ -141,8 +143,11 @@ export function AssetPicker({ flat, levelLabels, value, onChange }: Props) {
           <div className="max-h-72 overflow-auto px-1 py-2">
             {filteredRoots.length === 0 ? (
               <p className="px-3 py-2 text-[11px] text-muted">
-                No assets match. Add one at{" "}
-                <span className="font-mono">/regwatch/assets/setup</span>.
+                {t.rich("assetPickerEmpty", {
+                  path: () => (
+                    <span className="font-mono">/regwatch/assets/setup</span>
+                  ),
+                })}
               </p>
             ) : (
               <ul className="space-y-0.5">
@@ -175,6 +180,7 @@ function PickerRow({
   onPick: (id: string) => void;
   selectedId: string | null;
 }) {
+  const t = useTranslations("regwatch.widgets");
   const [open, setOpen] = useState(node.level <= 3);
   const isSelected = selectedId === node.id;
   return (
@@ -190,8 +196,8 @@ function PickerRow({
             type="button"
             onClick={() => setOpen((o) => !o)}
             className="grid h-4 w-4 place-items-center text-muted hover:text-foreground"
-            aria-label={open ? "Collapse" : "Expand"}
-            title={open ? "Collapse children" : "Expand children"}
+            aria-label={open ? t("collapse") : t("expand")}
+            title={open ? t("collapseChildren") : t("expandChildren")}
           >
             {open ? "▾" : "▸"}
           </button>

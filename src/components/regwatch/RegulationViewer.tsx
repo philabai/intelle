@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import {
   fetchRegulationBodyFromSource,
   getRegulationBody,
@@ -35,6 +36,7 @@ export function RegulationViewer({
   onClose,
   onApply,
 }: Props) {
+  const t = useTranslations("regwatch.widgets");
   const [body, setBody] = useState<RegulationBody | null>(null);
   const [pending, startTransition] = useTransition();
   const [fetching, startFetching] = useTransition();
@@ -47,9 +49,7 @@ export function RegulationViewer({
     startTransition(async () => {
       const res = await getRegulationBody({ id: regulationId });
       if (!res) {
-        setError(
-          "Couldn't load the regulation body. The corpus may be missing the source text for this item — link the whole regulation or paste the section manually below.",
-        );
+        setError(t("viewerLoadError"));
         return;
       }
       setBody(res);
@@ -81,12 +81,15 @@ export function RegulationViewer({
     startFetching(async () => {
       const res = await fetchRegulationBodyFromSource({ id: regulationId });
       if (!res.ok || !res.body) {
-        setError(res.error ?? "Could not load body from source");
+        setError(res.error ?? t("viewerFetchError"));
         return;
       }
       setBody(res.body);
       setFetchMessage(
-        `Loaded ${res.extractedChars?.toLocaleString() ?? "?"} chars from source · ${res.body.paragraphs.length} paragraphs`,
+        t("viewerFetchSuccess", {
+          chars: res.extractedChars?.toLocaleString() ?? "?",
+          paragraphs: res.body.paragraphs.length,
+        }),
       );
     });
   }
@@ -106,7 +109,7 @@ export function RegulationViewer({
       <div
         className="flex-1 bg-black/60"
         onClick={onClose}
-        aria-label="Close"
+        aria-label={t("close")}
       />
       <div className="flex h-full w-full max-w-4xl flex-col bg-background shadow-2xl">
         <header className="flex items-start justify-between gap-3 border-b border-card-border px-5 py-4">
@@ -126,7 +129,7 @@ export function RegulationViewer({
               </>
             ) : (
               <h2 className="text-base font-semibold text-foreground">
-                Loading regulation…
+                {t("viewerLoadingRegulation")}
               </h2>
             )}
           </div>
@@ -138,15 +141,15 @@ export function RegulationViewer({
                 rel="noopener noreferrer"
                 className="rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-[11px] text-foreground hover:border-brand-blue"
               >
-                Source ↗
+                {t("source")} ↗
               </a>
             )}
             <button
               type="button"
               onClick={onClose}
               className="text-muted hover:text-foreground"
-              aria-label="Close"
-              title="Close the regulation viewer (Esc)"
+              aria-label={t("close")}
+              title={t("viewerCloseTitle")}
             >
               ✕
             </button>
@@ -158,7 +161,7 @@ export function RegulationViewer({
           {body && body.paragraphs.some((p) => p.isHeading) && (
             <aside className="hidden w-48 shrink-0 overflow-auto border-e border-card-border bg-card-bg/30 px-3 py-3 md:block">
               <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted">
-                Headings
+                {t("viewerHeadings")}
               </p>
               <ul className="space-y-1 text-[11px]">
                 {body.paragraphs
@@ -180,27 +183,25 @@ export function RegulationViewer({
           {/* Main body */}
           <div className="min-w-0 flex-1 overflow-auto px-5 py-4">
             {pending && !body && (
-              <p className="text-xs text-muted">Loading…</p>
+              <p className="text-xs text-muted">{t("loading")}</p>
             )}
             {error && <p className="text-xs text-red-400">{error}</p>}
             {body && body.paragraphs.length === 0 && (
               <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-4 text-center text-xs text-muted">
-                The corpus has no body text for this regulation. Open the
-                source link in a new tab to read it, then paste the relevant
-                clause text below.
+                {t("viewerNoBody")}
               </p>
             )}
             {body && isThin && (
               <div className="mb-3 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-200">
                 <p className="font-medium text-amber-200">
-                  Only the regulator&apos;s short summary was ingested.
+                  {t("viewerThinSummaryTitle")}
                 </p>
                 <p className="mt-1 text-amber-200/80">
-                  The connectors only capture metadata — not the full body —
-                  for this source today. Click below to fetch the full text
-                  from <span className="font-mono">{body.sourceUrl}</span>,
-                  parse it, and cache it on this row so subsequent views
-                  load instantly.
+                  {t.rich("viewerThinSummaryBody", {
+                    url: () => (
+                      <span className="font-mono">{body.sourceUrl}</span>
+                    ),
+                  })}
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <button
@@ -209,7 +210,7 @@ export function RegulationViewer({
                     disabled={fetching}
                     className="rounded-md bg-amber-500 px-3 py-1.5 text-[11px] font-medium text-background hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {fetching ? "Fetching…" : "Load full text from source"}
+                    {fetching ? t("fetching") : t("viewerLoadFullText")}
                   </button>
                   <a
                     href={body.sourceUrl}
@@ -217,7 +218,7 @@ export function RegulationViewer({
                     rel="noopener noreferrer"
                     className="rounded-md border border-amber-500/40 px-3 py-1.5 text-[11px] text-amber-200 hover:bg-amber-500/10"
                   >
-                    Open source ↗
+                    {t("openSource")} ↗
                   </a>
                   {fetchMessage && (
                     <span className="text-[11px] text-amber-200/80">
@@ -261,7 +262,7 @@ export function RegulationViewer({
                       onClick={() => pickClause(p)}
                       className="shrink-0 rounded-md border border-card-border bg-card-bg px-2 py-1 text-[10px] text-foreground hover:border-brand-teal hover:text-brand-teal"
                     >
-                      Use this clause
+                      {t("viewerUseClause")}
                     </button>
                   </div>
                 </li>
@@ -273,20 +274,20 @@ export function RegulationViewer({
         {/* Footer — picked clause editor */}
         <footer className="border-t border-card-border bg-card-bg/40 px-5 py-3">
           <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted">
-            Selected clause
+            {t("viewerSelectedClause")}
           </p>
           <div className="grid gap-2 sm:grid-cols-[180px_1fr]">
             <input
               value={anchor}
               onChange={(e) => setAnchor(e.target.value)}
-              placeholder="Anchor (e.g. Article 6)"
+              placeholder={t("viewerAnchorPlaceholder")}
               className="rounded-md border border-card-border bg-card-bg px-2 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
             />
             <textarea
               value={clauseText}
               onChange={(e) => setClauseText(e.target.value)}
               rows={3}
-              placeholder="Clause text — captured from a paragraph above, or paste / edit manually."
+              placeholder={t("viewerClauseTextPlaceholder")}
               className="rounded-md border border-card-border bg-card-bg px-2 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
             />
           </div>
@@ -299,21 +300,21 @@ export function RegulationViewer({
               }}
               className="rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-muted hover:text-foreground"
             >
-              Clear
+              {t("clear")}
             </button>
             <button
               type="button"
               onClick={onClose}
               className="rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-foreground hover:border-brand-blue"
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               type="button"
               onClick={apply}
               className="rounded-md bg-brand-blue px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-blue/90"
             >
-              Apply
+              {t("apply")}
             </button>
           </div>
         </footer>

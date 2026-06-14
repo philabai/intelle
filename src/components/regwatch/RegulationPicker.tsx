@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import {
   searchRegulationsForPicker,
   type RegulationPickerResult,
@@ -43,13 +44,15 @@ interface Props {
 export function RegulationPicker({
   value,
   onChange,
-  placeholder = "Search by citation, regulator, topic, or paste a UUID…",
+  placeholder,
   clauseAnchor = "",
   onClauseAnchorChange,
   clauseText = "",
   onClauseTextChange,
   showClauseField = true,
 }: Props) {
+  const t = useTranslations("regwatch.widgets");
+  const resolvedPlaceholder = placeholder ?? t("regPickerSearch");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<RegulationPickerResult[]>([]);
   const [open, setOpen] = useState(false);
@@ -148,9 +151,9 @@ export function RegulationPicker({
                   type="button"
                   onClick={() => setViewerOpen(true)}
                   className="rounded-md border border-card-border bg-card-bg px-2 py-1 text-[10px] text-foreground hover:border-brand-teal hover:text-brand-teal"
-                  title="Read the full regulation and pick a clause"
+                  title={t("regPickerViewTitle")}
                 >
-                  📖 View &amp; pick clause
+                  📖 {t("regPickerViewClause")}
                 </button>
               )}
               <button
@@ -158,7 +161,7 @@ export function RegulationPicker({
                 onClick={clear}
                 className="rounded-md border border-card-border bg-card-bg px-2 py-1 text-[10px] text-muted hover:border-brand-blue hover:text-foreground"
               >
-                Change
+                {t("change")}
               </button>
             </div>
           </div>
@@ -169,7 +172,7 @@ export function RegulationPicker({
             value={query}
             onChange={(e) => onInput(e.target.value)}
             onFocus={onFocus}
-            placeholder={placeholder}
+            placeholder={resolvedPlaceholder}
             className="w-full rounded-md border border-card-border bg-card-bg px-3 py-2 text-sm text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
           />
           {open && (
@@ -177,8 +180,8 @@ export function RegulationPicker({
               <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-card-border bg-card-bg/95 px-3 py-1.5 text-[10px]">
                 <span className="text-muted">
                   {query.length < 2
-                    ? "Suggested regulations"
-                    : `Results for "${query}"`}
+                    ? t("regPickerSuggested")
+                    : t("regPickerResultsFor", { query })}
                 </span>
                 <label className="flex items-center gap-1 text-muted">
                   <input
@@ -187,17 +190,15 @@ export function RegulationPicker({
                     onChange={toggleNotices}
                     className="h-3 w-3"
                   />
-                  Show news / notices
+                  {t("regPickerShowNotices")}
                 </label>
               </div>
               {pending && (
-                <p className="px-3 py-2 text-[11px] text-muted">Searching…</p>
+                <p className="px-3 py-2 text-[11px] text-muted">{t("searching")}</p>
               )}
               {!pending && results.length === 0 && (
                 <p className="px-3 py-2 text-[11px] text-muted">
-                  No matches. Try a topic (&quot;methane&quot;), a regulator
-                  (&quot;ECHA&quot;), or paste a citation. Toggle &quot;Show news
-                  / notices&quot; if you&apos;re looking for an enforcement notice.
+                  {t("regPickerNoMatches")}
                 </p>
               )}
               {!pending && results.length > 0 && (
@@ -247,19 +248,19 @@ export function RegulationPicker({
         <div className="space-y-2">
           <label className="block">
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted">
-              Clause / Section (optional)
+              {t("regPickerClauseLabel")}
             </span>
             <input
               value={clauseAnchor}
               onChange={(e) => onClauseAnchorChange(e.target.value)}
-              placeholder="e.g. Article 6, §261.4(b)(7), Annex IV — or click View & pick clause"
+              placeholder={t("regPickerClausePlaceholder")}
               className="mt-1 w-full rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
             />
           </label>
           {clauseText && onClauseTextChange && (
             <label className="block">
               <span className="text-[10px] font-medium uppercase tracking-wider text-muted">
-                Clause text snippet
+                {t("regPickerClauseSnippet")}
               </span>
               <textarea
                 value={clauseText}
@@ -270,8 +271,7 @@ export function RegulationPicker({
             </label>
           )}
           <p className="text-[10px] text-muted">
-            Pin to a specific section. Leave empty to apply the whole
-            regulation.
+            {t("regPickerClauseHint")}
           </p>
         </div>
       )}

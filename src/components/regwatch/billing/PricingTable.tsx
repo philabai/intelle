@@ -1,8 +1,11 @@
+import { getTranslations } from "next-intl/server";
 import {
   startCheckoutAndRedirect,
   openPortalAndRedirect,
 } from "@/lib/regwatch/billing-actions";
 import { TIERS, type Tier, type TierDefinition } from "@/lib/regwatch/stripe";
+
+type Translator = Awaited<ReturnType<typeof getTranslations>>;
 
 interface Props {
   currentTier: Tier;
@@ -16,11 +19,12 @@ interface Props {
  * Each card uses a server-action form so the user is redirected directly
  * to Stripe Checkout (no client JS round-trip).
  */
-export function PricingTable({
+export async function PricingTable({
   currentTier,
   hasStripeCustomer,
   stripeConfigured,
 }: Props) {
+  const t = await getTranslations("regwatch.billing");
   const tiers: TierDefinition[] = Object.values(TIERS).sort(
     (a, b) => a.rank - b.rank,
   );
@@ -28,12 +32,13 @@ export function PricingTable({
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {tiers.map((t) => (
+        {tiers.map((tier) => (
           <TierCard
-            key={t.tier}
-            def={t}
-            isCurrent={currentTier === t.tier}
+            key={tier.tier}
+            def={tier}
+            isCurrent={currentTier === tier.tier}
             stripeConfigured={stripeConfigured}
+            t={t}
           />
         ))}
       </div>
@@ -44,24 +49,29 @@ export function PricingTable({
             type="submit"
             className="rounded-md border border-card-border bg-card-bg px-4 py-2 text-sm text-foreground hover:border-brand-teal"
           >
-            Open Stripe billing portal →
+            {t("openPortal")}
           </button>
-          <p className="mt-2 text-xs text-muted">
-            Manage payment method, download invoices, cancel or change plans —
-            all in Stripe&apos;s hosted portal.
-          </p>
+          <p className="mt-2 text-xs text-muted">{t("portalHelp")}</p>
         </form>
       )}
 
       {!stripeConfigured && (
         <div className="rounded-lg border border-amber-400/30 bg-amber-400/5 p-4 text-xs text-muted">
-          <p className="font-medium text-amber-300">Stripe not configured</p>
+          <p className="font-medium text-amber-300">{t("notConfiguredTitle")}</p>
           <p className="mt-1 leading-relaxed">
-            Add <span className="font-mono text-foreground">STRIPE_SECRET_KEY</span>,{" "}
-            <span className="font-mono text-foreground">STRIPE_WEBHOOK_SECRET</span>,
-            and the per-tier <span className="font-mono text-foreground">STRIPE_PRICE_*</span>{" "}
-            env vars in Vercel before checkout will work. See the README for the
-            full setup.
+            {t.rich("notConfiguredBody", {
+              secretKey: () => (
+                <span className="font-mono text-foreground">STRIPE_SECRET_KEY</span>
+              ),
+              webhookSecret: () => (
+                <span className="font-mono text-foreground">
+                  STRIPE_WEBHOOK_SECRET
+                </span>
+              ),
+              priceVars: () => (
+                <span className="font-mono text-foreground">STRIPE_PRICE_*</span>
+              ),
+            })}
           </p>
         </div>
       )}
@@ -73,10 +83,12 @@ function TierCard({
   def,
   isCurrent,
   stripeConfigured,
+  t,
 }: {
   def: TierDefinition;
   isCurrent: boolean;
   stripeConfigured: boolean;
+  t: Translator;
 }) {
   const isFree = def.tier === "free";
   const isEnterprise = def.tier === "enterprise";
@@ -96,7 +108,7 @@ function TierCard({
         </h3>
         {isCurrent && (
           <span className="rounded-full bg-brand-teal/20 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-brand-teal">
-            Current
+            {t("currentBadge")}
           </span>
         )}
       </div>
@@ -115,18 +127,16 @@ function TierCard({
       <div className="mt-4">
         {isFree ? (
           isCurrent ? (
-            <p className="text-[11px] text-muted">You&apos;re on the free tier.</p>
+            <p className="text-[11px] text-muted">{t("freeCurrent")}</p>
           ) : (
-            <p className="text-[11px] text-muted">
-              Downgrade via the Stripe portal.
-            </p>
+            <p className="text-[11px] text-muted">{t("freeDowngrade")}</p>
           )
         ) : isEnterprise ? (
           <a
             href="mailto:hello@intelle.io?subject=Vantage Enterprise"
             className="inline-block w-full rounded-md border border-card-border bg-card-bg px-4 py-2 text-center text-sm text-foreground hover:border-brand-teal"
           >
-            Talk to sales
+            {t("talkToSales")}
           </a>
         ) : canCheckout ? (
           <form action={startCheckoutAndRedirect}>
@@ -135,16 +145,14 @@ function TierCard({
               type="submit"
               className="w-full rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90"
             >
-              Upgrade to {def.label}
+              {t("upgradeTo", { plan: def.label })}
             </button>
           </form>
         ) : isCurrent ? (
-          <p className="text-[11px] text-muted">
-            Use the billing portal to manage.
-          </p>
+          <p className="text-[11px] text-muted">{t("manageInPortal")}</p>
         ) : (
           <p className="text-[11px] text-muted">
-            {def.stripePriceId ? "Unavailable right now." : "Tier not configured."}
+            {def.stripePriceId ? t("unavailable") : t("tierNotConfigured")}
           </p>
         )}
       </div>

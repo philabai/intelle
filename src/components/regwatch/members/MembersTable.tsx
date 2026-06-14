@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { formatDistanceToNowStrict } from "date-fns";
 import {
   updateMemberRole,
@@ -13,13 +14,14 @@ interface Props {
   callerCanManage: boolean;
 }
 
-const ROLE_OPTIONS: { value: AdminRole; label: string }[] = [
-  { value: "owner", label: "Owner" },
-  { value: "admin", label: "Admin" },
-  { value: "member", label: "Member" },
+const ROLE_OPTIONS: { value: AdminRole; labelKey: string }[] = [
+  { value: "owner", labelKey: "roleOwner" },
+  { value: "admin", labelKey: "roleAdmin" },
+  { value: "member", labelKey: "roleMember" },
 ];
 
 export function MembersTable({ members, callerCanManage }: Props) {
+  const t = useTranslations("regwatch.members");
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
@@ -46,37 +48,39 @@ export function MembersTable({ members, callerCanManage }: Props) {
         membershipId: member.membershipId,
         role,
       });
-      if (!res.ok) setError(res.error ?? "Could not update role");
+      if (!res.ok) setError(res.error ?? t("couldNotUpdateRole"));
     });
   }
 
   async function onRemove(member: OrgMember) {
     if (
       !confirm(
-        `Remove ${member.email ?? member.userId.slice(0, 8)} from your organization?`,
+        t("removeConfirm", {
+          member: member.email ?? member.userId.slice(0, 8),
+        }),
       )
     ) {
       return;
     }
     withPending(member.membershipId, async () => {
       const res = await removeMember({ membershipId: member.membershipId });
-      if (!res.ok) setError(res.error ?? "Could not remove member");
+      if (!res.ok) setError(res.error ?? t("couldNotRemoveMember"));
     });
   }
 
   return (
     <div className="overflow-hidden rounded-xl border border-card-border bg-background">
       <div className="hidden grid-cols-[1fr_180px_180px_140px_60px] gap-3 border-b border-card-border bg-card-bg/60 px-4 py-2 text-[10px] font-medium uppercase tracking-wider text-muted sm:grid">
-        <span>Email</span>
-        <span>Functional role</span>
-        <span>Admin role</span>
-        <span>Joined</span>
+        <span>{t("email")}</span>
+        <span>{t("functionalRole")}</span>
+        <span>{t("adminRole")}</span>
+        <span>{t("joined")}</span>
         <span></span>
       </div>
       <ul>
         {members.length === 0 ? (
           <li className="px-4 py-6 text-center text-sm text-muted">
-            No members yet.
+            {t("noMembersYet")}
           </li>
         ) : (
           members.map((m) => {
@@ -88,10 +92,12 @@ export function MembersTable({ members, callerCanManage }: Props) {
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm text-foreground">
-                    {m.email ?? <span className="text-muted">no email</span>}
+                    {m.email ?? (
+                      <span className="text-muted">{t("noEmail")}</span>
+                    )}
                     {m.isMe && (
                       <span className="ms-2 rounded bg-brand-teal/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-brand-teal">
-                        You
+                        {t("you")}
                       </span>
                     )}
                   </p>
@@ -115,14 +121,16 @@ export function MembersTable({ members, callerCanManage }: Props) {
                   >
                     {ROLE_OPTIONS.map((r) => (
                       <option key={r.value} value={r.value}>
-                        {r.label}
+                        {t(r.labelKey)}
                       </option>
                     ))}
                   </select>
                 ) : (
                   <p className="text-xs text-muted">
-                    {ROLE_OPTIONS.find((r) => r.value === m.role)?.label ??
-                      m.role}
+                    {(() => {
+                      const opt = ROLE_OPTIONS.find((r) => r.value === m.role);
+                      return opt ? t(opt.labelKey) : m.role;
+                    })()}
                   </p>
                 )}
                 <p className="text-[11px] text-muted">
@@ -138,7 +146,7 @@ export function MembersTable({ members, callerCanManage }: Props) {
                       disabled={isPending}
                       className="rounded border border-card-border px-2 py-0.5 text-[11px] text-muted hover:border-red-400 hover:text-red-300 disabled:opacity-50"
                     >
-                      Remove
+                      {t("remove")}
                     </button>
                   )}
                 </div>

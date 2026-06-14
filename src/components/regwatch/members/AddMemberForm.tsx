@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { addMemberByEmail } from "@/lib/regwatch/members-actions";
 
 export function AddMemberForm() {
+  const t = useTranslations("regwatch.members");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "member">("member");
   const [pending, startTransition] = useTransition();
@@ -17,14 +19,14 @@ export function AddMemberForm() {
     startTransition(async () => {
       const res = await addMemberByEmail({ email: email.trim(), role });
       if (!res.ok) {
-        setMessage({ kind: "error", text: res.error ?? "Could not add member" });
+        setMessage({ kind: "error", text: res.error ?? t("couldNotAddMember") });
         return;
       }
       setMessage({
         kind: "ok",
         text: res.invited
-          ? `Sent a signup invite to ${email}. They'll appear here once they accept.`
-          : `Added ${email} to your organization.`,
+          ? t("sentInvite", { email })
+          : t("addedMember", { email }),
       });
       setEmail("");
     });
@@ -37,28 +39,28 @@ export function AddMemberForm() {
     >
       <label className="flex flex-1 flex-col gap-1 text-sm">
         <span className="text-xs font-medium uppercase tracking-wider text-muted">
-          Email
+          {t("email")}
         </span>
         <input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="teammate@example.com"
+          placeholder={t("emailPlaceholder")}
           className="rounded-md border border-card-border bg-card-bg px-3 py-2 text-sm text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
         />
       </label>
       <label className="flex flex-col gap-1 text-sm">
         <span className="text-xs font-medium uppercase tracking-wider text-muted">
-          Role
+          {t("role")}
         </span>
         <select
           value={role}
           onChange={(e) => setRole(e.target.value as "admin" | "member")}
           className="rounded-md border border-card-border bg-card-bg px-3 py-2 text-sm text-foreground focus:border-brand-blue focus:outline-none"
         >
-          <option value="member">Member</option>
-          <option value="admin">Admin</option>
+          <option value="member">{t("roleMember")}</option>
+          <option value="admin">{t("roleAdmin")}</option>
         </select>
       </label>
       <button
@@ -66,7 +68,7 @@ export function AddMemberForm() {
         disabled={pending}
         className="rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90 disabled:cursor-not-allowed disabled:opacity-50 sm:self-stretch"
       >
-        {pending ? "Adding…" : "Add member"}
+        {pending ? t("adding") : t("addMember")}
       </button>
       {message && (
         <p
