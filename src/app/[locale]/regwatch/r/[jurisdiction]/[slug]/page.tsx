@@ -16,6 +16,7 @@ import { RegulationRow } from "@/components/regwatch/RegulationRow";
 import { RegwatchChatWidget } from "@/components/regwatch/chat/RegwatchChatWidget";
 import { RegulationTabsClient } from "@/components/regwatch/regulation/RegulationTabsClient";
 import { getOriginalCaptureStatus } from "@/lib/regwatch/regulation-original-actions";
+import { sanitizeCorpusHtml } from "@/lib/regwatch/sanitize-corpus-html";
 
 interface Props {
   params: Promise<{ jurisdiction: string; slug: string }>;
@@ -127,7 +128,7 @@ export default async function RegulationDetailPage({ params }: Props) {
                   {item.body_html ? (
                     <div
                       className="mt-8 leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: item.body_html }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeCorpusHtml(item.body_html) }}
                     />
                   ) : item.body_text ? (
                     <p className="mt-8 whitespace-pre-line">{item.body_text}</p>
