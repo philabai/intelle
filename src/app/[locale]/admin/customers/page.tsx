@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useFormatter } from "next-intl";
 import { Button } from "@/components/ui/Button";
 
 type Customer = {
@@ -13,6 +14,7 @@ type Customer = {
 };
 
 export default function CustomersListPage() {
+  const format = useFormatter();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -58,11 +60,11 @@ export default function CustomersListPage() {
                   <td className="px-4 py-3 text-muted">{c.email}</td>
                   <td className="px-4 py-3 text-muted text-xs">{c.company || "—"}</td>
                   <td className="px-4 py-3 text-muted text-xs">
-                    {new Date(c.created_at).toLocaleDateString()}
+                    {format.dateTime(new Date(c.created_at), { dateStyle: "medium" })}
                   </td>
                   <td className="px-4 py-3 text-muted text-xs">
                     {c.last_sign_in_at
-                      ? new Date(c.last_sign_in_at).toLocaleDateString()
+                      ? format.dateTime(new Date(c.last_sign_in_at), { dateStyle: "medium" })
                       : "Never"}
                   </td>
                 </tr>

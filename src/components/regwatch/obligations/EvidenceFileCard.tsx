@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import {
   rerunEvidenceAnalysis,
   deleteEvidence,
@@ -47,6 +47,7 @@ export function EvidenceFileCard({
   onChanged,
 }: Props) {
   const t = useTranslations("regwatch.comply");
+  const format = useFormatter();
   const STATUS_COPY: Record<EvidenceFileRecord["analysisStatus"], string> = {
     pending: t("evStatusPending"),
     processing: t("evStatusProcessing"),
@@ -155,7 +156,12 @@ export function EvidenceFileCard({
             {file.fileName}
           </p>
           <p className="mt-0.5 text-[11px] text-muted">
-            {t("uploadedAt", { date: new Date(file.uploadedAt).toLocaleString() })}
+            {t("uploadedAt", {
+              date: format.dateTime(new Date(file.uploadedAt), {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }),
+            })}
             {file.uploadedByName || file.uploadedByEmail
               ? ` ${t("uploadedBy", { name: file.uploadedByName ?? file.uploadedByEmail ?? "" })}`
               : ""}

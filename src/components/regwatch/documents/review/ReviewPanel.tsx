@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { formatDistanceToNowStrict } from "date-fns";
 import {
   TRANSITIONS,
   canTransition,
@@ -88,6 +87,7 @@ export function ReviewPanel({
   staleCitations,
 }: Props) {
   const t = useTranslations("regwatch.documents");
+  const format = useFormatter();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [dialogOpen, setDialogOpen] = useState<{
@@ -314,11 +314,12 @@ export function ReviewPanel({
                 </div>
                 <span
                   className="shrink-0 text-[10px] text-muted"
-                  title={new Date(s.signedAt).toLocaleString()}
-                >
-                  {formatDistanceToNowStrict(new Date(s.signedAt), {
-                    addSuffix: true,
+                  title={format.dateTime(new Date(s.signedAt), {
+                    dateStyle: "medium",
+                    timeStyle: "short",
                   })}
+                >
+                  {format.relativeTime(new Date(s.signedAt))}
                 </span>
               </li>
             ))}
@@ -358,11 +359,12 @@ export function ReviewPanel({
                       </p>
                       <span
                         className="text-[10px] text-muted"
-                        title={new Date(e.occurredAt).toLocaleString()}
-                      >
-                        {formatDistanceToNowStrict(new Date(e.occurredAt), {
-                          addSuffix: true,
+                        title={format.dateTime(new Date(e.occurredAt), {
+                          dateStyle: "medium",
+                          timeStyle: "short",
                         })}
+                      >
+                        {format.relativeTime(new Date(e.occurredAt))}
                       </span>
                     </div>
                     {reason && (

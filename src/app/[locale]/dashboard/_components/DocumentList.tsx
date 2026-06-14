@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useFormatter } from "next-intl";
 import type { EngagementDocument } from "@/lib/types";
 
 function formatBytes(bytes: number | null) {
@@ -21,6 +22,7 @@ export function DocumentList({
   canManage: boolean;
   onChange?: () => void;
 }) {
+  const format = useFormatter();
   const [downloading, setDownloading] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
 
@@ -93,7 +95,7 @@ export function DocumentList({
                 {formatBytes(d.file_size)}
               </td>
               <td className="px-4 py-3 text-muted text-xs">
-                {new Date(d.created_at).toLocaleDateString()}
+                {format.dateTime(new Date(d.created_at), { dateStyle: "medium" })}
               </td>
               <td className="px-4 py-3">
                 <div className="flex items-center gap-2">

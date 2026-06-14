@@ -1,8 +1,7 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { formatDistanceToNowStrict } from "date-fns";
 import type { StaleCitation } from "@/lib/regwatch/internal-document-citations";
 
 interface Props {
@@ -19,6 +18,7 @@ interface Props {
  */
 export function CitationReviewQueue({ stale }: Props) {
   const t = useTranslations("regwatch.documents");
+  const format = useFormatter();
   if (stale.length === 0) {
     return (
       <div className="rounded-md border border-card-border bg-background/40 p-3 text-[11px] text-muted">
@@ -61,10 +61,13 @@ export function CitationReviewQueue({ stale }: Props) {
               {s.pinnedVersion ? (
                 <>
                   {t("pinnedToPrefix")}{" "}
-                  <span title={new Date(s.pinnedVersion).toLocaleString()}>
-                    {formatDistanceToNowStrict(new Date(s.pinnedVersion), {
-                      addSuffix: true,
+                  <span
+                    title={format.dateTime(new Date(s.pinnedVersion), {
+                      dateStyle: "medium",
+                      timeStyle: "short",
                     })}
+                  >
+                    {format.relativeTime(new Date(s.pinnedVersion))}
                   </span>
                 </>
               ) : (
@@ -75,11 +78,12 @@ export function CitationReviewQueue({ stale }: Props) {
                   {` · ${t("currentPrefix")}: `}
                   <span
                     className="text-amber-300"
-                    title={new Date(s.currentVersion).toLocaleString()}
-                  >
-                    {formatDistanceToNowStrict(new Date(s.currentVersion), {
-                      addSuffix: true,
+                    title={format.dateTime(new Date(s.currentVersion), {
+                      dateStyle: "medium",
+                      timeStyle: "short",
                     })}
+                  >
+                    {format.relativeTime(new Date(s.currentVersion))}
                   </span>
                 </>
               )}

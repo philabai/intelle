@@ -1,8 +1,7 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
-import { formatDistanceToNowStrict, format } from "date-fns";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { checkFeatureGate } from "@/lib/regwatch/tier";
 import { getMyMembership, listAssigneeOptions } from "@/lib/regwatch/members";
@@ -50,6 +49,7 @@ const REVIEW_BG: Record<string, string> = {
 
 export default async function ObligationDetailPage({ params }: Props) {
   const t = await getTranslations("regwatch.comply");
+  const formatter = await getFormatter();
   const { id } = await params;
   const supabase = await createClient();
   const {
@@ -140,7 +140,7 @@ export default async function ObligationDetailPage({ params }: Props) {
             </span>
             {obligation.adminSignedOffAt && (
               <span className="text-muted">
-                · {t("signedOff", { date: format(new Date(obligation.adminSignedOffAt), "PP") })}
+                · {t("signedOff", { date: formatter.dateTime(new Date(obligation.adminSignedOffAt), { dateStyle: "medium" }) })}
               </span>
             )}
           </div>
@@ -239,9 +239,7 @@ export default async function ObligationDetailPage({ params }: Props) {
                         </span>
                         <span className="text-muted">·</span>
                         <span className="text-muted">
-                          {formatDistanceToNowStrict(new Date(h.createdAt), {
-                            addSuffix: true,
-                          })}
+                          {formatter.relativeTime(new Date(h.createdAt))}
                         </span>
                       </div>
                       {h.notes && (
@@ -326,9 +324,9 @@ export default async function ObligationDetailPage({ params }: Props) {
                   <dt className="text-muted">{t("attestedUntil")}</dt>
                   <dd className="text-foreground">
                     {obligation.complianceAttestedUntil
-                      ? format(
+                      ? formatter.dateTime(
                           new Date(obligation.complianceAttestedUntil),
-                          "PP",
+                          { dateStyle: "medium" },
                         )
                       : "—"}
                   </dd>
@@ -337,20 +335,20 @@ export default async function ObligationDetailPage({ params }: Props) {
                   <dt className="text-muted">{t("reviewDue")}</dt>
                   <dd className="text-foreground">
                     {obligation.reviewDueAt
-                      ? format(new Date(obligation.reviewDueAt), "PP")
+                      ? formatter.dateTime(new Date(obligation.reviewDueAt), { dateStyle: "medium" })
                       : "—"}
                   </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-muted">{t("created")}</dt>
                   <dd className="text-foreground">
-                    {format(new Date(obligation.createdAt), "PP")}
+                    {formatter.dateTime(new Date(obligation.createdAt), { dateStyle: "medium" })}
                   </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-muted">{t("updated")}</dt>
                   <dd className="text-foreground">
-                    {format(new Date(obligation.updatedAt), "PP")}
+                    {formatter.dateTime(new Date(obligation.updatedAt), { dateStyle: "medium" })}
                   </dd>
                 </div>
               </dl>

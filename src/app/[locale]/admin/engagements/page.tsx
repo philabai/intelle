@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useFormatter } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import { serviceLabel } from "@/lib/services/lookup";
@@ -16,6 +17,7 @@ const statusColors: Record<string, string> = {
 type Customer = { id: string; email: string | null; full_name: string | null };
 
 export default function EngagementsListPage() {
+  const format = useFormatter();
   const [engagements, setEngagements] = useState<Engagement[]>([]);
   const [customers, setCustomers] = useState<Record<string, Customer>>({});
   const [loading, setLoading] = useState(true);
@@ -79,7 +81,9 @@ export default function EngagementsListPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-muted text-xs">
-                      {e.started_at ? new Date(e.started_at).toLocaleDateString() : "—"}
+                      {e.started_at
+                        ? format.dateTime(new Date(e.started_at), { dateStyle: "medium" })
+                        : "—"}
                     </td>
                     <td className="px-4 py-3">
                       <Link

@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { formatDistanceToNowStrict } from "date-fns";
 import {
   addComment,
   replyToComment,
@@ -316,6 +315,7 @@ function CommentRow({
 }: {
   node: CommentThread["root"] | CommentThread["replies"][number];
 }) {
+  const format = useFormatter();
   return (
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -324,11 +324,12 @@ function CommentRow({
         </p>
         <span
           className="text-[10px] text-muted"
-          title={new Date(node.createdAt).toLocaleString()}
-        >
-          {formatDistanceToNowStrict(new Date(node.createdAt), {
-            addSuffix: true,
+          title={format.dateTime(new Date(node.createdAt), {
+            dateStyle: "medium",
+            timeStyle: "short",
           })}
+        >
+          {format.relativeTime(new Date(node.createdAt))}
         </span>
       </div>
       <p className="mt-0.5 whitespace-pre-wrap break-words text-xs text-foreground/90">

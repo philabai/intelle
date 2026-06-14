@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
-import { formatDistanceToNowStrict } from "date-fns";
+import { useTranslations, useFormatter } from "next-intl";
 import {
   updateMemberRole,
   removeMember,
@@ -22,6 +21,7 @@ const ROLE_OPTIONS: { value: AdminRole; labelKey: string }[] = [
 
 export function MembersTable({ members, callerCanManage }: Props) {
   const t = useTranslations("regwatch.members");
+  const format = useFormatter();
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
@@ -134,9 +134,7 @@ export function MembersTable({ members, callerCanManage }: Props) {
                   </p>
                 )}
                 <p className="text-[11px] text-muted">
-                  {formatDistanceToNowStrict(new Date(m.createdAt), {
-                    addSuffix: true,
-                  })}
+                  {format.relativeTime(new Date(m.createdAt))}
                 </p>
                 <div className="text-end">
                   {callerCanManage && !m.isMe && (

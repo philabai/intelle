@@ -1,8 +1,6 @@
-import { useTranslations } from "next-intl";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
-import { formatDistanceToNowStrict } from "date-fns";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { getReviewerInbox, type InboxItem } from "@/lib/regwatch/reviewer-inbox";
@@ -70,7 +68,7 @@ export default async function ReviewerInboxPage() {
   );
 }
 
-function Section({
+async function Section({
   title,
   subtitle,
   items,
@@ -81,7 +79,8 @@ function Section({
   items: InboxItem[];
   emptyLabel: string;
 }) {
-  const t = useTranslations("regwatch.comply");
+  const t = await getTranslations("regwatch.comply");
+  const format = await getFormatter();
   return (
     <section>
       <div className="mb-3 flex items-baseline justify-between gap-2">
@@ -116,15 +115,13 @@ function Section({
                 <p className="mt-0.5 text-[11px] text-muted">{item.subtitle}</p>
                 <p className="mt-0.5 text-[10px] text-muted">
                   {t("inboxAssignedPrefix")}{" "}
-                  {formatDistanceToNowStrict(new Date(item.assignedAt), {
-                    addSuffix: true,
-                  })}
+                  {format.relativeTime(new Date(item.assignedAt))}
                   {item.dueAt && (
                     <>
                       {" · "}
                       {t("inboxDuePrefix")}{" "}
                       <span className="text-amber-300">
-                        {new Date(item.dueAt).toLocaleDateString()}
+                        {format.dateTime(new Date(item.dueAt), { dateStyle: "medium" })}
                       </span>
                     </>
                   )}

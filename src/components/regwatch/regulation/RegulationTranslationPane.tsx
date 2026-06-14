@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
-import { formatDistanceToNowStrict } from "date-fns";
+import { useTranslations, useFormatter } from "next-intl";
 
 interface Props {
   regId: string;
@@ -40,6 +39,7 @@ const EXPECTED_DURATION_MS = 45_000;
  */
 export function RegulationTranslationPane({ regId, sourceLang }: Props) {
   const t = useTranslations("regwatch.discover");
+  const format = useFormatter();
   const [state, setState] = useState<StatusBundle>({ status: "not_started" });
   const [elapsedMs, setElapsedMs] = useState(0);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -187,9 +187,7 @@ export function RegulationTranslationPane({ regId, sourceLang }: Props) {
               {state.translatedAt && (
                 <>
                   {t("translateCachedPrefix")}
-                  {formatDistanceToNowStrict(new Date(state.translatedAt), {
-                    addSuffix: true,
-                  })}
+                  {format.relativeTime(new Date(state.translatedAt))}
                 </>
               )}
             </p>

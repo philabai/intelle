@@ -1,6 +1,5 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { formatDistanceToNowStrict } from "date-fns";
 import { createServiceClient } from "@/lib/regwatch/supabase/service";
 import {
   DOCUMENT_KIND_LABEL,
@@ -29,6 +28,7 @@ const REVIEW_STATE_TONE: Record<InternalDocumentReviewState, string> = {
 export async function DocCard({ doc }: Props) {
   const t = await getTranslations("regwatch.documents");
   const ts = await getTranslations("regwatch.docState");
+  const format = await getFormatter();
   const stateLabel = ts(`state_${doc.reviewState}`);
   // Body_doc isn't on the list item shape — fetch it separately. The card
   // is server-rendered so this is cheap and goes through the service
@@ -101,10 +101,13 @@ export async function DocCard({ doc }: Props) {
               {doc.ownerName ?? doc.ownerEmail ?? "—"}
             </span>
           </div>
-          <span title={new Date(doc.updatedAt).toLocaleString()}>
-            {formatDistanceToNowStrict(new Date(doc.updatedAt), {
-              addSuffix: true,
+          <span
+            title={format.dateTime(new Date(doc.updatedAt), {
+              dateStyle: "medium",
+              timeStyle: "short",
             })}
+          >
+            {format.relativeTime(new Date(doc.updatedAt))}
           </span>
         </div>
 

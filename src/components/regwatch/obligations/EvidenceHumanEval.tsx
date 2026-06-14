@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import {
   saveEvidenceEvaluation,
@@ -23,6 +23,7 @@ interface Props {
  */
 export function EvidenceHumanEval({ obligationId, evidenceFileId, evaluation, canManage }: Props) {
   const t = useTranslations("regwatch.comply");
+  const format = useFormatter();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(evaluation?.text ?? "");
@@ -116,7 +117,11 @@ export function EvidenceHumanEval({ obligationId, evidenceFileId, evaluation, ca
         </div>
         <p className="mt-1.5 whitespace-pre-wrap text-xs text-foreground/90">{evaluation.text}</p>
         <p className="mt-1.5 text-[10px] text-muted">
-          — {evaluation.by_name}, {new Date(evaluation.at).toLocaleString()}
+          — {evaluation.by_name},{" "}
+          {format.dateTime(new Date(evaluation.at), {
+            dateStyle: "medium",
+            timeStyle: "short",
+          })}
         </p>
       </div>
     );

@@ -1,8 +1,7 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
-import { formatDistanceToNowStrict } from "date-fns";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { checkFeatureGate } from "@/lib/regwatch/tier";
 import { getMyOrganization } from "@/lib/regwatch/footprint";
@@ -46,6 +45,7 @@ const REVIEW_BG: Record<string, string> = {
 
 export default async function AssetDetailPage({ params }: Props) {
   const t = await getTranslations("regwatch.comply");
+  const format = await getFormatter();
   const { id } = await params;
   const supabase = await createClient();
   const {
@@ -293,26 +293,20 @@ export default async function AssetDetailPage({ params }: Props) {
                 <div className="flex justify-between">
                   <dt className="text-muted">{t("created")}</dt>
                   <dd className="text-foreground">
-                    {formatDistanceToNowStrict(new Date(asset.createdAt), {
-                      addSuffix: true,
-                    })}
+                    {format.relativeTime(new Date(asset.createdAt))}
                   </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-muted">{t("updated")}</dt>
                   <dd className="text-foreground">
-                    {formatDistanceToNowStrict(new Date(asset.updatedAt), {
-                      addSuffix: true,
-                    })}
+                    {format.relativeTime(new Date(asset.updatedAt))}
                   </dd>
                 </div>
                 {asset.archivedAt && (
                   <div className="flex justify-between">
                     <dt className="text-muted">{t("archived")}</dt>
                     <dd className="text-amber-300">
-                      {formatDistanceToNowStrict(new Date(asset.archivedAt), {
-                        addSuffix: true,
-                      })}
+                      {format.relativeTime(new Date(asset.archivedAt))}
                     </dd>
                   </div>
                 )}

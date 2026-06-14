@@ -1,7 +1,6 @@
 import { Link } from "@/i18n/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { formatDistanceToNowStrict } from "date-fns";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { getBriefing } from "@/lib/regwatch/briefing-queries";
@@ -34,6 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BriefingDetailPage({ params }: Props) {
   const { id } = await params;
   const t = await getTranslations("regwatch.widgets");
+  const format = await getFormatter();
   const briefing = await getBriefing(id);
   if (!briefing) notFound();
 
@@ -55,9 +55,7 @@ export default async function BriefingDetailPage({ params }: Props) {
     );
   }
 
-  const generatedAgo = formatDistanceToNowStrict(new Date(briefing.generated_at), {
-    addSuffix: true,
-  });
+  const generatedAgo = format.relativeTime(new Date(briefing.generated_at));
 
   return (
     <RegwatchAppShell authed={!!user} suppressChatWidget>

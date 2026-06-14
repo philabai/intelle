@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useRouter } from "@/i18n/navigation";
-import { formatDistanceToNowStrict } from "date-fns";
 import type { FeedItem } from "@/lib/regwatch/feed-queries";
 import { markSeen, markResolved, undoResolved } from "@/lib/regwatch/feed-actions";
 import { generateBriefing } from "@/lib/regwatch/briefing-actions";
@@ -26,6 +25,7 @@ interface Props {
 
 export function FeedRow({ feedItem: f, assigneeOptions = [] }: Props) {
   const t = useTranslations("regwatch.monitor");
+  const format = useFormatter();
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const [seenAt, setSeenAt] = useState(f.seen_at);
@@ -35,14 +35,12 @@ export function FeedRow({ feedItem: f, assigneeOptions = [] }: Props) {
   const [, startTransition] = useTransition();
 
   const href = `/regwatch/r/${f.item.jurisdiction_code.toLowerCase()}/${f.item.slug}`;
-  const changedAgo = formatDistanceToNowStrict(new Date(f.item.last_changed_at), {
-    addSuffix: false,
-  });
+  const changedAgo = format.relativeTime(new Date(f.item.last_changed_at));
   const isUnseen = !seenAt && !resolvedAt;
 
   const deadline = f.item.consultation_closes_at ?? f.item.effective_date;
   const deadlineLabel = deadline
-    ? new Date(deadline).toLocaleDateString("en-GB", {
+    ? format.dateTime(new Date(deadline), {
         day: "2-digit",
         month: "short",
         year: "numeric",
@@ -149,7 +147,7 @@ export function FeedRow({ feedItem: f, assigneeOptions = [] }: Props) {
           )}
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1 text-end text-[11px] text-muted">
-          <span>{t("changedAgo", { time: changedAgo })}</span>
+          <span>{changedAgo}</span>
           {deadlineLabel && (
             <span className="text-foreground/80">
               {deadlineKind === "consultation"

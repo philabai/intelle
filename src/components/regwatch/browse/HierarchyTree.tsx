@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { SectionNode } from "@/lib/regwatch/regulatory-sections";
 import { loadSectionChildren } from "@/lib/regwatch/section-children-actions";
@@ -144,6 +144,7 @@ function TreeRow({
   onToggle,
 }: RowProps) {
   const t = useTranslations("regwatch.discover");
+  const format = useFormatter();
   const open = openIds.has(node.id);
   const loading = loadingIds.has(node.id);
   // childCount is denormalised, so a Part shows an expand arrow even before its
@@ -228,7 +229,9 @@ function TreeRow({
             node.hasUpdates30d
               ? node.lastChangedAt
                 ? t("treeUpdatedWithLastChange", {
-                    date: new Date(node.lastChangedAt).toLocaleDateString(),
+                    date: format.dateTime(new Date(node.lastChangedAt), {
+                      dateStyle: "medium",
+                    }),
                   })
                 : t("treeUpdatedRecently")
               : t("treeNoUpdates")

@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { getTranslations, getFormatter } from "next-intl/server";
 import type { Article, ArticlePillar } from "@/lib/types";
 import { PILLARS } from "@/lib/content/pillars";
 import { SITE } from "@/lib/constants";
@@ -27,8 +27,9 @@ function splitTitle(title: string): { first: string; second: string | null } {
   return { first: title, second: null };
 }
 
-export function HeroCard({ article }: { article: Article }) {
-  const t = useTranslations("insightsUi");
+export async function HeroCard({ article }: { article: Article }) {
+  const t = await getTranslations("insightsUi");
+  const format = await getFormatter();
   const eyebrow = article.pillar
     ? t(PILLAR_EYEBROW_KEY[article.pillar])
     : article.category.replace("-", " ").toUpperCase();
@@ -65,7 +66,7 @@ export function HeroCard({ article }: { article: Article }) {
         <span>
           {t("bylineMeta", {
             siteName: SITE.name,
-            date: date.toLocaleDateString("en-GB", { month: "long", year: "numeric" }),
+            date: format.dateTime(date, { month: "long", year: "numeric" }),
             year,
           })}
         </span>

@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -38,9 +38,11 @@ const JURISDICTION_NAMES: Record<string, string> = {
 };
 const jName = (c: string) => JURISDICTION_NAMES[c] ?? c;
 
-function fmtDate(s: string | null): string {
+type Formatter = Awaited<ReturnType<typeof getFormatter>>;
+
+function fmtDate(format: Formatter, s: string | null): string {
   if (!s) return "";
-  return new Date(s).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+  return format.dateTime(new Date(s), { day: "2-digit", month: "short" });
 }
 
 const SEV_STYLE: Record<string, string> = {
@@ -52,12 +54,13 @@ const SEV_STYLE: Record<string, string> = {
 
 export default async function RecapPage() {
   const t = await getTranslations("regwatch.monitor");
+  const format = await getFormatter();
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const weekOf = new Date().toLocaleDateString("en-GB", {
+  const weekOf = format.dateTime(new Date(), {
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -308,8 +311,9 @@ function Stat({ label, value, accent }: { label: string; value: number; accent?:
   );
 }
 
-function FeedList({ items, empty, showDeadline }: { items: FeedItem[]; empty: string; showDeadline?: boolean }) {
-  const t = useTranslations("regwatch.monitor");
+async function FeedList({ items, empty, showDeadline }: { items: FeedItem[]; empty: string; showDeadline?: boolean }) {
+  const t = await getTranslations("regwatch.monitor");
+  const format = await getFormatter();
   if (items.length === 0) {
     return empty ? <p className="text-sm text-muted">{empty}</p> : null;
   }
@@ -334,8 +338,8 @@ function FeedList({ items, empty, showDeadline }: { items: FeedItem[]; empty: st
             </div>
             <span className="shrink-0 text-[11px] text-muted">
               {showDeadline && dl
-                ? t("dueDate", { date: fmtDate(dl) })
-                : t("changedDate", { date: fmtDate(f.item.last_changed_at) })}
+                ? t("dueDate", { date: fmtDate(format, dl) })
+                : t("changedDate", { date: fmtDate(format, f.item.last_changed_at) })}
             </span>
           </Link>
         );
@@ -344,8 +348,9 @@ function FeedList({ items, empty, showDeadline }: { items: FeedItem[]; empty: st
   );
 }
 
-function CorpusList({ items }: { items: RecapItem[] }) {
-  const t = useTranslations("regwatch.monitor");
+async function CorpusList({ items }: { items: RecapItem[] }) {
+  const t = await getTranslations("regwatch.monitor");
+  const format = await getFormatter();
   if (items.length === 0) return <p className="text-sm text-muted">{t("noCorpusChanges")}</p>;
   return (
     <div className="overflow-hidden rounded-xl border border-card-border bg-background">
@@ -361,7 +366,7 @@ function CorpusList({ items }: { items: RecapItem[] }) {
               {r.jurisdiction_code} · {r.regulator_name} · {r.citation}
             </p>
           </div>
-          <span className="shrink-0 text-[11px] text-muted">{fmtDate(r.last_changed_at)}</span>
+          <span className="shrink-0 text-[11px] text-muted">{fmtDate(format, r.last_changed_at)}</span>
         </Link>
       ))}
     </div>

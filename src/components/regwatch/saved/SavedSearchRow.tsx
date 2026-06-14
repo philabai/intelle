@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useRouter } from "@/i18n/navigation";
-import { formatDistanceToNowStrict } from "date-fns";
 import {
   deleteSavedSearch,
   renameSavedSearch,
@@ -38,6 +37,7 @@ export function SavedSearchRow({
   createdAt,
 }: Props) {
   const t = useTranslations("regwatch.monitor");
+  const format = useFormatter();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [renaming, setRenaming] = useState(false);
@@ -129,9 +129,7 @@ export function SavedSearchRow({
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <div className="text-[10px] text-muted">
           {t("savedAt", {
-            time: formatDistanceToNowStrict(new Date(createdAt), {
-              addSuffix: true,
-            }),
+            time: format.relativeTime(new Date(createdAt)),
           })}
           {resultCountAtSave !== null && (
             <> · {t("matchesAtSave", { count: resultCountAtSave })}</>

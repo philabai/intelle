@@ -1,8 +1,7 @@
 import { useTranslations } from "next-intl";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
-import { formatDistanceToNowStrict } from "date-fns";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import {
@@ -36,6 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function RegulationDetailPage({ params }: Props) {
   const t = await getTranslations("regwatch.discover");
+  const format = await getFormatter();
   const { jurisdiction, slug } = await params;
   const item = await getRegulation(jurisdiction, slug);
   if (!item) notFound();
@@ -53,9 +53,7 @@ export default async function RegulationDetailPage({ params }: Props) {
     getOriginalCaptureStatus(item.id),
   ]);
 
-  const changedAgo = formatDistanceToNowStrict(new Date(item.last_changed_at), {
-    addSuffix: true,
-  });
+  const changedAgo = format.relativeTime(new Date(item.last_changed_at));
 
   return (
     <RegwatchAppShell authed={!!user} suppressChatWidget>
@@ -221,21 +219,28 @@ export default async function RegulationDetailPage({ params }: Props) {
   );
 }
 
-function formatDate(value: string | null | undefined, fmt: "long" | "short" = "long"): string {
+type Formatter = Awaited<ReturnType<typeof getFormatter>>;
+
+function formatDate(
+  format: Formatter,
+  value: string | null | undefined,
+  fmt: "long" | "short" = "long",
+): string {
   if (!value) return "—";
-  return new Date(value).toLocaleDateString("en-GB", {
+  return format.dateTime(new Date(value), {
     day: "2-digit",
     month: fmt === "long" ? "long" : "short",
     year: "numeric",
   });
 }
 
-function MetadataPanel({
+async function MetadataPanel({
   item,
 }: {
   item: Awaited<ReturnType<typeof getRegulation>> & object;
 }) {
-  const t = useTranslations("regwatch.discover");
+  const t = await getTranslations("regwatch.discover");
+  const format = await getFormatter();
   return (
     <div className="rounded-lg border border-card-border bg-card-bg p-4">
       <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
@@ -246,19 +251,19 @@ function MetadataPanel({
         <MetaRow label={t("metaInstrumentType")} value={<InstrumentTypeBadge value={item.instrument_type} />} />
         <MetaRow label={t("metaStatus")} value={<StatusChip status={item.status} />} />
         {item.effective_date && (
-          <MetaRow label={t("metaEffectiveDate")} value={formatDate(item.effective_date)} />
+          <MetaRow label={t("metaEffectiveDate")} value={formatDate(format, item.effective_date)} />
         )}
         {item.proposed_date && (
-          <MetaRow label={t("metaProposedDate")} value={formatDate(item.proposed_date)} />
+          <MetaRow label={t("metaProposedDate")} value={formatDate(format, item.proposed_date)} />
         )}
         {item.consultation_closes_at && (
           <MetaRow
             label={t("metaConsultationCloses")}
-            value={formatDate(item.consultation_closes_at)}
+            value={formatDate(format, item.consultation_closes_at)}
           />
         )}
-        <MetaRow label={t("metaPublished")} value={formatDate(item.published_at)} />
-        <MetaRow label={t("metaLastChanged")} value={formatDate(item.last_changed_at)} />
+        <MetaRow label={t("metaPublished")} value={formatDate(format, item.published_at)} />
+        <MetaRow label={t("metaLastChanged")} value={formatDate(format, item.last_changed_at)} />
       </dl>
     </div>
   );
@@ -310,12 +315,13 @@ function RegulatorCard({
   );
 }
 
-function LifecycleStrip({
+async function LifecycleStrip({
   item,
 }: {
   item: Awaited<ReturnType<typeof getRegulation>> & object;
 }) {
-  const t = useTranslations("regwatch.discover");
+  const t = await getTranslations("regwatch.discover");
+  const format = await getFormatter();
   // Render a horizontal strip showing the four lifecycle anchors that exist.
   const stages: { label: string; date: string | null }[] = [
     { label: t("lifecycleProposed"), date: item.proposed_date },
@@ -336,7 +342,7 @@ function LifecycleStrip({
               {s.label}
             </span>
             <time className="text-sm font-medium text-foreground">
-              {formatDate(s.date, "short")}
+              {formatDate(format, s.date, "short")}
             </time>
           </li>
         ))}

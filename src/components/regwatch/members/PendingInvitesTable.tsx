@@ -1,8 +1,7 @@
 "use client";
 
 import { useTransition, useState } from "react";
-import { useTranslations } from "next-intl";
-import { formatDistanceToNowStrict } from "date-fns";
+import { useTranslations, useFormatter } from "next-intl";
 import { resendInvite, revokeInvite } from "@/lib/regwatch/members-actions";
 import type { PendingInvite } from "@/lib/regwatch/members";
 
@@ -45,13 +44,12 @@ function PendingInviteRow({
   callerCanManage: boolean;
 }) {
   const t = useTranslations("regwatch.chips");
+  const format = useFormatter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [action, setAction] = useState<"resend" | "revoke" | null>(null);
 
-  const sentAgo = formatDistanceToNowStrict(new Date(invite.createdAt), {
-    addSuffix: true,
-  });
+  const sentAgo = format.relativeTime(new Date(invite.createdAt));
 
   function handle(kind: "resend" | "revoke") {
     setMessage(null);

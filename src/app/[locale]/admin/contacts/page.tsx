@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useFormatter } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import type { ContactSubmission } from "@/lib/types";
 
 export default function ContactsPage() {
+  const format = useFormatter();
   const [contacts, setContacts] = useState<ContactSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
@@ -53,7 +55,7 @@ export default function ContactsPage() {
                     <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[contact.status]}`}>{contact.status}</span>
                   </div>
                   <p className="text-sm text-muted">{contact.email} {contact.company && `| ${contact.company}`}</p>
-                  <p className="text-xs text-muted/60 mt-1">{new Date(contact.created_at).toLocaleString()}</p>
+                  <p className="text-xs text-muted/60 mt-1">{format.dateTime(new Date(contact.created_at), { dateStyle: "medium", timeStyle: "short" })}</p>
                 </div>
                 <svg className={`w-5 h-5 text-muted transition-transform ${selected === contact.id ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

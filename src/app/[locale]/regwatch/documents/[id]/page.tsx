@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
@@ -40,6 +40,7 @@ export const dynamic = "force-dynamic";
 
 export default async function DocumentDetailPage({ params }: Props) {
   const t = await getTranslations("regwatch.documents");
+  const format = await getFormatter();
   const { id } = await params;
   const supabase = await createClient();
   const {
@@ -332,13 +333,13 @@ export default async function DocumentDetailPage({ params }: Props) {
                 <div className="flex justify-between">
                   <dt className="text-muted">{t("lifecycleCreated")}</dt>
                   <dd className="text-foreground">
-                    {new Date(doc.createdAt).toLocaleDateString()}
+                    {format.dateTime(new Date(doc.createdAt), { dateStyle: "medium" })}
                   </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-muted">{t("lifecycleUpdated")}</dt>
                   <dd className="text-foreground">
-                    {new Date(doc.updatedAt).toLocaleDateString()}
+                    {format.dateTime(new Date(doc.updatedAt), { dateStyle: "medium" })}
                   </dd>
                 </div>
               </dl>

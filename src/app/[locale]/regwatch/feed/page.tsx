@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { getMyFootprint, getMyOrganization } from "@/lib/regwatch/footprint";
@@ -41,6 +41,7 @@ const VALID_SEVERITIES: Severity[] = ["critical", "high", "normal", "low"];
 
 export default async function FeedPage({ searchParams }: Props) {
   const t = await getTranslations("regwatch.monitor");
+  const format = await getFormatter();
   const raw = await searchParams;
   const sort = (pick(raw, "sort") as FeedSort) ?? "score";
   const severity = (pick(raw, "severity") as Severity) ?? undefined;
@@ -83,7 +84,7 @@ export default async function FeedPage({ searchParams }: Props) {
     ]);
 
   const hasFootprint = !!footprint?.is_configured;
-  const today = new Date().toLocaleDateString("en-GB", {
+  const today = format.dateTime(new Date(), {
     weekday: "long",
     day: "2-digit",
     month: "long",

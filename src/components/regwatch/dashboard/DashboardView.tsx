@@ -1,7 +1,9 @@
 import { useTranslations } from "next-intl";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { formatDistanceToNowStrict } from "date-fns";
 import type { DashboardData } from "@/lib/regwatch/dashboard-queries";
+
+type Formatter = Awaited<ReturnType<typeof getFormatter>>;
 import { Card, Stat, RowLink, SetupState, StackedBar } from "./parts";
 
 type CardKey =
@@ -36,10 +38,10 @@ const ASSET_LEVEL_KEY: Record<number, string> = {
   6: "levelComponent",
 };
 
-function ago(iso: string | null): string {
+function ago(format: Formatter, iso: string | null): string {
   if (!iso) return "";
   try {
-    return formatDistanceToNowStrict(new Date(iso), { addSuffix: true });
+    return format.relativeTime(new Date(iso));
   } catch {
     return "";
   }
@@ -153,8 +155,9 @@ function FocusCallout({ data }: { data: DashboardData }) {
   );
 }
 
-function MyQueue({ data }: { data: DashboardData }) {
-  const t = useTranslations("regwatch.dashboard");
+async function MyQueue({ data }: { data: DashboardData }) {
+  const t = await getTranslations("regwatch.dashboard");
+  const format = await getFormatter();
   const items = [...data.inbox.obligationReviews, ...data.inbox.docReviews].slice(0, 6);
   return (
     <Card title={t("myQueue")} href="/regwatch/comply/inbox" accent="violet">
@@ -167,7 +170,7 @@ function MyQueue({ data }: { data: DashboardData }) {
               key={`${it.kind}-${it.id}`}
               href={it.href}
               title={it.title}
-              meta={it.dueAt ? t("dueMeta", { time: ago(it.dueAt) }) : undefined}
+              meta={it.dueAt ? t("dueMeta", { time: ago(format, it.dueAt) }) : undefined}
               pill={it.kind === "doc-review" ? t("pillDoc") : t("pillObligation")}
               pillTone={it.kind === "doc-review" ? "good" : "warn"}
             />
@@ -290,8 +293,9 @@ function RegulationsCard({ data }: { data: DashboardData }) {
   );
 }
 
-function MonitorCard({ data, isFree }: { data: DashboardData; isFree: boolean }) {
-  const t = useTranslations("regwatch.dashboard");
+async function MonitorCard({ data, isFree }: { data: DashboardData; isFree: boolean }) {
+  const t = await getTranslations("regwatch.dashboard");
+  const format = await getFormatter();
   return (
     <Card
       title={t("monitor")}
@@ -331,7 +335,7 @@ function MonitorCard({ data, isFree }: { data: DashboardData; isFree: boolean })
                 key={a.matchId}
                 href={`/regwatch/r/${a.jurisdictionCode.toLowerCase()}/${a.slug}`}
                 title={a.title}
-                meta={ago(a.matchedAt)}
+                meta={ago(format, a.matchedAt)}
                 pill={a.severity}
                 pillTone={a.severity === "critical" ? "danger" : "muted"}
               />
@@ -472,8 +476,9 @@ function AssetsCard({ data, isFree }: { data: DashboardData; isFree: boolean }) 
   );
 }
 
-function DocumentsCard({ data, isFree }: { data: DashboardData; isFree: boolean }) {
-  const t = useTranslations("regwatch.dashboard");
+async function DocumentsCard({ data, isFree }: { data: DashboardData; isFree: boolean }) {
+  const t = await getTranslations("regwatch.dashboard");
+  const format = await getFormatter();
   const d = data.docs;
   return (
     <Card title={t("companyDocuments")} href="/regwatch/documents" accent="teal">
@@ -508,7 +513,7 @@ function DocumentsCard({ data, isFree }: { data: DashboardData; isFree: boolean 
                     key={doc.id}
                     href={`/regwatch/documents/${doc.id}`}
                     title={doc.title}
-                    meta={t("reviewMeta", { time: ago(doc.nextReviewDate) })}
+                    meta={t("reviewMeta", { time: ago(format, doc.nextReviewDate) })}
                     pillTone="danger"
                   />
                 ))
@@ -517,7 +522,7 @@ function DocumentsCard({ data, isFree }: { data: DashboardData; isFree: boolean 
                     key={doc.id}
                     href={`/regwatch/documents/${doc.id}`}
                     title={doc.title}
-                    meta={ago(doc.updatedAt)}
+                    meta={ago(format, doc.updatedAt)}
                     pill={doc.reviewState.replace(/[-_]/g, " ")}
                     pillTone="muted"
                   />
@@ -531,8 +536,9 @@ function DocumentsCard({ data, isFree }: { data: DashboardData; isFree: boolean 
 
 /* ──────────────────────── Activity ──────────────────────── */
 
-function RecentActivity({ data }: { data: DashboardData }) {
-  const t = useTranslations("regwatch.dashboard");
+async function RecentActivity({ data }: { data: DashboardData }) {
+  const t = await getTranslations("regwatch.dashboard");
+  const format = await getFormatter();
   if (data.activity.length === 0) return null;
   return (
     <Card title={t("recentActivity")} accent="violet">
@@ -552,7 +558,7 @@ function RecentActivity({ data }: { data: DashboardData }) {
                 {e.actor && <span className="text-muted">{e.actor} </span>}
                 {e.action} <span className="font-medium">{e.target}</span>
               </span>
-              <span className="shrink-0 text-[10px] text-muted">{ago(e.when)}</span>
+              <span className="shrink-0 text-[10px] text-muted">{ago(format, e.when)}</span>
             </Link>
           </li>
         ))}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useFormatter } from "next-intl";
 import { useParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
@@ -42,6 +43,7 @@ type Form = {
 };
 
 export default function EditArticlePage() {
+  const format = useFormatter();
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
@@ -262,7 +264,7 @@ export default function EditArticlePage() {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">LinkedIn variant</h2>
           {linkedinSentAt && (
             <p className="text-xs text-brand-teal">
-              Posted to LinkedIn at {new Date(linkedinSentAt).toLocaleString()}
+              Posted to LinkedIn at {format.dateTime(new Date(linkedinSentAt), { dateStyle: "medium", timeStyle: "short" })}
             </p>
           )}
           <UnicodeFormatHelpers
@@ -299,7 +301,7 @@ export default function EditArticlePage() {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">X (Twitter) variant</h2>
           {twitterSentAt && (
             <p className="text-xs text-brand-teal">
-              Posted to X at {new Date(twitterSentAt).toLocaleString()}
+              Posted to X at {format.dateTime(new Date(twitterSentAt), { dateStyle: "medium", timeStyle: "short" })}
             </p>
           )}
           <textarea

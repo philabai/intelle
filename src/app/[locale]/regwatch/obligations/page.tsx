@@ -1,8 +1,6 @@
-import { useTranslations } from "next-intl";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
-import { formatDistanceToNowStrict } from "date-fns";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { checkFeatureGate } from "@/lib/regwatch/tier";
 import { getMyMembership } from "@/lib/regwatch/members";
@@ -211,14 +209,15 @@ export default async function ObligationsPage({ searchParams }: Props) {
   );
 }
 
-function ObligationRow({
+async function ObligationRow({
   o,
   labels,
 }: {
   o: ObligationListItem;
   labels: Record<2 | 3 | 4 | 5 | 6, string>;
 }) {
-  const t = useTranslations("regwatch.comply");
+  const t = await getTranslations("regwatch.comply");
+  const format = await getFormatter();
   return (
     <tr className="border-b border-card-border last:border-0 hover:bg-card-bg/50">
       <td className="px-4 py-3">
@@ -287,7 +286,7 @@ function ObligationRow({
         )}
       </td>
       <td className="px-4 py-3 text-[11px] text-muted">
-        {formatDistanceToNowStrict(new Date(o.updatedAt), { addSuffix: true })}
+        {format.relativeTime(new Date(o.updatedAt))}
       </td>
     </tr>
   );

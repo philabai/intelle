@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useFormatter } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import type { Article } from "@/lib/types";
 
 export default function ArticlesPage() {
+  const format = useFormatter();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -65,9 +67,9 @@ export default function ArticlesPage() {
                   <td className="px-4 py-3 text-muted text-xs">{article.pillar ?? article.category}</td>
                   <td className="px-4 py-3 text-muted">
                     {article.published_at
-                      ? new Date(article.published_at).toLocaleDateString()
+                      ? format.dateTime(new Date(article.published_at), { dateStyle: "medium" })
                       : article.scheduled_at
-                        ? `→ ${new Date(article.scheduled_at).toLocaleDateString()}`
+                        ? `→ ${format.dateTime(new Date(article.scheduled_at), { dateStyle: "medium" })}`
                         : "-"}
                   </td>
                   <td className="px-4 py-3">

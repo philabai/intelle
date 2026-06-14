@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import { acknowledgeFinding } from "@/lib/regwatch/evidence-actions";
 import type { EvidenceFinding } from "@/lib/regwatch/evidence";
 
@@ -63,6 +63,7 @@ function FindingRow({
   onChanged?: () => void;
 }) {
   const t = useTranslations("regwatch.comply");
+  const format = useFormatter();
   const [showAck, setShowAck] = useState(false);
   const [note, setNote] = useState("");
   const [pending, startTransition] = useTransition();
@@ -133,7 +134,12 @@ function FindingRow({
             <div className="mt-2 rounded-md border border-brand-teal/30 bg-brand-teal/5 p-2 text-[11px]">
               <p className="font-medium text-brand-teal">
                 {finding.acknowledged_at
-                  ? t("acknowledgedAt", { date: new Date(finding.acknowledged_at).toLocaleString() })
+                  ? t("acknowledgedAt", {
+                      date: format.dateTime(new Date(finding.acknowledged_at), {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      }),
+                    })
                   : t("acknowledgedLabel")}
               </p>
               {finding.acknowledgement_note && (

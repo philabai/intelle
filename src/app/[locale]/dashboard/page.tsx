@@ -1,3 +1,4 @@
+import { getFormatter } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getSessionUser } from "@/lib/auth/roles";
@@ -15,6 +16,7 @@ const statusColors: Record<string, string> = {
 
 export default async function DashboardHome() {
   const user = await getSessionUser();
+  const format = await getFormatter();
   const service = createServiceClient();
   const { data } = await service
     .from("engagements")
@@ -76,7 +78,7 @@ export default async function DashboardHome() {
               </p>
               {e.started_at && (
                 <p className="text-xs text-muted/60 mt-3">
-                  Started {new Date(e.started_at).toLocaleDateString()}
+                  Started {format.dateTime(new Date(e.started_at), { dateStyle: "medium" })}
                 </p>
               )}
             </Link>

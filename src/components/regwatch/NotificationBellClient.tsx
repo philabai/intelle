@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { formatDistanceToNowStrict } from "date-fns";
 import type { NotificationItem } from "@/lib/regwatch/alerts";
 import type { Severity } from "@/lib/regwatch/match";
 import { markAllNotificationsSeen } from "@/lib/regwatch/alerts-actions";
@@ -22,6 +21,7 @@ const SEVERITY_DOT: Record<Severity, string> = {
 
 export function NotificationBellClient({ initialCount, items }: Props) {
   const t = useTranslations("regwatch.common");
+  const format = useFormatter();
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(initialCount);
   const [, startTransition] = useTransition();
@@ -119,9 +119,7 @@ export function NotificationBellClient({ initialCount, items }: Props) {
             ) : (
               items.map((n) => {
                 const href = `/regwatch/r/${n.jurisdictionCode.toLowerCase()}/${n.slug}`;
-                const ago = formatDistanceToNowStrict(new Date(n.matchedAt), {
-                  addSuffix: false,
-                });
+                const ago = format.relativeTime(new Date(n.matchedAt));
                 return (
                   <li key={n.matchId}>
                     <Link
@@ -140,7 +138,7 @@ export function NotificationBellClient({ initialCount, items }: Props) {
                         <span aria-hidden>·</span>
                         <span>{n.jurisdictionCode}</span>
                         <span aria-hidden>·</span>
-                        <span>{t("timeAgo", { duration: ago })}</span>
+                        <span>{ago}</span>
                       </div>
                       <p className="mt-1 text-xs font-medium text-foreground">
                         {n.title}

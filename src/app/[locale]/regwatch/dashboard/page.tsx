@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getFormatter } from "next-intl/server";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { getDashboardData } from "@/lib/regwatch/dashboard-queries";
@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const t = await getTranslations("regwatch.dashboardPage");
+  const format = await getFormatter();
   const supabase = await createClient();
   const {
     data: { user },
@@ -17,7 +18,7 @@ export default async function DashboardPage() {
   if (!user) return localizedRedirect("/regwatch/login?next=/regwatch/dashboard");
 
   const data = await getDashboardData();
-  const today = new Date().toLocaleDateString("en-GB", {
+  const today = format.dateTime(new Date(), {
     weekday: "long",
     day: "2-digit",
     month: "long",
