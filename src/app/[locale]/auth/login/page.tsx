@@ -37,8 +37,10 @@ function LoginForm() {
 
     let destination = next;
     if (!destination) {
-      const role = (data.user?.app_metadata as { role?: string } | undefined)?.role ?? "admin";
-      destination = ADMIN_ROLES.has(role) ? "/admin" : "/dashboard";
+      // Deny-by-default: only an explicit platform role routes to /admin; the
+      // server-side guard (getSessionUser/middleware) enforces this regardless.
+      const role = (data.user?.app_metadata as { role?: string } | undefined)?.role;
+      destination = role && ADMIN_ROLES.has(role) ? "/admin" : "/dashboard";
     }
     router.push(destination);
     router.refresh();

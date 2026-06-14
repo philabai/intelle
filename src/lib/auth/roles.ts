@@ -11,8 +11,12 @@ export type SessionUser = {
 /**
  * Returns the authed user with their role, or null if unauthenticated.
  * Role is read from `auth.users.raw_app_meta_data.role` (set via Supabase admin SQL).
- * Until customer roles are populated, treat any authed user as 'admin' so the existing
- * single-user setup keeps working.
+ *
+ * Deny-by-default: a user with NO explicit platform role gets `role: null`, which
+ * fails every `isAdminLike` / `canManageContent` check. The platform admin's
+ * account MUST have `app_metadata.role = 'admin'` set in Supabase. (Previously
+ * this defaulted to 'admin', which let any authenticated regwatch tenant user
+ * reach the consulting back-office + its admin-only API routes.)
  */
 export async function getSessionUser(): Promise<SessionUser | null> {
   const supabase = await createClient();
@@ -20,7 +24,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   if (!user) return null;
   const role =
     ((user.app_metadata as Record<string, unknown> | undefined)?.role as Role | undefined) ??
-    "admin";
+    null;
   return { id: user.id, email: user.email ?? null, role };
 }
 

@@ -90,10 +90,11 @@ export async function updateSession(
 
   if (isAdminRoute) {
     if (!user) return redirectTo("/auth/login", request.nextUrl.pathname);
-    // Until customer roles are populated, treat any user without an explicit
-    // role as admin so the existing single-user setup keeps working.
-    const effective = role ?? "admin";
-    if (!ADMIN_ROLES.has(effective)) return redirectTo("/dashboard");
+    // Deny-by-default: /admin is intelle's internal consulting back-office.
+    // Only users with an explicit platform role in ADMIN_ROLES (set via
+    // auth.users.app_metadata.role) may enter. Self-serve regwatch tenant users
+    // have NO platform role and must never reach this surface.
+    if (!role || !ADMIN_ROLES.has(role)) return redirectTo("/dashboard");
   }
 
   if (isDashboardRoute) {
@@ -101,8 +102,7 @@ export async function updateSession(
   }
 
   if (isAuthRoute && user && rest !== "/auth/callback") {
-    const effective = role ?? "admin";
-    return redirectTo(ADMIN_ROLES.has(effective) ? "/admin" : "/dashboard");
+    return redirectTo(role && ADMIN_ROLES.has(role) ? "/admin" : "/dashboard");
   }
 
   if (isRegwatchProtectedRoute && !user) {
