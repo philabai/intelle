@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
 /** Card shell with a title, optional "View →" link, and a body. */
@@ -16,6 +17,7 @@ export function Card({
   className?: string;
   children: React.ReactNode;
 }) {
+  const t = useTranslations("regwatch.dashboard");
   const bar =
     accent === "teal"
       ? "before:bg-brand-teal"
@@ -35,7 +37,7 @@ export function Card({
         </h3>
         {href && (
           <Link href={href} className="shrink-0 text-[11px] text-brand-teal hover:underline">
-            View →
+            {t("view")}
           </Link>
         )}
       </header>

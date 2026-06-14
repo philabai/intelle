@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import type { DashboardData } from "@/lib/regwatch/dashboard-queries";
@@ -27,12 +28,12 @@ function orderForRole(role: string | null): CardKey[] {
   return ["monitor", "obligations", "inbox", "assets", "documents", "regulations"];
 }
 
-const ASSET_LEVEL_LABEL: Record<number, string> = {
-  2: "Org",
-  3: "Division",
-  4: "Site",
-  5: "Facility",
-  6: "Component",
+const ASSET_LEVEL_KEY: Record<number, string> = {
+  2: "levelOrg",
+  3: "levelDivision",
+  4: "levelSite",
+  5: "levelFacility",
+  6: "levelComponent",
 };
 
 function ago(iso: string | null): string {
@@ -83,29 +84,30 @@ export function DashboardView({ data }: { data: DashboardData }) {
 /* ───────────────────────── Hero ───────────────────────── */
 
 function KpiStrip({ data }: { data: DashboardData }) {
+  const t = useTranslations("regwatch.dashboard");
   return (
     <div className="grid grid-cols-2 gap-2 rounded-xl border border-card-border bg-card-bg/40 p-3 sm:grid-cols-4">
       <Stat
         value={data.feed.critical}
-        label="Critical in scope"
+        label={t("criticalInScope")}
         tone={data.feed.critical > 0 ? "danger" : "default"}
         href="/regwatch/monitor/today?severity=critical"
       />
       <Stat
         value={data.inbox.total}
-        label="Reviews awaiting you"
+        label={t("reviewsAwaiting")}
         tone={data.inbox.total > 0 ? "warn" : "good"}
         href="/regwatch/comply/inbox"
       />
       <Stat
         value={data.obligations.overdue}
-        label="Overdue obligations"
+        label={t("overdueObligations")}
         tone={data.obligations.overdue > 0 ? "danger" : "default"}
         href="/regwatch/obligations"
       />
       <Stat
         value={data.feed.hits_30d}
-        label="Deadlines ≤30 days"
+        label={t("deadlines30")}
         tone={data.feed.hits_30d > 0 ? "warn" : "default"}
         href="/regwatch/monitor/today?sort=deadline"
       />
@@ -114,25 +116,26 @@ function KpiStrip({ data }: { data: DashboardData }) {
 }
 
 function FocusCallout({ data }: { data: DashboardData }) {
+  const t = useTranslations("regwatch.dashboard");
   let text: string | null = null;
   let href = "/regwatch/monitor/today";
   if (data.feed.critical > 0) {
-    text = `${data.feed.critical} critical regulation${data.feed.critical === 1 ? "" : "s"} in your scope need triage.`;
+    text = t("focusCritical", { count: data.feed.critical });
     href = "/regwatch/monitor/today?severity=critical";
   } else if (data.obligations.overdue > 0) {
-    text = `${data.obligations.overdue} obligation${data.obligations.overdue === 1 ? " is" : "s are"} overdue for review.`;
+    text = t("focusOverdue", { count: data.obligations.overdue });
     href = "/regwatch/obligations";
   } else if (data.obligations.highSeverityOpen > 0) {
-    text = `${data.obligations.highSeverityOpen} high-severity obligation${data.obligations.highSeverityOpen === 1 ? " is" : "s are"} not yet compliant.`;
+    text = t("focusHighSeverity", { count: data.obligations.highSeverityOpen });
     href = "/regwatch/obligations";
   } else if (data.inbox.total > 0) {
-    text = `${data.inbox.total} review${data.inbox.total === 1 ? " is" : "s are"} waiting on you.`;
+    text = t("focusReviews", { count: data.inbox.total });
     href = "/regwatch/comply/inbox";
   }
   if (!text) {
     return (
       <div className="rounded-xl border border-brand-teal/30 bg-brand-teal/5 px-4 py-3 text-sm text-brand-teal">
-        ✓ You&rsquo;re on top of things — no critical items need attention right now.
+        {t("allClear")}
       </div>
     );
   }
@@ -145,17 +148,18 @@ function FocusCallout({ data }: { data: DashboardData }) {
         <span className="me-2">⚡</span>
         {text}
       </span>
-      <span className="shrink-0 text-amber-300">Review →</span>
+      <span className="shrink-0 text-amber-300">{t("review")}</span>
     </Link>
   );
 }
 
 function MyQueue({ data }: { data: DashboardData }) {
+  const t = useTranslations("regwatch.dashboard");
   const items = [...data.inbox.obligationReviews, ...data.inbox.docReviews].slice(0, 6);
   return (
-    <Card title="My queue" href="/regwatch/comply/inbox" accent="violet">
+    <Card title={t("myQueue")} href="/regwatch/comply/inbox" accent="violet">
       {items.length === 0 ? (
-        <p className="py-2 text-xs text-brand-teal">✓ Nothing assigned to you right now.</p>
+        <p className="py-2 text-xs text-brand-teal">{t("queueEmpty")}</p>
       ) : (
         <div className="-mx-2">
           {items.map((it) => (
@@ -163,8 +167,8 @@ function MyQueue({ data }: { data: DashboardData }) {
               key={`${it.kind}-${it.id}`}
               href={it.href}
               title={it.title}
-              meta={it.dueAt ? `due ${ago(it.dueAt)}` : undefined}
-              pill={it.kind === "doc-review" ? "Doc" : "Obligation"}
+              meta={it.dueAt ? t("dueMeta", { time: ago(it.dueAt) }) : undefined}
+              pill={it.kind === "doc-review" ? t("pillDoc") : t("pillObligation")}
               pillTone={it.kind === "doc-review" ? "good" : "warn"}
             />
           ))}
@@ -175,6 +179,7 @@ function MyQueue({ data }: { data: DashboardData }) {
 }
 
 function PostureCard({ data }: { data: DashboardData }) {
+  const t = useTranslations("regwatch.dashboard");
   const o = data.obligations;
   const score =
     o.total > 0
@@ -185,11 +190,11 @@ function PostureCard({ data }: { data: DashboardData }) {
   const tone =
     score === null ? "default" : score >= 80 ? "good" : score >= 50 ? "warn" : "danger";
   return (
-    <Card title="Compliance posture" href="/regwatch/obligations" accent="teal">
+    <Card title={t("compliancePosture")} href="/regwatch/obligations" accent="teal">
       {o.total === 0 ? (
         <SetupState
-          text="No obligations yet — pin regulations to your assets to track compliance."
-          ctaLabel="Create an obligation"
+          text={t("postureSetup")}
+          ctaLabel={t("createObligation")}
           ctaHref="/regwatch/obligations"
           locked={data.tier === "free"}
         />
@@ -207,25 +212,25 @@ function PostureCard({ data }: { data: DashboardData }) {
             >
               {score}
             </span>
-            <span className="pb-1 text-xs text-muted">/ 100 posture</span>
+            <span className="pb-1 text-xs text-muted">{t("postureSuffix")}</span>
           </div>
           <StackedBar
             segments={[
-              { value: o.compliant, className: "bg-brand-teal", label: "Compliant" },
-              { value: o.atRisk, className: "bg-amber-400", label: "At risk" },
-              { value: o.nonCompliant, className: "bg-red-500", label: "Non-compliant" },
-              { value: o.unknown, className: "bg-card-border", label: "Unknown" },
+              { value: o.compliant, className: "bg-brand-teal", label: t("compliant") },
+              { value: o.atRisk, className: "bg-amber-400", label: t("atRisk") },
+              { value: o.nonCompliant, className: "bg-red-500", label: t("nonCompliant") },
+              { value: o.unknown, className: "bg-card-border", label: t("unknown") },
             ]}
           />
           <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
-            <PostureLine n={o.compliant} label="Compliant" dot="bg-brand-teal" />
-            <PostureLine n={o.atRisk} label="At risk" dot="bg-amber-400" />
-            <PostureLine n={o.nonCompliant} label="Non-compliant" dot="bg-red-500" />
-            <PostureLine n={o.unknown} label="Unknown" dot="bg-card-border" />
+            <PostureLine n={o.compliant} label={t("compliant")} dot="bg-brand-teal" />
+            <PostureLine n={o.atRisk} label={t("atRisk")} dot="bg-amber-400" />
+            <PostureLine n={o.nonCompliant} label={t("nonCompliant")} dot="bg-red-500" />
+            <PostureLine n={o.unknown} label={t("unknown")} dot="bg-card-border" />
           </dl>
           {o.overdue > 0 && (
             <p className="mt-3 text-[11px] text-red-300">
-              {o.overdue} review{o.overdue === 1 ? "" : "s"} overdue
+              {t("reviewsOverdue", { count: o.overdue })}
             </p>
           )}
         </>
@@ -247,27 +252,28 @@ function PostureLine({ n, label, dot }: { n: number; label: string; dot: string 
 /* ───────────────────────── Cards ───────────────────────── */
 
 function RegulationsCard({ data }: { data: DashboardData }) {
+  const t = useTranslations("regwatch.dashboard");
   return (
-    <Card title="Regulations" href="/regwatch/browse" accent="blue">
+    <Card title={t("regulations")} href="/regwatch/browse" accent="blue">
       {!data.hasFootprint ? (
         <SetupState
-          text="Configure your footprint so we can scope the corpus to what applies to you."
-          ctaLabel="Set up footprint"
+          text={t("regSetup")}
+          ctaLabel={t("setupFootprint")}
           ctaHref="/regwatch/settings/footprint"
         />
       ) : (
         <>
           <div className="mb-3 grid grid-cols-3 gap-2">
-            <Stat value={data.feed.total} label="In your scope" />
-            <Stat value={data.coverage.regulators} label="Regulators" />
-            <Stat value={data.coverage.topics} label="Topics" />
+            <Stat value={data.feed.total} label={t("inYourScope")} />
+            <Stat value={data.coverage.regulators} label={t("regulators")} />
+            <Stat value={data.coverage.topics} label={t("topics")} />
           </div>
           <div className="mt-auto flex flex-wrap gap-1.5">
             {[
-              ["Browse", "/regwatch/browse"],
-              ["Search", "/regwatch/search"],
-              ["Regulators", "/regwatch/regulators"],
-              ["Topics", "/regwatch/topics"],
+              [t("browse"), "/regwatch/browse"],
+              [t("search"), "/regwatch/search"],
+              [t("regulators"), "/regwatch/regulators"],
+              [t("topics"), "/regwatch/topics"],
             ].map(([l, h]) => (
               <Link
                 key={h}
@@ -285,9 +291,10 @@ function RegulationsCard({ data }: { data: DashboardData }) {
 }
 
 function MonitorCard({ data, isFree }: { data: DashboardData; isFree: boolean }) {
+  const t = useTranslations("regwatch.dashboard");
   return (
     <Card
-      title="Monitor"
+      title={t("monitor")}
       href="/regwatch/monitor/today"
       accent="blue"
       badge={
@@ -300,23 +307,23 @@ function MonitorCard({ data, isFree }: { data: DashboardData; isFree: boolean })
     >
       {isFree ? (
         <SetupState
-          text="The Relevance Feed + alerts are a Team feature."
-          ctaLabel="Upgrade to Team"
+          text={t("monitorFreeSetup")}
+          ctaLabel={t("upgradeTeam")}
           ctaHref="/regwatch/settings/billing"
           locked
         />
       ) : !data.hasFootprint ? (
         <SetupState
-          text="Configure your footprint to start scoring incoming regulations."
-          ctaLabel="Set up footprint"
+          text={t("monitorFootprintSetup")}
+          ctaLabel={t("setupFootprint")}
           ctaHref="/regwatch/settings/footprint"
         />
       ) : (
         <>
           <div className="mb-2 grid grid-cols-3 gap-2">
-            <Stat value={data.alertsUnseen} label="Unseen alerts" tone={data.alertsUnseen > 0 ? "warn" : "default"} />
-            <Stat value={data.feed.critical} label="Critical" tone={data.feed.critical > 0 ? "danger" : "default"} />
-            <Stat value={data.feed.high} label="High" />
+            <Stat value={data.alertsUnseen} label={t("unseenAlerts")} tone={data.alertsUnseen > 0 ? "warn" : "default"} />
+            <Stat value={data.feed.critical} label={t("critical")} tone={data.feed.critical > 0 ? "danger" : "default"} />
+            <Stat value={data.feed.high} label={t("high")} />
           </div>
           <div className="-mx-2 mt-auto">
             {data.topAlerts.slice(0, 3).map((a) => (
@@ -330,7 +337,7 @@ function MonitorCard({ data, isFree }: { data: DashboardData; isFree: boolean })
               />
             ))}
             {data.topAlerts.length === 0 && (
-              <p className="px-2 py-1 text-[11px] text-muted">No new alerts.</p>
+              <p className="px-2 py-1 text-[11px] text-muted">{t("noNewAlerts")}</p>
             )}
           </div>
         </>
@@ -340,21 +347,22 @@ function MonitorCard({ data, isFree }: { data: DashboardData; isFree: boolean })
 }
 
 function InboxCard({ data, isFree }: { data: DashboardData; isFree: boolean }) {
+  const t = useTranslations("regwatch.dashboard");
   const items = [...data.inbox.obligationReviews, ...data.inbox.docReviews].slice(0, 4);
   return (
-    <Card title="Reviewer inbox" href="/regwatch/comply/inbox" accent="violet">
+    <Card title={t("reviewerInbox")} href="/regwatch/comply/inbox" accent="violet">
       {isFree ? (
         <SetupState
-          text="Reviewer workflows are a Team feature."
-          ctaLabel="Upgrade to Team"
+          text={t("inboxFreeSetup")}
+          ctaLabel={t("upgradeTeam")}
           ctaHref="/regwatch/settings/billing"
           locked
         />
       ) : items.length === 0 ? (
-        <p className="py-3 text-xs text-brand-teal">✓ Inbox zero — nothing awaiting your review.</p>
+        <p className="py-3 text-xs text-brand-teal">{t("inboxZero")}</p>
       ) : (
         <>
-          <Stat value={data.inbox.total} label="Awaiting you" tone="warn" />
+          <Stat value={data.inbox.total} label={t("awaitingYou")} tone="warn" />
           <div className="-mx-2 mt-2">
             {items.map((it) => (
               <RowLink
@@ -373,39 +381,40 @@ function InboxCard({ data, isFree }: { data: DashboardData; isFree: boolean }) {
 }
 
 function ObligationsCard({ data, isFree }: { data: DashboardData; isFree: boolean }) {
+  const t = useTranslations("regwatch.dashboard");
   const o = data.obligations;
   return (
-    <Card title="Obligations" href="/regwatch/obligations" accent="amber">
+    <Card title={t("obligations")} href="/regwatch/obligations" accent="amber">
       {isFree ? (
         <SetupState
-          text="Compliance obligations are a Team feature."
-          ctaLabel="Upgrade to Team"
+          text={t("oblFreeSetup")}
+          ctaLabel={t("upgradeTeam")}
           ctaHref="/regwatch/settings/billing"
           locked
         />
       ) : o.total === 0 ? (
         <SetupState
-          text="Pin a regulation to an asset to create your first obligation."
-          ctaLabel="Create an obligation"
+          text={t("oblSetup")}
+          ctaLabel={t("createObligation")}
           ctaHref="/regwatch/obligations"
         />
       ) : (
         <>
           <div className="mb-3 grid grid-cols-3 gap-2">
-            <Stat value={o.nonCompliant} label="Non-compliant" tone={o.nonCompliant > 0 ? "danger" : "default"} />
-            <Stat value={o.atRisk} label="At risk" tone={o.atRisk > 0 ? "warn" : "default"} />
-            <Stat value={o.overdue} label="Overdue" tone={o.overdue > 0 ? "danger" : "default"} />
+            <Stat value={o.nonCompliant} label={t("nonCompliant")} tone={o.nonCompliant > 0 ? "danger" : "default"} />
+            <Stat value={o.atRisk} label={t("atRisk")} tone={o.atRisk > 0 ? "warn" : "default"} />
+            <Stat value={o.overdue} label={t("overdue")} tone={o.overdue > 0 ? "danger" : "default"} />
           </div>
           <StackedBar
             segments={[
-              { value: o.compliant, className: "bg-brand-teal", label: "Compliant" },
-              { value: o.atRisk, className: "bg-amber-400", label: "At risk" },
-              { value: o.nonCompliant, className: "bg-red-500", label: "Non-compliant" },
-              { value: o.unknown, className: "bg-card-border", label: "Unknown" },
+              { value: o.compliant, className: "bg-brand-teal", label: t("compliant") },
+              { value: o.atRisk, className: "bg-amber-400", label: t("atRisk") },
+              { value: o.nonCompliant, className: "bg-red-500", label: t("nonCompliant") },
+              { value: o.unknown, className: "bg-card-border", label: t("unknown") },
             ]}
           />
           <p className="mt-2 text-[11px] text-muted">
-            {o.total} obligation{o.total === 1 ? "" : "s"} · {o.compliant} compliant
+            {t("oblSummary", { count: o.total, compliant: o.compliant })}
           </p>
         </>
       )}
@@ -414,45 +423,44 @@ function ObligationsCard({ data, isFree }: { data: DashboardData; isFree: boolea
 }
 
 function AssetsCard({ data, isFree }: { data: DashboardData; isFree: boolean }) {
+  const t = useTranslations("regwatch.dashboard");
   return (
-    <Card title="Assets" href="/regwatch/assets" accent="teal">
+    <Card title={t("assets")} href="/regwatch/assets" accent="teal">
       {isFree ? (
         <SetupState
-          text="The asset hierarchy is a Team feature."
-          ctaLabel="Upgrade to Team"
+          text={t("assetsFreeSetup")}
+          ctaLabel={t("upgradeTeam")}
           ctaHref="/regwatch/settings/billing"
           locked
         />
       ) : data.assets.total === 0 ? (
         <SetupState
-          text="Model your operations — sites, facilities, equipment — to anchor obligations."
-          ctaLabel="Build asset hierarchy"
+          text={t("assetsSetup")}
+          ctaLabel={t("buildHierarchy")}
           ctaHref="/regwatch/assets"
         />
       ) : (
         <>
           <div className="mb-2 grid grid-cols-3 gap-2">
-            <Stat value={data.assets.total} label="Assets" />
-            <Stat value={data.assets.byLevel[4] ?? 0} label="Sites" />
+            <Stat value={data.assets.total} label={t("assets")} />
+            <Stat value={data.assets.byLevel[4] ?? 0} label={t("sites")} />
             <Stat
               value={data.hotAssets.length}
-              label="Hot assets"
+              label={t("hotAssets")}
               tone={data.hotAssets.length > 0 ? "danger" : "default"}
             />
           </div>
           <div className="-mx-2 mt-auto">
             {data.hotAssets.length === 0 ? (
-              <p className="px-2 py-1 text-[11px] text-brand-teal">
-                ✓ No assets with open high-risk obligations.
-              </p>
+              <p className="px-2 py-1 text-[11px] text-brand-teal">{t("noHotAssets")}</p>
             ) : (
               data.hotAssets.map((a) => (
                 <RowLink
                   key={a.id}
                   href={`/regwatch/assets?asset=${a.id}`}
                   title={a.name}
-                  meta={ASSET_LEVEL_LABEL[a.level]}
-                  pill={a.nonCompliant > 0 ? `${a.nonCompliant} open` : a.worstSeverity}
+                  meta={t(ASSET_LEVEL_KEY[a.level] ?? "levelComponent")}
+                  pill={a.nonCompliant > 0 ? t("openPill", { count: a.nonCompliant }) : a.worstSeverity}
                   pillTone="danger"
                 />
               ))
@@ -465,30 +473,31 @@ function AssetsCard({ data, isFree }: { data: DashboardData; isFree: boolean }) 
 }
 
 function DocumentsCard({ data, isFree }: { data: DashboardData; isFree: boolean }) {
+  const t = useTranslations("regwatch.dashboard");
   const d = data.docs;
   return (
-    <Card title="Company documents" href="/regwatch/documents" accent="teal">
+    <Card title={t("companyDocuments")} href="/regwatch/documents" accent="teal">
       {isFree ? (
         <SetupState
-          text="Authoring SOPs, policies & permits is a Team feature."
-          ctaLabel="Upgrade to Team"
+          text={t("docsFreeSetup")}
+          ctaLabel={t("upgradeTeam")}
           ctaHref="/regwatch/settings/billing"
           locked
         />
       ) : d.total === 0 ? (
         <SetupState
-          text="Author your first SOP, policy or permit in the editor."
-          ctaLabel="New document"
+          text={t("docsSetup")}
+          ctaLabel={t("newDocument")}
           ctaHref="/regwatch/documents"
         />
       ) : (
         <>
           <div className="mb-2 grid grid-cols-3 gap-2">
-            <Stat value={d.inReview} label="In review" tone={d.inReview > 0 ? "warn" : "default"} />
-            <Stat value={d.openComments} label="Open comments" tone={d.openComments > 0 ? "warn" : "default"} />
+            <Stat value={d.inReview} label={t("inReview")} tone={d.inReview > 0 ? "warn" : "default"} />
+            <Stat value={d.openComments} label={t("openComments")} tone={d.openComments > 0 ? "warn" : "default"} />
             <Stat
               value={d.dueForReview.length}
-              label="Due for review"
+              label={t("dueForReview")}
               tone={d.dueForReview.length > 0 ? "danger" : "default"}
             />
           </div>
@@ -499,7 +508,7 @@ function DocumentsCard({ data, isFree }: { data: DashboardData; isFree: boolean 
                     key={doc.id}
                     href={`/regwatch/documents/${doc.id}`}
                     title={doc.title}
-                    meta={`review ${ago(doc.nextReviewDate)}`}
+                    meta={t("reviewMeta", { time: ago(doc.nextReviewDate) })}
                     pillTone="danger"
                   />
                 ))
@@ -523,9 +532,10 @@ function DocumentsCard({ data, isFree }: { data: DashboardData; isFree: boolean 
 /* ──────────────────────── Activity ──────────────────────── */
 
 function RecentActivity({ data }: { data: DashboardData }) {
+  const t = useTranslations("regwatch.dashboard");
   if (data.activity.length === 0) return null;
   return (
-    <Card title="Recent activity" accent="violet">
+    <Card title={t("recentActivity")} accent="violet">
       <ul className="-mx-1 space-y-0.5">
         {data.activity.map((e) => (
           <li key={e.id}>

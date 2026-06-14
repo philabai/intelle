@@ -55,7 +55,8 @@ async function translateBatch(entries, language) {
   const payload = Object.fromEntries(entries);
   const sys = `You are a professional UI localizer for a B2B engineering-intelligence + regulatory-compliance SaaS. Translate the JSON string VALUES into ${language}. Rules:
 - Keep keys identical; translate only values.
-- PRESERVE any ICU/template placeholders EXACTLY: {count}, {name}, <b>…</b>, %s — never translate or reorder their tokens.
+- PRESERVE simple placeholders EXACTLY: {count}, {name}, {email}, <b>…</b>, <grad>…</grad>, <emph>…</emph>, <link>…</link>, %s — never translate or reorder their tokens.
+- For ICU plural/select syntax like {count, plural, one{# item} other{# items}}: keep the structure and the leading variable + "plural,", keep the literal #, translate ONLY the text inside each {…} category, and use the CORRECT plural categories for ${language} (French: one, other; Arabic: zero, one, two, few, many, other — provide all that apply).
 - Match a concise, professional product-UI tone; keep button/label brevity.
 - Keep brand names (intelle.io, Vantage, Iris) untranslated.
 - For Arabic, use Modern Standard Arabic suitable for a professional product.
