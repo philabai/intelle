@@ -1,0 +1,50 @@
+
+ORG_A=18c90482-52a0-4956-89b8-66f13bf652d9  ORG_B=aba752e7-c3bd-48ad-812c-9bdd5cc55d62  ORG_X=988ea1b1-94d6-423a-958c-47669f1e9f24
+
+── READ isolation ──
+  [32mPASS[0m  [A1-owner] organizations: foreign org invisible  — foreign=0, own=1
+  [32mPASS[0m  [A1-owner] organization_members: foreign org invisible  — foreign=0, own=3
+  [32mPASS[0m  [A1-owner] operations_footprints: foreign org invisible  — foreign=0, own=1
+  [32mPASS[0m  [A1-owner] assets: foreign org invisible  — foreign=0, own=1
+  [32mPASS[0m  [A1-owner] internal_documents: foreign org invisible  — foreign=0, own=1
+  [32mPASS[0m  [A1-owner] footprint_matches: foreign org invisible  — foreign=0, own=0
+  [32mPASS[0m  [A1-owner] audit_log: foreign org invisible  — foreign=0, own=0
+  [32mPASS[0m  [A3-member] organizations: foreign org invisible  — foreign=0, own=1
+  [32mPASS[0m  [A3-member] organization_members: foreign org invisible  — foreign=0, own=3
+  [32mPASS[0m  [A3-member] operations_footprints: foreign org invisible  — foreign=0, own=1
+  [32mPASS[0m  [A3-member] assets: foreign org invisible  — foreign=0, own=1
+  [32mPASS[0m  [A3-member] internal_documents: foreign org invisible  — foreign=0, own=1
+  [32mPASS[0m  [A3-member] footprint_matches: foreign org invisible  — foreign=0, own=0
+  [32mPASS[0m  [A3-member] audit_log: foreign org invisible  — foreign=0, own=0
+  [32mPASS[0m  [B1-owner] organizations: foreign org invisible  — foreign=0, own=1
+  [32mPASS[0m  [B1-owner] organization_members: foreign org invisible  — foreign=0, own=2
+  [32mPASS[0m  [B1-owner] operations_footprints: foreign org invisible  — foreign=0, own=1
+  [32mPASS[0m  [B1-owner] assets: foreign org invisible  — foreign=0, own=1
+  [32mPASS[0m  [B1-owner] internal_documents: foreign org invisible  — foreign=0, own=1
+  [32mPASS[0m  [B1-owner] footprint_matches: foreign org invisible  — foreign=0, own=0
+  [32mPASS[0m  [B1-owner] audit_log: foreign org invisible  — foreign=0, own=0
+  [32mPASS[0m  [A1-owner] own org visible (positive control)
+  [32mPASS[0m  [A1-owner] own internal_documents visible
+── Multi-org (X = member of B + owner of X) ──
+  [32mPASS[0m  [X-crossorg] Org B visible (is member)
+  [32mPASS[0m  [X-crossorg] Org X visible (is owner)
+  [32mPASS[0m  [X-crossorg] Org A invisible (not a member)
+── No-org user ──
+  [32mPASS[0m  [N-noorg] organizations: nothing visible
+  [32mPASS[0m  [N-noorg] organization_members: nothing visible
+  [32mPASS[0m  [N-noorg] operations_footprints: nothing visible
+  [32mPASS[0m  [N-noorg] assets: nothing visible
+  [32mPASS[0m  [N-noorg] internal_documents: nothing visible
+  [32mPASS[0m  [N-noorg] footprint_matches: nothing visible
+  [32mPASS[0m  [N-noorg] audit_log: nothing visible
+── WRITE isolation (A1 → Org B) ──
+  [32mPASS[0m  [A1-owner] INSERT asset into Org B denied  — RLS denied
+  [32mPASS[0m  [A1-owner] UPDATE Org B name affects 0 rows  — rows=0
+── Role escalation (A3 member vs A2 admin, within Org A) ──
+  [32mPASS[0m  [A3-member] self-promote to owner blocked  — rows=0
+  [32mPASS[0m  [A3-member] add member (admin-only) denied  — RLS denied
+  [32mPASS[0m  [A3-member] edit org settings (admin-only) blocked  — rows=0
+  [32mPASS[0m  [A2-admin] admin CAN edit own org settings (positive)  — rows=1
+
+============================================================
+RLS ISOLATION PROBE: 39/39 passed, 0 failed

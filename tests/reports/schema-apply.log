@@ -1,0 +1,732 @@
+CREATE EXTENSION
+psql:tests/setup/schema-bundle.sql:8: NOTICE:  extension "pgcrypto" already exists, skipping
+CREATE EXTENSION
+CREATE TABLE
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TABLE
+ALTER TABLE
+CREATE POLICY
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+ALTER TABLE
+CREATE POLICY
+INSERT 0 7
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:290: NOTICE:  policy "Customers read own engagements" for relation "public.engagements" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:296: NOTICE:  policy "Service role full access on engagements" for relation "public.engagements" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+CREATE TRIGGER
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:331: NOTICE:  policy "Customers read visible docs in own engagements" for relation "public.engagement_documents" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:342: NOTICE:  policy "Service role full access on engagement_documents" for relation "public.engagement_documents" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+INSERT 0 1
+psql:tests/setup/schema-bundle.sql:360: NOTICE:  policy "Customers read own engagement files" for relation "storage.objects" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:372: NOTICE:  policy "Service role full access on engagement files" for relation "storage.objects" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+INSERT 0 1
+INSERT 0 1
+UPDATE 1
+UPDATE 2
+DELETE 0
+INSERT 0 1
+psql:tests/setup/schema-bundle.sql:1264: NOTICE:  extension "vector" already exists, skipping
+CREATE EXTENSION
+CREATE SCHEMA
+CREATE FUNCTION
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+psql:tests/setup/schema-bundle.sql:1366: NOTICE:  ivfflat index created with little data
+DETAIL:  This will cause low recall.
+HINT:  Drop the index until the table has more data.
+CREATE INDEX
+CREATE TRIGGER
+CREATE TABLE
+CREATE INDEX
+CREATE TRIGGER
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+psql:tests/setup/schema-bundle.sql:1641: NOTICE:  trigger "on_auth_user_created_regwatch" for relation "auth.users" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+CREATE VIEW
+GRANT
+INSERT 0 28
+INSERT 0 24
+UPDATE 1
+UPDATE 1
+UPDATE 1
+UPDATE 1
+DELETE 8
+UPDATE 0
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+GRANT
+GRANT
+GRANT
+DROP POLICY
+CREATE POLICY
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:2543: NOTICE:  policy "pending_invites_select" for relation "regwatch.pending_invites" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:2553: NOTICE:  policy "pending_invites_insert" for relation "regwatch.pending_invites" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:2563: NOTICE:  policy "pending_invites_update" for relation "regwatch.pending_invites" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:2579: NOTICE:  policy "pending_invites_delete" for relation "regwatch.pending_invites" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+CREATE FUNCTION
+GRANT
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+GRANT
+COMMENT
+DROP FUNCTION
+CREATE FUNCTION
+GRANT
+COMMENT
+CREATE FUNCTION
+GRANT
+CREATE TABLE
+CREATE TRIGGER
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+ALTER TABLE
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:3079: NOTICE:  policy "asset_hierarchy_config_member_read" for relation "regwatch.asset_hierarchy_config" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3084: NOTICE:  policy "asset_hierarchy_config_admin_write" for relation "regwatch.asset_hierarchy_config" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3089: NOTICE:  policy "asset_hierarchy_config_admin_update" for relation "regwatch.asset_hierarchy_config" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3095: NOTICE:  policy "assets_member_read" for relation "regwatch.assets" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3100: NOTICE:  policy "assets_admin_insert" for relation "regwatch.assets" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3105: NOTICE:  policy "assets_admin_update" for relation "regwatch.assets" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3111: NOTICE:  policy "assets_admin_delete" for relation "regwatch.assets" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+GRANT
+GRANT
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:3280: NOTICE:  policy "obligations_member_read" for relation "regwatch.compliance_obligations" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3287: NOTICE:  policy "obligations_admin_insert" for relation "regwatch.compliance_obligations" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3295: NOTICE:  policy "obligations_member_update" for relation "regwatch.compliance_obligations" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3301: NOTICE:  policy "obligations_admin_delete" for relation "regwatch.compliance_obligations" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+CREATE TABLE
+CREATE INDEX
+CREATE FUNCTION
+ALTER TABLE
+CREATE TYPE
+CREATE TYPE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:3483: NOTICE:  policy "internal_docs_member_read" for relation "regwatch.internal_documents" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3488: NOTICE:  policy "internal_docs_admin_insert" for relation "regwatch.internal_documents" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3493: NOTICE:  policy "internal_docs_admin_update" for relation "regwatch.internal_documents" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3499: NOTICE:  policy "internal_docs_admin_delete" for relation "regwatch.internal_documents" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3506: NOTICE:  policy "internal_docs_link_member_read" for relation "regwatch.internal_document_regulation_links" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3511: NOTICE:  policy "internal_docs_link_member_insert" for relation "regwatch.internal_document_regulation_links" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3516: NOTICE:  policy "internal_docs_link_member_update" for relation "regwatch.internal_document_regulation_links" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3522: NOTICE:  policy "internal_docs_link_member_delete" for relation "regwatch.internal_document_regulation_links" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+psql:tests/setup/schema-bundle.sql:3543: NOTICE:  policy "regwatch_docs_member_select" for relation "storage.objects" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3552: NOTICE:  policy "regwatch_docs_member_insert" for relation "storage.objects" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3561: NOTICE:  policy "regwatch_docs_admin_delete" for relation "storage.objects" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:3712: NOTICE:  policy "obligation_state_history_member_read" for relation "regwatch.obligation_state_history" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+GRANT
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:3768: NOTICE:  policy "internal_doc_asset_member_read" for relation "regwatch.internal_document_asset_links" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3773: NOTICE:  policy "internal_doc_asset_member_insert" for relation "regwatch.internal_document_asset_links" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:3778: NOTICE:  policy "internal_doc_asset_member_delete" for relation "regwatch.internal_document_asset_links" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+CREATE TYPE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:3861: NOTICE:  policy "obligation_notif_queue_member_read" for relation "regwatch.obligation_notification_queue" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+CREATE FUNCTION
+psql:tests/setup/schema-bundle.sql:3961: NOTICE:  trigger "regulatory_items_notify_on_change" for relation "regwatch.regulatory_items" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+psql:tests/setup/schema-bundle.sql:4064: NOTICE:  trigger "compliance_obligations_notify_on_change" for relation "regwatch.compliance_obligations" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+psql:tests/setup/schema-bundle.sql:4096: NOTICE:  trigger "compliance_obligations_notify_on_insert" for relation "regwatch.compliance_obligations" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+GRANT
+GRANT
+GRANT
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:4210: NOTICE:  policy "obligation_evidence_member_read" for relation "regwatch.obligation_evidence_files" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:4218: NOTICE:  policy "obligation_evidence_member_insert" for relation "regwatch.obligation_evidence_files" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:4223: NOTICE:  policy "obligation_evidence_member_update" for relation "regwatch.obligation_evidence_files" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:4230: NOTICE:  policy "obligation_evidence_admin_delete" for relation "regwatch.obligation_evidence_files" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+GRANT
+ALTER TYPE
+ALTER TYPE
+GRANT
+GRANT
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+ALTER TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:4360: NOTICE:  policy "internal_doc_folders_member_read" for relation "regwatch.internal_document_folders" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:4365: NOTICE:  policy "internal_doc_folders_admin_insert" for relation "regwatch.internal_document_folders" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:4370: NOTICE:  policy "internal_doc_folders_admin_update" for relation "regwatch.internal_document_folders" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:4376: NOTICE:  policy "internal_doc_folders_admin_delete" for relation "regwatch.internal_document_folders" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+ALTER TYPE
+ALTER TYPE
+ALTER TYPE
+ALTER TYPE
+ALTER TYPE
+ALTER TYPE
+ALTER TYPE
+ALTER TABLE
+CREATE INDEX
+DROP FUNCTION
+CREATE FUNCTION
+GRANT
+COMMENT
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+ALTER TABLE
+ALTER TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:4740: NOTICE:  policy "internal_doc_templates_read" for relation "regwatch.internal_document_templates" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:4817: NOTICE:  policy "internal_doc_revisions_read" for relation "regwatch.internal_document_revisions" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:4822: NOTICE:  policy "internal_doc_revisions_insert" for relation "regwatch.internal_document_revisions" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+ALTER TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:4877: NOTICE:  policy "internal_doc_sigs_read" for relation "regwatch.internal_document_signatures" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:4883: NOTICE:  policy "internal_doc_sigs_insert" for relation "regwatch.internal_document_signatures" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:4924: NOTICE:  policy "internal_doc_assignments_read" for relation "regwatch.internal_document_review_assignments" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:4929: NOTICE:  policy "internal_doc_assignments_insert" for relation "regwatch.internal_document_review_assignments" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:4935: NOTICE:  policy "internal_doc_assignments_update" for relation "regwatch.internal_document_review_assignments" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:4983: NOTICE:  policy "internal_doc_comments_read" for relation "regwatch.internal_document_comments" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:4988: NOTICE:  policy "internal_doc_comments_insert" for relation "regwatch.internal_document_comments" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:4996: NOTICE:  policy "internal_doc_comments_update" for relation "regwatch.internal_document_comments" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:5035: NOTICE:  policy "internal_doc_audit_read" for relation "regwatch.internal_document_audit_events" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:5040: NOTICE:  policy "internal_doc_audit_insert" for relation "regwatch.internal_document_audit_events" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+INSERT 0 23
+UPDATE 0
+CREATE EXTENSION
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:5412: NOTICE:  policy "regulatory_sections_public_read" for relation "regwatch.regulatory_sections" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+CREATE FUNCTION
+GRANT
+ALTER TABLE
+CREATE INDEX
+INSERT 0 1
+psql:tests/setup/schema-bundle.sql:5518: NOTICE:  policy "regwatch_public_read" for relation "storage.objects" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+ALTER TABLE
+INSERT 0 1
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:5610: NOTICE:  policy "saved_searches_owner_read" for relation "regwatch.saved_searches" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:5615: NOTICE:  policy "saved_searches_owner_insert" for relation "regwatch.saved_searches" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:5620: NOTICE:  policy "saved_searches_owner_update" for relation "regwatch.saved_searches" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:5626: NOTICE:  policy "saved_searches_owner_delete" for relation "regwatch.saved_searches" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+GRANT
+GRANT
+INSERT 0 0
+psql:tests/setup/schema-bundle.sql:5856: ERROR:  type "regwatch.instrument_type" does not exist
+LINE 13:   v.instrument_type::regwatch.instrument_type,
+                              ^
+DROP INDEX
+psql:tests/setup/schema-bundle.sql:5879: NOTICE:  constraint "saved_searches_user_query_key" of relation "saved_searches" does not exist, skipping
+ALTER TABLE
+ALTER TABLE
+UPDATE 0
+DELETE 0
+DO
+ALTER TABLE
+INSERT 0 0
+INSERT 0 25
+DELETE 25
+INSERT 0 1
+INSERT 0 29
+ALTER TABLE
+CREATE INDEX
+UPDATE 29
+UPDATE 4
+UPDATE 1
+UPDATE 0
+DO
+UPDATE 0
+UPDATE 0
+UPDATE 0
+DO
+psql:tests/setup/schema-bundle.sql:6576: NOTICE:  EU rows still on legacy CELEX URL form: 0
+DO
+UPDATE 0
+DO
+psql:tests/setup/schema-bundle.sql:6662: NOTICE:  SASO SASO TR · Air Conditioners → https://www.saso.gov.sa/en/laws-and-regulations/technical_regulations/pages/default.aspx
+psql:tests/setup/schema-bundle.sql:6662: NOTICE:  SASO SASO TR · Automated Motorcycles → https://www.saso.gov.sa/en/laws-and-regulations/technical_regulations/pages/default.aspx
+psql:tests/setup/schema-bundle.sql:6662: NOTICE:  SASO SASO TR · Building Materials Part 1 → https://www.saso.gov.sa/en/laws-and-regulations/technical_regulations/pages/default.aspx
+psql:tests/setup/schema-bundle.sql:6662: NOTICE:  SASO SASO TR · Building Materials Part 2 → https://www.saso.gov.sa/en/laws-and-regulations/technical_regulations/pages/default.aspx
+psql:tests/setup/schema-bundle.sql:6662: NOTICE:  SASO SASO TR · Building Materials Part 3 → https://www.saso.gov.sa/en/laws-and-regulations/technical_regulations/pages/default.aspx
+DO
+UPDATE 0
+UPDATE 4
+psql:tests/setup/schema-bundle.sql:6764: NOTICE:  --- EU citation / slug sample after rewrite ---
+psql:tests/setup/schema-bundle.sql:6764: NOTICE:  citation=Regulation (EU) 2023/956 slug=eu-reg-2023-956  source=https://eur-lex.europa.eu/eli/reg/2023/956
+psql:tests/setup/schema-bundle.sql:6764: NOTICE:  citation=REACH Annex XVII Entry 68 (PFAS restriction) slug=reach-annex-xvii-68  source=https://echa.europa.eu/hot-topics/perfluoroalkyl-chemicals-pfas
+psql:tests/setup/schema-bundle.sql:6764: NOTICE:  citation=Regulation (EU) 2024/1787 slug=eu-reg-2024-1787  source=https://eur-lex.europa.eu/eli/reg/2024/1787
+psql:tests/setup/schema-bundle.sql:6764: NOTICE:  citation=Regulation (EU) 2023/1805 slug=eu-reg-2023-1805  source=https://eur-lex.europa.eu/eli/reg/2023/1805
+psql:tests/setup/schema-bundle.sql:6764: NOTICE:  citation=ESRS E1 (Climate change) slug=esrs-e1  source=https://eur-lex.europa.eu/eli/reg/2023/2772
+psql:tests/setup/schema-bundle.sql:6764: NOTICE:  citation=Directive (EU) 2023/959 slug=eu-dir-2023-959  source=https://eur-lex.europa.eu/eli/dir/2023/959
+DO
+DELETE 0
+psql:tests/setup/schema-bundle.sql:6818: NOTICE:  Remaining (jurisdiction, slug) duplicate groups: 0
+DO
+DELETE 29
+INSERT 0 1
+INSERT 0 12
+UPDATE 2
+DO
+psql:tests/setup/schema-bundle.sql:7032: NOTICE:  SASO rows now marked Arabic-source: 12
+DO
+ALTER TABLE
+UPDATE 0
+INSERT 0 2
+INSERT 0 64
+INSERT 0 395
+INSERT 0 1
+INSERT 0 180
+INSERT 0 1
+DROP FUNCTION
+CREATE FUNCTION
+GRANT
+COMMENT
+INSERT 0 1
+DROP FUNCTION
+psql:tests/setup/schema-bundle.sql:8138: NOTICE:  function regwatch.match_regulatory_items(text,text,pg_catalog.int4,pg_catalog.float8,text[],text,text,text) does not exist, skipping
+DROP FUNCTION
+psql:tests/setup/schema-bundle.sql:8139: NOTICE:  function regwatch.match_regulatory_items(text,text,pg_catalog.int4,pg_catalog.float8,text[],text[],text[],text[]) does not exist, skipping
+DROP FUNCTION
+CREATE FUNCTION
+GRANT
+COMMENT
+INSERT 0 198
+psql:tests/setup/schema-bundle.sql:8546: NOTICE:  function regwatch.search_internal_documents(text,uuid[],pg_catalog.bool) does not exist, skipping
+DROP FUNCTION
+CREATE FUNCTION
+GRANT
+COMMENT
+INSERT 0 263
+psql:tests/setup/schema-bundle.sql:8948: NOTICE:  function regwatch.get_my_feed_counts() does not exist, skipping
+DROP FUNCTION
+CREATE FUNCTION
+GRANT
+COMMENT
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+psql:tests/setup/schema-bundle.sql:9040: NOTICE:  ivfflat index created with little data
+DETAIL:  This will cause low recall.
+HINT:  Drop the index until the table has more data.
+CREATE INDEX
+ALTER TABLE
+psql:tests/setup/schema-bundle.sql:9047: NOTICE:  policy "ide_member_read" for relation "regwatch.internal_document_embeddings" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+psql:tests/setup/schema-bundle.sql:9060: NOTICE:  function regwatch.search_internal_documents_hybrid(text,text,pg_catalog.int4,pg_catalog.float8,uuid[],pg_catalog.bool) does not exist, skipping
+DROP FUNCTION
+CREATE FUNCTION
+GRANT
+COMMENT
+CREATE TABLE
+CREATE INDEX
+ALTER TABLE

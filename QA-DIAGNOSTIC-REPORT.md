@@ -156,6 +156,29 @@ policy · F12 single-org-per-user enforcement vs org-switcher · F16 audit-log c
 
 ---
 
+## 5b. Live results — Phase 2: multi-tenant isolation ✅ PASS (39/39)
+
+Test env provisioned (throwaway Supabase, 33 regwatch tables, RLS on all tenant
+tables, 1,128 seed items). Seeded 6 fixture users (Org A owner/admin/member,
+Org B owner, a multi-org user, a no-org user) and ran an RLS probe that simulates
+each user's JWT in-database (`set role authenticated` + `request.jwt.claims`) so
+policies evaluate exactly as via PostgREST. Artifacts: `tests/setup/seed-fixtures.sql`,
+`tests/isolation/rls-probe.mjs`, `tests/reports/rls-probe.log`.
+
+| Dimension | Result |
+|-----------|--------|
+| **Read isolation** | Every actor sees own org, **0 cross-tenant rows** across organizations, members, footprints, assets, internal_documents, footprint_matches, audit_log |
+| **Positive controls** | Own-org data visible/writable (no false lock-out) |
+| **Multi-org user (F12)** | User in Org B + own Org X sees exactly those two, **not** Org A — `.limit(1)` picks one org but RLS still scopes correctly; no cross-leak |
+| **No-org user** | Sees nothing anywhere |
+| **Write isolation** | A1 INSERT into Org B → **RLS denied**; UPDATE Org B → **0 rows** |
+| **Role escalation** | Member A3 cannot self-promote, add members, or edit org settings (all blocked); admin A2 can (positive) |
+
+**→ F7 validated:** RLS is correctly and consistently enforced, so the
+RLS-dependent `/preview` endpoint is safe at the data layer. **No tenant-isolation
+defects found.** (Remaining isolation check: app-level IDOR via the running app —
+deferred to the e2e phase.)
+
 ## 6. Pending — live phases (need the test environment)
 Not yet executed; require the dedicated test Supabase + Stripe test mode:
 - **Multi-tenant isolation (Phase 2):** empirically prove A1 cannot read/write Org B across
