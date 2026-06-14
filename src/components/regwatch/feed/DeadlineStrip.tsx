@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { FeedItem } from "@/lib/regwatch/feed-queries";
 import { FootprintScoreChip } from "./FootprintScoreChip";
@@ -33,35 +34,36 @@ export function DeadlineStrip({ items }: Props) {
       ? null
       : [...bucket].sort((a, b) => b.score - a.score)[0];
 
-  const cards: { window: string; count: number; top: FeedItem | null }[] = [
-    { window: "30 days", count: buckets.d30.length, top: topPer(buckets.d30) },
-    { window: "60 days", count: buckets.d60.length, top: topPer(buckets.d60) },
-    { window: "90 days", count: buckets.d90.length, top: topPer(buckets.d90) },
+  const cards: { days: number; count: number; top: FeedItem | null }[] = [
+    { days: 30, count: buckets.d30.length, top: topPer(buckets.d30) },
+    { days: 60, count: buckets.d60.length, top: topPer(buckets.d60) },
+    { days: 90, count: buckets.d90.length, top: topPer(buckets.d90) },
   ];
 
   return (
     <div className="grid gap-3 sm:grid-cols-3">
       {cards.map((c) => (
-        <DeadlineCard key={c.window} {...c} />
+        <DeadlineCard key={c.days} {...c} />
       ))}
     </div>
   );
 }
 
 function DeadlineCard({
-  window: w,
+  days,
   count,
   top,
 }: {
-  window: string;
+  days: number;
   count: number;
   top: FeedItem | null;
 }) {
+  const t = useTranslations("regwatch.monitor");
   return (
     <div className="rounded-lg border border-card-border bg-card-bg/60 p-3">
       <div className="flex items-baseline justify-between">
         <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-          Hitting in {w}
+          {t("deadlineHittingIn", { days })}
         </p>
         <span className="font-mono text-lg font-semibold text-foreground">
           {count}
@@ -87,7 +89,7 @@ function DeadlineCard({
           </p>
         </Link>
       ) : (
-        <p className="mt-2 text-xs text-muted">No deadlines in this window.</p>
+        <p className="mt-2 text-xs text-muted">{t("deadlineNoneInWindow")}</p>
       )}
     </div>
   );

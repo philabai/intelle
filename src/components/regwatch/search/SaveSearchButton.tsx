@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { saveSearch } from "@/lib/regwatch/saved-searches-actions";
 
@@ -35,6 +36,7 @@ export function SaveSearchButton({
   alreadySaved,
   authed,
 }: Props) {
+  const t = useTranslations("regwatch.search");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(alreadySaved);
@@ -45,9 +47,9 @@ export function SaveSearchButton({
       <a
         href={`/regwatch/login?next=${encodeURIComponent(searchHref(query, filters))}`}
         className="inline-flex items-center gap-1.5 rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-muted hover:border-brand-blue hover:text-foreground"
-        title="Sign in to save searches"
+        title={t("signInToSaveTitle")}
       >
-        ☆ Sign in to save
+        ☆ {t("signInToSave")}
       </a>
     );
   }
@@ -57,7 +59,7 @@ export function SaveSearchButton({
     startTransition(async () => {
       const res = await saveSearch({ query, filters, resultCountAtSave: resultCount });
       if (!res.ok) {
-        setError(res.error ?? "Could not save");
+        setError(res.error ?? t("couldNotSave"));
         return;
       }
       setSaved(true);
@@ -76,13 +78,9 @@ export function SaveSearchButton({
             ? "border-brand-teal/40 bg-brand-teal/10 text-brand-teal"
             : "border-card-border bg-card-bg text-foreground hover:border-brand-blue"
         }`}
-        title={
-          saved
-            ? "Already in your Saved searches — click to refresh the timestamp"
-            : "Save this query to /regwatch/saved"
-        }
+        title={saved ? t("savedTitle") : t("saveTitle")}
       >
-        {saved ? "★ Saved" : "☆ Save this search"}
+        {saved ? `★ ${t("saved")}` : `☆ ${t("saveThisSearch")}`}
       </button>
       {error && <span className="text-[11px] text-red-400">{error}</span>}
       {saved && !error && (
@@ -90,7 +88,7 @@ export function SaveSearchButton({
           href="/regwatch/saved"
           className="text-[11px] text-brand-teal hover:underline"
         >
-          View Saved →
+          {t("viewSaved")}
         </a>
       )}
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export function FeedRow({ feedItem: f, assigneeOptions = [] }: Props) {
+  const t = useTranslations("regwatch.monitor");
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const [seenAt, setSeenAt] = useState(f.seen_at);
@@ -52,15 +54,15 @@ export function FeedRow({ feedItem: f, assigneeOptions = [] }: Props) {
   const why: string[] = [];
   const r = f.match_reason;
   if (r) {
-    if (r.geo.matched && r.geo.via) why.push(`Geography: ${r.geo.via}`);
+    if (r.geo.matched && r.geo.via) why.push(t("whyGeography", { value: r.geo.via }));
     if (r.regulator.matched && r.regulator.via)
-      why.push(`Followed regulator: ${r.regulator.via}`);
+      why.push(t("whyRegulator", { value: r.regulator.via }));
     if (r.topic.matched.length > 0)
-      why.push(`Topics: ${r.topic.matched.map(topicLabel).join(", ")}`);
+      why.push(t("whyTopics", { value: r.topic.matched.map(topicLabel).join(", ") }));
     if (r.naics.matched.length > 0)
-      why.push(`NAICS: ${r.naics.matched.join(", ")}`);
+      why.push(t("whyNaics", { value: r.naics.matched.join(", ") }));
     if (r.substance.matched.length > 0)
-      why.push(`Substances: ${r.substance.matched.join(", ")}`);
+      why.push(t("whySubstances", { value: r.substance.matched.join(", ") }));
   }
 
   function expandAndMarkSeen() {
@@ -100,7 +102,7 @@ export function FeedRow({ feedItem: f, assigneeOptions = [] }: Props) {
       if (res.ok && res.briefingId) {
         router.push(`/regwatch/briefing/${res.briefingId}`);
       } else {
-        setBriefingError(res.error ?? "Briefing failed");
+        setBriefingError(res.error ?? t("briefingFailed"));
         setBriefingPending(false);
       }
     } catch (err) {
@@ -147,10 +149,12 @@ export function FeedRow({ feedItem: f, assigneeOptions = [] }: Props) {
           )}
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1 text-end text-[11px] text-muted">
-          <span>{changedAgo} ago</span>
+          <span>{t("changedAgo", { time: changedAgo })}</span>
           {deadlineLabel && (
             <span className="text-foreground/80">
-              {deadlineKind === "consultation" ? "closes" : "eff."} {deadlineLabel}
+              {deadlineKind === "consultation"
+                ? t("deadlineCloses", { date: deadlineLabel })
+                : t("deadlineEffective", { date: deadlineLabel })}
             </span>
           )}
         </div>
@@ -164,7 +168,7 @@ export function FeedRow({ feedItem: f, assigneeOptions = [] }: Props) {
           {why.length > 0 && (
             <div className="mt-3">
               <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-                Why this matches your footprint
+                {t("whyHeading")}
               </p>
               <ul className="mt-1 space-y-0.5 text-xs text-muted">
                 {why.map((w, idx) => (
@@ -187,7 +191,7 @@ export function FeedRow({ feedItem: f, assigneeOptions = [] }: Props) {
               href={href}
               className="rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-foreground hover:border-brand-teal"
             >
-              Open regulation →
+              {t("openRegulation")}
             </Link>
             {resolvedAt ? (
               <button
@@ -195,7 +199,7 @@ export function FeedRow({ feedItem: f, assigneeOptions = [] }: Props) {
                 onClick={onUndo}
                 className="rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-muted hover:text-foreground"
               >
-                Un-resolve
+                {t("unResolve")}
               </button>
             ) : (
               <button
@@ -203,7 +207,7 @@ export function FeedRow({ feedItem: f, assigneeOptions = [] }: Props) {
                 onClick={onResolve}
                 className="rounded-md border border-brand-teal/40 bg-brand-teal/10 px-3 py-1.5 text-xs text-brand-teal hover:bg-brand-teal/20"
               >
-                Mark resolved
+                {t("markResolved")}
               </button>
             )}
             <button
@@ -228,14 +232,13 @@ export function FeedRow({ feedItem: f, assigneeOptions = [] }: Props) {
                 </svg>
               )}
               {briefingPending
-                ? "Generating impact briefing… (~10–20s)"
-                : "Generate impact briefing"}
+                ? t("briefingGenerating")
+                : t("briefingGenerate")}
             </button>
           </div>
           {briefingPending && (
             <p className="mt-2 text-[11px] text-muted">
-              Claude Opus is reading the regulation + your footprint to write a
-              4-section briefing. Don&apos;t close this row until it lands.
+              {t("briefingNote")}
             </p>
           )}
           {briefingError && (

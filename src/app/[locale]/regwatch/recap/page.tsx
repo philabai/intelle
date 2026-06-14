@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -49,6 +50,7 @@ const SEV_STYLE: Record<string, string> = {
 };
 
 export default async function RecapPage() {
+  const t = useTranslations("regwatch.monitor");
   const supabase = await createClient();
   const {
     data: { user },
@@ -65,13 +67,16 @@ export default async function RecapPage() {
     return (
       <RegwatchAppShell authed={false}>
         <Hero
-          eyebrow={`Week of ${weekOf}`}
-          title="This week across the corpus"
-          subtitle={`${corpus.total.toLocaleString()} regulations were added or updated in the last 7 days across ${corpus.byJurisdiction.length} jurisdictions.`}
+          eyebrow={t("weekOf", { date: weekOf })}
+          title={t("corpusHeroTitle")}
+          subtitle={t("corpusHeroSubtitle", {
+            total: corpus.total.toLocaleString(),
+            jurisdictions: corpus.byJurisdiction.length,
+          })}
         />
         <div className="mx-auto max-w-5xl px-4 pb-16 sm:px-6">
           <JurisdictionBar items={corpus.byJurisdiction} />
-          <SectionTitle>Recently updated</SectionTitle>
+          <SectionTitle>{t("recentlyUpdated")}</SectionTitle>
           <CorpusList items={corpus.items} />
           <SignupCta />
         </div>
@@ -89,19 +94,19 @@ export default async function RecapPage() {
     return (
       <RegwatchAppShell authed>
         <Hero
-          eyebrow={`Week of ${weekOf}`}
-          title="Set a footprint to personalise your recap"
-          subtitle="Once you define your geographies, activities and topics, this page becomes a weekly digest of the changes that matter to you. Meanwhile, here's what moved across the whole corpus."
+          eyebrow={t("weekOf", { date: weekOf })}
+          title={t("noFootprintHeroTitle")}
+          subtitle={t("noFootprintHeroSubtitle")}
         />
         <div className="mx-auto max-w-5xl px-4 pb-16 sm:px-6">
           <Link
             href="/regwatch/settings/footprint"
             className="mb-8 inline-block rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90"
           >
-            Configure your footprint →
+            {t("configureFootprintCta")}
           </Link>
           <JurisdictionBar items={corpus.byJurisdiction} />
-          <SectionTitle>Recently updated across the corpus</SectionTitle>
+          <SectionTitle>{t("recentlyUpdatedCorpus")}</SectionTitle>
           <CorpusList items={corpus.items} />
         </div>
       </RegwatchAppShell>
@@ -132,80 +137,88 @@ export default async function RecapPage() {
   return (
     <RegwatchAppShell authed>
       <Hero
-        eyebrow={`Week of ${weekOf}`}
-        title={`${org?.organization.name ?? "Your"} — week in review`}
-        subtitle={`${counts.total.toLocaleString()} regulations match your footprint right now. ${counts.unseen} unseen · ${counts.hits_30d} with a deadline in the next 30 days.`}
+        eyebrow={t("weekOf", { date: weekOf })}
+        title={t("recapHeroTitle", { org: org?.organization.name ?? t("feedHeadingFallbackOrg") })}
+        subtitle={t("recapHeroSubtitle", {
+          total: counts.total.toLocaleString(),
+          unseen: counts.unseen,
+          deadlines: counts.hits_30d,
+        })}
       />
 
       <div className="mx-auto max-w-5xl px-4 pb-16 sm:px-6">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Stat label="Matching" value={counts.total} />
-          <Stat label="Critical" value={counts.critical} accent="red" />
-          <Stat label="High" value={counts.high} accent="amber" />
-          <Stat label="Deadlines ≤30d" value={counts.hits_30d} accent="teal" />
+          <Stat label={t("statMatching")} value={counts.total} />
+          <Stat label={t("statCritical")} value={counts.critical} accent="red" />
+          <Stat label={t("statHigh")} value={counts.high} accent="amber" />
+          <Stat label={t("statDeadlines30d")} value={counts.hits_30d} accent="teal" />
         </div>
 
-        <SectionTitle action={{ href: "/regwatch/feed", label: "Open full feed →" }}>
-          Top priorities
+        <SectionTitle action={{ href: "/regwatch/feed", label: t("openFullFeed") }}>
+          {t("topPriorities")}
         </SectionTitle>
-        <FeedList items={topPriorities} empty="No high-scoring matches right now." />
+        <FeedList items={topPriorities} empty={t("emptyTopPriorities")} />
 
-        <SectionTitle>Recently changed</SectionTitle>
-        <FeedList items={recentlyChanged} empty="No recent changes among your matches." />
+        <SectionTitle>{t("recentlyChanged")}</SectionTitle>
+        <FeedList items={recentlyChanged} empty={t("emptyRecentlyChanged")} />
 
         {deadlines.length > 0 && (
           <>
-            <SectionTitle>Approaching deadlines</SectionTitle>
+            <SectionTitle>{t("approachingDeadlines")}</SectionTitle>
             <FeedList items={deadlines.slice(0, 6)} showDeadline empty="" />
           </>
         )}
 
-        <SectionTitle action={{ href: "/regwatch/obligations", label: "Manage obligations →" }}>
-          Compliance obligations
+        <SectionTitle action={{ href: "/regwatch/obligations", label: t("manageObligations") }}>
+          {t("complianceObligations")}
         </SectionTitle>
         {obligations.total === 0 ? (
           <p className="text-sm text-muted">
-            No obligations yet —{" "}
-            <Link href="/regwatch/obligations" className="text-brand-teal hover:underline">
-              pin a regulation to an asset
-            </Link>{" "}
-            to start tracking.
+            {t.rich("emptyObligations", {
+              link: (chunks) => (
+                <Link href="/regwatch/obligations" className="text-brand-teal hover:underline">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </p>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            <Stat label="Total" value={obligations.total} />
-            <Stat label="Open" value={obligations.open} accent="teal" />
-            <Stat label="In review" value={obligations.inReview} />
-            <Stat label="Verified" value={obligations.verified} />
-            <Stat label="Critical" value={obligations.critical} accent="red" />
-            <Stat label="At risk" value={obligations.atRisk} accent="amber" />
+            <Stat label={t("statTotal")} value={obligations.total} />
+            <Stat label={t("statOpen")} value={obligations.open} accent="teal" />
+            <Stat label={t("statInReview")} value={obligations.inReview} />
+            <Stat label={t("statVerified")} value={obligations.verified} />
+            <Stat label={t("statCritical")} value={obligations.critical} accent="red" />
+            <Stat label={t("statAtRisk")} value={obligations.atRisk} accent="amber" />
           </div>
         )}
 
-        <SectionTitle action={{ href: "/regwatch/documents", label: "Open documents →" }}>
-          Company documents
+        <SectionTitle action={{ href: "/regwatch/documents", label: t("openDocuments") }}>
+          {t("companyDocuments")}
         </SectionTitle>
         {documents.total === 0 ? (
           <p className="text-sm text-muted">
-            No documents yet —{" "}
-            <Link href="/regwatch/documents" className="text-brand-teal hover:underline">
-              author an SOP or policy
-            </Link>{" "}
-            to get started.
+            {t.rich("emptyDocuments", {
+              link: (chunks) => (
+                <Link href="/regwatch/documents" className="text-brand-teal hover:underline">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </p>
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-              <Stat label="Total" value={documents.total} />
-              <Stat label="Drafts" value={documents.draft} accent="teal" />
-              <Stat label="In review" value={documents.inReview} accent="amber" />
-              <Stat label="Live" value={documents.live} />
-              <Stat label="Open comments" value={documents.openComments} />
+              <Stat label={t("statTotal")} value={documents.total} />
+              <Stat label={t("statDrafts")} value={documents.draft} accent="teal" />
+              <Stat label={t("statInReview")} value={documents.inReview} accent="amber" />
+              <Stat label={t("statLive")} value={documents.live} />
+              <Stat label={t("statOpenComments")} value={documents.openComments} />
             </div>
             {commentsByDoc.length > 0 && (
               <div className="mt-3 rounded-xl border border-card-border bg-card-bg/40 p-4">
                 <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-                  Under commenting
+                  {t("underCommenting")}
                 </p>
                 <ul className="mt-2 space-y-1.5">
                   {commentsByDoc.map((c) => (
@@ -217,7 +230,7 @@ export default async function RecapPage() {
                         {c.title}
                       </Link>
                       <span className="shrink-0 text-xs text-amber-300">
-                        {c.count} open {c.count === 1 ? "comment" : "comments"}
+                        {t("openComments", { count: c.count })}
                       </span>
                     </li>
                   ))}
@@ -229,7 +242,7 @@ export default async function RecapPage() {
 
         {topTopics.length > 0 && (
           <>
-            <SectionTitle>Active topics</SectionTitle>
+            <SectionTitle>{t("activeTopics")}</SectionTitle>
             <div className="flex flex-wrap gap-2">
               {topTopics.map((t) => (
                 <Link
@@ -295,6 +308,7 @@ function Stat({ label, value, accent }: { label: string; value: number; accent?:
 }
 
 function FeedList({ items, empty, showDeadline }: { items: FeedItem[]; empty: string; showDeadline?: boolean }) {
+  const t = useTranslations("regwatch.monitor");
   if (items.length === 0) {
     return empty ? <p className="text-sm text-muted">{empty}</p> : null;
   }
@@ -318,7 +332,9 @@ function FeedList({ items, empty, showDeadline }: { items: FeedItem[]; empty: st
               </p>
             </div>
             <span className="shrink-0 text-[11px] text-muted">
-              {showDeadline && dl ? `due ${fmtDate(dl)}` : `changed ${fmtDate(f.item.last_changed_at)}`}
+              {showDeadline && dl
+                ? t("dueDate", { date: fmtDate(dl) })
+                : t("changedDate", { date: fmtDate(f.item.last_changed_at) })}
             </span>
           </Link>
         );
@@ -328,7 +344,8 @@ function FeedList({ items, empty, showDeadline }: { items: FeedItem[]; empty: st
 }
 
 function CorpusList({ items }: { items: RecapItem[] }) {
-  if (items.length === 0) return <p className="text-sm text-muted">No changes in the last 7 days.</p>;
+  const t = useTranslations("regwatch.monitor");
+  if (items.length === 0) return <p className="text-sm text-muted">{t("noCorpusChanges")}</p>;
   return (
     <div className="overflow-hidden rounded-xl border border-card-border bg-background">
       {items.map((r) => (
@@ -368,20 +385,20 @@ function JurisdictionBar({ items }: { items: { code: string; count: number }[] }
 }
 
 function SignupCta() {
+  const t = useTranslations("regwatch.monitor");
   return (
     <div className="mt-12 rounded-xl border border-brand-teal/40 bg-brand-teal/5 p-6 text-center">
       <h3 className="text-lg font-semibold tracking-tight text-foreground">
-        Get this weekly — scored to your operations
+        {t("signupCtaTitle")}
       </h3>
       <p className="mx-auto mt-2 max-w-xl text-sm text-muted">
-        Define your footprint once and your recap becomes a personalised digest of
-        only the regulations that touch your geographies, activities and assets.
+        {t("signupCtaBody")}
       </p>
       <Link
         href="/regwatch/signup"
         className="mt-4 inline-block rounded-md bg-brand-blue px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-blue/90"
       >
-        Create a free account →
+        {t("signupCtaButton")}
       </Link>
     </div>
   );

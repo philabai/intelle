@@ -1,22 +1,18 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { useTransition } from "react";
 import type { Severity } from "@/lib/regwatch/match";
 
-const SORTS = [
-  { value: "score", label: "Footprint relevance" },
-  { value: "newest", label: "Newest match" },
-  { value: "deadline", label: "Approaching deadline" },
-  { value: "recently_changed", label: "Recently changed" },
-];
+const SORT_VALUES = ["score", "newest", "deadline", "recently_changed"] as const;
 
-const SEVERITIES: { value: Severity | ""; label: string }[] = [
-  { value: "", label: "All severities" },
-  { value: "critical", label: "Critical only" },
-  { value: "high", label: "High +" },
-  { value: "normal", label: "Normal +" },
+const SEVERITY_VALUES: { value: Severity | ""; key: string }[] = [
+  { value: "", key: "sevAll" },
+  { value: "critical", key: "sevCriticalOnly" },
+  { value: "high", key: "sevHighPlus" },
+  { value: "normal", key: "sevNormalPlus" },
 ];
 
 interface Props {
@@ -31,8 +27,15 @@ interface Props {
 }
 
 export function FeedFilters({ counts }: Props) {
+  const t = useTranslations("regwatch.monitor");
   const router = useRouter();
   const pathname = usePathname();
+  const sortLabels: Record<(typeof SORT_VALUES)[number], string> = {
+    score: t("sortScore"),
+    newest: t("sortNewest"),
+    deadline: t("sortDeadline"),
+    recently_changed: t("sortRecentlyChanged"),
+  };
   const params = useSearchParams();
   const [, startTransition] = useTransition();
 
@@ -51,37 +54,37 @@ export function FeedFilters({ counts }: Props) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-card-border bg-card-bg/40 px-4 py-3 sm:px-6">
       <div className="flex flex-wrap items-center gap-2">
-        <Pill label="Critical" count={counts.critical} active={severity === "critical"} onClick={() => update("severity", severity === "critical" ? "" : "critical")} tone="critical" />
-        <Pill label="High" count={counts.high} active={severity === "high"} onClick={() => update("severity", severity === "high" ? "" : "high")} tone="high" />
-        <Pill label="Normal" count={counts.normal} active={severity === "normal"} onClick={() => update("severity", severity === "normal" ? "" : "normal")} tone="normal" />
-        <Pill label="Resolved" count={counts.resolved} active={showResolved} onClick={() => update("show_resolved", showResolved ? "" : "1")} tone="muted" />
-        <Pill label="Assigned to me" count={null} active={assignedToMe} onClick={() => update("assigned_to_me", assignedToMe ? "" : "1")} tone="normal" />
+        <Pill label={t("pillCritical")} count={counts.critical} active={severity === "critical"} onClick={() => update("severity", severity === "critical" ? "" : "critical")} tone="critical" />
+        <Pill label={t("pillHigh")} count={counts.high} active={severity === "high"} onClick={() => update("severity", severity === "high" ? "" : "high")} tone="high" />
+        <Pill label={t("pillNormal")} count={counts.normal} active={severity === "normal"} onClick={() => update("severity", severity === "normal" ? "" : "normal")} tone="normal" />
+        <Pill label={t("pillResolved")} count={counts.resolved} active={showResolved} onClick={() => update("show_resolved", showResolved ? "" : "1")} tone="muted" />
+        <Pill label={t("pillAssignedToMe")} count={null} active={assignedToMe} onClick={() => update("assigned_to_me", assignedToMe ? "" : "1")} tone="normal" />
       </div>
       <div className="flex items-center gap-2">
         <label className="flex items-center gap-2 text-xs text-muted">
-          <span>Sort:</span>
+          <span>{t("sortLabel")}</span>
           <select
             value={sort}
             onChange={(e) => update("sort", e.target.value)}
             className="rounded-md border border-card-border bg-card-bg px-2 py-1 text-xs text-foreground focus:border-brand-blue focus:outline-none"
           >
-            {SORTS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
+            {SORT_VALUES.map((value) => (
+              <option key={value} value={value}>
+                {sortLabels[value]}
               </option>
             ))}
           </select>
         </label>
         <label className="flex items-center gap-2 text-xs text-muted">
-          <span>Severity:</span>
+          <span>{t("severityLabel")}</span>
           <select
             value={severity}
             onChange={(e) => update("severity", e.target.value)}
             className="rounded-md border border-card-border bg-card-bg px-2 py-1 text-xs text-foreground focus:border-brand-blue focus:outline-none"
           >
-            {SEVERITIES.map((s) => (
+            {SEVERITY_VALUES.map((s) => (
               <option key={s.value} value={s.value}>
-                {s.label}
+                {t(s.key)}
               </option>
             ))}
           </select>

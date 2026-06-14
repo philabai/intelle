@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -25,6 +26,7 @@ function pick(
 }
 
 export default async function BillingPage({ searchParams }: Props) {
+  const t = useTranslations("regwatch.settings");
   const raw = await searchParams;
   const checkoutStatus = pick(raw, "checkout");
 
@@ -60,52 +62,51 @@ export default async function BillingPage({ searchParams }: Props) {
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/feed" className="hover:text-foreground">
-            My Feed
+            {t("breadcrumbMyFeed")}
           </Link>
           <span className="mx-2">/</span>
           <Link href="/regwatch/settings/account" className="hover:text-foreground">
-            Account
+            {t("breadcrumbAccount")}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-foreground">Billing</span>
+          <span className="text-foreground">{t("breadcrumbBilling")}</span>
         </nav>
 
         <header className="mt-4 mb-8">
           <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-            {org?.organization.name ?? "Your organization"}
+            {org?.organization.name ?? t("yourOrganization")}
           </p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Billing
+            {t("billingTitle")}
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted">
-            Currently on the{" "}
-            <span className="font-medium text-foreground">{tier}</span> tier. Upgrade
-            to unlock unlimited Iris Q&amp;A, email digests, web push, and the
-            assignment workflow.
+            {t.rich("currentTier", {
+              tier,
+              strong: (chunks) => (
+                <span className="font-medium text-foreground">{chunks}</span>
+              ),
+            })}
           </p>
         </header>
 
         {checkoutStatus === "success" && (
           <div className="mb-6 rounded-lg border border-brand-teal/40 bg-brand-teal/10 p-4 text-sm text-brand-teal">
-            Checkout completed. Your subscription is being provisioned — the tier
-            will update within a few seconds once Stripe&apos;s webhook fires. Refresh
-            this page to see the change.
+            {t("checkoutSuccess")}
           </div>
         )}
         {checkoutStatus === "cancelled" && (
           <div className="mb-6 rounded-lg border border-amber-400/30 bg-amber-400/5 p-4 text-sm text-amber-300">
-            Checkout cancelled. Nothing was charged.
+            {t("checkoutCancelled")}
           </div>
         )}
 
         {!canManage ? (
           <div className="rounded-xl border border-card-border bg-card-bg/40 p-6">
             <p className="text-sm text-foreground">
-              Only owners and admins can change the billing plan.
+              {t("billingOwnersOnly")}
             </p>
             <p className="mt-2 text-xs text-muted">
-              Ask an owner to handle the upgrade. Once it&apos;s in place, your
-              account inherits the org&apos;s tier automatically.
+              {t("billingOwnersOnlyHint")}
             </p>
           </div>
         ) : (

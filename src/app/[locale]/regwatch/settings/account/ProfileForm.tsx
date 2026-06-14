@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { updateMyName } from "@/lib/regwatch/profile-actions";
 
@@ -15,6 +16,7 @@ interface Props {
  * trigger + the page greeting pick up the new name.
  */
 export function ProfileForm({ initialFirstName, initialLastName }: Props) {
+  const t = useTranslations("regwatch.settings");
   const router = useRouter();
   const [firstName, setFirstName] = useState(initialFirstName);
   const [lastName, setLastName] = useState(initialLastName);
@@ -33,7 +35,7 @@ export function ProfileForm({ initialFirstName, initialLastName }: Props) {
     startTransition(async () => {
       const res = await updateMyName({ firstName, lastName });
       if (!res.ok) {
-        setError(res.error ?? "Could not save");
+        setError(res.error ?? t("couldNotSave"));
         return;
       }
       setSaved(true);
@@ -44,11 +46,11 @@ export function ProfileForm({ initialFirstName, initialLastName }: Props) {
   return (
     <form onSubmit={onSubmit} className="mt-4 border-t border-card-border pt-4">
       <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
-        Your name
+        {t("yourName")}
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-[11px] text-muted">First name</span>
+          <span className="text-[11px] text-muted">{t("firstName")}</span>
           <input
             type="text"
             value={firstName}
@@ -61,7 +63,7 @@ export function ProfileForm({ initialFirstName, initialLastName }: Props) {
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-[11px] text-muted">Last name</span>
+          <span className="text-[11px] text-muted">{t("lastName")}</span>
           <input
             type="text"
             value={lastName}
@@ -80,10 +82,10 @@ export function ProfileForm({ initialFirstName, initialLastName }: Props) {
           disabled={pending || !dirty}
           className="rounded-md bg-brand-blue px-4 py-1.5 text-xs font-medium text-white hover:bg-brand-blue/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {pending ? "Saving…" : "Save name"}
+          {pending ? t("saving") : t("saveName")}
         </button>
         {saved && !error && (
-          <span className="text-[11px] text-brand-teal">✓ Saved</span>
+          <span className="text-[11px] text-brand-teal">{t("saved")}</span>
         )}
         {error && <span className="text-[11px] text-red-400">{error}</span>}
       </div>

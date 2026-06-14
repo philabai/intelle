@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import {
   listRegulationsHybrid,
@@ -45,6 +46,7 @@ function pickFilter(
 }
 
 export default async function SearchPage({ searchParams }: Props) {
+  const t = useTranslations("regwatch.search");
   const raw = await searchParams;
   const query = pickFilter(raw, "q") ?? "";
 
@@ -139,15 +141,13 @@ export default async function SearchPage({ searchParams }: Props) {
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <header>
           <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-            AI Search
+            {t("eyebrow")}
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Ask anything, powered by AI
+            {t("heading")}
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-muted">
-            Ask a question in plain English, paste a citation, or search by keyword —
-            and get an instant, source-cited answer across regulations, policies, news,
-            your company documents and assets.
+            {t("subheading")}
           </p>
         </header>
 
@@ -178,8 +178,8 @@ export default async function SearchPage({ searchParams }: Props) {
         {!query ? (
           <div className="mt-12">
             <EmptyState
-              title="Ask Iris anything about the corpus."
-              description="Compliance-grade answers, citation-anchored to the regulation. Choose your sources above, then click any sample query to see it in action."
+              title={t("emptyTitle")}
+              description={t("emptyDescription")}
             />
           </div>
         ) : (

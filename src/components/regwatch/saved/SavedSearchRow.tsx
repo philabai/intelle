@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
@@ -36,6 +37,7 @@ export function SavedSearchRow({
   resultCountAtSave,
   createdAt,
 }: Props) {
+  const t = useTranslations("regwatch.monitor");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [renaming, setRenaming] = useState(false);
@@ -44,17 +46,13 @@ export function SavedSearchRow({
 
   function onDelete() {
     setError(null);
-    if (
-      !confirm(
-        `Delete saved search "${label ?? query}"? This can't be undone.`,
-      )
-    ) {
+    if (!confirm(t("savedDeleteConfirm", { name: label ?? query }))) {
       return;
     }
     startTransition(async () => {
       const res = await deleteSavedSearch({ id });
       if (!res.ok) {
-        setError(res.error ?? "Delete failed");
+        setError(res.error ?? t("savedDeleteError"));
         return;
       }
       router.refresh();
@@ -66,7 +64,7 @@ export function SavedSearchRow({
     startTransition(async () => {
       const res = await renameSavedSearch({ id, label: draftLabel.trim() });
       if (!res.ok) {
-        setError(res.error ?? "Rename failed");
+        setError(res.error ?? t("savedRenameError"));
         return;
       }
       setRenaming(false);
@@ -83,7 +81,7 @@ export function SavedSearchRow({
               <input
                 value={draftLabel}
                 onChange={(e) => setDraftLabel(e.target.value)}
-                placeholder="Label (optional)"
+                placeholder={t("savedLabelPlaceholder")}
                 autoFocus
                 className="min-w-0 flex-1 rounded-md border border-card-border bg-background px-2 py-1 text-xs text-foreground focus:border-brand-blue focus:outline-none"
               />
@@ -93,7 +91,7 @@ export function SavedSearchRow({
                 disabled={pending}
                 className="rounded-md bg-brand-blue px-2 py-1 text-[11px] font-medium text-white disabled:opacity-50"
               >
-                Save
+                {t("save")}
               </button>
               <button
                 type="button"
@@ -103,7 +101,7 @@ export function SavedSearchRow({
                 }}
                 className="text-[11px] text-muted hover:text-foreground"
               >
-                Cancel
+                {t("cancel")}
               </button>
             </div>
           ) : (
@@ -114,7 +112,8 @@ export function SavedSearchRow({
                     {label}
                   </p>
                   <p className="mt-0.5 truncate text-[11px] text-muted">
-                    Query: <span className="text-foreground/80">{query}</span>
+                    {t("queryPrefix")}{" "}
+                    <span className="text-foreground/80">{query}</span>
                   </p>
                 </>
               ) : (
@@ -129,10 +128,13 @@ export function SavedSearchRow({
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <div className="text-[10px] text-muted">
-          Saved{" "}
-          {formatDistanceToNowStrict(new Date(createdAt), { addSuffix: true })}
+          {t("savedAt", {
+            time: formatDistanceToNowStrict(new Date(createdAt), {
+              addSuffix: true,
+            }),
+          })}
           {resultCountAtSave !== null && (
-            <> · {resultCountAtSave} matches at save</>
+            <> · {t("matchesAtSave", { count: resultCountAtSave })}</>
           )}
         </div>
         <div className="flex items-center gap-1">
@@ -140,7 +142,7 @@ export function SavedSearchRow({
             href={runHref(query, filters)}
             className="rounded-md border border-card-border bg-background px-2.5 py-1 text-[11px] text-foreground hover:border-brand-blue"
           >
-            Run →
+            {t("run")}
           </Link>
           {!renaming && (
             <button
@@ -148,7 +150,7 @@ export function SavedSearchRow({
               onClick={() => setRenaming(true)}
               className="rounded-md border border-card-border bg-background px-2.5 py-1 text-[11px] text-muted hover:border-brand-blue hover:text-foreground"
             >
-              Rename
+              {t("rename")}
             </button>
           )}
           <button
@@ -157,7 +159,7 @@ export function SavedSearchRow({
             disabled={pending}
             className="rounded-md border border-card-border bg-background px-2.5 py-1 text-[11px] text-muted hover:border-red-500/60 hover:text-red-300 disabled:opacity-50"
           >
-            Delete
+            {t("delete")}
           </button>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { getMyOrganization } from "@/lib/regwatch/footprint";
@@ -10,14 +11,8 @@ import { ProfileForm } from "./ProfileForm";
 export const metadata = { title: "Profile" };
 export const dynamic = "force-dynamic";
 
-// Admin role (organization_members.role) → human label + tone.
-const ADMIN_ROLE_LABEL: Record<string, string> = {
-  owner: "Owner",
-  admin: "Administrator",
-  member: "Member",
-};
-
 export default async function AccountPage() {
+  const t = useTranslations("regwatch.settings");
   const supabase = await createClient();
   const {
     data: { user },
@@ -38,22 +33,30 @@ export default async function AccountPage() {
 
   const adminRole = membership?.role ?? "member";
   const isAdminLike = adminRole === "owner" || adminRole === "admin";
+  // Admin role (organization_members.role) → human label + tone.
+  const adminRoleLabel: Record<string, string> = {
+    owner: t("roleOwner"),
+    admin: t("roleAdministrator"),
+    member: t("roleMember"),
+  };
 
   return (
     <RegwatchAppShell authed={!!user}>
       <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-12 sm:px-6">
         <div>
           <span className="rounded-full bg-brand-teal/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-brand-teal">
-            Profile
+            {t("profileEyebrow")}
           </span>
           <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-            {fullName ? `Hi, ${firstName ?? fullName}` : "Your profile"}
+            {fullName
+              ? t("greeting", { name: firstName ?? fullName })
+              : t("yourProfile")}
           </h1>
         </div>
 
         <section className="rounded-lg border border-card-border bg-card-bg p-6">
           <h2 className="text-sm font-medium uppercase tracking-wider text-muted">
-            Signed in as
+            {t("signedInAs")}
           </h2>
           {fullName && (
             <p className="mt-2 text-lg text-foreground">{fullName}</p>
@@ -70,11 +73,11 @@ export default async function AccountPage() {
               }`}
               title={
                 isAdminLike
-                  ? "Admins can create documents, manage members, and assign reviewers."
-                  : "Members can review assignments and read the corpus."
+                  ? t("adminRoleHint")
+                  : t("memberRoleHint")
               }
             >
-              {ADMIN_ROLE_LABEL[adminRole] ?? "Member"}
+              {adminRoleLabel[adminRole] ?? t("roleMember")}
             </span>
             {functionalRole && (
               <span className="rounded-md bg-card-bg/60 px-2 py-0.5 text-[11px] text-muted">
@@ -93,21 +96,20 @@ export default async function AccountPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-sm font-medium uppercase tracking-wider text-muted">
-                Plan
+                {t("plan")}
               </h2>
               <p className="mt-2 text-lg capitalize text-foreground">
-                {org?.organization.tier ?? "Free"}
+                {org?.organization.tier ?? t("freeTier")}
               </p>
               <p className="mt-1 text-xs text-muted">
-                Upgrade for unlimited Iris Q&amp;A, email digests, web push, and
-                the assignment workflow.
+                {t("planUpgradeHint")}
               </p>
             </div>
             <Link
               href="/regwatch/settings/billing"
               className="shrink-0 rounded-md border border-brand-teal/40 bg-brand-teal/10 px-3 py-1.5 text-xs text-brand-teal hover:bg-brand-teal/20"
             >
-              Manage billing →
+              {t("manageBilling")}
             </Link>
           </div>
         </section>

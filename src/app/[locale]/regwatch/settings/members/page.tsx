@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -18,6 +19,7 @@ export const metadata = { title: "Team Members" };
 export const dynamic = "force-dynamic";
 
 export default async function MembersPage() {
+  const t = useTranslations("regwatch.settings");
   const supabase = await createClient();
   const {
     data: { user },
@@ -52,28 +54,25 @@ export default async function MembersPage() {
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/feed" className="hover:text-foreground">
-            My Feed
+            {t("breadcrumbMyFeed")}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-foreground">Team</span>
+          <span className="text-foreground">{t("breadcrumbTeam")}</span>
         </nav>
 
         <header className="mt-4 mb-8">
           <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-            {org?.organization.name ?? "Your organization"}
+            {org?.organization.name ?? t("yourOrganization")}
           </p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Team members
+            {t("teamMembersTitle")}
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted">
-            {members.length} {members.length === 1 ? "member" : "members"}
+            {t("membersCount", { count: members.length })}
             {invites.length > 0
-              ? ` · ${invites.length} pending invite${invites.length === 1 ? "" : "s"}`
+              ? ` · ${t("pendingInvitesCount", { count: invites.length })}`
               : ""}
-            . Admin roles control who can manage the org and invite others.
-            Functional roles (CCO / EHS Manager / Legal Counsel / ESG Lead /
-            Gov Affairs) live on each user&apos;s Footprint and drive their
-            Feed defaults.
+            {t("teamRolesHint")}
           </p>
         </header>
 
@@ -81,13 +80,10 @@ export default async function MembersPage() {
           <section className="mb-8 rounded-xl border border-card-border bg-card-bg/40 p-5 sm:p-6">
             <header>
               <h2 className="text-lg font-semibold tracking-tight text-foreground">
-                Add a member
+                {t("addMember")}
               </h2>
               <p className="mt-1 text-xs text-muted">
-                If the email matches an existing intelle.io account they&apos;re
-                added immediately. Otherwise Supabase sends a magic-link signup
-                email; once they accept, they&apos;re joined to your org with
-                the role you pick below.
+                {t("addMemberHint")}
               </p>
             </header>
             <div className="mt-4">
@@ -104,8 +100,7 @@ export default async function MembersPage() {
 
         {!canManage && (
           <p className="mt-4 text-xs text-muted">
-            You can view this team but only owners and admins can change roles
-            or remove members. To upgrade your role, ask an owner.
+            {t("viewOnlyNote")}
           </p>
         )}
       </div>

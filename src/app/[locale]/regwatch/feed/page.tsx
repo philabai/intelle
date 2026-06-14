@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { useTranslations } from "next-intl";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { getMyFootprint, getMyOrganization } from "@/lib/regwatch/footprint";
@@ -39,6 +40,7 @@ const VALID_SORTS: FeedSort[] = ["score", "newest", "deadline", "recently_change
 const VALID_SEVERITIES: Severity[] = ["critical", "high", "normal", "low"];
 
 export default async function FeedPage({ searchParams }: Props) {
+  const t = useTranslations("regwatch.monitor");
   const raw = await searchParams;
   const sort = (pick(raw, "sort") as FeedSort) ?? "score";
   const severity = (pick(raw, "severity") as Severity) ?? undefined;
@@ -93,22 +95,26 @@ export default async function FeedPage({ searchParams }: Props) {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <header className="mb-6">
           <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-            As of {today}
+            {t("feedAsOf", { date: today })}
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            {org?.organization.name ?? "Your"} Relevance Feed
+            {t("feedHeading", { org: org?.organization.name ?? t("feedHeadingFallbackOrg") })}
           </h1>
           <p className="mt-2 text-sm text-muted">
             {counts.total === 0
-              ? "Nothing scored yet — configure your footprint or wait for the matcher."
-              : `${counts.total} regulations match your footprint · ${counts.critical} critical, ${counts.high} high.`}
+              ? t("feedSubtitleEmpty")
+              : t("feedSubtitle", {
+                  total: counts.total,
+                  critical: counts.critical,
+                  high: counts.high,
+                })}
           </p>
         </header>
 
         {hasFootprint && deadlineItems.length > 0 && (
           <section className="mb-6">
             <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
-              Approaching deadlines
+              {t("approachingDeadlines")}
             </h2>
             <DeadlineStrip items={deadlineItems} />
           </section>
@@ -124,8 +130,7 @@ export default async function FeedPage({ searchParams }: Props) {
             </Suspense>
             {items.length === 0 ? (
               <p className="px-6 py-12 text-center text-sm text-muted">
-                No items match the current filter. Try Severity: &ldquo;Normal +&rdquo; or
-                toggle Resolved.
+                {t("feedNoItemsForFilter")}
               </p>
             ) : (
               items.map((item) => (

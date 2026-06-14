@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import {
@@ -63,6 +64,7 @@ export function SearchControls({
   folderTree?: DocumentFolderTreeNode[];
   unfiledCount?: number;
 }) {
+  const t = useTranslations("regwatch.search");
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -159,7 +161,7 @@ export function SearchControls({
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[11px] font-medium uppercase tracking-wider text-muted">
-            Sources
+            {t("sources")}
           </span>
           {SOURCE_TAXONOMY.map((s) => {
             const checked = sources.includes(s.value);
@@ -190,9 +192,9 @@ export function SearchControls({
           {sources.length === 0 && (
             <span
               className="text-[11px] text-muted"
-              title="No source selected — searching every source (regulations, policies & news)"
+              title={t("allSourcesTitle")}
             >
-              All sources
+              {t("allSources")}
             </span>
           )}
 
@@ -206,7 +208,7 @@ export function SearchControls({
                 type="button"
                 onClick={() => setCompanyDocs((v) => !v)}
                 aria-pressed={companyDocs}
-                title="Also search your organisation's internal documents"
+                title={t("companyDocsTitle")}
                 className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition ${
                   companyDocs
                     ? "border-brand-teal bg-brand-teal/15 text-foreground"
@@ -220,7 +222,7 @@ export function SearchControls({
                 >
                   {companyDocs ? "✓" : ""}
                 </span>
-                Company Docs
+                {t("companyDocs")}
                 {companyDocs && docFolders.length > 0 && (
                   <span className="rounded-full bg-brand-teal/25 px-1.5 text-[10px] font-semibold text-brand-teal">
                     {docFolders.length}
@@ -232,7 +234,7 @@ export function SearchControls({
                 type="button"
                 onClick={() => setAssets((v) => !v)}
                 aria-pressed={assets}
-                title="Also search your organisation's assets by name"
+                title={t("assetsTitle")}
                 className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition ${
                   assets
                     ? "border-brand-teal bg-brand-teal/15 text-foreground"
@@ -246,7 +248,7 @@ export function SearchControls({
                 >
                   {assets ? "✓" : ""}
                 </span>
-                Assets
+                {t("assets")}
               </button>
             </>
           )}
@@ -258,7 +260,7 @@ export function SearchControls({
           aria-expanded={advancedOpen}
           className="flex shrink-0 items-center gap-1.5 rounded-full border border-card-border bg-card-bg px-3 py-1.5 text-xs text-muted transition hover:border-brand-blue/50 hover:text-foreground"
         >
-          <span className="font-medium">Advanced search</span>
+          <span className="font-medium">{t("advancedSearch")}</span>
           {activeFacetGroups > 0 && (
             <span className="rounded-full bg-brand-blue/20 px-1.5 text-[10px] font-semibold text-brand-blue">
               {activeFacetGroups}
@@ -306,7 +308,7 @@ export function SearchControls({
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Ask anything, paste a citation, or search keywords…"
+          placeholder={t("inputPlaceholder")}
           className="flex-1 rounded-md border border-card-border bg-card-bg px-4 py-3 text-base text-foreground placeholder:text-muted/70 focus:border-brand-blue focus:outline-none"
           autoFocus
         />
@@ -315,11 +317,11 @@ export function SearchControls({
           disabled={isPending}
           className="relative rounded-md bg-brand-blue px-6 py-3 text-sm font-medium text-white hover:bg-brand-blue/90 disabled:opacity-60"
         >
-          Search
+          {t("search")}
           {filtersDirty && (
             <span
               className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-amber-400 ring-2 ring-background"
-              title="Filters changed — press Search to apply"
+              title={t("filtersChangedTitle")}
             />
           )}
         </button>
@@ -329,12 +331,12 @@ export function SearchControls({
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
         {filtersDirty && (
           <span className="text-[11px] text-amber-400">
-            Filters changed — press Search to apply.
+            {t("filtersChangedHint")}
           </span>
         )}
         {!initialQuery && !filtersDirty && (
           <>
-            <span className="text-[11px] uppercase tracking-wider text-muted">Try:</span>
+            <span className="text-[11px] uppercase tracking-wider text-muted">{t("tryLabel")}</span>
             {SAMPLE_QUERIES.map((q) => (
               <button
                 key={q}
@@ -363,7 +365,7 @@ export function SearchControls({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {regulators.length > 0 && (
                 <CheckboxFacet
-                  label="Regulator"
+                  label={t("facetRegulator")}
                   value={regulatorSel}
                   onChange={setRegulatorSel}
                   options={regulators.map((r) => ({
@@ -373,19 +375,19 @@ export function SearchControls({
                 />
               )}
               <CheckboxFacet
-                label="Topic"
+                label={t("facetTopic")}
                 value={topicSel}
                 onChange={setTopicSel}
                 options={TOPIC_TAXONOMY}
               />
               <CheckboxFacet
-                label="Instrument type"
+                label={t("facetInstrumentType")}
                 value={instrumentSel}
                 onChange={setInstrumentSel}
                 options={INSTRUMENT_TYPE_TAXONOMY}
               />
               <CheckboxFacet
-                label="Status"
+                label={t("facetStatus")}
                 value={statusSel}
                 onChange={setStatusSel}
                 options={STATUS_TAXONOMY}
@@ -398,7 +400,7 @@ export function SearchControls({
                   onClick={clearFilters}
                   className="text-[11px] text-muted underline hover:text-foreground"
                 >
-                  Clear filters
+                  {t("clearFilters")}
                 </button>
               </div>
             )}
@@ -425,6 +427,7 @@ function CheckboxFacet({
   value: string[];
   onChange: (v: string[]) => void;
 }) {
+  const t = useTranslations("regwatch.search");
   const selected = new Set(value);
 
   function toggle(v: string) {
@@ -446,7 +449,7 @@ function CheckboxFacet({
             onClick={() => onChange([])}
             className="text-[10px] text-muted hover:text-foreground"
           >
-            Clear ({value.length})
+            {t("clearCount", { count: value.length })}
           </button>
         )}
       </div>

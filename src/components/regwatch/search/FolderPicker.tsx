@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type { DocumentFolderTreeNode } from "@/lib/regwatch/document-folders";
 
 /** Sentinel value (in the selection list) for the "Unfiled" pseudo-folder. */
@@ -23,6 +24,7 @@ export function FolderPicker({
   selected: string[];
   onChange: (next: string[]) => void;
 }) {
+  const t = useTranslations("regwatch.search");
   const sel = new Set(selected);
 
   function toggle(id: string) {
@@ -37,9 +39,7 @@ export function FolderPicker({
   return (
     <div className="rounded-lg border border-card-border bg-background/40 p-2">
       <p className="px-1 pb-1.5 text-[11px] text-muted">
-        {empty
-          ? "No company documents yet."
-          : "Pick folders to search (includes sub-folders). None selected = all company documents."}
+        {empty ? t("folderPickerEmpty") : t("folderPickerHelp")}
       </p>
       {!empty && (
         <ul className="max-h-60 overflow-auto">
@@ -57,7 +57,7 @@ export function FolderPicker({
                     onChange={() => toggle(UNFILED_TOKEN)}
                     className="h-3.5 w-3.5 shrink-0 rounded border-card-border bg-card-bg accent-brand-blue"
                   />
-                  <span className="truncate italic text-muted">Unfiled</span>
+                  <span className="truncate italic text-muted">{t("unfiled")}</span>
                   <span className="text-[10px] text-muted">({unfiledCount})</span>
                 </label>
               </div>
@@ -83,6 +83,7 @@ function FolderNode({
   sel: Set<string>;
   toggle: (id: string) => void;
 }) {
+  const t = useTranslations("regwatch.search");
   const [open, setOpen] = useState(true);
   const hasChildren = node.children.length > 0;
   return (
@@ -95,7 +96,7 @@ function FolderNode({
           <button
             type="button"
             onClick={() => setOpen((o) => !o)}
-            aria-label={open ? "Collapse" : "Expand"}
+            aria-label={open ? t("collapse") : t("expand")}
             className="grid h-4 w-4 shrink-0 place-items-center text-muted hover:text-foreground"
           >
             <svg

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { saveAlertPrefs, sendTestDigestNow } from "@/lib/regwatch/alerts-actions";
 import type { UserAlertPrefs } from "@/lib/regwatch/alerts";
 import { WebPushSubscribe } from "./WebPushSubscribe";
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
+  const t = useTranslations("regwatch.monitor");
   const [emailFrequency, setEmailFrequency] = useState(initial.emailFrequency);
   const [emailCriticalOnly, setEmailCriticalOnly] = useState(initial.emailCriticalOnly);
   const [webPushEnabled, setWebPushEnabled] = useState(initial.webPushEnabled);
@@ -34,10 +36,10 @@ export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
         webPushEnabled,
       });
       if (!res.ok) {
-        setMessage({ kind: "error", text: res.error ?? "Could not save" });
+        setMessage({ kind: "error", text: res.error ?? t("prefsSaveError") });
         return;
       }
-      setMessage({ kind: "ok", text: "Saved." });
+      setMessage({ kind: "ok", text: t("prefsSaved") });
     });
   }
 
@@ -50,17 +52,21 @@ export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
       if (!res.ok) {
         setTestResult({
           kind: "error",
-          text: res.error ?? "Send failed",
+          text: res.error ?? t("testSendError"),
         });
       } else if (!res.sent) {
         setTestResult({
           kind: "empty",
-          text: `No matches eligible right now. (pulled ${res.diagnostics.pulled}, critical-only left ${res.diagnostics.afterCriticalGate}, after dedup ${res.diagnostics.afterDedup}.) The Preview button skips both filters and shows the layout regardless.`,
+          text: t("testNoMatches", {
+            pulled: res.diagnostics.pulled,
+            afterCriticalGate: res.diagnostics.afterCriticalGate,
+            afterDedup: res.diagnostics.afterDedup,
+          }),
         });
       } else {
         setTestResult({
           kind: "ok",
-          text: `Sent — check your inbox for ${res.matchCount} ${res.matchCount === 1 ? "match" : "matches"}. Subject is prefixed with [TEST]. Those items now won't re-send in the next scheduled digest.`,
+          text: t("testSent", { count: res.matchCount }),
         });
       }
     } catch (e) {
@@ -76,14 +82,14 @@ export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
         <header className="flex items-baseline justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold tracking-tight text-foreground">
-              In-app notifications
+              {t("inAppTitle")}
             </h2>
             <p className="mt-1 text-xs text-muted">
-              Always on — the bell in the top nav is the canonical inbox. No opt-out.
+              {t("inAppBody")}
             </p>
           </div>
           <span className="rounded-full bg-brand-teal/15 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-brand-teal">
-            Always on
+            {t("alwaysOn")}
           </span>
         </header>
       </section>
@@ -91,17 +97,16 @@ export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
       <section className="rounded-xl border border-card-border bg-card-bg/40 p-5 sm:p-6">
         <header>
           <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            Email digests
+            {t("emailTitle")}
           </h2>
           <p className="mt-1 text-xs text-muted">
-            Sent via Brevo. Off by default. We never offer hourly — the research is
-            unambiguous that hourly compliance email becomes inbox noise within a week.
+            {t("emailBody")}
           </p>
         </header>
 
         <fieldset className="mt-4">
           <legend className="text-xs font-medium uppercase tracking-wider text-muted">
-            Frequency
+            {t("frequencyLegend")}
           </legend>
           <div className="mt-2 grid gap-2 sm:grid-cols-3">
             {(["off", "weekly", "daily"] as const).map((freq) => {
@@ -124,14 +129,18 @@ export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
                   />
                   <div>
                     <p className="text-sm font-medium text-foreground">
-                      {freq === "off" ? "Off" : freq === "weekly" ? "Weekly" : "Daily"}
+                      {freq === "off"
+                        ? t("freqOff")
+                        : freq === "weekly"
+                          ? t("freqWeekly")
+                          : t("freqDaily")}
                     </p>
                     <p className="text-xs text-muted">
                       {freq === "off"
-                        ? "No email digests."
+                        ? t("freqOffDesc")
                         : freq === "weekly"
-                          ? "Wednesdays at 07:00 UTC."
-                          : "Daily at 06:00 UTC."}
+                          ? t("freqWeeklyDesc")
+                          : t("freqDailyDesc")}
                     </p>
                   </div>
                 </label>
@@ -155,11 +164,10 @@ export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
             />
             <div>
               <p className="text-sm font-medium text-foreground">
-                Critical-only severity gate
+                {t("criticalGateTitle")}
               </p>
               <p className="text-xs text-muted">
-                When on, the digest only includes matches with severity = Critical
-                (score &ge; 80). Recommended for senior leaders.
+                {t("criticalGateBody")}
               </p>
             </div>
           </label>
@@ -169,12 +177,10 @@ export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
       <section className="rounded-xl border border-card-border bg-card-bg/40 p-5 sm:p-6">
         <header>
           <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            Web push
+            {t("webPushTitle")}
           </h2>
           <p className="mt-1 text-xs text-muted">
-            Browser notifications for critical-severity matches. Capped at 3 per 24h
-            to prevent fatigue. Subscribe per browser — the same account can be
-            subscribed on multiple devices.
+            {t("webPushBody")}
           </p>
         </header>
 
@@ -187,12 +193,10 @@ export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
           />
           <div>
             <p className="text-sm font-medium text-foreground">
-              I want browser pushes for CRITICAL matches
+              {t("webPushOptInTitle")}
             </p>
             <p className="text-xs text-muted">
-              Saves the preference. Use the Subscribe button below to grant browser
-              permission and register this device. The match cron fans out pushes
-              automatically when new critical items land.
+              {t("webPushOptInBody")}
             </p>
           </div>
         </label>
@@ -205,12 +209,10 @@ export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
       <section className="rounded-xl border border-card-border bg-card-bg/40 p-5 sm:p-6">
         <header>
           <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            Test the digest
+            {t("testTitle")}
           </h2>
           <p className="mt-1 text-xs text-muted">
-            Preview renders the email HTML in a new tab with no Brevo send.
-            Send test runs the real pipeline scoped to your account — useful for
-            verifying Brevo is configured. Both ignore the scheduled cron.
+            {t("testBody")}
           </p>
         </header>
 
@@ -221,7 +223,7 @@ export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
             rel="noopener noreferrer"
             className="rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-sm text-foreground hover:border-brand-teal"
           >
-            Preview daily digest →
+            {t("previewDaily")}
           </a>
           <a
             href="/api/regwatch/alerts/preview?mode=weekly"
@@ -229,7 +231,7 @@ export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
             rel="noopener noreferrer"
             className="rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-sm text-foreground hover:border-brand-teal"
           >
-            Preview weekly digest →
+            {t("previewWeekly")}
           </a>
           <button
             type="button"
@@ -237,7 +239,7 @@ export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
             disabled={testPending}
             className="rounded-md border border-brand-violet/40 bg-brand-violet/10 px-3 py-1.5 text-sm text-brand-violet hover:bg-brand-violet/20 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {testPending ? "Sending…" : "Send test to my email now"}
+            {testPending ? t("testSending") : t("testSendNow")}
           </button>
         </div>
 
@@ -256,19 +258,16 @@ export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
         )}
 
         <div className="mt-4 rounded-lg border border-amber-400/30 bg-amber-400/5 p-3 text-xs text-muted">
-          <p className="font-medium text-amber-300">Brevo IP authorization</p>
+          <p className="font-medium text-amber-300">{t("brevoTitle")}</p>
           <p className="mt-1 leading-relaxed">
-            If Brevo rejects sends with a 401/403, your Brevo account has IP
-            authorization enabled and Vercel&apos;s IPs aren&apos;t whitelisted.
-            Vercel function IPs rotate, so the cleanest fix is to{" "}
-            <span className="font-medium text-foreground">
-              disable IP authorization
-            </span>{" "}
-            in Brevo at{" "}
-            <span className="font-mono text-foreground">
-              Settings → SMTP &amp; API → Authorized IPs
-            </span>{" "}
-            (the API key itself remains the auth boundary). Then re-run the test.
+            {t.rich("brevoBody", {
+              bold: (chunks) => (
+                <span className="font-medium text-foreground">{chunks}</span>
+              ),
+              path: (chunks) => (
+                <span className="font-mono text-foreground">{chunks}</span>
+              ),
+            })}
           </p>
         </div>
       </section>
@@ -280,7 +279,7 @@ export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
               {message.text}
             </span>
           ) : (
-            "Changes take effect from the next digest cycle."
+            t("changesTakeEffect")
           )}
         </p>
         <button
@@ -288,7 +287,7 @@ export function AlertPrefsForm({ initial, vapidPublicKey }: Props) {
           disabled={pending}
           className="rounded-md bg-brand-blue px-5 py-2 text-sm font-medium text-white hover:bg-brand-blue/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {pending ? "Saving…" : "Save preferences"}
+          {pending ? t("saving") : t("savePreferences")}
         </button>
       </div>
     </form>

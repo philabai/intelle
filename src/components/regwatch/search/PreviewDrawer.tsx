@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
 export interface PreviewTarget {
@@ -17,15 +18,15 @@ interface PreviewData {
   sourceUrl: string | null;
 }
 
-const KIND_LABEL: Record<PreviewData["kind"], string> = {
-  regulation: "Regulation",
-  doc: "Company document",
-  asset: "Asset",
+const KIND_LABEL_KEY: Record<PreviewData["kind"], string> = {
+  regulation: "kindLabelRegulation",
+  doc: "kindLabelDoc",
+  asset: "kindLabelAsset",
 };
-const KIND_NOUN: Record<PreviewData["kind"], string> = {
-  regulation: "regulation",
-  doc: "document",
-  asset: "asset hierarchy",
+const KIND_OPEN_KEY: Record<PreviewData["kind"], string> = {
+  regulation: "openRegulation",
+  doc: "openDoc",
+  asset: "openAsset",
 };
 
 /**
@@ -41,6 +42,7 @@ export function PreviewDrawer({
   target: PreviewTarget | null;
   onClose: () => void;
 }) {
+  const t = useTranslations("regwatch.search");
   const [data, setData] = useState<PreviewData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,11 +60,11 @@ export function PreviewDrawer({
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("not found"))))
       .then((d: PreviewData) => setData(d))
       .catch((e) => {
-        if ((e as Error).name !== "AbortError") setError("Couldn't load this preview.");
+        if ((e as Error).name !== "AbortError") setError(t("previewLoadError"));
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
-  }, [target]);
+  }, [target, t]);
 
   useEffect(() => {
     if (!target) return;
@@ -96,7 +98,7 @@ export function PreviewDrawer({
             {data ? (
               <>
                 <p className="text-[11px] font-medium uppercase tracking-wider text-brand-teal">
-                  {KIND_LABEL[data.kind]}
+                  {t(KIND_LABEL_KEY[data.kind])}
                 </p>
                 <h2 className="mt-0.5 text-base font-semibold leading-snug text-foreground">
                   {data.title}
@@ -104,13 +106,13 @@ export function PreviewDrawer({
                 <p className="mt-0.5 text-[11px] text-muted">{data.meta}</p>
               </>
             ) : (
-              <p className="text-sm text-muted">{loading ? "Loading…" : "Preview"}</p>
+              <p className="text-sm text-muted">{loading ? t("loading") : t("preview")}</p>
             )}
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close preview"
+            aria-label={t("closePreview")}
             className="shrink-0 rounded-md p-1.5 text-muted transition hover:bg-card-bg hover:text-foreground"
           >
             <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -135,7 +137,7 @@ export function PreviewDrawer({
           )}
           {data && (
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-              {data.bodyText || "No preview text available for this item."}
+              {data.bodyText || t("noPreviewText")}
             </p>
           )}
         </div>
@@ -146,7 +148,7 @@ export function PreviewDrawer({
               href={data.href}
               className="rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90"
             >
-              Open {data.kind === "asset" ? "in" : "full"} {KIND_NOUN[data.kind]} →
+              {t(KIND_OPEN_KEY[data.kind])}
             </Link>
             {data.sourceUrl && (
               <a
@@ -155,7 +157,7 @@ export function PreviewDrawer({
                 rel="noopener noreferrer"
                 className="text-sm text-muted hover:text-foreground"
               >
-                Source ↗
+                {t("sourceLink")}
               </a>
             )}
           </footer>

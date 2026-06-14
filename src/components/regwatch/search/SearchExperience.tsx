@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { RegulationListItem } from "@/lib/regwatch/queries";
 import type { CompanyDocResult } from "@/lib/regwatch/internal-document-search";
 import type { AssetSearchResult } from "@/lib/regwatch/assets";
 import { PreviewDrawer, type PreviewTarget } from "./PreviewDrawer";
 
-const ASSET_LEVEL_LABEL: Record<number, string> = {
-  2: "Site",
-  3: "Area",
-  4: "Asset class",
-  5: "Asset",
-  6: "Component",
+const ASSET_LEVEL_KEY: Record<number, string> = {
+  2: "assetLevelSite",
+  3: "assetLevelArea",
+  4: "assetLevelAssetClass",
+  5: "assetLevelAsset",
+  6: "assetLevelComponent",
 };
 
 interface CitationSource {
@@ -72,6 +73,7 @@ export function SearchExperience({
   assets: AssetSearchResult[];
   assetsOn: boolean;
 }) {
+  const t = useTranslations("regwatch.search");
   const [text, setText] = useState("");
   const [sources, setSources] = useState<CitationSource[]>([]);
   const [done, setDone] = useState(false);
@@ -132,7 +134,7 @@ export function SearchExperience({
                 else if (ev.type === "delta" && ev.text) setText((p) => p + ev.text);
                 else if (ev.type === "done") setDone(true);
                 else if (ev.type === "error") {
-                  setError(ev.message ?? "Iris encountered an error.");
+                  setError(ev.message ?? t("irisError"));
                   setDone(true);
                 }
               } catch {
@@ -175,20 +177,20 @@ export function SearchExperience({
                   I
                 </span>
                 <p className="text-xs font-medium uppercase tracking-wider text-brand-violet">
-                  Iris synthesis
+                  {t("irisSynthesis")}
                 </p>
-                {!done && <span className="ms-2 text-xs text-muted">streaming…</span>}
+                {!done && <span className="ms-2 text-xs text-muted">{t("streaming")}</span>}
               </div>
               {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
               {sources.length > 0 && (
                 <p className="mb-3 text-[11px] text-muted">
-                  Answered from:{" "}
+                  {t("answeredFrom")}{" "}
                   {Array.from(new Set(sources.map((s) => s.regulator))).join(", ")}
                 </p>
               )}
               <div className="prose prose-invert max-w-none text-sm">
                 {rendered.length === 0 && !done ? (
-                  <p className="text-muted">Synthesising an answer from the corpus…</p>
+                  <p className="text-muted">{t("synthesising")}</p>
                 ) : (
                   <p className="whitespace-pre-wrap">{rendered}</p>
                 )}
@@ -196,7 +198,7 @@ export function SearchExperience({
               {done && unused.length > 0 && (
                 <div className="mt-4 border-t border-brand-violet/20 pt-3">
                   <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted">
-                    Also reviewed (not cited inline)
+                    {t("alsoReviewed")}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {unused.map(({ n, s }) => (
@@ -216,15 +218,14 @@ export function SearchExperience({
               )}
             </div>
             <p className="mt-2 text-[11px] text-muted">
-              AI-generated synthesis. Verify every claim against the cited source before
-              relying on it for compliance evidence.
+              {t("aiDisclaimer")}
             </p>
           </article>
 
           <ResultSection
-            label={`${regulations.length} ${regulations.length === 1 ? "match" : "matches"} in the corpus`}
+            label={t("corpusMatches", { count: regulations.length })}
             empty={regulations.length === 0}
-            emptyText="No corpus rows matched your keywords. Iris may still answer from related items above."
+            emptyText={t("corpusEmpty")}
           >
             {regulations.map((r) => (
               <RegRow key={r.id} item={r} onOpen={() => open("regulation", r.id)} />
@@ -234,9 +235,9 @@ export function SearchExperience({
           {docsOn && (
             <ResultSection
               accent
-              label={`${companyDocs.length} ${companyDocs.length === 1 ? "match" : "matches"} in your company documents`}
+              label={t("companyDocMatches", { count: companyDocs.length })}
               empty={companyDocs.length === 0}
-              emptyText="No company documents matched. Try a broader query or widen the folder selection."
+              emptyText={t("companyDocEmpty")}
             >
               {companyDocs.map((d) => (
                 <DocRow key={d.id} doc={d} onOpen={() => open("doc", d.id)} />
@@ -247,9 +248,9 @@ export function SearchExperience({
           {assetsOn && (
             <ResultSection
               accent
-              label={`${assets.length} ${assets.length === 1 ? "match" : "matches"} in your assets`}
+              label={t("assetMatches", { count: assets.length })}
               empty={assets.length === 0}
-              emptyText="No assets matched that name or code. Try a different term."
+              emptyText={t("assetEmpty")}
             >
               {assets.map((a) => (
                 <AssetRow key={a.id} asset={a} onOpen={() => open("asset", a.id)} />
@@ -261,11 +262,13 @@ export function SearchExperience({
         {/* SIDEBAR — sources, sticky + self-scrolling so it never pushes results down */}
         <aside className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-auto">
           <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted">
-            Sources{sources.length > 0 ? ` (${sources.length})` : ""}
+            {sources.length > 0
+              ? t("sourcesWithCount", { count: sources.length })
+              : t("sources")}
           </p>
           {sources.length === 0 ? (
             <p className="text-xs text-muted">
-              {done ? "No sources surfaced." : "Iris is searching…"}
+              {done ? t("noSourcesSurfaced") : t("irisSearching")}
             </p>
           ) : (
             <ol className="space-y-1.5">
@@ -285,7 +288,7 @@ export function SearchExperience({
                             : "bg-brand-navy/60 text-muted"
                         }`}
                       >
-                        {s.kind === "doc" ? "Doc" : s.jurisdiction_code}
+                        {s.kind === "doc" ? t("docBadge") : s.jurisdiction_code}
                       </span>
                     </div>
                     <p className="mt-1 line-clamp-2 font-medium text-foreground">{s.title}</p>
@@ -374,6 +377,7 @@ function RegRow({
 }
 
 function DocRow({ doc, onOpen }: { doc: CompanyDocResult; onOpen: () => void }) {
+  const t = useTranslations("regwatch.search");
   return (
     <button
       type="button"
@@ -387,7 +391,7 @@ function DocRow({ doc, onOpen }: { doc: CompanyDocResult; onOpen: () => void }) 
         {doc.internalCode && (
           <span className="font-mono text-[11px] text-muted">{doc.internalCode}</span>
         )}
-        <span className="ms-auto text-[10px] text-muted">{doc.folderName ?? "Unfiled"}</span>
+        <span className="ms-auto text-[10px] text-muted">{doc.folderName ?? t("unfiled")}</span>
       </div>
       <p className="mt-1 text-sm font-medium text-foreground">{doc.title}</p>
       {doc.snippet && (
@@ -398,6 +402,8 @@ function DocRow({ doc, onOpen }: { doc: CompanyDocResult; onOpen: () => void }) 
 }
 
 function AssetRow({ asset, onOpen }: { asset: AssetSearchResult; onOpen: () => void }) {
+  const t = useTranslations("regwatch.search");
+  const levelKey = ASSET_LEVEL_KEY[asset.level];
   return (
     <button
       type="button"
@@ -406,7 +412,7 @@ function AssetRow({ asset, onOpen }: { asset: AssetSearchResult; onOpen: () => v
     >
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-md bg-brand-teal/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-brand-teal">
-          {ASSET_LEVEL_LABEL[asset.level] ?? `Level ${asset.level}`}
+          {levelKey ? t(levelKey) : t("assetLevelFallback", { level: asset.level })}
         </span>
         {asset.code && (
           <span className="font-mono text-[11px] text-muted">{asset.code}</span>

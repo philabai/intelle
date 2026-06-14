@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import {
   subscribeToPush,
   unsubscribeFromPush,
@@ -27,6 +28,7 @@ type Status =
  * a server action so the backend can later send pushes.
  */
 export function WebPushSubscribe({ vapidPublicKey }: Props) {
+  const t = useTranslations("regwatch.monitor");
   const [status, setStatus] = useState<Status>("loading");
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<{ kind: "ok" | "error" | "info"; text: string } | null>(null);
@@ -85,7 +87,7 @@ export function WebPushSubscribe({ vapidPublicKey }: Props) {
 
   async function onSubscribe() {
     if (!vapidPublicKey) {
-      setMessage({ kind: "error", text: "VAPID public key not configured on the server." });
+      setMessage({ kind: "error", text: t("pushNoVapidKey") });
       return;
     }
     setMessage(null);
@@ -98,8 +100,8 @@ export function WebPushSubscribe({ vapidPublicKey }: Props) {
           kind: "info",
           text:
             permission === "denied"
-              ? "Browser blocked notifications. Re-enable them in your browser site settings to subscribe."
-              : "Permission dismissed.",
+              ? t("pushPermissionDenied")
+              : t("pushPermissionDismissed"),
         });
         return;
       }
@@ -118,14 +120,14 @@ export function WebPushSubscribe({ vapidPublicKey }: Props) {
         userAgent: navigator.userAgent,
       });
       if (!res.ok) {
-        setMessage({ kind: "error", text: res.error ?? "Could not save subscription" });
+        setMessage({ kind: "error", text: res.error ?? t("pushSaveSubError") });
         await sub.unsubscribe();
         return;
       }
       setStatus("subscribed");
       setMessage({
         kind: "ok",
-        text: "Subscribed. You'll get a browser notification when critical matches land (capped at 3 per 24h).",
+        text: t("pushSubscribed"),
       });
     } catch (e) {
       setMessage({ kind: "error", text: (e as Error).message });
@@ -146,7 +148,7 @@ export function WebPushSubscribe({ vapidPublicKey }: Props) {
         await unsubscribeFromPush({ endpoint });
       }
       setStatus("available");
-      setMessage({ kind: "info", text: "Unsubscribed. No more browser pushes from this device." });
+      setMessage({ kind: "info", text: t("pushUnsubscribed") });
     } catch (e) {
       setMessage({ kind: "error", text: (e as Error).message });
     } finally {
@@ -160,12 +162,12 @@ export function WebPushSubscribe({ vapidPublicKey }: Props) {
     try {
       const res = await sendTestPushToMe();
       if (!res.ok) {
-        setMessage({ kind: "error", text: res.error ?? "Send failed" });
+        setMessage({ kind: "error", text: res.error ?? t("pushTestSendError") });
         return;
       }
       setMessage({
         kind: "ok",
-        text: `Test sent to ${res.delivered} ${res.delivered === 1 ? "device" : "devices"}. You should see a notification within a few seconds.`,
+        text: t("pushTestSent", { count: res.delivered ?? 0 }),
       });
     } catch (e) {
       setMessage({ kind: "error", text: (e as Error).message });
@@ -175,14 +177,13 @@ export function WebPushSubscribe({ vapidPublicKey }: Props) {
   }
 
   if (status === "loading") {
-    return <p className="text-xs text-muted">Checking browser support…</p>;
+    return <p className="text-xs text-muted">{t("pushChecking")}</p>;
   }
 
   if (status === "unsupported") {
     return (
       <p className="text-xs text-muted">
-        This browser doesn&apos;t support web push. iOS Safari requires installing
-        intelle.io to your Home Screen first.
+        {t("pushUnsupported")}
       </p>
     );
   }
@@ -190,9 +191,9 @@ export function WebPushSubscribe({ vapidPublicKey }: Props) {
   if (status === "no-vapid") {
     return (
       <p className="text-xs text-amber-300">
-        Web push is partially configured: the server is missing{" "}
-        <span className="font-mono">NEXT_PUBLIC_VAPID_PUBLIC_KEY</span>. See the README
-        for the one-time setup.
+        {t.rich("pushNoVapid", {
+          code: (chunks) => <span className="font-mono">{chunks}</span>,
+        })}
       </p>
     );
   }
@@ -201,9 +202,7 @@ export function WebPushSubscribe({ vapidPublicKey }: Props) {
     return (
       <div className="space-y-2">
         <p className="text-xs text-red-300">
-          Notifications are blocked for this site. To enable, click the lock icon in
-          your browser address bar, find Notifications, and switch to Allow. Then
-          refresh this page.
+          {t("pushBlocked")}
         </p>
       </div>
     );
@@ -220,7 +219,7 @@ export function WebPushSubscribe({ vapidPublicKey }: Props) {
               disabled={pending}
               className="rounded-md border border-brand-violet/40 bg-brand-violet/10 px-3 py-1.5 text-xs text-brand-violet hover:bg-brand-violet/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {pending ? "Sending…" : "Send test push"}
+              {pending ? t("pushSending") : t("pushSendTest")}
             </button>
             <button
               type="button"
@@ -228,7 +227,7 @@ export function WebPushSubscribe({ vapidPublicKey }: Props) {
               disabled={pending}
               className="rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-muted hover:text-foreground"
             >
-              Unsubscribe this browser
+              {t("pushUnsubscribeBrowser")}
             </button>
           </>
         ) : (
@@ -238,7 +237,7 @@ export function WebPushSubscribe({ vapidPublicKey }: Props) {
             disabled={pending}
             className="rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {pending ? "Subscribing…" : "Enable browser notifications"}
+            {pending ? t("pushSubscribing") : t("pushEnable")}
           </button>
         )}
       </div>
