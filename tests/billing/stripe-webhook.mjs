@@ -18,7 +18,8 @@ for (const line of readFileSync(new URL("../../.env.test", import.meta.url), "ut
   const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
   if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].trim().replace(/^['"]|['"]$/g, "");
 }
-const { SUPABASE_DB_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_PRO_MONTHLY } = process.env;
+const { SUPABASE_DB_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
+  STRIPE_PRICE_PRO_MONTHLY, STRIPE_PRICE_TEAM_MONTHLY } = process.env;
 const WEBHOOK = "http://localhost:4100/api/regwatch/stripe/webhook";
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 const client = new pg.Client({ connectionString: SUPABASE_DB_URL });
@@ -60,7 +61,7 @@ async function main() {
   const bad = await postEvent(subEvent("customer.subscription.updated", {}), { badSig: true });
   record("invalid signature rejected (400)", bad.status === 400, `status=${bad.status}`);
 
-  // 2. subscription.updated active + paid price -> paid tier.
+  // 2. subscription.updated active + PRO price -> 'pro'.
   await reset();
   const up = await postEvent(subEvent("customer.subscription.updated", {
     id: "sub_test", status: "active", customer: "cus_test",
@@ -68,7 +69,17 @@ async function main() {
     items: { data: [{ price: { id: STRIPE_PRICE_PRO_MONTHLY } }] },
   }));
   const t2 = await tier(ORG);
-  record("subscription.updated(active) -> paid tier", up.status === 200 && t2.tier !== "free", `status=${up.status}, tier=${t2.tier}`);
+  record("subscription.updated(active, PRO price) -> 'pro'", up.status === 200 && t2.tier === "pro", `status=${up.status}, tier=${t2.tier}`);
+
+  // 2b. subscription.updated active + TEAM price -> 'team' (distinct from pro).
+  await reset();
+  const upT = await postEvent(subEvent("customer.subscription.updated", {
+    id: "sub_test", status: "active", customer: "cus_test",
+    metadata: { organization_id: ORG },
+    items: { data: [{ price: { id: STRIPE_PRICE_TEAM_MONTHLY } }] },
+  }));
+  const t2b = await tier(ORG);
+  record("subscription.updated(active, TEAM price) -> 'team'", upT.status === 200 && t2b.tier === "team", `status=${upT.status}, tier=${t2b.tier}`);
 
   // 3. subscription.updated canceled -> downgrade to free.
   const down = await postEvent(subEvent("customer.subscription.updated", {

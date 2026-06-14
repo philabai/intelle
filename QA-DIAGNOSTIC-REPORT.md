@@ -259,7 +259,7 @@ follow-up:** run the official `ghcr.io/zaproxy/zaproxy zap-baseline.py` in
 Docker/CI against a Vercel **preview** URL — lightweight, repeatable, and
 authenticated-context capable.
 
-## 5f. Live results — Phase D: billing integrity ✅ PASS (5/5)
+## 5f. Live results — Phase D: billing integrity ✅ PASS (6/6)
 
 Stripe test-mode webhook tests (`tests/billing/stripe-webhook.mjs`) — events
 signed with the real `STRIPE_WEBHOOK_SECRET` and POSTed to the running app:
@@ -267,21 +267,22 @@ signed with the real `STRIPE_WEBHOOK_SECRET` and POSTed to the running app:
 | Test | Result |
 |------|--------|
 | Invalid signature rejected | ✅ 400 |
-| `subscription.updated(active)` → paid tier | ✅ → `pro` |
+| `subscription.updated(active, PRO price)` → `pro` | ✅ |
+| `subscription.updated(active, TEAM price)` → `team` | ✅ (distinct from pro) |
 | `subscription.updated(canceled)` → downgrade | ✅ → `free` |
 | `checkout.session.completed` (real test subscription, handler retrieves it from Stripe) | ✅ → `pro` + `stripe_customer_id` stored |
 | `subscription.deleted` → downgrade | ✅ → `free` |
 
 Signature verification + the full tier up/down/cancel/delete lifecycle are
-correct. Paywall/feature gates read `org.tier` **server-side** (`checkFeatureGate`,
+correct, and **Pro vs Team map to distinct tiers** with the right price IDs.
+Paywall/feature gates read `org.tier` **server-side** (`checkFeatureGate`,
 static-confirmed) — entitlements are not UI-only.
 
-### F19 (NEW, Med, config) — Pro and Team share the same Stripe price ID
-`STRIPE_PRICE_PRO_MONTHLY` and `STRIPE_PRICE_TEAM_MONTHLY` were identical in the
-test env, and `tierForPriceId()` returns the first match — so that price always
-resolves to one tier and **Team can never be reached via it** (a Team subscriber
-would be entitled as Pro, or vice-versa). Verify **production has distinct price
-IDs for Pro vs Team**; otherwise tier entitlements are wrong for one plan.
+### F19 — RESOLVED (was a test-env typo)
+The initial run had identical `STRIPE_PRICE_PRO_MONTHLY` / `STRIPE_PRICE_TEAM_MONTHLY`
+(a paste error), which collapsed Team into Pro. With the correct distinct price
+IDs, Team maps to `team` and Pro to `pro` — verified above. No code issue; just
+ensure prod keeps distinct Pro/Team price IDs (which it does).
 
 ## 6. Pending — live phases (need the test environment)
 Not yet executed; require the dedicated test Supabase + Stripe test mode:
