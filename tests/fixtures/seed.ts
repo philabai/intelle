@@ -17,7 +17,7 @@
  * Idempotent: re-running deletes prior fixture users (by email) and recreates.
  * Writes the resulting ids to tests/fixtures/state.json for the probes to load.
  */
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -43,7 +43,7 @@ const EMAILS = {
 // Base client (auth.admin lives here; schema-agnostic).
 const admin = createClient(URL, SERVICE, { auth: { autoRefreshToken: false, persistSession: false } });
 // regwatch-schema client for tenant tables.
-const rw: SupabaseClient = createClient(URL, SERVICE, {
+const rw = createClient(URL, SERVICE, {
   db: { schema: "regwatch" },
   auth: { autoRefreshToken: false, persistSession: false },
 });

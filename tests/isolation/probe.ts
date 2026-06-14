@@ -11,7 +11,7 @@
  * NEGATIVE control (other org is NOT). A negative control returning rows is a
  * Critical isolation breach.
  */
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -28,7 +28,7 @@ function record(name: string, pass: boolean, detail = "") {
   console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? "  — " + detail : ""}`);
 }
 
-async function clientFor(email: string): Promise<SupabaseClient> {
+async function clientFor(email: string) {
   const c = createClient(URL, ANON, {
     db: { schema: "regwatch" },
     auth: { autoRefreshToken: false, persistSession: false },
@@ -39,7 +39,7 @@ async function clientFor(email: string): Promise<SupabaseClient> {
 }
 
 /** Count rows visible to `client` in `table` filtered by org column = orgId. */
-async function countByOrg(client: SupabaseClient, table: string, orgId: string, col = "organization_id") {
+async function countByOrg(client: Awaited<ReturnType<typeof clientFor>>, table: string, orgId: string, col = "organization_id") {
   const { data, error } = await client.from(table).select("id").eq(col, orgId).limit(5);
   return { count: data?.length ?? 0, error: error?.message ?? null };
 }
