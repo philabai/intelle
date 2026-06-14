@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -26,6 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function SectionDetailPage({ params }: Props) {
+  const t = await getTranslations("regwatch.section");
   const { id } = await params;
   const section = await getSectionById(id);
   if (!section) notFound();
@@ -45,7 +47,7 @@ export default async function SectionDetailPage({ params }: Props) {
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/browse" className="hover:text-foreground">
-            Browse
+            {t("breadcrumbBrowse")}
           </Link>
           <span className="mx-2">/</span>
           <Link
@@ -72,22 +74,16 @@ export default async function SectionDetailPage({ params }: Props) {
 
         <section className="mt-6 rounded-xl border border-card-border bg-card-bg/40 p-5">
           <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-            Summary
+            {t("summary")}
           </p>
           {excerpt ? (
             <p className="mt-2 text-sm leading-relaxed text-foreground/90">
               {excerpt}
             </p>
           ) : (
-            <p className="mt-2 text-sm text-muted">
-              A preview isn&apos;t available for this section. Open the full text
-              on eCFR below.
-            </p>
+            <p className="mt-2 text-sm text-muted">{t("previewUnavailable")}</p>
           )}
-          <p className="mt-3 text-[11px] text-muted">
-            Excerpt of the official text. This is a navigation aid, not a
-            substitute for the authoritative source.
-          </p>
+          <p className="mt-3 text-[11px] text-muted">{t("excerptCaption")}</p>
         </section>
 
         {section.sourceUrl && (
@@ -98,7 +94,7 @@ export default async function SectionDetailPage({ params }: Props) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-blue/90"
             >
-              Read the full section on eCFR
+              {t("readFullSection")}
               <span aria-hidden>↗</span>
             </a>
           </div>

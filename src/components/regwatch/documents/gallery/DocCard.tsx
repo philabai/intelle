@@ -13,14 +13,6 @@ interface Props {
   doc: InternalDocumentListItem;
 }
 
-const REVIEW_STATE_LABEL: Record<InternalDocumentReviewState, string> = {
-  draft: "Draft",
-  in_review: "In review",
-  approved: "Approved",
-  effective: "Effective",
-  superseded: "Superseded",
-};
-
 const REVIEW_STATE_TONE: Record<InternalDocumentReviewState, string> = {
   draft: "bg-card-bg/60 text-muted border-card-border",
   in_review: "bg-amber-500/10 text-amber-300 border-amber-500/40",
@@ -36,6 +28,8 @@ const REVIEW_STATE_TONE: Record<InternalDocumentReviewState, string> = {
  */
 export async function DocCard({ doc }: Props) {
   const t = await getTranslations("regwatch.documents");
+  const ts = await getTranslations("regwatch.docState");
+  const stateLabel = ts(`state_${doc.reviewState}`);
   // Body_doc isn't on the list item shape — fetch it separately. The card
   // is server-rendered so this is cheap and goes through the service
   // client (RLS still gates by org_id below).
@@ -78,10 +72,10 @@ export async function DocCard({ doc }: Props) {
           <span
             className={`shrink-0 rounded-full border px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider ${REVIEW_STATE_TONE[doc.reviewState]}`}
             title={t("reviewStateTitle", {
-              state: REVIEW_STATE_LABEL[doc.reviewState],
+              state: stateLabel,
             })}
           >
-            {REVIEW_STATE_LABEL[doc.reviewState]}
+            {stateLabel}
           </span>
         </div>
 

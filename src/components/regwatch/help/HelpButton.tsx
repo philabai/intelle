@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { HelpDrawer } from "./HelpDrawer";
 
 /**
@@ -13,6 +14,7 @@ import { HelpDrawer } from "./HelpDrawer";
  * shared store for a once-per-session interaction.
  */
 export function HelpButton() {
+  const t = useTranslations("regwatch.help");
   const [open, setOpen] = useState(false);
 
   // Listen for "vantage:start-tour" events fired from other surfaces
@@ -34,8 +36,8 @@ export function HelpButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        title="Help · tours · ask Iris"
-        aria-label="Open help"
+        title={t("buttonTitle")}
+        aria-label={t("buttonAriaLabel")}
         className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-card-border bg-card-bg text-sm font-semibold text-muted hover:border-brand-blue hover:text-foreground"
       >
         ?

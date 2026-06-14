@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition, useState } from "react";
+import { useTranslations } from "next-intl";
 import { formatDistanceToNowStrict } from "date-fns";
 import { resendInvite, revokeInvite } from "@/lib/regwatch/members-actions";
 import type { PendingInvite } from "@/lib/regwatch/members";
@@ -11,16 +12,16 @@ interface Props {
 }
 
 export function PendingInvitesTable({ invites, callerCanManage }: Props) {
+  const t = useTranslations("regwatch.chips");
   if (invites.length === 0) return null;
   return (
     <section className="mt-6 rounded-xl border border-card-border bg-card-bg/40">
       <header className="border-b border-card-border px-5 py-3">
         <h2 className="text-sm font-semibold tracking-tight text-foreground">
-          Pending invites · {invites.length}
+          {t("pendingInvites", { count: invites.length })}
         </h2>
         <p className="mt-0.5 text-xs text-muted">
-          Signup links sent via Supabase. They&apos;ll join your org with the role below
-          once they complete signup.
+          {t("pendingInvitesHint")}
         </p>
       </header>
       <ul className="divide-y divide-card-border">
@@ -43,6 +44,7 @@ function PendingInviteRow({
   invite: PendingInvite;
   callerCanManage: boolean;
 }) {
+  const t = useTranslations("regwatch.chips");
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [action, setAction] = useState<"resend" | "revoke" | null>(null);
@@ -58,9 +60,9 @@ function PendingInviteRow({
       const fn = kind === "resend" ? resendInvite : revokeInvite;
       const res = await fn({ inviteId: invite.id });
       if (!res.ok) {
-        setMessage(res.error ?? "Failed");
+        setMessage(res.error ?? t("failed"));
       } else if (kind === "resend") {
-        setMessage("Resent");
+        setMessage(t("resent"));
       }
       // revoke makes the row disappear via revalidatePath; no toast needed
     });
@@ -76,8 +78,9 @@ function PendingInviteRow({
           </span>
         </div>
         <p className="mt-0.5 text-xs text-muted">
-          Sent {sentAgo}
-          {invite.invitedByEmail ? ` by ${invite.invitedByEmail}` : ""}
+          {invite.invitedByEmail
+            ? t("sentByEmail", { ago: sentAgo, email: invite.invitedByEmail })
+            : t("sent", { ago: sentAgo })}
         </p>
         {message && <p className="mt-1 text-xs text-brand-teal">{message}</p>}
       </div>
@@ -89,7 +92,7 @@ function PendingInviteRow({
             disabled={pending}
             className="rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-foreground hover:border-brand-teal disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {pending && action === "resend" ? "Resending…" : "Resend"}
+            {pending && action === "resend" ? t("resending") : t("resend")}
           </button>
           <button
             type="button"
@@ -97,7 +100,7 @@ function PendingInviteRow({
             disabled={pending}
             className="rounded-md border border-red-500/40 bg-transparent px-3 py-1.5 text-xs text-red-300 hover:border-red-500 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {pending && action === "revoke" ? "Revoking…" : "Revoke"}
+            {pending && action === "revoke" ? t("revoking") : t("revoke")}
           </button>
         </div>
       )}

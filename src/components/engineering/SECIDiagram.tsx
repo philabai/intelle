@@ -1,11 +1,12 @@
+import { useTranslations } from "next-intl";
 import { GradientText } from "@/components/ui/GradientText";
 
 type Mode = {
   key: "S" | "E" | "C" | "I";
-  name: string;
+  nameKey: string;
   flow: string;
-  tagline: string;
-  bullets: string[];
+  taglineKey: string;
+  bulletKeys: string[];
   accent: {
     topBorder: string;
     text: string;
@@ -16,14 +17,14 @@ type Mode = {
 const MODES: Mode[] = [
   {
     key: "S",
-    name: "Socialization",
+    nameKey: "seciSocializationName",
     flow: "Tacit → Tacit",
-    tagline: "Knowledge acquired through shared experience.",
-    bullets: [
-      "Shadowing & apprenticeship for principal engineers",
-      "War rooms, field handovers, on-the-tools learning",
-      "Communities of practice and peer-to-peer dialogue",
-      "Structured mentorship across the dual technical ladder",
+    taglineKey: "seciSocializationTagline",
+    bulletKeys: [
+      "seciSocializationBullet1",
+      "seciSocializationBullet2",
+      "seciSocializationBullet3",
+      "seciSocializationBullet4",
     ],
     accent: {
       topBorder: "border-t-brand-teal",
@@ -33,14 +34,14 @@ const MODES: Mode[] = [
   },
   {
     key: "E",
-    name: "Externalization",
+    nameKey: "seciExternalizationName",
     flow: "Tacit → Explicit",
-    tagline: "Articulating tacit expertise into reusable artefacts.",
-    bullets: [
-      "Design-rationale capture at stage-gates",
-      "Structured post-project reviews and lessons-learned",
-      "Concept creation and decomposition in NPD",
-      "Expert dialogues, mind-mapping, knowledge interviews",
+    taglineKey: "seciExternalizationTagline",
+    bulletKeys: [
+      "seciExternalizationBullet1",
+      "seciExternalizationBullet2",
+      "seciExternalizationBullet3",
+      "seciExternalizationBullet4",
     ],
     accent: {
       topBorder: "border-t-brand-blue",
@@ -50,15 +51,14 @@ const MODES: Mode[] = [
   },
   {
     key: "C",
-    name: "Combination",
+    nameKey: "seciCombinationName",
     flow: "Explicit → Explicit",
-    tagline:
-      "Aggregating internal and external knowledge into new knowledge for sharing.",
-    bullets: [
-      "Cross-discipline and cross-industry synthesis",
-      "Knowledge-graph linkage across assets, standards, suppliers",
-      "RAG-augmented and GraphRAG-enabled synthesis",
-      "Standards-aware retrieval over engineering corpora",
+    taglineKey: "seciCombinationTagline",
+    bulletKeys: [
+      "seciCombinationBullet1",
+      "seciCombinationBullet2",
+      "seciCombinationBullet3",
+      "seciCombinationBullet4",
     ],
     accent: {
       topBorder: "border-t-brand-violet",
@@ -68,14 +68,14 @@ const MODES: Mode[] = [
   },
   {
     key: "I",
-    name: "Internalization",
+    nameKey: "seciInternalizationName",
     flow: "Explicit → Tacit",
-    tagline: "Knowledge applied and absorbed by doing.",
-    bullets: [
-      "Simulation, training, and design-by-precedent",
-      "Learning by doing on instrumented work",
-      "Performance KPIs tied to knowledge reuse",
-      "Value realisation and feedback into the spiral",
+    taglineKey: "seciInternalizationTagline",
+    bulletKeys: [
+      "seciInternalizationBullet1",
+      "seciInternalizationBullet2",
+      "seciInternalizationBullet3",
+      "seciInternalizationBullet4",
     ],
     accent: {
       topBorder: "border-t-brand-teal",
@@ -86,6 +86,7 @@ const MODES: Mode[] = [
 ];
 
 function ModeCard({ mode }: { mode: Mode }) {
+  const t = useTranslations("diagrams");
   return (
     <div
       className={`rounded-xl border border-card-border ${mode.accent.topBorder} border-t-4 bg-card-bg p-6 sm:p-7 h-full flex flex-col`}
@@ -98,20 +99,20 @@ function ModeCard({ mode }: { mode: Mode }) {
           {mode.key}
         </span>
         <h3 className={`text-xl sm:text-2xl font-semibold ${mode.accent.text}`}>
-          {mode.name}
+          {t(mode.nameKey)}
         </h3>
       </div>
       <p className="text-xs uppercase tracking-wider text-muted mb-3">
         {mode.flow}
       </p>
-      <p className="text-foreground/90 mb-4">{mode.tagline}</p>
+      <p className="text-foreground/90 mb-4">{t(mode.taglineKey)}</p>
       <ul className="space-y-2 text-sm text-muted mt-auto">
-        {mode.bullets.map((bullet) => (
-          <li key={bullet} className="flex gap-2">
+        {mode.bulletKeys.map((bulletKey) => (
+          <li key={bulletKey} className="flex gap-2">
             <span className={`${mode.accent.text} mt-1`} aria-hidden>
               ▸
             </span>
-            <span>{bullet}</span>
+            <span>{t(bulletKey)}</span>
           </li>
         ))}
       </ul>
@@ -120,22 +121,23 @@ function ModeCard({ mode }: { mode: Mode }) {
 }
 
 export function SECIDiagram() {
+  const t = useTranslations("diagrams");
   return (
     <section className="border-t border-card-border py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10 sm:mb-12">
           <p className="text-xs font-bold uppercase tracking-wider text-brand-violet mb-3">
-            Pillar 1 · Nonaka & Takeuchi
+            {t("seciEyebrow")}
           </p>
           <h2 className="text-3xl sm:text-4xl font-bold text-heading mb-4">
-            The SECI{" "}
-            <GradientText variant="blue-violet">Knowledge Spiral</GradientText>
+            {t.rich("seciTitle", {
+              gradient: (chunks) => (
+                <GradientText variant="blue-violet">{chunks}</GradientText>
+              ),
+            })}
           </h2>
           <p className="max-w-3xl mx-auto text-muted">
-            Engineering organisations create value when tacit expertise — held
-            in the heads of senior engineers — moves through four modes:
-            socialised, externalised, combined, and re-internalised. Each turn
-            of the spiral compounds institutional capability.
+            {t("seciIntro")}
           </p>
         </div>
 
@@ -144,7 +146,7 @@ export function SECIDiagram() {
           {/* Top axis label */}
           <div className="hidden md:flex items-center justify-center mb-3">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">
-              From&nbsp;Tacit&nbsp;Knowledge
+              {t("seciAxisFromTacit")}
             </span>
           </div>
 
@@ -155,7 +157,7 @@ export function SECIDiagram() {
                 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted whitespace-nowrap"
                 style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
               >
-                To&nbsp;Tacit&nbsp;Knowledge
+                {t("seciAxisToTacit")}
               </span>
             </div>
 
@@ -224,7 +226,7 @@ export function SECIDiagram() {
                 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted whitespace-nowrap"
                 style={{ writingMode: "vertical-rl" }}
               >
-                To&nbsp;Explicit&nbsp;Knowledge
+                {t("seciAxisToExplicit")}
               </span>
             </div>
           </div>
@@ -232,7 +234,7 @@ export function SECIDiagram() {
           {/* Bottom axis label */}
           <div className="hidden md:flex items-center justify-center mt-3">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">
-              From&nbsp;Explicit&nbsp;Knowledge
+              {t("seciAxisFromExplicit")}
             </span>
           </div>
         </div>
@@ -247,7 +249,7 @@ export function SECIDiagram() {
           <span aria-hidden>→</span>
           <span aria-hidden>I</span>
           <span aria-hidden>↻</span>
-          <span className="ms-2">The knowledge-creation spiral</span>
+          <span className="ms-2">{t("seciSpiralHint")}</span>
         </div>
 
         <p className="text-xs text-muted text-center mt-8 italic">

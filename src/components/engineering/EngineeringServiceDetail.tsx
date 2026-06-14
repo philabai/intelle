@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { ServiceCategory } from "@/lib/types";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
@@ -56,8 +57,9 @@ const ACCENT: Record<
 };
 
 export function EngineeringServiceDetail({ service }: { service: ServiceCategory }) {
+  const t = useTranslations("serviceDetail");
   const accent = ACCENT[(service.accentColor ?? "blue") as AccentKey];
-  const eyebrow = service.eyebrow ?? "Implementation Service";
+  const eyebrow = service.eyebrow ?? t("eyebrowEngineering");
   return (
     <>
       <JsonLd data={serviceSchema(service.title, service.description, service.href)} />
@@ -66,9 +68,9 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
       <div className="border-b border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
           <nav className="flex items-center gap-2 text-sm text-muted">
-            <Link href="/" className="hover:text-heading transition-colors">Home</Link>
+            <Link href="/" className="hover:text-heading transition-colors">{t("breadcrumbHome")}</Link>
             <span>/</span>
-            <Link href="/engineering" className="hover:text-heading transition-colors">Implementation Services</Link>
+            <Link href="/engineering" className="hover:text-heading transition-colors">{t("breadcrumbEngineering")}</Link>
             <span>/</span>
             <span className="text-heading">
               <span className="sm:hidden">{service.shortTitle}</span>
@@ -133,7 +135,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
         <section className="py-10 sm:py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Implementation <GradientText variant={accent.gradient}>Timeline</GradientText>
+              {t.rich("headingTimeline", { grad: (c) => <GradientText variant={accent.gradient}>{c}</GradientText> })}
             </h2>
             <div className="relative">
               {/* Vertical line */}
@@ -168,7 +170,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
         <section className="py-10 sm:py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Our <GradientText variant={accent.gradient}>Approach</GradientText>
+              {t.rich("headingApproach", { grad: (c) => <GradientText variant={accent.gradient}>{c}</GradientText> })}
             </h2>
             <div className="space-y-4">
               {service.methodology.map((step, i) => (
@@ -191,7 +193,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
       <section className="py-10 sm:py-16 border-t border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-heading mb-8">
-            What We <GradientText variant={accent.gradient}>Deliver</GradientText>
+            {t.rich("headingDeliver", { grad: (c) => <GradientText variant={accent.gradient}>{c}</GradientText> })}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {service.deliverables.map((item, i) => (
@@ -213,7 +215,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
         <section className="py-10 sm:py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Technology <GradientText variant={accent.gradient}>Partners</GradientText>
+              {t.rich("headingTechPartners", { grad: (c) => <GradientText variant={accent.gradient}>{c}</GradientText> })}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {service.technologyPartners.map((partner) => (
@@ -232,7 +234,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
         <section className="py-10 sm:py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Who It&apos;s <GradientText variant={accent.gradient}>For</GradientText>
+              {t.rich("headingWhoFor", { grad: (c) => <GradientText variant={accent.gradient}>{c}</GradientText> })}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {service.whoItsFor.map((persona, i) => (
@@ -251,7 +253,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
         <section className="py-10 sm:py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Expected <GradientText variant={accent.gradient}>Outcomes</GradientText>
+              {t.rich("headingOutcomes", { grad: (c) => <GradientText variant={accent.gradient}>{c}</GradientText> })}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {service.expectedOutcomes.map((outcome) => (
@@ -270,7 +272,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
         <section className="py-10 sm:py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Illustrative <GradientText variant={accent.gradient}>Projects</GradientText>
+              {t.rich("headingProjects", { grad: (c) => <GradientText variant={accent.gradient}>{c}</GradientText> })}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {service.sampleProjects.map((project) => (
@@ -293,7 +295,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
         <section className="py-10 sm:py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Engagement <GradientText variant={accent.gradient}>Models</GradientText>
+              {t.rich("headingEngagement", { grad: (c) => <GradientText variant={accent.gradient}>{c}</GradientText> })}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {service.engagementModels.map((model) => (
@@ -315,7 +317,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
         <section className="py-10 sm:py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Vendor <GradientText variant={accent.gradient}>Landscape</GradientText>
+              {t.rich("headingVendorLandscape", { grad: (c) => <GradientText variant={accent.gradient}>{c}</GradientText> })}
             </h2>
 
             {service.platformSpotlight && (
@@ -353,14 +355,14 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
                     <thead className="bg-brand-navy text-white">
                       <tr>
                         <th className="px-5 py-3 text-start font-bold tracking-wide text-xs uppercase w-1/4">
-                          Category
+                          {t("tableCategory")}
                         </th>
                         <th className="px-5 py-3 text-start font-bold tracking-wide text-xs uppercase">
-                          Vendors we evaluate
+                          {t("tableVendors")}
                         </th>
                         {showExperience && (
                           <th className="px-5 py-3 text-start font-bold tracking-wide text-xs uppercase w-48 hidden md:table-cell">
-                            Our delivery role
+                            {t("tableDeliveryRole")}
                           </th>
                         )}
                       </tr>
@@ -413,7 +415,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
         <section className="py-10 sm:py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              RAG Architecture <GradientText variant={accent.gradient}>Patterns</GradientText>
+              {t.rich("headingRagPatterns", { grad: (c) => <GradientText variant={accent.gradient}>{c}</GradientText> })}
             </h2>
             <ol className="space-y-4 list-none m-0 p-0">
               {service.ragPatterns.map((pattern, i) => (
@@ -435,7 +437,7 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
       {/* Capabilities */}
       <section className="py-10 sm:py-16 border-t border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-heading mb-8">Capabilities</h2>
+          <h2 className="text-2xl font-bold text-heading mb-8">{t("headingCapabilities")}</h2>
           <div className="flex flex-wrap gap-3">
             {service.focusAreas.map((area) => (
               <span key={area} className={`px-4 py-2 rounded-full bg-card-bg border border-card-border text-sm text-muted ${accent.hoverBorder} transition-colors`}>
@@ -485,12 +487,12 @@ export function EngineeringServiceDetail({ service }: { service: ServiceCategory
       <section className="py-10 sm:py-16 border-t border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl font-bold text-heading mb-4">
-            Ready to get started with {service.shortTitle}?
+            {t("ctaReadyStarted", { service: service.shortTitle })}
           </h2>
           <p className="text-muted mb-8 max-w-xl mx-auto">
-            Every engagement starts with a free diagnostic call. Tell us about your engineering challenges and we&apos;ll scope a tailored solution.
+            {t("ctaEngineeringBody")}
           </p>
-          <Button href="/book" size="lg">Schedule a Consultation</Button>
+          <Button href="/book" size="lg">{t("ctaSchedule")}</Button>
         </div>
       </section>
     </>

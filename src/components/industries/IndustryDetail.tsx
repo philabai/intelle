@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { IndustryInfo } from "@/lib/types";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
@@ -10,6 +11,7 @@ import { HeroBackdrop } from "@/components/ui/HeroBackdrop";
 import { JsonLd, faqSchema } from "@/lib/seo/json-ld";
 
 export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
+  const t = useTranslations("serviceDetail");
   return (
     <>
       {industry.faqs?.length ? <JsonLd data={faqSchema(industry.faqs)} /> : null}
@@ -17,9 +19,9 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
       <div className="border-b border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
           <nav className="flex items-center gap-2 text-sm text-muted">
-            <Link href="/" className="hover:text-heading transition-colors">Home</Link>
+            <Link href="/" className="hover:text-heading transition-colors">{t("breadcrumbHome")}</Link>
             <span>/</span>
-            <Link href="/industries" className="hover:text-heading transition-colors">Industries</Link>
+            <Link href="/industries" className="hover:text-heading transition-colors">{t("breadcrumbIndustries")}</Link>
             <span>/</span>
             <span className="text-heading">{industry.title}</span>
           </nav>
@@ -76,7 +78,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
         <section className="py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Key <GradientText>Challenges</GradientText>
+              {t.rich("headingChallenges", { grad: (c) => <GradientText>{c}</GradientText> })}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {industry.challenges.map((challenge) => (
@@ -99,7 +101,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
         <section className="py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Industry <GradientText>Trends</GradientText>
+              {t.rich("headingTrends", { grad: (c) => <GradientText>{c}</GradientText> })}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {industry.trends.map((trend) => (
@@ -141,7 +143,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
         <section className="py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              How intelle.io <GradientText>Helps</GradientText>
+              {t.rich("headingHowHelps", { brand: "intelle.io", grad: (c) => <GradientText>{c}</GradientText> })}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {industry.howWeHelp.map((item) => (
@@ -160,7 +162,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
                       href={item.serviceHref}
                       className="text-sm text-brand-teal hover:text-brand-teal/80 transition-colors"
                     >
-                      Learn more &rarr;
+                      {t("learnMore")}
                     </Link>
                   )}
                 </div>
@@ -175,7 +177,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
         <section className="py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Illustrative <GradientText>Use Cases</GradientText>
+              {t.rich("headingUseCases", { grad: (c) => <GradientText>{c}</GradientText> })}
             </h2>
             <div className="space-y-6">
               {industry.useCases.map((useCase) => (
@@ -204,7 +206,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
                       />
                     </svg>
                     <p className="text-sm text-brand-teal/80">
-                      <span className="font-medium text-brand-teal">Outcome:</span>{" "}
+                      <span className="font-medium text-brand-teal">{t("outcomeLabel")}</span>{" "}
                       {useCase.outcome}
                     </p>
                   </div>
@@ -220,7 +222,7 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
         <section className="py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Standards We <GradientText>Cover</GradientText>
+              {t.rich("headingStandards", { grad: (c) => <GradientText>{c}</GradientText> })}
             </h2>
             <div className="space-y-3">
               {industry.standardsDetail.map((std) => (
@@ -255,14 +257,13 @@ export function IndustryDetail({ industry }: { industry: IndustryInfo }) {
       <section className="py-16 border-t border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl font-bold text-heading mb-4">
-            Ready to discuss your {industry.title.toLowerCase()} intelligence needs?
+            {t("ctaIndustry", { industry: industry.title.toLowerCase() })}
           </h2>
           <p className="text-muted mb-8 max-w-xl mx-auto">
-            Every engagement starts with a free, no-obligation diagnostic call to
-            identify your needs and explore how we can help.
+            {t("ctaIndustryBody")}
           </p>
           <Button href="/book" size="lg">
-            Schedule a Consultation
+            {t("ctaSchedule")}
           </Button>
         </div>
       </section>

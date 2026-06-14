@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import type { Severity } from "@/lib/regwatch/match";
 
 interface Props {
@@ -13,24 +14,26 @@ const SEVERITY_STYLES: Record<Severity, string> = {
   low: "bg-muted/15 border-card-border text-muted",
 };
 
-const SEVERITY_LABEL: Record<Severity, string> = {
-  critical: "Critical",
-  high: "High",
-  normal: "Relevant",
-  low: "Low",
+const SEVERITY_LABEL_KEY: Record<Severity, string> = {
+  critical: "severityCritical",
+  high: "severityHigh",
+  normal: "severityRelevant",
+  low: "severityLow",
 };
 
 export function FootprintScoreChip({ score, severity, size = "md" }: Props) {
+  const t = useTranslations("regwatch.chips");
   const styles = SEVERITY_STYLES[severity];
+  const label = t(SEVERITY_LABEL_KEY[severity]);
   const sized =
     size === "sm" ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-0.5 text-[11px]";
   return (
     <span
-      title={`Footprint relevance ${score.toFixed(0)}/100 (${SEVERITY_LABEL[severity]})`}
+      title={t("footprintRelevance", { score: score.toFixed(0), label })}
       className={`inline-flex items-center gap-1 rounded-full border font-medium uppercase tracking-wider ${styles} ${sized}`}
     >
       <span className="font-mono">{score.toFixed(0)}</span>
-      <span>{SEVERITY_LABEL[severity]}</span>
+      <span>{label}</span>
     </span>
   );
 }

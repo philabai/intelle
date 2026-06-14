@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -12,6 +13,7 @@ export const metadata = { title: "Welcome to Vantage" };
 export const dynamic = "force-dynamic";
 
 export default async function OnboardingPage() {
+  const t = await getTranslations("regwatch.onboarding");
   const supabase = await createClient();
   const {
     data: { user },
@@ -26,7 +28,7 @@ export default async function OnboardingPage() {
           feature="footprint"
           currentTier={gate.currentTier}
           requiredTier={gate.requiredTier}
-          extra="Onboarding lives inside the footprint configurator, which is Pro+ only. Sign up for free, upgrade when you're ready to set up your footprint."
+          extra={t("paywallExtra")}
         />
       </RegwatchAppShell>
     );
@@ -62,22 +64,24 @@ export default async function OnboardingPage() {
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
         <header className="mb-8">
           <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-            Welcome{org?.organization.name ? ` to ${org.organization.name}` : ""}
+            {org?.organization.name
+              ? t("welcomeTo", { org: org.organization.name })
+              : t("welcome")}
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Configure your operations footprint
+            {t("heading")}
           </h1>
           <p className="mt-3 max-w-2xl text-sm text-muted">
-            Tells Vantage which jurisdictions, activities, and topics to prioritise. Pick
-            as much or as little as you want — you can always refine it later from{" "}
-            <Link
-              href="/regwatch/settings/footprint"
-              className="text-brand-teal hover:underline"
-            >
-              Settings &rarr; Footprint
-            </Link>
-            . The defaults are intentionally empty so you don&apos;t get scored against
-            assumptions you didn&apos;t make.
+            {t.rich("intro", {
+              footprintLink: (chunks) => (
+                <Link
+                  href="/regwatch/settings/footprint"
+                  className="text-brand-teal hover:underline"
+                >
+                  {chunks}
+                </Link>
+              ),
+            })}
           </p>
         </header>
 
@@ -92,20 +96,29 @@ export default async function OnboardingPage() {
               (r as unknown as { jurisdiction_code: string }).jurisdiction_code,
             region: (r as unknown as { region: string }).region,
           }))}
-          submitLabel="Save and view my Feed →"
+          submitLabel={t("submitLabel")}
           redirectTo="/regwatch/feed"
         />
 
         <p className="mt-6 text-center text-xs text-muted">
-          Want to explore first?{" "}
-          <Link href="/regwatch/browse" className="text-foreground hover:underline">
-            Browse the corpus
-          </Link>{" "}
-          or{" "}
-          <Link href="/regwatch/feed" className="text-foreground hover:underline">
-            skip to the Feed
-          </Link>{" "}
-          — your footprint can stay empty until you&apos;re ready.
+          {t.rich("explore", {
+            browseLink: (chunks) => (
+              <Link
+                href="/regwatch/browse"
+                className="text-foreground hover:underline"
+              >
+                {chunks}
+              </Link>
+            ),
+            feedLink: (chunks) => (
+              <Link
+                href="/regwatch/feed"
+                className="text-foreground hover:underline"
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       </div>
     </RegwatchAppShell>

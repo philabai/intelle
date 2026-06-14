@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 
 /**
@@ -56,6 +57,7 @@ export function GuidedTour({
   autoStartOnFirstVisit,
   startSignal,
 }: Props) {
+  const t = useTranslations("regwatch.help");
   const startedRef = useRef(false);
   const router = useRouter();
   const pathname = usePathname() ?? "";
@@ -99,9 +101,9 @@ export function GuidedTour({
         smoothScroll: true,
         allowClose: true,
         popoverClass: "vantage-tour-popover",
-        nextBtnText: "Next →",
-        prevBtnText: "← Back",
-        doneBtnText: "Finish",
+        nextBtnText: t("tourNext"),
+        prevBtnText: t("tourBack"),
+        doneBtnText: t("tourFinish"),
         onDestroyed: () => {
           localStorage.setItem(flagKey, new Date().toISOString());
           startedRef.current = false;
@@ -148,7 +150,7 @@ export function GuidedTour({
     return () => {
       cancelled = true;
     };
-  }, [tourId, steps, autoStartOnFirstVisit, startSignal]);
+  }, [tourId, steps, autoStartOnFirstVisit, startSignal, t]);
 
   return null;
 }

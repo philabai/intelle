@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { DiagramComparison, type ComparisonSpec } from "./DiagramComparison";
 import { DiagramStack, type StackSpec } from "./DiagramStack";
 import { DiagramSequence, type SequenceSpec } from "./DiagramSequence";
@@ -34,9 +35,10 @@ export function DiagramRouter({ spec }: { spec: DiagramSpec }) {
 }
 
 export function DiagramErrorPlaceholder({ language, error }: { language: string; error: string }) {
+  const t = useTranslations("diagrams");
   return (
     <div className="my-6 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4 text-xs text-yellow-200 not-prose">
-      <p className="font-semibold mb-1">Diagram could not be rendered ({language})</p>
+      <p className="font-semibold mb-1">{t("diagramRenderError", { language })}</p>
       <p className="text-yellow-200/70">{error}</p>
     </div>
   );

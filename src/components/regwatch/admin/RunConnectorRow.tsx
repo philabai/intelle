@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 
 interface Props {
@@ -33,6 +34,7 @@ export function RunConnectorRow({
   regulatorSlug,
   supportsHierarchy,
 }: Props) {
+  const t = useTranslations("regwatch.chips");
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<RunResult | null>(null);
@@ -78,7 +80,7 @@ export function RunConnectorRow({
                 onChange={(e) => setIncludeHierarchy(e.target.checked)}
                 className="h-3 w-3 accent-brand-blue"
               />
-              + hierarchy
+              {t("plusHierarchy")}
             </label>
           )}
           <button
@@ -87,7 +89,7 @@ export function RunConnectorRow({
             disabled={pending}
             className="rounded-md bg-brand-blue px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-blue/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {pending ? "Running…" : "Run now"}
+            {pending ? t("running") : t("runNow")}
           </button>
         </div>
       </div>
@@ -103,26 +105,35 @@ export function RunConnectorRow({
           {result.ok ? (
             <div className="space-y-0.5">
               <p>
-                <strong>{result.fetched ?? 0}</strong> items fetched,{" "}
-                <strong>{result.persisted ?? 0}</strong> upserted
+                {t.rich("runResult", {
+                  fetched: result.fetched ?? 0,
+                  persisted: result.persisted ?? 0,
+                  strong: (chunks) => <strong>{chunks}</strong>,
+                })}
                 {result.duration_ms !== undefined && (
                   <> · {result.duration_ms} ms</>
                 )}
               </p>
               {(result.fetch_errors?.length ?? 0) > 0 && (
                 <p className="text-amber-300">
-                  Fetch warnings: {result.fetch_errors!.join("; ")}
+                  {t("fetchWarnings", {
+                    warnings: result.fetch_errors!.join("; "),
+                  })}
                 </p>
               )}
               {(result.persist_errors?.length ?? 0) > 0 && (
                 <p className="text-amber-300">
-                  Persist warnings: {result.persist_errors!.join("; ")}
+                  {t("persistWarnings", {
+                    warnings: result.persist_errors!.join("; "),
+                  })}
                 </p>
               )}
               {result.hierarchy && (
                 <p>
-                  Hierarchy: <strong>{result.hierarchy.upserted}</strong> nodes
-                  upserted
+                  {t.rich("hierarchyResult", {
+                    count: result.hierarchy.upserted,
+                    strong: (chunks) => <strong>{chunks}</strong>,
+                  })}
                   {result.hierarchy.errors.length > 0 && (
                     <> · {result.hierarchy.errors.join("; ")}</>
                   )}
@@ -130,7 +141,7 @@ export function RunConnectorRow({
               )}
             </div>
           ) : (
-            <p>{result.error ?? "Run failed"}</p>
+            <p>{result.error ?? t("runFailed")}</p>
           )}
         </div>
       )}

@@ -1,23 +1,24 @@
+import { useTranslations } from "next-intl";
 import { GradientText } from "@/components/ui/GradientText";
 
-type SourceChip = { label: string; example?: string };
+type SourceChip = { labelKey: string; example?: string; exampleKey?: string };
 
 const SOURCE_CHIPS: SourceChip[] = [
-  { label: "Industry standards", example: "API · ISO · NACE · ASME · IEC" },
-  { label: "Mil specs & defence codes", example: "Mil-Spec · NATO · AIA" },
-  { label: "Regulations", example: "Regulator + jurisdiction" },
-  { label: "Internal standards & design guides", example: "Your engineering DNA" },
+  { labelKey: "sourceIndustryStandards", example: "API · ISO · NACE · ASME · IEC" },
+  { labelKey: "sourceMilSpecs", example: "Mil-Spec · NATO · AIA" },
+  { labelKey: "sourceRegulations", exampleKey: "sourceRegulationsExample" },
+  { labelKey: "sourceInternalStandards", exampleKey: "sourceEngineeringDna" },
 ];
 
 const DECOMP_CHIPS = [
-  "Requirements",
-  "Prohibitions",
-  "Guidance",
-  "Engineering information",
-];
+  "decompRequirements",
+  "decompProhibitions",
+  "decompGuidance",
+  "decompEngineeringInfo",
+] as const;
 
 type Destination = {
-  title: string;
+  titleKey: string;
   category: string;
   systems: string[];
   accent: {
@@ -29,7 +30,7 @@ type Destination = {
 
 const DESTINATIONS: Destination[] = [
   {
-    title: "Requirements management",
+    titleKey: "destRequirementsManagement",
     category: "RMS",
     systems: ["PTC Codebeamer", "IBM DOORS", "Jama Connect", "Siemens Polarion"],
     accent: {
@@ -39,7 +40,7 @@ const DESTINATIONS: Destination[] = [
     },
   },
   {
-    title: "Product lifecycle",
+    titleKey: "destProductLifecycle",
     category: "PLM",
     systems: ["PTC Windchill", "Siemens Teamcenter"],
     accent: {
@@ -49,7 +50,7 @@ const DESTINATIONS: Destination[] = [
     },
   },
   {
-    title: "Asset lifecycle",
+    titleKey: "destAssetLifecycle",
     category: "ALM / EAM",
     systems: ["IBM Maximo", "Bentley AssetWise", "AVEVA APM"],
     accent: {
@@ -76,40 +77,42 @@ function Arrow({ className = "" }: { className?: string }) {
 }
 
 export function DigitalThreadDiagram() {
+  const t = useTranslations("diagrams");
   return (
     <section className="border-t border-card-border py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10 sm:mb-12">
           <p className="text-xs font-bold uppercase tracking-wider text-brand-teal mb-3">
-            How a standard reaches every system that depends on it
+            {t("dtEyebrow")}
           </p>
           <h2 className="text-3xl sm:text-4xl font-bold text-heading mb-4">
-            The{" "}
-            <GradientText variant="teal-blue">Digital Thread</GradientText>{" "}
-            Architecture
+            {t.rich("dtTitle", {
+              gradient: (chunks) => (
+                <GradientText variant="teal-blue">{chunks}</GradientText>
+              ),
+            })}
           </h2>
           <p className="max-w-3xl mx-auto text-muted">
-            Every design decision must trace back to a governing standard.
-            Every revision cascades into inspections, procedures, change
-            management, and supplier obligations. The thread is what makes that
-            cascade automatic rather than manual.
+            {t("dtIntro")}
           </p>
         </div>
 
         {/* Layer 1 — Sources */}
         <div className="mb-3">
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted text-center mb-3">
-            Layer 1 · Sources
+            {t("layer1Heading")}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {SOURCE_CHIPS.map((s) => (
               <div
-                key={s.label}
+                key={s.labelKey}
                 className="rounded-xl border border-card-border bg-card-bg/60 px-4 py-3"
               >
-                <p className="text-sm font-semibold text-foreground">{s.label}</p>
-                {s.example && (
-                  <p className="text-[11px] text-muted mt-1">{s.example}</p>
+                <p className="text-sm font-semibold text-foreground">{t(s.labelKey)}</p>
+                {(s.example || s.exampleKey) && (
+                  <p className="text-[11px] text-muted mt-1">
+                    {s.exampleKey ? t(s.exampleKey) : s.example}
+                  </p>
                 )}
               </div>
             ))}
@@ -124,16 +127,14 @@ export function DigitalThreadDiagram() {
         {/* Layer 2 — Decomposition engine (concept name only — no product brand) */}
         <div className="mb-3">
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted text-center mb-3">
-            Layer 2 · Decompose · Enrich · Extract · Compare
+            {t("layer2Heading")}
           </p>
           <div className="rounded-2xl border-2 border-brand-teal/40 bg-gradient-to-br from-brand-teal/15 via-card-bg to-brand-blue/15 p-6 sm:p-8">
             <h3 className="text-xl sm:text-2xl font-bold text-heading text-center mb-2">
-              The digital-threading engine
+              {t("engineTitle")}
             </h3>
             <p className="text-sm text-muted text-center max-w-2xl mx-auto mb-5">
-              Unstructured standards become structured, citable, traceable
-              requirement objects — each one enriched with metadata and
-              addressable by an API.
+              {t("layer2Body")}
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               {DECOMP_CHIPS.map((c) => (
@@ -141,7 +142,7 @@ export function DigitalThreadDiagram() {
                   key={c}
                   className="text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-teal/20 text-brand-teal border border-brand-teal/40"
                 >
-                  {c}
+                  {t(c)}
                 </span>
               ))}
             </div>
@@ -156,12 +157,12 @@ export function DigitalThreadDiagram() {
         {/* Layer 3 — Destination engineering systems */}
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted text-center mb-3">
-            Layer 3 · Your engineering toolchain
+            {t("layer3Heading")}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {DESTINATIONS.map((d) => (
               <div
-                key={d.title}
+                key={d.titleKey}
                 className={`rounded-xl border ${d.accent.border} ${d.accent.bg} p-5`}
               >
                 <p
@@ -170,7 +171,7 @@ export function DigitalThreadDiagram() {
                   {d.category}
                 </p>
                 <h4 className="text-base font-semibold text-heading mb-3">
-                  {d.title}
+                  {t(d.titleKey)}
                 </h4>
                 <ul className="space-y-1.5 text-sm text-muted">
                   {d.systems.map((s) => (
@@ -190,14 +191,10 @@ export function DigitalThreadDiagram() {
         {/* Change-cascade callout */}
         <div className="mt-10 rounded-xl border-s-4 border-brand-blue bg-brand-blue/10 p-5 sm:p-6">
           <p className="text-xs font-bold tracking-[0.2em] text-brand-blue mb-2">
-            CHANGE CASCADE
+            {t("changeCascadeLabel")}
           </p>
           <p className="text-sm text-foreground/85 leading-relaxed">
-            When a standard or regulation is revised, the change propagates
-            automatically through the thread — inspection plans, MOC workflows,
-            supplier obligations, and design records all see the impact. MOC
-            becomes proactive, not reactive. Audit conformance is a continuous
-            system state, not a pre-inspection scramble.
+            {t("changeCascadeBody")}
           </p>
         </div>
       </div>

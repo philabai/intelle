@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import dynamic from "next/dynamic";
@@ -54,6 +55,7 @@ interface Props {
  * even if the user starts the same tour twice.
  */
 export function HelpDrawer({ open, onClose, onAskIris }: Props) {
+  const t = useTranslations("regwatch.help");
   const pathname = usePathname() ?? "";
   const activeTour = useMemo(() => tourForPathname(pathname), [pathname]);
   const [signals, setSignals] = useState<Record<string, number>>({});
@@ -118,19 +120,17 @@ export function HelpDrawer({ open, onClose, onAskIris }: Props) {
         <header className="flex items-start justify-between gap-3 border-b border-card-border bg-card-bg/80 px-5 py-3">
           <div className="min-w-0">
             <h3 className="text-sm font-semibold text-foreground">
-              Help · Vantage
+              {t("title")}
             </h3>
-            <p className="mt-0.5 text-[11px] text-muted">
-              Tours for complex workflows. Ask Iris anything else.
-            </p>
+            <p className="mt-0.5 text-[11px] text-muted">{t("subtitle")}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            title="Close (Esc)"
+            title={t("closeTitle")}
             className="shrink-0 rounded-md border border-card-border bg-background px-2 py-1 text-[11px] text-muted hover:border-brand-blue hover:text-foreground"
           >
-            ✕ Close
+            {t("close")}
           </button>
         </header>
 
@@ -142,13 +142,13 @@ export function HelpDrawer({ open, onClose, onAskIris }: Props) {
           >
             <div>
               <p className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">
-                Video tours
+                {t("videoTours")}
               </p>
               <h4 className="mt-1 text-sm font-semibold text-foreground">
-                Watch the {VIDEO_TOUR_COUNT} product walkthroughs
+                {t("watchWalkthroughs", { count: VIDEO_TOUR_COUNT })}
               </h4>
               <p className="mt-1 text-xs text-muted">
-                {VIDEO_TOUR_SUMMARY} — ~1 min each.
+                {t("walkthroughsSummary", { summary: VIDEO_TOUR_SUMMARY })}
               </p>
             </div>
             <span className="shrink-0 text-brand-teal">▶</span>
@@ -157,7 +157,7 @@ export function HelpDrawer({ open, onClose, onAskIris }: Props) {
           {activeTour && (
             <section className="mb-5 rounded-xl border border-brand-blue/40 bg-brand-blue/5 p-4">
               <p className="text-[10px] font-medium uppercase tracking-wider text-brand-blue">
-                On this page
+                {t("onThisPage")}
               </p>
               <h4 className="mt-1 text-sm font-semibold text-foreground">
                 {activeTour.title}
@@ -168,39 +168,39 @@ export function HelpDrawer({ open, onClose, onAskIris }: Props) {
                 onClick={() => startTour(activeTour)}
                 className="mt-3 rounded-md bg-brand-blue px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-blue/90"
               >
-                Start guided tour →
+                {t("startGuidedTour")}
               </button>
             </section>
           )}
 
           <section>
             <p className="mb-3 text-[10px] font-medium uppercase tracking-wider text-muted">
-              All tours
+              {t("allTours")}
             </p>
             <ul className="space-y-2">
-              {TOUR_CATALOGUE.map((t) => (
+              {TOUR_CATALOGUE.map((tour) => (
                 <li
-                  key={t.id}
+                  key={tour.id}
                   className="rounded-md border border-card-border bg-background/40 p-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-foreground">
-                        {t.title}
+                        {tour.title}
                       </p>
-                      <p className="text-[10px] text-muted">{t.subtitle}</p>
-                      {completed[t.id] && (
+                      <p className="text-[10px] text-muted">{tour.subtitle}</p>
+                      {completed[tour.id] && (
                         <p className="mt-1 text-[10px] text-brand-teal">
-                          ✓ Completed
+                          {t("completed")}
                         </p>
                       )}
                     </div>
                     <button
                       type="button"
-                      onClick={() => startTour(t)}
+                      onClick={() => startTour(tour)}
                       className="shrink-0 rounded-md border border-card-border bg-background px-2 py-1 text-[10px] text-foreground hover:border-brand-blue"
                     >
-                      {completed[t.id] ? "Restart" : "Start"}
+                      {completed[tour.id] ? t("restart") : t("start")}
                     </button>
                   </div>
                 </li>
@@ -210,12 +210,9 @@ export function HelpDrawer({ open, onClose, onAskIris }: Props) {
 
           <section className="mt-5 rounded-xl border border-card-border bg-card-bg/40 p-4">
             <p className="text-xs font-medium text-foreground">
-              Ask Iris about Vantage
+              {t("askIris")}
             </p>
-            <p className="mt-1 text-[11px] text-muted">
-              Iris can answer product questions like &quot;How do I cite a
-              clause?&quot; or &quot;What does &lsquo;in review&rsquo; mean?&quot;.
-            </p>
+            <p className="mt-1 text-[11px] text-muted">{t("irisDescription")}</p>
             <button
               type="button"
               onClick={() => {
@@ -224,7 +221,7 @@ export function HelpDrawer({ open, onClose, onAskIris }: Props) {
               }}
               className="mt-3 rounded-md border border-brand-teal/40 bg-brand-teal/10 px-3 py-1.5 text-xs font-medium text-brand-teal hover:bg-brand-teal/20"
             >
-              Open Iris in Help mode →
+              {t("openIris")}
             </button>
           </section>
 
@@ -234,7 +231,7 @@ export function HelpDrawer({ open, onClose, onAskIris }: Props) {
               onClick={restartAll}
               className="underline-offset-2 hover:text-foreground hover:underline"
             >
-              Reset tour completion flags
+              {t("resetFlags")}
             </button>
           </section>
         </div>

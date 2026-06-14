@@ -1,5 +1,5 @@
+import { useTranslations } from "next-intl";
 import type { InternalDocumentReviewState } from "@/lib/regwatch/internal-documents";
-import { REVIEW_STATE_LABEL } from "@/lib/regwatch/internal-document-state-machine";
 
 const TONE: Record<InternalDocumentReviewState, string> = {
   draft: "bg-card-bg/60 text-muted border-card-border",
@@ -16,13 +16,14 @@ export function StatePill({
   state: InternalDocumentReviewState;
   size?: "sm" | "md";
 }) {
+  const t = useTranslations("regwatch.docState");
   return (
     <span
       className={`inline-flex items-center rounded-full border px-2.5 py-0.5 font-medium uppercase tracking-wider ${
         size === "sm" ? "text-[9px]" : "text-[10px]"
       } ${TONE[state]}`}
     >
-      {REVIEW_STATE_LABEL[state]}
+      {t(`state_${state}`)}
     </span>
   );
 }

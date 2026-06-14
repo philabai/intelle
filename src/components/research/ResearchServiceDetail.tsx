@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { ServiceCategory } from "@/lib/types";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
@@ -10,6 +11,7 @@ import { HeroBackdrop } from "@/components/ui/HeroBackdrop";
 import { JsonLd, faqSchema, serviceSchema } from "@/lib/seo/json-ld";
 
 export function ResearchServiceDetail({ service }: { service: ServiceCategory }) {
+  const t = useTranslations("serviceDetail");
   return (
     <>
       <JsonLd data={serviceSchema(service.title, service.description, service.href)} />
@@ -18,9 +20,9 @@ export function ResearchServiceDetail({ service }: { service: ServiceCategory })
       <div className="border-b border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
           <nav className="flex items-center gap-2 text-sm text-muted">
-            <Link href="/" className="hover:text-heading transition-colors">Home</Link>
+            <Link href="/" className="hover:text-heading transition-colors">{t("breadcrumbHome")}</Link>
             <span>/</span>
-            <Link href="/research" className="hover:text-heading transition-colors">Research Services</Link>
+            <Link href="/research" className="hover:text-heading transition-colors">{t("breadcrumbResearch")}</Link>
             <span>/</span>
             <span className="text-heading">{service.title}</span>
           </nav>
@@ -37,7 +39,7 @@ export function ResearchServiceDetail({ service }: { service: ServiceCategory })
                 <ServiceIcon name={service.icon} className="text-brand-teal" size={24} />
               </div>
               <p className="text-sm font-semibold uppercase tracking-widest text-brand-teal">
-                Research Service
+                {t("eyebrowResearch")}
               </p>
             </div>
             <h1 className="text-3xl font-bold text-heading sm:text-4xl lg:text-5xl">
@@ -76,7 +78,7 @@ export function ResearchServiceDetail({ service }: { service: ServiceCategory })
         <section className="py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Our <GradientText>Methodology</GradientText>
+              {t.rich("headingMethodology", { grad: (c) => <GradientText>{c}</GradientText> })}
             </h2>
             <div className="space-y-4">
               {service.methodology.map((step, i) => (
@@ -99,7 +101,7 @@ export function ResearchServiceDetail({ service }: { service: ServiceCategory })
       <section className="py-16 border-t border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-heading mb-8">
-            What We <GradientText>Deliver</GradientText>
+            {t.rich("headingDeliver", { grad: (c) => <GradientText>{c}</GradientText> })}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {service.deliverables.map((item, i) => (
@@ -121,7 +123,7 @@ export function ResearchServiceDetail({ service }: { service: ServiceCategory })
         <section className="py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Who It&apos;s <GradientText>For</GradientText>
+              {t.rich("headingWhoFor", { grad: (c) => <GradientText>{c}</GradientText> })}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {service.whoItsFor.map((persona, i) => (
@@ -140,7 +142,7 @@ export function ResearchServiceDetail({ service }: { service: ServiceCategory })
         <section className="py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Expected <GradientText>Outcomes</GradientText>
+              {t.rich("headingOutcomes", { grad: (c) => <GradientText>{c}</GradientText> })}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {service.expectedOutcomes.map((outcome) => (
@@ -159,7 +161,7 @@ export function ResearchServiceDetail({ service }: { service: ServiceCategory })
         <section className="py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Illustrative <GradientText>Projects</GradientText>
+              {t.rich("headingProjects", { grad: (c) => <GradientText>{c}</GradientText> })}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {service.sampleProjects.map((project) => (
@@ -182,7 +184,7 @@ export function ResearchServiceDetail({ service }: { service: ServiceCategory })
         <section className="py-16 border-t border-card-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-heading mb-8">
-              Engagement <GradientText>Models</GradientText>
+              {t.rich("headingEngagement", { grad: (c) => <GradientText>{c}</GradientText> })}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {service.engagementModels.map((model) => (
@@ -200,7 +202,7 @@ export function ResearchServiceDetail({ service }: { service: ServiceCategory })
       {/* Focus Areas */}
       <section className="py-16 border-t border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-heading mb-8">Key Focus Areas</h2>
+          <h2 className="text-2xl font-bold text-heading mb-8">{t("headingFocusAreas")}</h2>
           <div className="flex flex-wrap gap-3">
             {service.focusAreas.map((area) => (
               <span
@@ -227,12 +229,12 @@ export function ResearchServiceDetail({ service }: { service: ServiceCategory })
       <section className="py-16 border-t border-card-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl font-bold text-heading mb-4">
-            Interested in {service.shortTitle}?
+            {t("ctaInterested", { service: service.shortTitle })}
           </h2>
           <p className="text-muted mb-8 max-w-xl mx-auto">
-            Every engagement starts with a free diagnostic call. Tell us about your research needs and we&apos;ll scope a bespoke engagement.
+            {t("ctaResearchBody")}
           </p>
-          <Button href="/book" size="lg">Schedule a Consultation</Button>
+          <Button href="/book" size="lg">{t("ctaSchedule")}</Button>
         </div>
       </section>
     </>

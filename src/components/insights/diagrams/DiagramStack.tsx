@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+
 export type StackSpec = {
   title: string;
   subtitle?: string;
@@ -16,6 +18,7 @@ const RATE_COLORS: Record<string, string> = {
 };
 
 export function DiagramStack({ spec }: { spec: StackSpec }) {
+  const t = useTranslations("diagrams");
   return (
     <figure className="my-10 rounded-xl border border-card-border bg-card-bg overflow-hidden not-prose">
       <div className="bg-brand-navy text-white px-5 py-3">
@@ -34,7 +37,7 @@ export function DiagramStack({ spec }: { spec: StackSpec }) {
             >
               <div className="flex items-center sm:justify-end pe-0 sm:pe-2">
                 <p className="text-[10px] font-bold tracking-widest text-muted uppercase">
-                  Fail rate:{" "}
+                  {t("stackFailRate")}{" "}
                   <span className={RATE_COLORS[layer.failRate || "low"] || ""}>
                     {(layer.failRate || "low").toUpperCase()}
                   </span>
@@ -50,8 +53,8 @@ export function DiagramStack({ spec }: { spec: StackSpec }) {
                 <div className="flex items-baseline justify-between gap-3">
                   <p className="text-sm font-bold text-foreground">{layer.name}</p>
                   <p className="text-[10px] tracking-widest text-muted">
-                    Layer {spec.layers.length - i}
-                    {isFoundation ? " — load-bearing" : ""}
+                    {t("stackLayer", { n: spec.layers.length - i })}
+                    {isFoundation ? t("stackLoadBearing") : ""}
                   </p>
                 </div>
                 <p className="text-xs text-muted mt-1 leading-relaxed">

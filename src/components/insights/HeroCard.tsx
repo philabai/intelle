@@ -1,13 +1,14 @@
+import { useTranslations } from "next-intl";
 import type { Article, ArticlePillar } from "@/lib/types";
 import { PILLARS } from "@/lib/content/pillars";
 import { SITE } from "@/lib/constants";
 
-const PILLAR_EYEBROW: Record<ArticlePillar, string> = {
-  industry_insight: "INDUSTRY INSIGHT",
-  service_spotlight: "SERVICE SPOTLIGHT",
-  founder_pov: "FOUNDER POV",
-  case_archetype: "CASE ARCHETYPE",
-  resource: "RESOURCE",
+const PILLAR_EYEBROW_KEY: Record<ArticlePillar, string> = {
+  industry_insight: "pillarEyebrowIndustryInsight",
+  service_spotlight: "pillarEyebrowServiceSpotlight",
+  founder_pov: "pillarEyebrowFounderPov",
+  case_archetype: "pillarEyebrowCaseArchetype",
+  resource: "pillarEyebrowResource",
 };
 
 function splitTitle(title: string): { first: string; second: string | null } {
@@ -27,8 +28,9 @@ function splitTitle(title: string): { first: string; second: string | null } {
 }
 
 export function HeroCard({ article }: { article: Article }) {
+  const t = useTranslations("insightsUi");
   const eyebrow = article.pillar
-    ? PILLAR_EYEBROW[article.pillar]
+    ? t(PILLAR_EYEBROW_KEY[article.pillar])
     : article.category.replace("-", " ").toUpperCase();
   const { first, second } = splitTitle(article.title);
   const date = article.published_at
@@ -57,11 +59,15 @@ export function HeroCard({ article }: { article: Article }) {
       )}
       <div className="mt-8 flex flex-wrap items-center justify-between gap-4 text-xs text-white/60">
         <span className="font-medium text-white/80">
-          By {article.author_name}
-          {article.author_name === SITE.name ? "" : ", Founder & CEO"}
+          {t("byline", { author: article.author_name })}
+          {article.author_name === SITE.name ? "" : t("bylineFounderCeo")}
         </span>
         <span>
-          {SITE.name} · {date.toLocaleDateString("en-GB", { month: "long", year: "numeric" })} · Issue {year}
+          {t("bylineMeta", {
+            siteName: SITE.name,
+            date: date.toLocaleDateString("en-GB", { month: "long", year: "numeric" }),
+            year,
+          })}
         </span>
       </div>
     </header>

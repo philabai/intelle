@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
 const HINT_SESSION_KEY = "iris-hint-dismissed";
@@ -35,7 +36,7 @@ type ToolResultRecord = {
 type ChatMessage =
   | { role: "user"; text: string }
   | { role: "tool_result"; results: ToolResultRecord[] }
-  | { role: "assistant"; blocks: AssistantBlock[] };
+  | { role: "assistant"; blocks: AssistantBlock[]; isGreeting?: boolean };
 
 type StreamEvent =
   | { type: "text"; text: string }
@@ -43,20 +44,6 @@ type StreamEvent =
   | { type: "tool_result"; id: string; result: string; is_error?: boolean }
   | { type: "done"; stopReason: string | null }
   | { type: "error"; message: string };
-
-const QUICK_ACTIONS = [
-  "What does intelle.io do?",
-  "Book a call with the Senior Practitioner",
-  "Tell me about your KM services",
-];
-
-const GREETING_TEXT =
-  "Hi — I'm Iris, the intelle.io concierge. I can answer questions about our research and implementation services, point you to the right page, or set up a 30-minute call with our Senior Practitioner. What would you like to do?";
-
-const GREETING: ChatMessage = {
-  role: "assistant",
-  blocks: [{ type: "text", text: GREETING_TEXT }],
-};
 
 type ApiMessage = {
   role: "user" | "assistant";
@@ -69,12 +56,7 @@ type ApiMessage = {
 function toApiMessages(messages: ChatMessage[]): ApiMessage[] {
   // Drop the leading greeting; it's a UI nicety, not part of the conversation.
   const start =
-    messages[0]?.role === "assistant" &&
-    messages[0].blocks.length === 1 &&
-    messages[0].blocks[0].type === "text" &&
-    messages[0].blocks[0].text === GREETING_TEXT
-      ? 1
-      : 0;
+    messages[0]?.role === "assistant" && messages[0].isGreeting ? 1 : 0;
 
   return messages.slice(start).map((m): ApiMessage => {
     if (m.role === "user") {
@@ -102,8 +84,22 @@ function toApiMessages(messages: ChatMessage[]): ApiMessage[] {
 }
 
 export function IrisWidget() {
+  const t = useTranslations("iris");
+
+  const QUICK_ACTIONS = [
+    t("quickActions.whatDoesIntelleDo"),
+    t("quickActions.bookACall"),
+    t("quickActions.kmServices"),
+  ];
+
+  const greeting: ChatMessage = {
+    role: "assistant",
+    blocks: [{ type: "text", text: t("greeting") }],
+    isGreeting: true,
+  };
+
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
+  const [messages, setMessages] = useState<ChatMessage[]>([greeting]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [hintOpen, setHintOpen] = useState(false);
@@ -207,8 +203,7 @@ export function IrisWidget() {
       console.error("[iris widget]", err);
       applyEvent({
         type: "text",
-        text:
-          "\n\n_Sorry — I hit a snag. Try again, or email hello@intelle.io._",
+        text: `\n\n_${t("errorFallback")}_`,
       });
     } finally {
       setIsStreaming(false);
@@ -314,7 +309,7 @@ export function IrisWidget() {
           <div className="relative rounded-2xl rounded-ee-sm bg-gradient-to-br from-brand-teal to-brand-blue p-4 pe-9 text-white shadow-xl shadow-brand-teal/30">
             <button
               onClick={dismissHint}
-              aria-label="Dismiss"
+              aria-label={t("aria.dismiss")}
               className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-md text-white/80 hover:bg-white/15 hover:text-white"
             >
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -322,10 +317,10 @@ export function IrisWidget() {
               </svg>
             </button>
             <p className="text-sm font-semibold leading-tight">
-              Hi! I&apos;m Iris.
+              {t("hintTitle")}
             </p>
             <p className="mt-1 text-xs text-white/90 leading-snug">
-              Ask me about intelle.io services, or I can set up a call with our Senior Practitioner.
+              {t("hintBody")}
             </p>
           </div>
         </div>
@@ -335,7 +330,7 @@ export function IrisWidget() {
       {!isOpen && (
         <button
           onClick={openChat}
-          aria-label="Open chat with Iris"
+          aria-label={t("aria.openChat")}
           className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-brand-teal to-brand-blue text-white shadow-lg shadow-brand-teal/30 transition-transform hover:scale-105 sm:bottom-8 sm:right-8"
         >
           {hintOpen && (
@@ -381,13 +376,13 @@ export function IrisWidget() {
                     Iris
                   </p>
                   <p className="text-[10px] uppercase tracking-wider text-muted">
-                    intelle.io concierge · AI
+                    {t("headerSubtitle")}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                aria-label="Close chat"
+                aria-label={t("aria.closeChat")}
                 className="rounded-md p-3 -me-1 text-muted hover:text-heading hover:bg-card-bg"
               >
                 <svg
@@ -455,7 +450,7 @@ export function IrisWidget() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask Iris a question…"
+                  placeholder={t("inputPlaceholder")}
                   rows={1}
                   disabled={isStreaming}
                   className="flex-1 resize-none rounded-lg border border-card-border bg-background px-3 py-2 text-sm text-heading placeholder:text-muted/60 focus:border-brand-teal focus:outline-none disabled:opacity-50 max-h-32"
@@ -463,7 +458,7 @@ export function IrisWidget() {
                 <button
                   type="submit"
                   disabled={!input.trim() || isStreaming}
-                  aria-label="Send"
+                  aria-label={t("aria.send")}
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-brand-teal text-brand-navy transition-opacity hover:opacity-90 disabled:opacity-40"
                 >
                   <svg
@@ -482,15 +477,17 @@ export function IrisWidget() {
                 </button>
               </div>
               <p className="mt-2 text-[10px] text-muted/60 text-center">
-                Iris is an AI — sometimes wrong. For anything binding, please{" "}
-                <Link
-                  href="/book"
-                  className="underline hover:text-brand-teal"
-                  onClick={() => setIsOpen(false)}
-                >
-                  book a call
-                </Link>
-                .
+                {t.rich("disclaimer", {
+                  link: (chunks) => (
+                    <Link
+                      href="/book"
+                      className="underline hover:text-brand-teal"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {chunks}
+                    </Link>
+                  ),
+                })}
               </p>
             </form>
           </div>
@@ -507,6 +504,8 @@ function MessageRow({
   message: ChatMessage;
   onClose: () => void;
 }) {
+  const t = useTranslations("iris");
+
   if (message.role === "user") {
     return (
       <div className="flex justify-end">
@@ -537,7 +536,7 @@ function MessageRow({
         if (block.type === "tool_use") {
           if (block.name === "navigate_to_page") {
             const href = String(block.input.href ?? "/");
-            const label = String(block.input.label ?? "Open page");
+            const label = String(block.input.label ?? t("toolUse.openPage"));
             const reason = String(block.input.reason ?? "");
             return (
               <div key={i} className="max-w-[90%]">
@@ -570,13 +569,13 @@ function MessageRow({
                   className="block rounded-xl border border-brand-teal/40 bg-gradient-to-br from-brand-teal/15 to-brand-blue/10 px-4 py-3 hover:from-brand-teal/25 transition-colors"
                 >
                   <p className="text-sm font-semibold text-brand-teal flex items-center gap-1.5">
-                    Book a 30-min discovery call
+                    {t("bookCard.title")}
                     <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                   </p>
                   <p className="mt-1 text-xs text-muted leading-snug">
-                    Free · 30 minutes · led by our Senior Practitioner personally
+                    {t("bookCard.subtitle")}
                   </p>
                 </Link>
               </div>

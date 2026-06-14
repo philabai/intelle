@@ -75,7 +75,7 @@ export default async function IndustriesPage() {
               <p className="text-muted text-sm mb-4">{industry.description}</p>
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted/60 mb-2">Key Standards</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted/60 mb-2">{t("keyStandards")}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {industry.standards.map((std) => (
                       <span key={std} className="text-xs px-2 py-0.5 rounded-full bg-card-border text-muted">{std}</span>
