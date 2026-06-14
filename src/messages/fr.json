@@ -2056,5 +2056,182 @@
     "title": "Page introuvable",
     "description": "La page que vous recherchez n'existe pas ou a été déplacée.",
     "backToHome": "Retour à l'accueil"
+  },
+  "metadata": {
+    "root": {
+      "title": "Services d'intelligence et de recherche en ingénierie pour le CCG + Inde | intelle.io",
+      "description": "Intelligence en ingénierie pilotée par des praticiens seniors pour les NOC, EPC et scale-ups industriels à travers le CCG + Inde. 30 à 50 % du coût Tier-1. Recherche sur mesure, résultats concrets.",
+      "template": "%s | intelle.io",
+      "ogAlt": "intelle.io — Intelligence en ingénierie qui génère des résultats concrets",
+      "twitterTitle": "Services d'intelligence et de recherche en ingénierie pour le CCG + Inde",
+      "twitterDescription": "Recherche en ingénierie pilotée par des praticiens seniors. 30 à 50 % du coût Tier-1."
+    },
+    "about": {
+      "title": "À propos d'intelle.io | Recherche en ingénierie par praticiens seniors, Dubaï",
+      "description": "intelle.io est un cabinet d'intelligence en ingénierie dirigé par des seniors. Plus de 25 ans chez S&P Global, IHS Markit, GE Energy, Accuris, Sapient. Publié par SAE. Invité à CERAWeek. Basé à Dubaï.",
+      "ogTitle": "À propos d'intelle.io — Recherche par praticiens seniors",
+      "ogDescription": "Cabinet d'intelligence en ingénierie dirigé par des seniors. Plus de 25 ans chez S&P Global, IHS Markit, GE Energy, Accuris, Sapient. Basé à Dubaï."
+    },
+    "book": {
+      "title": "Réserver un appel découverte de 30 min | intelle.io Recherche en ingénierie",
+      "description": "Réservez un appel découverte gratuit de 30 minutes avec intelle.io. Définissez le périmètre d'une mission de recherche en ingénierie, de préparation à l'IA, de normes ou de due diligence M&A. Zoom intégré automatiquement. SOW sous 48 heures.",
+      "ogTitle": "Réserver un appel découverte de 30 minutes",
+      "ogDescription": "Appel gratuit de 30 minutes pour définir le périmètre d'une mission de recherche ou d'implémentation. Zoom intégré automatiquement."
+    },
+    "contact": {
+      "title": "Contacter intelle.io | Demandes de recherche en ingénierie, Dubaï EAU",
+      "description": "Contactez intelle.io pour une recherche en ingénierie sur mesure, un cadrage IA, un conseil en normes ou une due diligence M&A. Basé à Dubaï. Couverture EAU/CCG/Inde. Réponse sous 1 jour ouvré.",
+      "ogTitle": "Contacter intelle.io",
+      "ogDescription": "Recherche en ingénierie sur mesure, cadrage IA, conseil en normes, due diligence M&A. Basé à Dubaï."
+    },
+    "cookies": {
+      "title": "Politique en matière de cookies | intelle.io",
+      "description": "Comment intelle.io utilise les cookies à des fins d'analyse, de préférences et de marketing. Bannière de consentement EU/UK. Instructions de désinscription. Dernière mise à jour : avril 2026."
+    },
+    "privacy": {
+      "title": "Politique de confidentialité | intelle.io",
+      "description": "Politique de confidentialité d'intelle.io : comment nous collectons, utilisons et protégeons les données personnelles. Conforme au RGPD, à la PDPL des EAU et à la DPDP de l'Inde. Dernière mise à jour : avril 2026."
+    },
+    "terms": {
+      "title": "Conditions d'utilisation | intelle.io",
+      "description": "Conditions d'utilisation pour les missions intelle.io. Droit applicable : EAU. SparkLab LLC. Les SOW prévalent sur les conditions générales. Dernière mise à jour : avril 2026."
+    },
+    "insights": {
+      "title": "Analyses d'intelligence en ingénierie | Blog intelle.io",
+      "description": "Analyses de niveau praticien sur l'IA industrielle, la transition énergétique, les normes, la veille technologique et la recherche en ingénierie. Rédigées par Arnab Ghosh, publié par SAE. Publication hebdomadaire.",
+      "ogTitle": "Analyses d'intelligence en ingénierie",
+      "ogDescription": "Analyses de niveau praticien sur l'IA industrielle, la transition énergétique, les normes et la recherche en ingénierie."
+    },
+    "insightsSlug": {
+      "notFound": "Article introuvable"
+    },
+    "researchIndex": {
+      "title": "Services de recherche en ingénierie | CCG, Inde & Monde | intelle.io",
+      "description": "Services de recherche en ingénierie dirigés par des seniors dans 7 domaines de spécialité : énergie, normes, IA, veille technologique, intelligence de marché, brevets/PI, missions stratégiques. Niveau praticien.",
+      "ogTitle": "Services de recherche et d'innovation en ingénierie",
+      "ogDescription": "Recherche dirigée par des seniors dans 7 domaines de spécialité : énergie, normes, IA, veille technologique, intelligence de marché, brevets/PI, stratégie."
+    },
+    "engineeringIndex": {
+      "title": "Services d'implémentation en ingénierie | PLM, Normes, KM | intelle.io",
+      "description": "Services d'implémentation pour les organisations d'ingénierie : adoption Accuris, PLM/ALM (Teamcenter, Windchill, DOORS), gestion des connaissances, conseil en normes. Équipe de livraison en Inde.",
+      "ogTitle": "Services d'implémentation en ingénierie",
+      "ogDescription": "Adoption Accuris, PLM/ALM (Teamcenter, Windchill, DOORS), gestion des connaissances, conseil en normes."
+    },
+    "industriesIndex": {
+      "title": "Secteurs servis | Pétrole & Gaz, Aérospatiale, Dispositifs médicaux, Fabrication | intelle.io",
+      "description": "intelle.io sert les secteurs Pétrole & Gaz, Aérospatiale & Défense, Dispositifs médicaux et Fabrication avancée à travers le CCG, l'Inde et les marchés mondiaux. Expertise de praticiens seniors.",
+      "ogTitle": "Secteurs servis par intelle.io",
+      "ogDescription": "Pétrole & Gaz, Aérospatiale & Défense, Dispositifs médicaux, Fabrication avancée à travers le CCG, l'Inde et les marchés mondiaux.",
+      "twitterTitle": "Secteurs que nous servons"
+    },
+    "detailCommon": {
+      "titleSuffix": ""
+    }
+  },
+  "metadataRw": {
+    "landing": {
+      "title": "Vantage — Veille réglementaire avec analyse d'impact selon l'empreinte opérationnelle",
+      "description": "Vantage by intelle.io — SaaS de tableau de bord en mode pull qui surveille les évolutions réglementaires auprès des régulateurs mondiaux de l'énergie, de l'environnement, de l'industrie et de la chimie, avec une analyse d'impact adaptée à l'empreinte opérationnelle."
+    },
+    "dashboard": {
+      "title": "Tableau de bord"
+    },
+    "onboarding": {
+      "title": "Bienvenue sur Vantage"
+    },
+    "login": {
+      "title": "Connexion à Vantage"
+    },
+    "signup": {
+      "title": "Créer votre compte Vantage"
+    },
+    "browse": {
+      "title": "Parcourir les réglementations"
+    },
+    "checkup": {
+      "title": "Bilan d'empreinte"
+    },
+    "examples": {
+      "title": "Exemples de briefings"
+    },
+    "feed": {
+      "title": "Fil de pertinence"
+    },
+    "discover": {
+      "title": "Découvrir — Vantage",
+      "description": "Parcourez l'intégralité des réglementations du corpus Vantage par juridiction. Navigation hiérarchique de type eCFR avec indicateurs de mises à jour récentes."
+    },
+    "comply": {
+      "title": "Conformité — Vantage",
+      "description": "Boîte de réception du réviseur, obligations, actifs, empreinte opérationnelle et bilan de conformité."
+    },
+    "inbox": {
+      "title": "Boîte de réception du réviseur — Vantage",
+      "description": "Tous les examens de documents et d'obligations en attente au sein de l'organisation, regroupés dans une liste classée par priorité."
+    },
+    "recap": {
+      "title": "Récapitulatif hebdomadaire — Vantage",
+      "description": "Votre semaine en matière de réglementation — les changements les plus pertinents évalués selon votre empreinte, les échéances approchantes et les évolutions du corpus."
+    },
+    "regulators": {
+      "title": "Régulateurs",
+      "description": "Tous les régulateurs surveillés par Vantage by intelle.io — regroupés par région avec le nombre d'éléments et l'activité récente."
+    },
+    "topics": {
+      "title": "Thèmes — Vantage",
+      "description": "Tous les thèmes suivis par Vantage by intelle.io — émissions, méthane, PFAS, MACF, sécurité des procédés et bien plus — avec des compteurs en temps réel."
+    },
+    "tutorials": {
+      "title": "Tutoriels vidéo — Vantage",
+      "description": "Parcours interactifs de Vantage by intelle.io — exploration des réglementations, surveillance de votre flux, gestion de la conformité et rédaction de documents."
+    },
+    "saved": {
+      "title": "My Vantage · Recherches sauvegardées",
+      "description": "Requêtes sauvegardées sur le corpus. Cliquez sur une recherche sauvegardée pour la relancer sur le corpus actuel."
+    },
+    "search": {
+      "title": "Recherche"
+    },
+    "obligations": {
+      "title": "Obligations"
+    },
+    "assets": {
+      "title": "Actifs"
+    },
+    "assetSetup": {
+      "title": "Configuration des actifs"
+    },
+    "documents": {
+      "title": "Documents d'entreprise"
+    },
+    "settingsAccount": {
+      "title": "Profil"
+    },
+    "settingsAlerts": {
+      "title": "Alertes"
+    },
+    "settingsBilling": {
+      "title": "Facturation"
+    },
+    "settingsFootprint": {
+      "title": "Empreinte"
+    },
+    "settingsMembers": {
+      "title": "Membres de l'équipe"
+    },
+    "regulation": {
+      "notFound": "Réglementation introuvable"
+    },
+    "regulator": {
+      "notFound": "Régulateur introuvable",
+      "description": "Derniers éléments réglementaires de {name} ({jurisdiction}), surveillés par Vantage by intelle.io."
+    },
+    "topic": {
+      "title": "{label} — Thème Vantage",
+      "description": "Dernières réglementations couvrant {label} dans toutes les juridictions surveillées par Vantage by intelle.io."
+    },
+    "section": {
+      "notFound": "Section — Vantage"
+    }
   }
 }

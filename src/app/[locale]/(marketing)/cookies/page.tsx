@@ -2,13 +2,20 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { SITE } from "@/lib/constants";
 
-export const metadata: Metadata = {
-  title: "Cookie Policy | intelle.io",
-  description:
-    "How intelle.io uses cookies for analytics, preference, and marketing. EU/UK consent banner. Opt-out instructions. Last updated April 2026.",
-  alternates: { canonical: "/cookies" },
-  robots: { index: true, follow: true },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  return {
+    title: t("cookies.title"),
+    description: t("cookies.description"),
+    alternates: { canonical: "/cookies" },
+    robots: { index: true, follow: true },
+  };
+}
 
 export default async function CookiesPage() {
   const t = await getTranslations("cookiesPage");

@@ -8,11 +8,18 @@ import {
   courseDurationLabel,
 } from "@/lib/regwatch/tutorials";
 
-export const metadata: Metadata = {
-  title: "Video tutorials — Vantage",
-  description:
-    "Interactive walkthroughs of Vantage by intelle.io — exploring regulations, monitoring your feed, managing compliance, and authoring documents.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return {
+    title: t("tutorials.title"),
+    description: t("tutorials.description"),
+  };
+}
 export const dynamic = "force-dynamic";
 
 export default async function TutorialsPage() {

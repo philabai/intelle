@@ -6,11 +6,18 @@ import { createClient } from "@/lib/regwatch/supabase/server";
 import { getReviewerInbox, type InboxItem } from "@/lib/regwatch/reviewer-inbox";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 
-export const metadata: Metadata = {
-  title: "Reviewer Inbox — Vantage",
-  description:
-    "Every document review + obligation review awaiting you across the org, in one ranked list.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return {
+    title: t("inbox.title"),
+    description: t("inbox.description"),
+  };
+}
 export const dynamic = "force-dynamic";
 
 /**

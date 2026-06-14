@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { getMyOrganization } from "@/lib/regwatch/footprint";
@@ -8,7 +9,15 @@ import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { RegwatchSignOutButton } from "./SignOutButton";
 import { ProfileForm } from "./ProfileForm";
 
-export const metadata = { title: "Profile" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return { title: t("settingsAccount.title") };
+}
 export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {

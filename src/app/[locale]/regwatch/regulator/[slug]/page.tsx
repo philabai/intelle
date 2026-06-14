@@ -28,13 +28,17 @@ const TYPE_LABEL: Record<string, string> = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const tm = await getTranslations("metadataRw");
   const regulator = await getRegulatorBySlug(slug);
-  if (!regulator) return { title: "Regulator not found" };
+  if (!regulator) return { title: tm("regulator.notFound") };
   return {
     title: `${regulator.name} — Vantage`,
     description:
       regulator.description ??
-      `Latest regulatory items from ${regulator.name} (${regulator.jurisdiction_name}), monitored by Vantage by intelle.io.`,
+      tm("regulator.description", {
+        name: regulator.name,
+        jurisdiction: regulator.jurisdiction_name,
+      }),
   };
 }
 

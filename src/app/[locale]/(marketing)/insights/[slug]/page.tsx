@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { JsonLd, articleSchema } from "@/lib/seo/json-ld";
@@ -11,11 +12,11 @@ import { splitKeyTakeaways } from "@/lib/markdown-body";
 import type { Article } from "@/lib/types";
 
 interface Props {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const supabase = await createClient();
   const { data } = await supabase
     .from("articles")
@@ -23,7 +24,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq("slug", slug)
     .eq("status", "published")
     .single();
-  if (!data) return { title: "Article Not Found" };
+  if (!data) {
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return { title: t("insightsSlug.notFound") };
+  }
   const description = data.meta_description || data.excerpt || "";
   return {
     title: data.title,

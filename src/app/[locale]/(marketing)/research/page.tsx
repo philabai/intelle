@@ -7,28 +7,37 @@ import { HeroBackdrop } from "@/components/ui/HeroBackdrop";
 import { localizeResearchServices } from "@/lib/constants/i18n/localize";
 import { JsonLd, itemListSchema } from "@/lib/seo/json-ld";
 
-export const metadata: Metadata = {
-  title: "Engineering Research Services | GCC, India & Global | intelle.io",
-  description:
-    "Senior-led engineering research services across 7 specialty areas: energy, standards, AI, technology scouting, market intelligence, patent IP, strategic engagements. Practitioner-grade.",
-  keywords: [
-    "engineering research services GCC",
-    "energy research consultancy",
-    "standards research GCC",
-    "industrial AI research",
-    "technology scouting NOC",
-    "M&A diligence engineering",
-  ],
-  alternates: { canonical: "/research" },
-  openGraph: {
-    title: "Engineering Research & Innovation Services",
-    description:
-      "Senior-led research across 7 specialty areas: energy, standards, AI, technology scouting, market intel, patent IP, strategic.",
-    url: "/research",
-    type: "website",
-  },
-  twitter: { card: "summary_large_image", title: "Engineering Research & Innovation Services" },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  return {
+    title: t("researchIndex.title"),
+    description: t("researchIndex.description"),
+    keywords: [
+      "engineering research services GCC",
+      "energy research consultancy",
+      "standards research GCC",
+      "industrial AI research",
+      "technology scouting NOC",
+      "M&A diligence engineering",
+    ],
+    alternates: { canonical: "/research" },
+    openGraph: {
+      title: t("researchIndex.ogTitle"),
+      description: t("researchIndex.ogDescription"),
+      url: "/research",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("researchIndex.ogTitle"),
+    },
+  };
+}
 
 export default async function ResearchPage() {
   const t = await getTranslations("researchPage");

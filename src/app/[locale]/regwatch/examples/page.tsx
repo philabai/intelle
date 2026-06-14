@@ -1,8 +1,17 @@
 import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { RegwatchAppShell, RegwatchComingSoon } from "@/components/regwatch/AppShell";
 
-export const metadata = { title: "Sample Briefings" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return { title: t("examples.title") };
+}
 
 export default async function ExamplesPage() {
   const t = await getTranslations("regwatch.discover");

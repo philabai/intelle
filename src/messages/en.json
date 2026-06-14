@@ -2056,5 +2056,182 @@
     "title": "Page Not Found",
     "description": "The page you're looking for doesn't exist or has been moved.",
     "backToHome": "Back to Home"
+  },
+  "metadata": {
+    "root": {
+      "title": "Engineering Intelligence & Research Services for GCC + India | intelle.io",
+      "description": "Senior practitioner-led engineering intelligence for NOCs, EPCs, and industrial scale-ups across GCC + India. 30-50% of Tier-1 cost. Bespoke research, real outcomes.",
+      "template": "%s | intelle.io",
+      "ogAlt": "intelle.io — Engineering Intelligence That Drives Real Outcomes",
+      "twitterTitle": "Engineering Intelligence & Research Services for GCC + India",
+      "twitterDescription": "Senior practitioner-led engineering research. 30-50% of Tier-1 cost."
+    },
+    "about": {
+      "title": "About intelle.io | Senior Practitioner Engineering Research, Dubai",
+      "description": "intelle.io is a senior-led engineering intelligence practice. 25+ years across S&P Global, IHS Markit, GE Energy, Accuris, Sapient. SAE-published. CERAWeek-invited. Dubai-based.",
+      "ogTitle": "About intelle.io — Senior Practitioner Research",
+      "ogDescription": "Senior-led engineering intelligence practice. 25+ years across S&P Global, IHS Markit, GE Energy, Accuris, Sapient. Dubai-based."
+    },
+    "book": {
+      "title": "Book a 30-Min Discovery Call | intelle.io Engineering Research",
+      "description": "Book a free 30-minute discovery call with intelle.io. Scope an engineering research, AI readiness, standards, or M&A diligence engagement. Zoom auto-attached. SOW within 48 hours.",
+      "ogTitle": "Book a 30-Minute Discovery Call",
+      "ogDescription": "Free 30-minute call to scope a research or implementation engagement. Zoom auto-attached."
+    },
+    "contact": {
+      "title": "Contact intelle.io | Engineering Research Inquiries, Dubai UAE",
+      "description": "Reach out to intelle.io for bespoke engineering research, AI scoping, standards advisory, or M&A diligence. Dubai-based. UAE/GCC/India coverage. Reply within 1 business day.",
+      "ogTitle": "Contact intelle.io",
+      "ogDescription": "Bespoke engineering research, AI scoping, standards advisory, M&A diligence. Dubai-based."
+    },
+    "cookies": {
+      "title": "Cookie Policy | intelle.io",
+      "description": "How intelle.io uses cookies for analytics, preference, and marketing. EU/UK consent banner. Opt-out instructions. Last updated April 2026."
+    },
+    "privacy": {
+      "title": "Privacy Policy | intelle.io",
+      "description": "intelle.io privacy policy: how we collect, use, and protect personal data. Compliant with GDPR, UAE PDPL, and India DPDP. Last updated April 2026."
+    },
+    "terms": {
+      "title": "Terms of Service | intelle.io",
+      "description": "Terms of service for intelle.io engagements. Governing law: UAE. SparkLab LLC. SOWs supersede general terms. Last updated April 2026."
+    },
+    "insights": {
+      "title": "Engineering Intelligence Insights | intelle.io Blog",
+      "description": "Practitioner-grade insights on industrial AI, energy transition, standards, technology scouting, and engineering research. Authored by Arnab Ghosh, SAE-published. Published weekly.",
+      "ogTitle": "Engineering Intelligence Insights",
+      "ogDescription": "Practitioner-grade insights on industrial AI, energy transition, standards, and engineering research."
+    },
+    "insightsSlug": {
+      "notFound": "Article Not Found"
+    },
+    "researchIndex": {
+      "title": "Engineering Research Services | GCC, India & Global | intelle.io",
+      "description": "Senior-led engineering research services across 7 specialty areas: energy, standards, AI, technology scouting, market intelligence, patent IP, strategic engagements. Practitioner-grade.",
+      "ogTitle": "Engineering Research & Innovation Services",
+      "ogDescription": "Senior-led research across 7 specialty areas: energy, standards, AI, technology scouting, market intel, patent IP, strategic."
+    },
+    "engineeringIndex": {
+      "title": "Engineering Implementation Services | PLM, Standards, KM | intelle.io",
+      "description": "Implementation services for engineering organizations: Accuris adoption, PLM/ALM (Teamcenter, Windchill, DOORS), Knowledge Management, Standards Advisory. India delivery bench.",
+      "ogTitle": "Engineering Implementation Services",
+      "ogDescription": "Accuris adoption, PLM/ALM (Teamcenter, Windchill, DOORS), Knowledge Management, Standards Advisory."
+    },
+    "industriesIndex": {
+      "title": "Industries Served | Oil & Gas, Aerospace, MedDev, Manufacturing | intelle.io",
+      "description": "intelle.io serves Oil & Gas, Aerospace & Defense, Medical Devices, and Advanced Manufacturing across GCC, India, and global markets. Senior practitioner depth.",
+      "ogTitle": "Industries Served by intelle.io",
+      "ogDescription": "Oil & Gas, Aerospace & Defense, Medical Devices, Advanced Manufacturing across GCC, India, and global markets.",
+      "twitterTitle": "Industries We Serve"
+    },
+    "detailCommon": {
+      "titleSuffix": ""
+    }
+  },
+  "metadataRw": {
+    "landing": {
+      "title": "Vantage — Regulatory monitoring with footprint-aware impact",
+      "description": "Vantage by intelle.io — pull-model dashboard SaaS that monitors regulatory changes across global energy, environmental, industrial, and chemical regulators with footprint-aware impact analysis."
+    },
+    "dashboard": {
+      "title": "Dashboard"
+    },
+    "onboarding": {
+      "title": "Welcome to Vantage"
+    },
+    "login": {
+      "title": "Sign in to Vantage"
+    },
+    "signup": {
+      "title": "Create your Vantage account"
+    },
+    "browse": {
+      "title": "Browse Regulations"
+    },
+    "checkup": {
+      "title": "Footprint Checkup"
+    },
+    "examples": {
+      "title": "Sample Briefings"
+    },
+    "feed": {
+      "title": "Relevance Feed"
+    },
+    "discover": {
+      "title": "Discover — Vantage",
+      "description": "Browse every regulation in the Vantage corpus by jurisdiction. eCFR-style hierarchical navigation with recent-update markers."
+    },
+    "comply": {
+      "title": "Comply — Vantage",
+      "description": "Reviewer inbox, obligations, assets, footprint, and compliance checkup."
+    },
+    "inbox": {
+      "title": "Reviewer Inbox — Vantage",
+      "description": "Every document review + obligation review awaiting you across the org, in one ranked list."
+    },
+    "recap": {
+      "title": "Weekly recap — Vantage",
+      "description": "Your week in regulation — the most relevant changes scored to your footprint, approaching deadlines, and what moved across the corpus."
+    },
+    "regulators": {
+      "title": "Regulators",
+      "description": "Every regulator Vantage by intelle.io monitors — grouped by region with item counts and recent activity."
+    },
+    "topics": {
+      "title": "Topics — Vantage",
+      "description": "Every topic Vantage by intelle.io tracks — emissions, methane, PFAS, CBAM, process safety, and more — with live counts."
+    },
+    "tutorials": {
+      "title": "Video tutorials — Vantage",
+      "description": "Interactive walkthroughs of Vantage by intelle.io — exploring regulations, monitoring your feed, managing compliance, and authoring documents."
+    },
+    "saved": {
+      "title": "My Vantage · Saved searches",
+      "description": "Saved corpus queries. Click any saved search to re-run it on the current corpus."
+    },
+    "search": {
+      "title": "Search"
+    },
+    "obligations": {
+      "title": "Obligations"
+    },
+    "assets": {
+      "title": "Assets"
+    },
+    "assetSetup": {
+      "title": "Asset setup"
+    },
+    "documents": {
+      "title": "Company documents"
+    },
+    "settingsAccount": {
+      "title": "Profile"
+    },
+    "settingsAlerts": {
+      "title": "Alerts"
+    },
+    "settingsBilling": {
+      "title": "Billing"
+    },
+    "settingsFootprint": {
+      "title": "Footprint"
+    },
+    "settingsMembers": {
+      "title": "Team Members"
+    },
+    "regulation": {
+      "notFound": "Regulation not found"
+    },
+    "regulator": {
+      "notFound": "Regulator not found",
+      "description": "Latest regulatory items from {name} ({jurisdiction}), monitored by Vantage by intelle.io."
+    },
+    "topic": {
+      "title": "{label} — Vantage topic",
+      "description": "Latest regulations covering {label} across every jurisdiction monitored by Vantage by intelle.io."
+    },
+    "section": {
+      "notFound": "Section — Vantage"
+    }
   }
 }

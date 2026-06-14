@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -9,7 +10,15 @@ import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { FootprintForm } from "@/components/regwatch/footprint/FootprintForm";
 import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
 
-export const metadata = { title: "Welcome to Vantage" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return { title: t("onboarding.title") };
+}
 export const dynamic = "force-dynamic";
 
 export default async function OnboardingPage() {

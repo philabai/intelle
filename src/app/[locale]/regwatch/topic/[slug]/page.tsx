@@ -20,10 +20,11 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const tm = await getTranslations("metadataRw");
   const label = topicLabel(slug);
   return {
-    title: `${label} — Vantage topic`,
-    description: `Latest regulations covering ${label} across every jurisdiction monitored by Vantage by intelle.io.`,
+    title: tm("topic.title", { label }),
+    description: tm("topic.description", { label }),
   };
 }
 

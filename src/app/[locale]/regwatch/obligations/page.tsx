@@ -1,4 +1,5 @@
 import { getTranslations, getFormatter } from "next-intl/server";
+import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -12,7 +13,15 @@ import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
 import { CreateObligationForm } from "@/components/regwatch/obligations/CreateObligationForm";
 
-export const metadata = { title: "Obligations" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return { title: t("obligations.title") };
+}
 export const dynamic = "force-dynamic";
 
 const SEVERITY_BG: Record<string, string> = {

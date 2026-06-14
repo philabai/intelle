@@ -2,13 +2,20 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { SITE } from "@/lib/constants";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy | intelle.io",
-  description:
-    "intelle.io privacy policy: how we collect, use, and protect personal data. Compliant with GDPR, UAE PDPL, and India DPDP. Last updated April 2026.",
-  alternates: { canonical: "/privacy" },
-  robots: { index: true, follow: true },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  return {
+    title: t("privacy.title"),
+    description: t("privacy.description"),
+    alternates: { canonical: "/privacy" },
+    robots: { index: true, follow: true },
+  };
+}
 
 export default async function PrivacyPage() {
   const t = await getTranslations("privacyPage");

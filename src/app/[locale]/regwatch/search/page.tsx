@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import {
   listRegulationsHybrid,
@@ -29,7 +30,15 @@ import { SearchExperience } from "@/components/regwatch/search/SearchExperience"
 import { SaveSearchButton } from "@/components/regwatch/search/SaveSearchButton";
 import { EmptyState } from "@/components/regwatch/EmptyState";
 
-export const metadata = { title: "Search" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return { title: t("search.title") };
+}
 export const dynamic = "force-dynamic";
 
 interface Props {

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Poppins, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 import {
   JsonLd,
   organizationSchema,
@@ -30,10 +30,6 @@ const plexArabic = IBM_Plex_Sans_Arabic({
 });
 
 const SITE_NAME = "intelle.io";
-const TITLE_DEFAULT =
-  "Engineering Intelligence & Research Services for GCC + India | intelle.io";
-const DESCRIPTION =
-  "Senior practitioner-led engineering intelligence for NOCs, EPCs, and industrial scale-ups across GCC + India. 30-50% of Tier-1 cost. Bespoke research, real outcomes.";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -45,12 +41,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  const titleDefault = t("root.title");
+  const description = t("root.description");
   const ogLocale =
     locale === "fr" ? "fr_FR" : locale === "ar" ? "ar_AE" : "en_US";
   return {
     metadataBase: new URL("https://intelle.io"),
-    title: { default: TITLE_DEFAULT, template: "%s | intelle.io" },
-    description: DESCRIPTION,
+    title: { default: titleDefault, template: t("root.template") },
+    description,
     keywords: [
       "engineering intelligence services",
       "engineering research GCC",
@@ -73,22 +72,21 @@ export async function generateMetadata({
       locale: ogLocale,
       url: `https://intelle.io/${locale}`,
       siteName: SITE_NAME,
-      title: TITLE_DEFAULT,
-      description: DESCRIPTION,
+      title: titleDefault,
+      description,
       images: [
         {
           url: "/og-image.png",
           width: 1200,
           height: 630,
-          alt: "intelle.io — Engineering Intelligence That Drives Real Outcomes",
+          alt: t("root.ogAlt"),
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Engineering Intelligence & Research Services for GCC + India",
-      description:
-        "Senior practitioner-led engineering research. 30-50% of Tier-1 cost.",
+      title: t("root.twitterTitle"),
+      description: t("root.twitterDescription"),
     },
     other: { "theme-color": "#0B1020" },
   };

@@ -19,11 +19,18 @@ import {
 import { topicLabel } from "@/lib/regwatch/taxonomy";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 
-export const metadata: Metadata = {
-  title: "Weekly recap — Vantage",
-  description:
-    "Your week in regulation — the most relevant changes scored to your footprint, approaching deadlines, and what moved across the corpus.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return {
+    title: t("recap.title"),
+    description: t("recap.description"),
+  };
+}
 export const dynamic = "force-dynamic";
 
 const JURISDICTION_NAMES: Record<string, string> = {

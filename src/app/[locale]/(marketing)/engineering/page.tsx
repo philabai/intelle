@@ -7,28 +7,37 @@ import { HeroBackdrop } from "@/components/ui/HeroBackdrop";
 import { localizeEngineeringServices } from "@/lib/constants/i18n/localize";
 import { JsonLd, itemListSchema } from "@/lib/seo/json-ld";
 
-export const metadata: Metadata = {
-  title: "Engineering Implementation Services | PLM, Standards, KM | intelle.io",
-  description:
-    "Implementation services for engineering organizations: Accuris adoption, PLM/ALM (Teamcenter, Windchill, DOORS), Knowledge Management, Standards Advisory. India delivery bench.",
-  keywords: [
-    "engineering implementation services",
-    "PLM ALM consulting",
-    "Accuris Workbench adoption",
-    "Teamcenter implementation GCC",
-    "knowledge management engineering",
-    "standards advisory retainer",
-  ],
-  alternates: { canonical: "/engineering" },
-  openGraph: {
-    title: "Engineering Implementation Services",
-    description:
-      "Accuris adoption, PLM/ALM (Teamcenter, Windchill, DOORS), Knowledge Management, Standards Advisory.",
-    url: "/engineering",
-    type: "website",
-  },
-  twitter: { card: "summary_large_image", title: "Engineering Implementation Services" },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  return {
+    title: t("engineeringIndex.title"),
+    description: t("engineeringIndex.description"),
+    keywords: [
+      "engineering implementation services",
+      "PLM ALM consulting",
+      "Accuris Workbench adoption",
+      "Teamcenter implementation GCC",
+      "knowledge management engineering",
+      "standards advisory retainer",
+    ],
+    alternates: { canonical: "/engineering" },
+    openGraph: {
+      title: t("engineeringIndex.ogTitle"),
+      description: t("engineeringIndex.ogDescription"),
+      url: "/engineering",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("engineeringIndex.ogTitle"),
+    },
+  };
+}
 
 export default async function EngineeringPage() {
   const t = await getTranslations("engineeringPage");

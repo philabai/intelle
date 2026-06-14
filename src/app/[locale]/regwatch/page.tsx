@@ -5,11 +5,18 @@ import { createClient } from "@/lib/regwatch/supabase/server";
 import { listRegulators } from "@/lib/regwatch/queries";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 
-export const metadata: Metadata = {
-  title: "Vantage — Regulatory monitoring with footprint-aware impact",
-  description:
-    "Vantage by intelle.io — pull-model dashboard SaaS that monitors regulatory changes across global energy, environmental, industrial, and chemical regulators with footprint-aware impact analysis.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return {
+    title: t("landing.title"),
+    description: t("landing.description"),
+  };
+}
 export const dynamic = "force-dynamic";
 
 const REGION_ORDER = ["na", "eu", "uk", "mea", "int"] as const;

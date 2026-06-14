@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -23,7 +24,15 @@ import { DocCardGrid } from "@/components/regwatch/documents/gallery/DocCardGrid
 import { GalleryControls } from "@/components/regwatch/documents/gallery/GalleryControls";
 import { NewDocumentButton } from "@/components/regwatch/documents/gallery/NewDocumentButton";
 
-export const metadata = { title: "Company documents" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return { title: t("documents.title") };
+}
 export const dynamic = "force-dynamic";
 
 interface Props {

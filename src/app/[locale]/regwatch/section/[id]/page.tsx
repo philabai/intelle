@@ -17,8 +17,9 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
+  const tm = await getTranslations("metadataRw");
   const section = await getSectionById(id);
-  if (!section) return { title: "Section — Vantage" };
+  if (!section) return { title: tm("section.notFound") };
   const name = [section.identifier, section.title].filter(Boolean).join(" — ");
   return {
     title: `${name} — Vantage`,

@@ -7,28 +7,37 @@ import { HeroBackdrop } from "@/components/ui/HeroBackdrop";
 import { ArticleCardThumbnail } from "@/components/insights/ArticleCardThumbnail";
 import type { Article } from "@/lib/types";
 
-export const metadata: Metadata = {
-  title: "Engineering Intelligence Insights | intelle.io Blog",
-  description:
-    "Practitioner-grade insights on industrial AI, energy transition, standards, technology scouting, and engineering research. Authored by Arnab Ghosh, SAE-published. Published weekly.",
-  keywords: [
-    "engineering intelligence blog",
-    "industrial AI insights",
-    "energy research blog",
-    "standards advisory articles",
-    "NOC innovation insights",
-    "GCC engineering research",
-  ],
-  alternates: { canonical: "/insights" },
-  openGraph: {
-    title: "Engineering Intelligence Insights",
-    description:
-      "Practitioner-grade insights on industrial AI, energy transition, standards, and engineering research.",
-    url: "/insights",
-    type: "website",
-  },
-  twitter: { card: "summary_large_image", title: "Engineering Intelligence Insights" },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  return {
+    title: t("insights.title"),
+    description: t("insights.description"),
+    keywords: [
+      "engineering intelligence blog",
+      "industrial AI insights",
+      "energy research blog",
+      "standards advisory articles",
+      "NOC innovation insights",
+      "GCC engineering research",
+    ],
+    alternates: { canonical: "/insights" },
+    openGraph: {
+      title: t("insights.ogTitle"),
+      description: t("insights.ogDescription"),
+      url: "/insights",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("insights.ogTitle"),
+    },
+  };
+}
 
 export const dynamic = "force-dynamic";
 

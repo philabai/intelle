@@ -7,11 +7,18 @@ import { listMySavedSearches } from "@/lib/regwatch/saved-searches";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { SavedSearchRow } from "@/components/regwatch/saved/SavedSearchRow";
 
-export const metadata: Metadata = {
-  title: "My Vantage · Saved searches",
-  description:
-    "Saved corpus queries. Click any saved search to re-run it on the current corpus.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return {
+    title: t("saved.title"),
+    description: t("saved.description"),
+  };
+}
 export const dynamic = "force-dynamic";
 
 /**

@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -6,7 +7,15 @@ import { getMyAlertPrefs } from "@/lib/regwatch/alerts";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { AlertPrefsForm } from "@/components/regwatch/alerts/AlertPrefsForm";
 
-export const metadata = { title: "Alerts" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return { title: t("settingsAlerts.title") };
+}
 export const dynamic = "force-dynamic";
 
 export default async function AlertsPage() {

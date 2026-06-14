@@ -6,11 +6,18 @@ import { getJurisdictionSummaries } from "@/lib/regwatch/queries";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { JurisdictionCard } from "@/components/regwatch/discover/JurisdictionCard";
 
-export const metadata: Metadata = {
-  title: "Discover — Vantage",
-  description:
-    "Browse every regulation in the Vantage corpus by jurisdiction. eCFR-style hierarchical navigation with recent-update markers.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return {
+    title: t("discover.title"),
+    description: t("discover.description"),
+  };
+}
 export const dynamic = "force-dynamic";
 
 /**

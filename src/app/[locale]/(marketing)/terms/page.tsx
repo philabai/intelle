@@ -2,13 +2,20 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { SITE } from "@/lib/constants";
 
-export const metadata: Metadata = {
-  title: "Terms of Service | intelle.io",
-  description:
-    "Terms of service for intelle.io engagements. Governing law: UAE. SparkLab LLC. SOWs supersede general terms. Last updated April 2026.",
-  alternates: { canonical: "/terms" },
-  robots: { index: true, follow: true },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  return {
+    title: t("terms.title"),
+    description: t("terms.description"),
+    alternates: { canonical: "/terms" },
+    robots: { index: true, follow: true },
+  };
+}
 
 export default async function TermsPage() {
   const t = await getTranslations("termsPage");

@@ -25,8 +25,9 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { jurisdiction, slug } = await params;
+  const tm = await getTranslations("metadataRw");
   const item = await getRegulation(jurisdiction, slug);
-  if (!item) return { title: "Regulation not found" };
+  if (!item) return { title: tm("regulation.notFound") };
   return {
     title: `${item.citation} — ${item.title}`,
     description: item.summary ?? undefined,

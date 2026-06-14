@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { getTranslations, getFormatter } from "next-intl/server";
+import type { Metadata } from "next";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { getMyFootprint, getMyOrganization } from "@/lib/regwatch/footprint";
@@ -20,7 +21,15 @@ import { BulkTriageBar } from "@/components/regwatch/feed/BulkTriageBar";
 import { EmptyFeed } from "@/components/regwatch/feed/EmptyFeed";
 import { PaywallScreen } from "@/components/regwatch/PaywallScreen";
 
-export const metadata = { title: "Relevance Feed" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return { title: t("feed.title") };
+}
 export const dynamic = "force-dynamic";
 
 interface Props {

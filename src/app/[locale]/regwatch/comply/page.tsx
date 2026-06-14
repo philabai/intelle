@@ -5,11 +5,18 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 
-export const metadata: Metadata = {
-  title: "Comply — Vantage",
-  description:
-    "Reviewer inbox, obligations, assets, footprint, and compliance checkup.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return {
+    title: t("comply.title"),
+    description: t("comply.description"),
+  };
+}
 export const dynamic = "force-dynamic";
 
 /**

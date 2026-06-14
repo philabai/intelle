@@ -8,29 +8,38 @@ import { HeroBackdrop } from "@/components/ui/HeroBackdrop";
 import { SITE } from "@/lib/constants";
 import { JsonLd, personSchema } from "@/lib/seo/json-ld";
 
-export const metadata: Metadata = {
-  title: "About intelle.io | Senior Practitioner Engineering Research, Dubai",
-  description:
-    "intelle.io is a senior-led engineering intelligence practice. 25+ years across S&P Global, IHS Markit, GE Energy, Accuris, Sapient. SAE-published. CERAWeek-invited. Dubai-based.",
-  keywords: [
-    "engineering research practice Dubai",
-    "Arnab Ghosh founder",
-    "intelle.io about",
-    "SAE engineering author",
-    "CERAWeek speaker",
-    "KKR Accuris alumni",
-    "S&P Global IHS Markit engineering",
-  ],
-  alternates: { canonical: "/about" },
-  openGraph: {
-    title: "About intelle.io — Senior Practitioner Research",
-    description:
-      "Senior-led engineering intelligence practice. 25+ years across S&P Global, IHS Markit, GE Energy, Accuris, Sapient. Dubai-based.",
-    url: "/about",
-    type: "website",
-  },
-  twitter: { card: "summary_large_image", title: "About intelle.io — Senior Practitioner Research" },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  return {
+    title: t("about.title"),
+    description: t("about.description"),
+    keywords: [
+      "engineering research practice Dubai",
+      "Arnab Ghosh founder",
+      "intelle.io about",
+      "SAE engineering author",
+      "CERAWeek speaker",
+      "KKR Accuris alumni",
+      "S&P Global IHS Markit engineering",
+    ],
+    alternates: { canonical: "/about" },
+    openGraph: {
+      title: t("about.ogTitle"),
+      description: t("about.ogDescription"),
+      url: "/about",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("about.ogTitle"),
+    },
+  };
+}
 
 export default async function AboutPage() {
   const t = await getTranslations("about");

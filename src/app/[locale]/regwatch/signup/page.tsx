@@ -1,9 +1,18 @@
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { RegwatchSignupForm } from "./SignupForm";
 
-export const metadata = { title: "Create your Vantage account" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return { title: t("signup.title") };
+}
 
 export default async function RegwatchSignupPage() {
   const t = await getTranslations("regwatch.auth");

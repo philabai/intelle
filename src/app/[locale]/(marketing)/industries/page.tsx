@@ -7,27 +7,36 @@ import { HeroBackdrop } from "@/components/ui/HeroBackdrop";
 import { localizeIndustries } from "@/lib/constants/i18n/localize";
 import { JsonLd, itemListSchema } from "@/lib/seo/json-ld";
 
-export const metadata: Metadata = {
-  title: "Industries Served | Oil & Gas, Aerospace, MedDev, Manufacturing | intelle.io",
-  description:
-    "intelle.io serves Oil & Gas, Aerospace & Defense, Medical Devices, and Advanced Manufacturing across GCC, India, and global markets. Senior practitioner depth.",
-  keywords: [
-    "engineering consultant by industry",
-    "oil gas consultancy GCC",
-    "aerospace defense engineering research",
-    "medical device research",
-    "advanced manufacturing consulting",
-  ],
-  alternates: { canonical: "/industries" },
-  openGraph: {
-    title: "Industries Served by intelle.io",
-    description:
-      "Oil & Gas, Aerospace & Defense, Medical Devices, Advanced Manufacturing across GCC, India, and global markets.",
-    url: "/industries",
-    type: "website",
-  },
-  twitter: { card: "summary_large_image", title: "Industries We Serve" },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  return {
+    title: t("industriesIndex.title"),
+    description: t("industriesIndex.description"),
+    keywords: [
+      "engineering consultant by industry",
+      "oil gas consultancy GCC",
+      "aerospace defense engineering research",
+      "medical device research",
+      "advanced manufacturing consulting",
+    ],
+    alternates: { canonical: "/industries" },
+    openGraph: {
+      title: t("industriesIndex.ogTitle"),
+      description: t("industriesIndex.ogDescription"),
+      url: "/industries",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("industriesIndex.twitterTitle"),
+    },
+  };
+}
 
 export default async function IndustriesPage() {
   const t = await getTranslations("industriesPage");

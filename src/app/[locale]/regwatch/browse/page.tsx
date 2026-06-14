@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -17,7 +18,15 @@ import { BrowseFilters } from "@/components/regwatch/BrowseFilters";
 import { BrowseSearchInput } from "@/components/regwatch/BrowseSearchInput";
 import { EmptyState } from "@/components/regwatch/EmptyState";
 
-export const metadata = { title: "Browse Regulations" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return { title: t("browse.title") };
+}
 export const dynamic = "force-dynamic";
 
 interface Props {

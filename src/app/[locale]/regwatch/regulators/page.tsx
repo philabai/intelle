@@ -1,15 +1,23 @@
 import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { listRegulators } from "@/lib/regwatch/queries";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { RegulatorCard } from "@/components/regwatch/RegulatorCard";
 
-export const metadata = {
-  title: "Regulators",
-  description:
-    "Every regulator Vantage by intelle.io monitors — grouped by region with item counts and recent activity.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return {
+    title: t("regulators.title"),
+    description: t("regulators.description"),
+  };
+}
 export const dynamic = "force-dynamic";
 
 const REGION_ORDER = ["na", "eu", "uk", "mea", "asia", "lac", "int"] as const;

@@ -5,11 +5,18 @@ import { createClient } from "@/lib/regwatch/supabase/server";
 import { TOPIC_TAXONOMY, topicLabel } from "@/lib/regwatch/taxonomy";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 
-export const metadata: Metadata = {
-  title: "Topics — Vantage",
-  description:
-    "Every topic Vantage by intelle.io tracks — emissions, methane, PFAS, CBAM, process safety, and more — with live counts.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return {
+    title: t("topics.title"),
+    description: t("topics.description"),
+  };
+}
 export const dynamic = "force-dynamic";
 
 // Group topics by category so the page tells a story rather than reading as a

@@ -1,11 +1,20 @@
 import { getTranslations, getFormatter } from "next-intl/server";
+import type { Metadata } from "next";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { getDashboardData } from "@/lib/regwatch/dashboard-queries";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
 import { DashboardView } from "@/components/regwatch/dashboard/DashboardView";
 
-export const metadata = { title: "Dashboard" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadataRw" });
+  return { title: t("dashboard.title") };
+}
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {

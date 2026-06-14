@@ -1,33 +1,40 @@
 import type { Metadata } from "next";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { localizeResearchServices } from "@/lib/constants/i18n/localize";
 import { RESEARCH_SERVICES } from "@/lib/constants";
 import { ResearchServiceDetail } from "@/components/research/ResearchServiceDetail";
 
 const service = RESEARCH_SERVICES[4];
 
-export const metadata: Metadata = {
-  title: "Market & Competitive Intelligence | GCC, India Industrial Markets | intelle.io",
-  description:
-    "Market sizing, buyer personas, competitor positioning, GTM for engineering-heavy industrial markets. 3-4 week Market Entry Scan. Senior-led.",
-  keywords: [
-    "market intelligence GCC industrial",
-    "buyer persona GCC",
-    "competitive intelligence engineering",
-    "GTM strategy NOC",
-    "industrial market sizing",
-    "GCC market entry consultancy",
-  ],
-  alternates: { canonical: service.href },
-  openGraph: {
-    title: "Market & Competitive Intelligence",
-    description:
-      "Market sizing, buyer personas, competitor positioning, GTM. 3-4 week Market Entry Scan.",
-    url: service.href,
-    type: "website",
-  },
-  twitter: { card: "summary_large_image", title: "Market & Competitive Intelligence" },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  const s = localizeResearchServices(locale)[4];
+  return {
+    title: `${s.title}${t("detailCommon.titleSuffix")}`,
+    description: s.description,
+    keywords: [
+      "market intelligence GCC industrial",
+      "buyer persona GCC",
+      "competitive intelligence engineering",
+      "GTM strategy NOC",
+      "industrial market sizing",
+      "GCC market entry consultancy",
+    ],
+    alternates: { canonical: service.href },
+    openGraph: {
+      title: s.title,
+      description: s.description,
+      url: service.href,
+      type: "website",
+    },
+    twitter: { card: "summary_large_image", title: s.title },
+  };
+}
 
 export default async function MarketIntelligencePage() {
   const _localized = localizeResearchServices(await getLocale())[4];

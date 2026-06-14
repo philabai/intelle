@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { CalEmbed } from "@/components/scheduling/CalEmbed";
 import { SITE } from "@/lib/constants";
@@ -7,27 +8,36 @@ import { FAQSection } from "@/components/seo/FAQSection";
 import { JsonLd, faqSchema } from "@/lib/seo/json-ld";
 import type { FAQ } from "@/lib/types";
 
-export const metadata: Metadata = {
-  title: "Book a 30-Min Discovery Call | intelle.io Engineering Research",
-  description:
-    "Book a free 30-minute discovery call with intelle.io. Scope an engineering research, AI readiness, standards, or M&A diligence engagement. Zoom auto-attached. SOW within 48 hours.",
-  keywords: [
-    "engineering research discovery call",
-    "free engineering consultation",
-    "scope engineering research engagement",
-    "AI readiness call",
-    "intelle.io booking",
-  ],
-  alternates: { canonical: "/book" },
-  openGraph: {
-    title: "Book a 30-Minute Discovery Call",
-    description:
-      "Free 30-minute call to scope a research or implementation engagement. Zoom auto-attached.",
-    url: "/book",
-    type: "website",
-  },
-  twitter: { card: "summary_large_image", title: "Book a 30-Minute Discovery Call" },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  return {
+    title: t("book.title"),
+    description: t("book.description"),
+    keywords: [
+      "engineering research discovery call",
+      "free engineering consultation",
+      "scope engineering research engagement",
+      "AI readiness call",
+      "intelle.io booking",
+    ],
+    alternates: { canonical: "/book" },
+    openGraph: {
+      title: t("book.ogTitle"),
+      description: t("book.ogDescription"),
+      url: "/book",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("book.ogTitle"),
+    },
+  };
+}
 
 export default function BookPage() {
   const t = useTranslations("bookPage");
