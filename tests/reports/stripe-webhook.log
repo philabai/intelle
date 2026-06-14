@@ -1,0 +1,12 @@
+
+ORG_A = 1143d2f4-8c55-4f63-937f-a1415f708b1e
+PRO price = price_1TiFgvFs0hGUlwWnYswJEG2F
+
+  [32mPASS[0m  invalid signature rejected (400)  — status=400
+  [32mPASS[0m  subscription.updated(active) -> paid tier  — status=200, tier=pro
+  [32mPASS[0m  subscription.updated(canceled) -> free  — tier=free
+  [32mPASS[0m  checkout.session.completed (real sub) -> paid + customer stored  — status=200, tier=pro, cust=true
+  [32mPASS[0m  subscription.deleted -> free  — tier=free
+
+========================================================
+BILLING WEBHOOK: 5/5 passed, 0 failed
