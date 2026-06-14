@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createServiceClient } from "@/lib/supabase/service";
 import { sendBrevoEmail } from "@/lib/email/brevo";
+import { escapeHtml, escapeHtmlMultiline } from "@/lib/email/escape";
 
 const contactSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -62,14 +63,14 @@ export async function POST(request: Request) {
       htmlContent: `
         <h2>New Contact Form Submission</h2>
         <table style="border-collapse: collapse; width: 100%; max-width: 600px;">
-          <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Name</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.name}</td></tr>
-          <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Email</td><td style="padding: 8px; border-bottom: 1px solid #eee;"><a href="mailto:${data.email}">${data.email}</a></td></tr>
-          ${data.company ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Company</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.company}</td></tr>` : ""}
-          ${data.phone ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Phone</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.phone}</td></tr>` : ""}
-          ${data.service_interest ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Service Interest</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${data.service_interest}</td></tr>` : ""}
-          <tr><td style="padding: 8px; font-weight: bold; vertical-align: top;">Message</td><td style="padding: 8px;">${data.message.replace(/\n/g, "<br>")}</td></tr>
+          <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Name</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${escapeHtml(data.name)}</td></tr>
+          <tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Email</td><td style="padding: 8px; border-bottom: 1px solid #eee;"><a href="mailto:${encodeURIComponent(data.email)}">${escapeHtml(data.email)}</a></td></tr>
+          ${data.company ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Company</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${escapeHtml(data.company)}</td></tr>` : ""}
+          ${data.phone ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Phone</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${escapeHtml(data.phone)}</td></tr>` : ""}
+          ${data.service_interest ? `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Service Interest</td><td style="padding: 8px; border-bottom: 1px solid #eee;">${escapeHtml(data.service_interest)}</td></tr>` : ""}
+          <tr><td style="padding: 8px; font-weight: bold; vertical-align: top;">Message</td><td style="padding: 8px;">${escapeHtmlMultiline(data.message)}</td></tr>
         </table>
-        <p style="margin-top: 16px; color: #666; font-size: 12px;">Submitted from ${data.source_page || "contact page"}</p>
+        <p style="margin-top: 16px; color: #666; font-size: 12px;">Submitted from ${escapeHtml(data.source_page || "contact page")}</p>
       `,
     });
     logBrevoResult("contact:admin", adminResult);
@@ -79,7 +80,7 @@ export async function POST(request: Request) {
       to: [{ email: data.email, name: data.name }],
       subject: "Thank you for contacting intelle.io",
       htmlContent: `
-        <p>Dear ${data.name},</p>
+        <p>Dear ${escapeHtml(data.name)},</p>
         <p>Thank you for reaching out to intelle.io. We have received your message and will get back to you within 1-2 business days.</p>
         <p>In the meantime, feel free to explore our <a href="https://intelle.io/insights">latest insights</a> or learn more about our <a href="https://intelle.io/research">research services</a>.</p>
         <br>

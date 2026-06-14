@@ -5,6 +5,7 @@ import { buildSystemPrompt } from "@/lib/chat/system-prompt";
 import { IRIS_TOOLS, type CaptureEmailInput } from "@/lib/chat/tools";
 import { createServiceClient } from "@/lib/supabase/service";
 import { sendBrevoEmail } from "@/lib/email/brevo";
+import { escapeHtml } from "@/lib/email/escape";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -13,11 +14,17 @@ const IRIS_MODEL = "claude-haiku-4-5-20251001";
 const MAX_TURNS = 3;
 const MAX_TOKENS = 1024;
 
+// Bound the inbound payload: the client sends the full conversation history each
+// turn, so cap both the per-message size and the number of content blocks to
+// limit token cost and the prompt-injection / history-forgery surface.
+const MAX_TEXT_CHARS = 8_000;
+const MAX_BLOCKS = 20;
+
 const messageSchema = z.object({
   role: z.enum(["user", "assistant"]),
   content: z.union([
-    z.string(),
-    z.array(z.any()),
+    z.string().max(MAX_TEXT_CHARS),
+    z.array(z.unknown()).max(MAX_BLOCKS),
   ]),
 });
 
@@ -92,11 +99,11 @@ async function notifySeniorPractitionerOfLead(
     subject: `New Iris lead: ${input.email}`,
     htmlContent: `
       <h2>New lead from Iris (intelle.io chat)</h2>
-      <p><strong>Email:</strong> <a href="mailto:${input.email}">${input.email}</a></p>
-      ${input.name ? `<p><strong>Name:</strong> ${input.name}</p>` : ""}
-      ${input.company ? `<p><strong>Company:</strong> ${input.company}</p>` : ""}
-      <p><strong>Context:</strong> ${input.context}</p>
-      ${sourceUrl ? `<p><strong>From page:</strong> ${sourceUrl}</p>` : ""}
+      <p><strong>Email:</strong> <a href="mailto:${encodeURIComponent(input.email)}">${escapeHtml(input.email)}</a></p>
+      ${input.name ? `<p><strong>Name:</strong> ${escapeHtml(input.name)}</p>` : ""}
+      ${input.company ? `<p><strong>Company:</strong> ${escapeHtml(input.company)}</p>` : ""}
+      <p><strong>Context:</strong> ${escapeHtml(input.context)}</p>
+      ${sourceUrl ? `<p><strong>From page:</strong> ${escapeHtml(sourceUrl)}</p>` : ""}
       <hr/>
       <p style="color:#666;font-size:12px;">Also in /admin/contacts. Reply directly to the visitor by clicking the email link above.</p>
     `,

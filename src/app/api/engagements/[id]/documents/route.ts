@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getSessionUser } from "@/lib/auth/roles";
+import { validateUpload, ENGAGEMENT_DOCS_PROFILE } from "@/lib/upload-validation";
 
 export const runtime = "nodejs";
 
@@ -60,6 +61,10 @@ export async function POST(request: Request, { params }: Props) {
   const file = form.get("file");
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "Missing file" }, { status: 400 });
+  }
+  const valid = validateUpload(file, ENGAGEMENT_DOCS_PROFILE);
+  if (!valid.ok) {
+    return NextResponse.json({ error: valid.error }, { status: 400 });
   }
   const title = (form.get("title") as string | null) || file.name;
   const description = (form.get("description") as string | null) || null;

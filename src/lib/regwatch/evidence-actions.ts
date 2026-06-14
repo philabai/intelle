@@ -8,6 +8,7 @@ import { createServiceClient } from "./supabase/service";
 import { getMyMembership } from "./members";
 import { checkFeatureGate } from "./tier";
 import { classifyFileKind, type EvidenceFinding } from "./evidence";
+import { validateUpload, EVIDENCE_PROFILE } from "@/lib/upload-validation";
 
 /**
  * Server actions for the per-file evidence flow. Replaces the legacy
@@ -168,13 +169,8 @@ export async function uploadObligationEvidenceFile(
   if (typeof obligationId !== "string" || !(file instanceof File)) {
     return { ok: false, error: "Missing obligationId or file" };
   }
-  const MAX_SIZE = 200 * 1024 * 1024; // 200MB — videos can be large
-  if (file.size > MAX_SIZE) {
-    return {
-      ok: false,
-      error: `File exceeds the 200MB limit (${file.size} bytes)`,
-    };
-  }
+  const valid = validateUpload(file, EVIDENCE_PROFILE);
+  if (!valid.ok) return { ok: false, error: valid.error };
 
   const svc = createServiceClient();
   const { data: obligation } = await svc
