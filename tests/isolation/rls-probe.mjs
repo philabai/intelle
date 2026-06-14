@@ -57,6 +57,20 @@ async function tryWrite(sql, params) {
   }
 }
 
+/** Raw write as the connected (superuser) role, rolled back. Used to prove a
+ * DB trigger fires even when RLS is bypassed. */
+async function tryWriteRaw(sql, params) {
+  await client.query("begin");
+  try {
+    await client.query(sql, params);
+    await client.query("rollback");
+    return { ok: true };
+  } catch (e) {
+    await client.query("rollback");
+    return { ok: false, err: e.message };
+  }
+}
+
 async function main() {
   await client.connect();
 
@@ -103,13 +117,24 @@ async function main() {
     record("A1-owner", "own internal_documents visible", (await count("internal_documents", "where organization_id=$1", [ORG_A])) >= 1);
   });
 
-  // ---- Multi-org user X: sees Org B + Org X, NOT Org A (F12 behaviour) ------
-  console.log("── Multi-org (X = member of B + owner of X) ──");
+  // ---- Single-org user X: sees only Org X (F12) ----------------------------
+  console.log("── Single-org (X owns Org X only) ──");
   await asUser(X, async () => {
-    record("X-crossorg", "Org B visible (is member)", (await count("organizations", "where id=$1", [ORG_B])) === 1);
-    record("X-crossorg", "Org X visible (is owner)", (await count("organizations", "where id=$1", [ORG_X])) === 1);
-    record("X-crossorg", "Org A invisible (not a member)", (await count("organizations", "where id=$1", [ORG_A])) === 0);
+    record("X", "Org X visible (is owner)", (await count("organizations", "where id=$1", [ORG_X])) === 1);
+    record("X", "Org A invisible", (await count("organizations", "where id=$1", [ORG_A])) === 0);
+    record("X", "Org B invisible", (await count("organizations", "where id=$1", [ORG_B])) === 0);
   });
+
+  // ---- F12 enforcement: a user cannot be inserted into a second org --------
+  console.log("── F12 single-org trigger ──");
+  {
+    // Raw insert (superuser context, bypasses RLS) must still be blocked by the
+    // enforce_single_org trigger — X already belongs to Org X.
+    const w = await tryWriteRaw(
+      "insert into regwatch.organization_members (organization_id, user_id, role) values ($1,$2,'member')",
+      [ORG_B, X]);
+    record("F12", "second-org membership rejected by trigger", w.ok === false && /single-org/i.test(w.err || ""), w.ok ? "INSERTED (leak!)" : "trigger blocked");
+  }
 
   // ---- No-org user sees nothing -------------------------------------------
   console.log("── No-org user ──");

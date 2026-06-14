@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { getMyMembership } from "@/lib/regwatch/members";
+import { recordAudit } from "@/lib/regwatch/audit";
 import { findConnector } from "@/lib/regwatch/connectors";
 import { persistItems } from "@/lib/regwatch/connectors/persist";
 import { persistHierarchy } from "@/lib/regwatch/connectors/persist-hierarchy";
@@ -63,6 +64,12 @@ export async function POST(req: Request) {
       { status: 404 },
     );
   }
+
+  await recordAudit({
+    organizationId: membership.organizationId, userId: user.id,
+    action: "connector.run_triggered", entityType: "connector", entityId: null,
+    metadata: { connectorId: body.connectorId, includeHierarchy: body.includeHierarchy ?? false },
+  });
 
   const started = Date.now();
   const ctx = { lookbackDays: 30, now: new Date(), dryRun: false };

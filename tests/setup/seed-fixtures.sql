@@ -59,11 +59,11 @@ begin
   b1 := pg_temp.mk_user('b1-owner@qa.test', '{}'::jsonb);
   select organization_id into org_b from regwatch.organization_members where user_id = b1 limit 1;
 
-  -- X: has own org AND is added to Org B too (multi-org edge case, F12).
+  -- X: a normal single-org owner (Org X). Post-F12, a user can belong to only
+  -- one org — the cross-org join is now blocked by the enforce_single_org
+  -- trigger and is asserted as denied in the RLS probe instead of seeded.
   xo := pg_temp.mk_user('x-crossorg@qa.test', '{}'::jsonb);
   select organization_id into org_x from regwatch.organization_members where user_id = xo limit 1;
-  insert into regwatch.organization_members (organization_id, user_id, role)
-  values (org_b, xo, 'member') on conflict do nothing;
 
   -- N: no org at all (membership + auto-org removed).
   no_org := pg_temp.mk_user('n-noorg@qa.test', '{}'::jsonb);

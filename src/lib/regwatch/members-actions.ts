@@ -6,6 +6,7 @@ import { createClient } from "./supabase/server";
 import { createServiceClient } from "./supabase/service";
 import { getMyMembership, isAdminRole, type AdminRole } from "./members";
 import { checkFeatureGate, type GatedFeature } from "./tier";
+import { recordAudit } from "./audit";
 
 /**
  * Member-management server actions. Only owners/admins of the calling user's
@@ -111,6 +112,22 @@ export async function addMemberByEmail(
       return { ok: false, error: "That account is already a member of your org" };
     }
 
+    // F12 — single-org enforcement: a user belongs to exactly one org. Reject if
+    // they already belong to a different one (a hard DB trigger backs this up).
+    const { data: otherOrg } = await svc
+      .from("organization_members")
+      .select("id")
+      .eq("user_id", target.id)
+      .neq("organization_id", auth.organizationId)
+      .limit(1)
+      .maybeSingle();
+    if (otherOrg) {
+      return {
+        ok: false,
+        error: "That account already belongs to another organization and can't join a second one.",
+      };
+    }
+
     const { error: insErr } = await svc
       .from("organization_members")
       .insert({
@@ -120,6 +137,11 @@ export async function addMemberByEmail(
       });
     if (insErr) return { ok: false, error: insErr.message };
 
+    await recordAudit({
+      organizationId: auth.organizationId, userId: auth.userId,
+      action: "member.added", entityType: "user", entityId: target.id,
+      metadata: { email: emailLower, role: parsed.data.role },
+    });
     revalidatePath("/regwatch/settings/members");
     return { ok: true, invited: false };
   }
@@ -285,6 +307,11 @@ export async function updateMemberRole(
     .eq("id", parsed.data.membershipId);
   if (error) return { ok: false, error: error.message };
 
+  await recordAudit({
+    organizationId: auth.organizationId, userId: auth.userId,
+    action: "member.role_changed", entityType: "user", entityId: target.user_id as string,
+    metadata: { from: target.role, to: parsed.data.role },
+  });
   revalidatePath("/regwatch/settings/members");
   return { ok: true };
 }
@@ -331,6 +358,11 @@ export async function removeMember(
     .eq("id", parsed.data.membershipId);
   if (error) return { ok: false, error: error.message };
 
+  await recordAudit({
+    organizationId: auth.organizationId, userId: auth.userId,
+    action: "member.removed", entityType: "user", entityId: target.user_id as string,
+    metadata: { role: target.role },
+  });
   revalidatePath("/regwatch/settings/members");
   return { ok: true };
 }

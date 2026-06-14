@@ -1,0 +1,18 @@
+
+> intelle@0.1.0 dev
+> next dev --port 4000 --port 4100
+
+▲ Next.js 16.2.9 (Turbopack)
+- Local:         http://localhost:4100
+- Network:       http://192.168.1.103:4100
+- Environments: .env.local
+✓ Ready in 333ms
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:4000
+- PID:          79287
+- Dir:          /Users/arnabghosh/Desktop/01. Arnab/00. Business/01. Intelle/02. Codebase/intelle
+- Log:          .next/dev/logs/next-development.log
+
+Run kill 79287 to stop it.
+[?25h

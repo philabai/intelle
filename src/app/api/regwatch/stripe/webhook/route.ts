@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import { getStripe } from "@/lib/regwatch/stripe";
 import { createServiceClient } from "@/lib/regwatch/supabase/service";
 import { tierForPriceId, type Tier } from "@/lib/regwatch/stripe";
+import { recordAudit } from "@/lib/regwatch/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -93,6 +94,11 @@ export async function POST(request: Request) {
             tier,
           })
           .eq("id", orgId);
+        await recordAudit({
+          organizationId: orgId, action: "billing.checkout_completed",
+          entityType: "subscription", entityId: null,
+          metadata: { tier, stripeCustomerId: customerId, stripeSubscriptionId: subscriptionId, event: event.type },
+        });
         break;
       }
 
@@ -133,6 +139,11 @@ export async function POST(request: Request) {
             stripe_subscription_id: null,
           })
           .eq("stripe_customer_id", customerId);
+        await recordAudit({
+          organizationId: null, action: "billing.subscription_deleted",
+          entityType: "subscription", entityId: null,
+          metadata: { tier: "free", stripeCustomerId: customerId, event: event.type },
+        });
         break;
       }
 
@@ -184,4 +195,9 @@ async function applySubscriptionToOrg(
       stripe_subscription_id: sub.id,
     })
     .eq("id", orgId);
+  await recordAudit({
+    organizationId: orgId, action: "billing.subscription_updated",
+    entityType: "subscription", entityId: null,
+    metadata: { tier, status, stripeSubscriptionId: sub.id },
+  });
 }
