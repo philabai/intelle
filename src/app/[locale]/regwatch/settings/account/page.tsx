@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { getMyOrganization } from "@/lib/regwatch/footprint";
@@ -12,7 +12,7 @@ export const metadata = { title: "Profile" };
 export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {
-  const t = useTranslations("regwatch.settings");
+  const t = await getTranslations("regwatch.settings");
   const supabase = await createClient();
   const {
     data: { user },

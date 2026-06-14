@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -35,7 +35,7 @@ function pickFilter(
 }
 
 export default async function JurisdictionBrowsePage({ params, searchParams }: Props) {
-  const t = useTranslations("regwatch.discover");
+  const t = await getTranslations("regwatch.discover");
   const { jurisdiction } = await params;
   const raw = await searchParams;
   const jurisdictionCode = jurisdiction.toUpperCase();

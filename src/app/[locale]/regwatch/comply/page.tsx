@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import type { Metadata } from "next";
@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
  * it's a Comply input, not an account knob.
  */
 export default async function ComplyHub() {
-  const t = useTranslations("regwatch.comply");
+  const t = await getTranslations("regwatch.comply");
   const supabase = await createClient();
   const {
     data: { user },

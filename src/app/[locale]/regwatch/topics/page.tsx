@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -62,7 +62,7 @@ const ACCENT_STYLES: Record<string, { border: string; bg: string; text: string }
 };
 
 export default async function TopicsCloudPage() {
-  const t = useTranslations("regwatch.discover");
+  const t = await getTranslations("regwatch.discover");
   const supabase = await createClient();
   const [
     {

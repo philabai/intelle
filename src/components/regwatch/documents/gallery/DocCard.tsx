@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import { createServiceClient } from "@/lib/regwatch/supabase/service";
@@ -35,7 +35,7 @@ const REVIEW_STATE_TONE: Record<InternalDocumentReviewState, string> = {
  * @tiptap/html.
  */
 export async function DocCard({ doc }: Props) {
-  const t = useTranslations("regwatch.documents");
+  const t = await getTranslations("regwatch.documents");
   // Body_doc isn't on the list item shape — fetch it separately. The card
   // is server-rendered so this is cheap and goes through the service
   // client (RLS still gates by org_id below).

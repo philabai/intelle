@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -26,7 +26,7 @@ function pick(
 }
 
 export default async function BillingPage({ searchParams }: Props) {
-  const t = useTranslations("regwatch.settings");
+  const t = await getTranslations("regwatch.settings");
   const raw = await searchParams;
   const checkoutStatus = pick(raw, "checkout");
 

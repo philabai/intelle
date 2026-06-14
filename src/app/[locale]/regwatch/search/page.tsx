@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import {
   listRegulationsHybrid,
@@ -46,7 +46,7 @@ function pickFilter(
 }
 
 export default async function SearchPage({ searchParams }: Props) {
-  const t = useTranslations("regwatch.search");
+  const t = await getTranslations("regwatch.search");
   const raw = await searchParams;
   const query = pickFilter(raw, "q") ?? "";
 

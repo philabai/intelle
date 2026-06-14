@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -50,7 +51,7 @@ const SEV_STYLE: Record<string, string> = {
 };
 
 export default async function RecapPage() {
-  const t = useTranslations("regwatch.monitor");
+  const t = await getTranslations("regwatch.monitor");
   const supabase = await createClient();
   const {
     data: { user },

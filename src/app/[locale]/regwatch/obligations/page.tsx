@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { formatDistanceToNowStrict } from "date-fns";
@@ -46,7 +47,7 @@ interface Props {
 }
 
 export default async function ObligationsPage({ searchParams }: Props) {
-  const t = useTranslations("regwatch.comply");
+  const t = await getTranslations("regwatch.comply");
   const raw = await searchParams;
   const supabase = await createClient();
   const {

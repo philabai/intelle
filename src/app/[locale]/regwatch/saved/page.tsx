@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import type { Metadata } from "next";
@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
  * original "My RegWatch" Phase-1 plan).
  */
 export default async function SavedPage() {
-  const t = useTranslations("regwatch.monitor");
+  const t = await getTranslations("regwatch.monitor");
   const supabase = await createClient();
   const {
     data: { user },

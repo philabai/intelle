@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -33,7 +34,7 @@ function pickFilter(
 }
 
 export default async function BrowsePage({ searchParams }: Props) {
-  const t = useTranslations("regwatch.discover");
+  const t = await getTranslations("regwatch.discover");
   const raw = await searchParams;
   const hideNewsParam = pickFilter(raw, "hide_news");
   // hide_news defaults to ON; pass "0" to include news/notices.

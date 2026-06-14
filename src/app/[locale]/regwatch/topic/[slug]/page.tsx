@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function TopicPage({ params }: Props) {
-  const tr = useTranslations("regwatch.discover");
+  const tr = await getTranslations("regwatch.discover");
   const { slug } = await params;
   const known = TOPIC_TAXONOMY.find((t) => t.value === slug);
 

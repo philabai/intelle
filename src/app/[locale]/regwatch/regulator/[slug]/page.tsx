@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function RegulatorProfilePage({ params }: Props) {
-  const t = useTranslations("regwatch.discover");
+  const t = await getTranslations("regwatch.discover");
   const { slug } = await params;
   const regulator = await getRegulatorBySlug(slug);
   if (!regulator) notFound();

@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -18,7 +18,7 @@ export const metadata = { title: "Assets" };
 export const dynamic = "force-dynamic";
 
 export default async function AssetsPage() {
-  const t = useTranslations("regwatch.comply");
+  const t = await getTranslations("regwatch.comply");
   const supabase = await createClient();
   const {
     data: { user },

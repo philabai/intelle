@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
@@ -39,7 +39,7 @@ interface Props {
 export const dynamic = "force-dynamic";
 
 export default async function DocumentDetailPage({ params }: Props) {
-  const t = useTranslations("regwatch.documents");
+  const t = await getTranslations("regwatch.documents");
   const { id } = await params;
   const supabase = await createClient();
   const {

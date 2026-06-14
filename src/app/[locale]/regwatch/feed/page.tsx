@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { getMyFootprint, getMyOrganization } from "@/lib/regwatch/footprint";
@@ -40,7 +40,7 @@ const VALID_SORTS: FeedSort[] = ["score", "newest", "deadline", "recently_change
 const VALID_SEVERITIES: Severity[] = ["critical", "high", "normal", "low"];
 
 export default async function FeedPage({ searchParams }: Props) {
-  const t = useTranslations("regwatch.monitor");
+  const t = await getTranslations("regwatch.monitor");
   const raw = await searchParams;
   const sort = (pick(raw, "sort") as FeedSort) ?? "score";
   const severity = (pick(raw, "severity") as Severity) ?? undefined;

@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { formatDistanceToNowStrict } from "date-fns";
@@ -22,7 +23,7 @@ export const dynamic = "force-dynamic";
  * remember what they'd been assigned to.
  */
 export default async function ReviewerInboxPage() {
-  const t = useTranslations("regwatch.comply");
+  const t = await getTranslations("regwatch.comply");
   const supabase = await createClient();
   const {
     data: { user },

@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 const REGION_ORDER = ["na", "eu", "uk", "mea", "int"] as const;
 
 export default async function RegwatchLanding() {
-  const t = useTranslations("regwatch.discover");
+  const t = await getTranslations("regwatch.discover");
   const supabase = await createClient();
   const [
     {

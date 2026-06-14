@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
@@ -49,7 +49,7 @@ const REVIEW_BG: Record<string, string> = {
 };
 
 export default async function ObligationDetailPage({ params }: Props) {
-  const t = useTranslations("regwatch.comply");
+  const t = await getTranslations("regwatch.comply");
   const { id } = await params;
   const supabase = await createClient();
   const {

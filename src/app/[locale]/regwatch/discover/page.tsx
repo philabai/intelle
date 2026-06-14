@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
  * lands, US/EU year-round) sit at the top with brand accents.
  */
 export default async function DiscoverLandingPage() {
-  const t = useTranslations("regwatch.discover");
+  const t = await getTranslations("regwatch.discover");
   const supabase = await createClient();
   const [
     {

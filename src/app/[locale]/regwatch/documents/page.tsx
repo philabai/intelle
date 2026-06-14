@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -40,7 +40,7 @@ function pick(
 }
 
 export default async function DocumentsPage({ searchParams }: Props) {
-  const t = useTranslations("regwatch.documents");
+  const t = await getTranslations("regwatch.documents");
   const raw = await searchParams;
   const folderParam = pick(raw, "folder") ?? null;
   const ownerParam = (pick(raw, "owner") ?? "anyone") as "anyone" | "me";

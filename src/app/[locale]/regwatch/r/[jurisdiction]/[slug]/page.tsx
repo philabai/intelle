@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
@@ -34,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function RegulationDetailPage({ params }: Props) {
-  const t = useTranslations("regwatch.discover");
+  const t = await getTranslations("regwatch.discover");
   const { jurisdiction, slug } = await params;
   const item = await getRegulation(jurisdiction, slug);
   if (!item) notFound();
