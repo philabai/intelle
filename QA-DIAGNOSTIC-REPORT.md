@@ -204,6 +204,27 @@ environment: add `regwatch` to **Settings → API → Exposed schemas** (or
 **Severity: Med (ops/runbook)** — not a code bug, but a launch/DR checklist item that
 would make a restored or new environment look broken. Add to the deploy runbook.
 
+## 5d. Live results — Phase B: load & stress ✅ (DB fast; F14 recalibrated)
+
+**DB layer (the real bottleneck — Postgres is prod-identical engine).** Seeded
+1,000 footprint_matches for one org and `EXPLAIN ANALYZE`'d the feed query:
+- Indexed feed (`where footprint_id ORDER BY score DESC, matched_at DESC LIMIT 100`):
+  **0.82 ms** (bitmap scan + top-N heapsort, fully cached).
+- Full 3-join feed (matches→items→regulators): **4.25 ms** (all index scans).
+- footprint_matches already has indexes on `footprint_id`, `score DESC`, `matched_at DESC`,
+  `severity`, `organization_id`. **→ F14 downgraded** from "perf risk / missing sort index"
+  to **minor UX only** (no "load more" past the 100 cap; the query is well-indexed and
+  single-digit ms at 1k matches/org). No index gap found.
+
+**HTTP read load (k6, `tests/k6/read-load.js`).** Ramp to 25 VUs over 40 s on the public
+read paths (browse en/fr, regulators, topics): **0% errors, 216/216 OK.** App stayed up
+under concurrency. *Caveat:* this targets the local Next **dev** instance (per-request
+recompile), so the latency (p95 ≈ 2.4 s) is NOT a capacity number — production on Vercel
+(prebuilt + horizontally scaled) is ~10–30× faster. For a true capacity figure, run this
+k6 script against a Vercel **preview** deployment.
+*(Note: an early run showed ~18% errors — all from the regulation-detail path, which 500s
+in the test env only because `SUPABASE_SERVICE_ROLE_KEY` is blank there; not a product bug.)*
+
 ## 6. Pending — live phases (need the test environment)
 Not yet executed; require the dedicated test Supabase + Stripe test mode:
 - **Multi-tenant isolation (Phase 2):** empirically prove A1 cannot read/write Org B across
