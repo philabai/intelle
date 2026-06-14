@@ -36,6 +36,7 @@ const PATHS = [
   "/en/regwatch/browse",
   "/en/regwatch/regulators",
   "/en/regwatch/topics",
+  "/en/regwatch/r/us/40-cfr-60-ooooc",
   "/fr/regwatch/browse",
 ];
 

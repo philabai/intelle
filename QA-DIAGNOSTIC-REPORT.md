@@ -20,7 +20,7 @@ authenticated ZAP scan in CI; F10/F12/F16 needs-decision.
 | F5 | Server-side upload validation (type allow-list + size caps) for evidence + engagement uploads | `207d5ac` |
 | F9 | Bound `/api/chat` payload (per-message + block caps) instead of `z.any()` | `207d5ac` |
 | F2 | Require auth on `POST /translate` (was unauthenticated service-role) | `a4c8f7a` |
-| F3 | Postgres fixed-window rate limiter on `/contact` (5/min), `/chat` (20/min), `/translate` (30/day) | `a4c8f7a` |
+| F3 | Postgres fixed-window rate limiter on `/contact` (5/min), `/chat` (20/min), `/translate` (30/day) — **verified live: requests 1–5 → 200, 6–8 → 429** | `a4c8f7a` |
 | F6 | Baseline CSP header (frame-ancestors/base-uri/object-src/form-action) | `aed18eb` |
 | F8 | Sanitize external-corpus regulation `body_html` with sanitize-html | `27664f8` |
 
@@ -226,8 +226,11 @@ under concurrency. *Caveat:* this targets the local Next **dev** instance (per-r
 recompile), so the latency (p95 ≈ 2.4 s) is NOT a capacity number — production on Vercel
 (prebuilt + horizontally scaled) is ~10–30× faster. For a true capacity figure, run this
 k6 script against a Vercel **preview** deployment.
-*(Note: an early run showed ~18% errors — all from the regulation-detail path, which 500s
-in the test env only because `SUPABASE_SERVICE_ROLE_KEY` is blank there; not a product bug.)*
+*(With the service-role key supplied, the regulation-detail path — which uses the service
+client — returns 200 and the full 5-path run is **0% errors, 175/175 OK**. An earlier run
+without the key showed ~18% errors, all from that one path; confirmed a test-env artifact,
+not a product bug. The **F3 rate limiter was also confirmed live** end-to-end: `/api/contact`
+returns 200 for the first 5/min then 429.)*
 
 ## 5e. Live results — Phase C: DAST / cybersecurity
 
