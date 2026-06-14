@@ -69,3 +69,7 @@ scripts/demos/out/
 scripts/tutorials/out/
 # Raw recorded footage (re-recordable via record-new.ts, hosted in Supabase)
 scripts/tutorials/raw/
+
+# QA test run artifacts
+test-results/
+playwright-report/

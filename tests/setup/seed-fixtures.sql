@@ -24,11 +24,15 @@ declare uid uuid := gen_random_uuid();
 begin
   insert into auth.users (
     instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
-    raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+    raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+    -- GoTrue scans these as strings; NULL => "Database error querying schema" on sign-in.
+    confirmation_token, recovery_token, email_change, email_change_token_new,
+    email_change_token_current, phone_change, phone_change_token, reauthentication_token
   ) values (
     '00000000-0000-0000-0000-000000000000', uid, 'authenticated', 'authenticated',
     p_email, crypt('QA-Test-Pass-2026!', gen_salt('bf')), now(),
-    '{"provider":"email","providers":["email"]}'::jsonb, coalesce(p_meta, '{}'::jsonb), now(), now()
+    '{"provider":"email","providers":["email"]}'::jsonb, coalesce(p_meta, '{}'::jsonb), now(), now(),
+    '', '', '', '', '', '', '', ''
   );
   insert into auth.identities (provider_id, user_id, identity_data, provider, created_at, updated_at)
   values (p_email, uid, jsonb_build_object('sub', uid::text, 'email', p_email), 'email', now(), now());
@@ -73,10 +77,33 @@ begin
   values (org_a, null, 2, 'ORG-A Refinery Alpha', 'A-SITE-1', 'site', 'US'),
          (org_b, null, 2, 'ORG-B Platform Bravo', 'B-SITE-1', 'site', 'GB');
 
-  -- Org A internal document + Org B internal document (org-private).
-  insert into regwatch.internal_documents (organization_id, title, internal_code, doc_kind, version, status, owner_user_id)
-  values (org_a, 'ORG-A Confidential SOP', 'A-SOP-001', 'sop', '1.0', 'draft', a1),
-         (org_b, 'ORG-B Confidential SOP', 'B-SOP-001', 'sop', '1.0', 'draft', b1);
+  -- Org A internal document + Org B internal document (org-private), each with a
+  -- committed current revision (realistic — the app never leaves a doc revision-less).
+  declare doc_a uuid; doc_b uuid; rev_a uuid; rev_b uuid;
+  begin
+    insert into regwatch.internal_documents (organization_id, title, internal_code, doc_kind, version, status, owner_user_id)
+    values (org_a, 'ORG-A Confidential SOP', 'A-SOP-001', 'sop', '1.0', 'draft', a1) returning id into doc_a;
+    insert into regwatch.internal_documents (organization_id, title, internal_code, doc_kind, version, status, owner_user_id)
+    values (org_b, 'ORG-B Confidential SOP', 'B-SOP-001', 'sop', '1.0', 'draft', b1) returning id into doc_b;
+
+    insert into regwatch.internal_document_revisions
+      (organization_id, internal_document_id, revision_number, revision_type, version_major, version_minor,
+       version_bump, body_doc, body_text, reason_for_change, is_committed, created_by)
+    values (org_a, doc_a, 1, 'editor', 1, 0, 'minor',
+       '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"ORG-A confidential body text — methane LDAR procedure."}]}]}'::jsonb,
+       'ORG-A confidential body text — methane LDAR procedure.', 'initial', true, a1)
+      returning id into rev_a;
+    insert into regwatch.internal_document_revisions
+      (organization_id, internal_document_id, revision_number, revision_type, version_major, version_minor,
+       version_bump, body_doc, body_text, reason_for_change, is_committed, created_by)
+    values (org_b, doc_b, 1, 'editor', 1, 0, 'minor',
+       '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"ORG-B confidential body text — platform safety case."}]}]}'::jsonb,
+       'ORG-B confidential body text — platform safety case.', 'initial', true, b1)
+      returning id into rev_b;
+
+    update regwatch.internal_documents set current_revision_id = rev_a where id = doc_a;
+    update regwatch.internal_documents set current_revision_id = rev_b where id = doc_b;
+  end;
 
   raise notice 'Seeded: org_a=% org_b=% org_x=%', org_a, org_b, org_x;
 end $$;

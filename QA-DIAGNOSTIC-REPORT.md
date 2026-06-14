@@ -179,6 +179,31 @@ RLS-dependent `/preview` endpoint is safe at the data layer. **No tenant-isolati
 defects found.** (Remaining isolation check: app-level IDOR via the running app —
 deferred to the e2e phase.)
 
+## 5c. Live results — Phase A: app-level authz / IDOR ✅ PASS (7/7)
+
+Ran the app against the test DB (isolated git worktree on :4100) with Playwright
+(`playwright.config.ts`, `tests/e2e/authz-idor.spec.ts`):
+
+| Test | Result |
+|------|--------|
+| Fixture user can log in | ✅ |
+| **F1**: regwatch tenant user denied `/admin` back-office | ✅ (fix confirmed at app layer) |
+| **IDOR**: A1 cannot read Org B internal doc via `/preview` (404) | ✅ |
+| **IDOR**: A1 cannot read Org B asset via `/preview` (404) | ✅ |
+| Positive control: A1 CAN read its own Org A doc | ✅ (no false-deny; app functional) |
+| **F2**: `/translate` POST → 401 when logged out | ✅ |
+| **F2**: `/translate` reachable once authenticated | ✅ |
+
+### F17 (NEW, deployment-config) — `regwatch` schema must be exposed to PostgREST
+Provisioning the fresh test project surfaced this: the app's Supabase client uses
+`db: { schema: "regwatch" }`, but a new project exposes only `public, graphql_public`.
+Result: **every regwatch query silently returns `PGRST106` → the app renders empty
+states (e.g. `/browse` shows "No regulations") with no error.** Fix for any new
+environment: add `regwatch` to **Settings → API → Exposed schemas** (or
+`alter role authenticator set pgrst.db_schemas = 'public, graphql_public, regwatch'; notify pgrst,'reload config';`).
+**Severity: Med (ops/runbook)** — not a code bug, but a launch/DR checklist item that
+would make a restored or new environment look broken. Add to the deploy runbook.
+
 ## 6. Pending — live phases (need the test environment)
 Not yet executed; require the dedicated test Supabase + Stripe test mode:
 - **Multi-tenant isolation (Phase 2):** empirically prove A1 cannot read/write Org B across
