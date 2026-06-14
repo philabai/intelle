@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createServiceClient } from "@/lib/supabase/service";
 import { sendBrevoEmail } from "@/lib/email/brevo";
 import { escapeHtml, escapeHtmlMultiline } from "@/lib/email/escape";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 
 const contactSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -29,6 +30,10 @@ function logBrevoResult(label: string, result: Awaited<ReturnType<typeof sendBre
 
 export async function POST(request: Request) {
   try {
+    // Abuse guard: cap submissions per IP (5/min).
+    const { allowed } = await rateLimit("contact", clientIp(request), 5, 60);
+    if (!allowed) return tooManyRequests(60);
+
     const body = await request.json();
     const result = contactSchema.safeParse(body);
 

@@ -3,7 +3,9 @@ import { after } from "next/server";
 import { getAnthropic } from "@/lib/anthropic/client";
 import { TRANSLATION_MODEL } from "@/lib/regwatch/anthropic/models";
 import { createServiceClient } from "@/lib/regwatch/supabase/service";
+import { createClient } from "@/lib/regwatch/supabase/server";
 import { getRegulationOriginalDocument } from "@/lib/regwatch/regulation-original-actions";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -107,6 +109,21 @@ export async function GET(_req: Request, { params }: Props) {
 
 export async function POST(_req: Request, { params }: Props) {
   const { id } = await params;
+
+  // F2: translation is an expensive LLM operation — require an authenticated
+  // user (the POST previously ran on the service client with no auth, so any
+  // caller could enumerate the public corpus and spawn unbounded Claude jobs).
+  const authed = await createClient();
+  const {
+    data: { user },
+  } = await authed.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+  // F3: per-user daily cap on translation kick-offs.
+  const { allowed } = await rateLimit("translate", user.id, 30, 86_400);
+  if (!allowed) return tooManyRequests(3_600);
+
   const svc = createServiceClient();
 
   const { data: row, error } = await svc

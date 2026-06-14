@@ -6,6 +6,7 @@ import { IRIS_TOOLS, type CaptureEmailInput } from "@/lib/chat/tools";
 import { createServiceClient } from "@/lib/supabase/service";
 import { sendBrevoEmail } from "@/lib/email/brevo";
 import { escapeHtml } from "@/lib/email/escape";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -127,6 +128,10 @@ async function notifySeniorPractitionerOfLead(
 }
 
 export async function POST(request: Request) {
+  // Abuse/cost guard: cap Iris turns per IP (20/min).
+  const { allowed } = await rateLimit("chat", clientIp(request), 20, 60);
+  if (!allowed) return tooManyRequests(60);
+
   let parsed: z.infer<typeof requestSchema>;
   try {
     const body = await request.json();
