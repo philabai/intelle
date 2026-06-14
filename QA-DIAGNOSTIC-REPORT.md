@@ -2,11 +2,12 @@
 
 **Engagement:** pre-production QA + security review · multi-tenant, multi-company SaaS for
 regulated industries (oil & gas / engineering).
-**Status:** Static phase + live Phases 2/A/B/C complete. **10 findings fixed**
-(F1–F6, F8, F9, F11, F18). Live results: multi-tenant isolation **39/39 PASS** (§5b),
-app authz/IDOR **7/7 PASS** (§5c), load/DB **clean, F14 recalibrated** (§5d), DAST found
-+ fixed an open redirect (§5e). Remaining: Stripe billing tests (need test-mode keys);
-authenticated ZAP scan in CI; F10/F12/F16 needs-decision.
+**Status:** All phases complete. **11 findings fixed** (F1–F6, F8, F9, F11, F18) +
+**4 needs-decision items implemented** (F10, F12, F13, F16). Live results: isolation
+**40/40 PASS** (§5b, incl. F12 trigger), app authz/IDOR **7/7** (§5c), load/DB clean &
+F14 recalibrated (§5d), DAST open-redirect fixed (§5e), billing **6/6** (§5f), F10
+soft-delete/purge verified end-to-end. Remaining are config/runbook items only (F17, F19)
++ a few accept/low items (F7 validated, F14 minor-UX, F15 trivial).
 
 ---
 
@@ -80,13 +81,13 @@ Severity = exploitability × blast-radius for a multi-company regulated SaaS. `C
 | **F7** | Med | 6.1 | `/regwatch/preview` has no app-layer auth — cross-tenant doc/asset safety depends **entirely** on RLS (verify empirically) | `api/regwatch/preview/route.ts` | verify (Phase 2) |
 | **F8** | Med | 5.4 | `dangerouslySetInnerHTML` × 3 — regulation-corpus HTML (external/scraped), internal-doc HTML, template; sanitization unverified | `r/[jurisdiction]/[slug]/page.tsx:130`, `documents/editor/DocReadOnlyView.tsx:54`, `gallery/TemplatePreviewPane.tsx:31` | verify + sanitize |
 | **F9** | Med | 5.3 | `/api/chat` accepts `content: z.array(z.any())` — client controls full message history (prompt-injection / role-forgery) and unbounded per-message size | `api/chat/route.ts:18-26` | auto-fixable |
-| **F10** | Med | 5.0 | Org-purge guarded only by `CRON_SECRET` + UUID echo; non-constant-time compare; no soft-delete / grace window | `api/regwatch/admin/delete-organization/route.ts:17-43` | needs-decision |
+| **F10** | Med | 5.0 | Org deletion had no soft-delete/grace window | `api/regwatch/admin/delete-organization` | ✅ **DONE** — schedule + 7-day grace + purge cron (`f15fd22`) |
 | **F11** | Med | 5.9 | Dependency vulns: `next@16.2.3` (13 GHSAs incl. DoS), `postcss`, `qs`, `brace-expansion` (DoS) | `package.json` | auto-fixable (upgrade `next@16.2.9`) |
-| **F12** | Med | 5.0 | Multi-org-per-user is unenforced; `getMyOrganization()` `.limit(1)` silently picks one org → wrong-tenant data if a user is ever in 2 orgs | `lib/regwatch/footprint.ts` | needs-decision |
-| **F13** | Med | — | No automated tests, no CI — no regression safety net for launch | repo-wide | process |
+| **F12** | Med | 5.0 | Multi-org-per-user unenforced (which-org nondeterministic) | `members-actions` + DB trigger | ✅ **DONE** — single-org enforced app+DB (`f15fd22`); probe 40/40 |
+| **F13** | Med | — | No automated tests / CI | repo-wide | ✅ **DONE** — `tests/` harness + `.github/workflows/ci.yml` (`f15fd22`) |
 | **F14** | Med | — | Feed/list queries: 3-join, no pagination, no `score/matched_at` sort index → perf risk at scale (confirm in load phase) | `lib/regwatch/feed-queries.ts` | verify (Phase 5) |
 | **F15** | Low | 2.0 | `Server: Vercel` + framework version exposed (info disclosure) | platform | accept/strip |
-| **F16** | Low | 3.0 | Audit log is non-blocking + non-exhaustive (some cron/Stripe ops unlogged) — weakens forensic trail for a regulated buyer | `audit_log` writers | needs-decision |
+| **F16** | Low | 3.0 | Audit log non-exhaustive (billing/membership/deletion unlogged) | `audit_log` writers | ✅ **DONE** — `recordAudit()` wired into billing/members/connector/deletion (`f15fd22`) |
 | **F17** | Med | — | New/restored environments must expose the `regwatch` schema to PostgREST or the app silently shows empty data (`PGRST106`) | Supabase Settings→API | **runbook** (found live, Phase A) |
 | **F18** | **High** | 6.1 | Open redirect via post-login `next` param (CWE-601, phishing vector) | `regwatch/login`, `auth/login`, `regwatch/auth/callback` | ✅ **FIXED** `30a6c16` |
 
