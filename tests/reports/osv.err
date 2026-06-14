@@ -1,0 +1,4 @@
+Warning: --output has been deprecated in favor of --output-file
+Starting filesystem walk for root: /
+Scanned /Users/arnabghosh/Desktop/01. Arnab/00. Business/01. Intelle/02. Codebase/intelle/package-lock.json file and found 844 packages
+End status: 0 dirs visited, 1 inodes visited, 1 Extract calls, 11.033958ms elapsed, 11.034ms wall time
