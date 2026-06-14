@@ -31,6 +31,18 @@ const nextConfig: NextConfig = {
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           {
+            // F6: baseline CSP — the safe, non-breaking directives. These have
+            // no restrictive default that would block Next's inline scripts/
+            // styles or the Stripe/Cal/GA integrations: clickjacking
+            // (frame-ancestors), <base> injection (base-uri), plugin objects
+            // (object-src), and form-action hijack. A full nonce-based
+            // default-src/script-src policy is the recommended follow-up
+            // (requires per-request nonce wiring in middleware).
+            key: "Content-Security-Policy",
+            value:
+              "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'",
+          },
+          {
             key: "Referrer-Policy",
             value: "strict-origin-when-cross-origin",
           },
