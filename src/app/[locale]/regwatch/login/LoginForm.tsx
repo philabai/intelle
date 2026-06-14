@@ -5,12 +5,14 @@ import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/regwatch/supabase/client";
+import { safeRelativePath } from "@/lib/safe-redirect";
 
 export function RegwatchLoginForm() {
   const t = useTranslations("regwatch.auth");
   const router = useRouter();
   const search = useSearchParams();
-  const nextPath = search.get("next") || "/regwatch/dashboard";
+  // Guard against open redirects — only same-origin relative paths are honoured.
+  const nextPath = safeRelativePath(search.get("next"), "/regwatch/dashboard");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
