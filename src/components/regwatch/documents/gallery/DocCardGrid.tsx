@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import type { InternalDocumentListItem } from "@/lib/regwatch/internal-documents";
 import { DocCard } from "./DocCard";
 
@@ -10,10 +11,11 @@ interface Props {
  * them as a list of awaited renders — Next.js handles streaming.
  */
 export function DocCardGrid({ docs }: Props) {
+  const t = useTranslations("regwatch.documents");
   if (docs.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-10 text-center text-sm text-muted">
-        No documents in this view.
+        {t("noDocumentsInView")}
       </p>
     );
   }

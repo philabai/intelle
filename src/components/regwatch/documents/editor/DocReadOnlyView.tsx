@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { generateHTML } from "@tiptap/html";
 import { EDITOR_EXTENSIONS } from "./extensions";
 import { sanitiseBodyDoc } from "@/lib/regwatch/templates/sanitise-body-doc";
@@ -19,11 +20,13 @@ interface Props {
  * editor look identical.
  */
 export function DocReadOnlyView({ bodyDoc }: Props) {
+  const t = useTranslations("regwatch.documents");
   if (!bodyDoc) {
     return (
       <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-6 text-center text-xs text-muted">
-        This document has no body yet. Click <strong>Edit</strong> to start
-        writing.
+        {t.rich("readOnlyEmpty", {
+          strong: (chunks) => <strong>{chunks}</strong>,
+        })}
       </p>
     );
   }
@@ -39,7 +42,7 @@ export function DocReadOnlyView({ bodyDoc }: Props) {
   } catch (e) {
     return (
       <p className="rounded-lg border border-red-500/40 bg-red-500/10 p-4 text-xs text-red-300">
-        Could not render document body: {(e as Error).message}
+        {t("renderBodyFailed", { error: (e as Error).message })}
       </p>
     );
   }

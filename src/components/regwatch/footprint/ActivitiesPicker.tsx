@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import {
   NAICS,
   SECTOR_LABEL,
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export function ActivitiesPicker({ value, onChange }: Props) {
+  const t = useTranslations("regwatch.comply");
   const groups = useMemo(
     () =>
       SECTOR_ORDER.map((sector) => ({
@@ -45,7 +47,7 @@ export function ActivitiesPicker({ value, onChange }: Props) {
       selected={value}
       onChange={onChange}
       searchable
-      emptyLabel="No NAICS codes match the filter"
+      emptyLabel={t("noNaicsMatch")}
       className="max-h-80 overflow-y-auto rounded-lg border border-card-border bg-background/40 p-3"
     />
   );

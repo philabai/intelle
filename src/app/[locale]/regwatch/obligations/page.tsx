@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { formatDistanceToNowStrict } from "date-fns";
@@ -45,6 +46,7 @@ interface Props {
 }
 
 export default async function ObligationsPage({ searchParams }: Props) {
+  const t = useTranslations("regwatch.comply");
   const raw = await searchParams;
   const supabase = await createClient();
   const {
@@ -90,14 +92,14 @@ export default async function ObligationsPage({ searchParams }: Props) {
     3: config.level3Label,
     4: config.level4Label,
     5: config.level5Label,
-    6: config.level6Label ?? "Component",
+    6: config.level6Label ?? t("levelComponentFallback"),
   };
 
   const filterChips: { value: string; label: string; count: number }[] = [
-    { value: "all", label: "All", count: obligations.length },
+    { value: "all", label: t("filterAll"), count: obligations.length },
     {
       value: "open",
-      label: "Open",
+      label: t("filterOpen"),
       count: obligations.filter((o) =>
         ["open", "awaiting-triage", "in-review", "pending-approval"].includes(
           o.reviewStatus,
@@ -106,7 +108,7 @@ export default async function ObligationsPage({ searchParams }: Props) {
     },
     {
       value: "mine",
-      label: "Assigned to me",
+      label: t("filterAssignedToMe"),
       count: obligations.filter((o) => o.assignedReviewerUserId === user.id)
         .length,
     },
@@ -117,24 +119,22 @@ export default async function ObligationsPage({ searchParams }: Props) {
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/feed" className="hover:text-foreground">
-            My Feed
+            {t("breadcrumbMyFeed")}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-foreground">Obligations</span>
+          <span className="text-foreground">{t("obligationsTitle")}</span>
         </nav>
 
         <header className="mt-4 mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-              {org?.organization.name ?? "Your organization"}
+              {org?.organization.name ?? t("yourOrganization")}
             </p>
             <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Compliance obligations
+              {t("obligationsHeading")}
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted">
-              Each obligation pins one regulation (or clause) to one asset and
-              routes it through review. Admins set severity + compliance status
-              and sign off; reviewers complete the review with evidence.
+              {t("obligationsSubheading")}
             </p>
           </div>
         </header>
@@ -143,12 +143,10 @@ export default async function ObligationsPage({ searchParams }: Props) {
           <section className="mb-8 rounded-xl border border-card-border bg-card-bg/40 p-5 sm:p-6">
             <header className="mb-4">
               <h2 className="text-lg font-semibold tracking-tight text-foreground">
-                Create an obligation
+                {t("createObligationTitle")}
               </h2>
               <p className="mt-1 text-xs text-muted">
-                Pick an asset and a regulation; optionally pin to a clause.
-                Severity and compliance status can be revised any time before
-                sign-off — only admins can change them.
+                {t("createObligationDescription")}
               </p>
             </header>
             <CreateObligationForm
@@ -183,20 +181,20 @@ export default async function ObligationsPage({ searchParams }: Props) {
 
         {obligations.length === 0 ? (
           <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-8 text-center text-sm text-muted">
-            No obligations yet for this filter.
+            {t("obligationsEmpty")}
           </p>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-card-border bg-background">
             <table className="w-full min-w-[640px] text-sm">
               <thead className="border-b border-card-border bg-card-bg/40 text-start text-[10px] uppercase tracking-wider text-muted">
                 <tr>
-                  <th className="px-4 py-3">Regulation</th>
-                  <th className="px-4 py-3">Asset</th>
-                  <th className="px-4 py-3">Severity</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Review</th>
-                  <th className="px-4 py-3">Assigned to</th>
-                  <th className="px-4 py-3">Updated</th>
+                  <th className="px-4 py-3">{t("colRegulation")}</th>
+                  <th className="px-4 py-3">{t("colAsset")}</th>
+                  <th className="px-4 py-3">{t("colSeverity")}</th>
+                  <th className="px-4 py-3">{t("colStatus")}</th>
+                  <th className="px-4 py-3">{t("colReview")}</th>
+                  <th className="px-4 py-3">{t("colAssignedTo")}</th>
+                  <th className="px-4 py-3">{t("colUpdated")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -219,6 +217,7 @@ function ObligationRow({
   o: ObligationListItem;
   labels: Record<2 | 3 | 4 | 5 | 6, string>;
 }) {
+  const t = useTranslations("regwatch.comply");
   return (
     <tr className="border-b border-card-border last:border-0 hover:bg-card-bg/50">
       <td className="px-4 py-3">
@@ -241,7 +240,7 @@ function ObligationRow({
               </p>
             </>
           ) : (
-            <span className="italic text-muted">No regulation pinned</span>
+            <span className="italic text-muted">{t("noRegulationPinned")}</span>
           )}
         </Link>
       </td>
@@ -281,9 +280,9 @@ function ObligationRow({
         {o.assignedReviewerName ? (
           <span className="text-foreground">{o.assignedReviewerName}</span>
         ) : o.assignedReviewerUserId ? (
-          <span className="text-muted">Assigned</span>
+          <span className="text-muted">{t("assigned")}</span>
         ) : (
-          <span className="text-[11px] italic text-muted/60">Unassigned</span>
+          <span className="text-[11px] italic text-muted/60">{t("unassigned")}</span>
         )}
       </td>
       <td className="px-4 py-3 text-[11px] text-muted">

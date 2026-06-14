@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import {
@@ -46,31 +47,31 @@ interface Props {
   staleCitations: StaleCitation[];
 }
 
-const EVENT_LABEL: Record<string, string> = {
-  created: "Created",
-  updated_metadata: "Metadata updated",
-  revision_saved: "Revision saved",
-  revision_committed: "Revision committed",
-  uploaded_file: "File uploaded",
-  submitted_for_review: "Submitted for review",
-  reviewer_assigned: "Reviewer assigned",
-  approver_assigned: "Approver assigned",
-  reviewer_completed: "Review approved",
-  changes_requested: "Changes requested",
-  approved: "Approval signed",
-  marked_effective: "Marked effective",
-  superseded: "Superseded",
-  retired: "Retired",
-  comment_added: "Comment added",
-  comment_resolved: "Comment resolved",
-  citation_inserted: "Citation inserted",
-  citation_flagged_stale: "Citation flagged stale",
+const EVENT_LABEL_KEY: Record<string, string> = {
+  created: "eventCreated",
+  updated_metadata: "eventMetadataUpdated",
+  revision_saved: "eventRevisionSaved",
+  revision_committed: "eventRevisionCommitted",
+  uploaded_file: "eventFileUploaded",
+  submitted_for_review: "eventSubmittedForReview",
+  reviewer_assigned: "eventReviewerAssigned",
+  approver_assigned: "eventApproverAssigned",
+  reviewer_completed: "eventReviewApproved",
+  changes_requested: "eventChangesRequested",
+  approved: "eventApprovalSigned",
+  marked_effective: "eventMarkedEffective",
+  superseded: "eventSuperseded",
+  retired: "eventRetired",
+  comment_added: "eventCommentAdded",
+  comment_resolved: "eventCommentResolved",
+  citation_inserted: "eventCitationInserted",
+  citation_flagged_stale: "eventCitationFlaggedStale",
 };
 
-const SIG_MEANING_LABEL: Record<SignatureRow["meaning"], string> = {
-  authored: "Authored",
-  reviewed: "Reviewed",
-  approved: "Approved",
+const SIG_MEANING_KEY: Record<SignatureRow["meaning"], string> = {
+  authored: "sigAuthored",
+  reviewed: "sigReviewed",
+  approved: "sigApproved",
 };
 
 export function ReviewPanel({
@@ -86,6 +87,7 @@ export function ReviewPanel({
   orgMembers,
   staleCitations,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [dialogOpen, setDialogOpen] = useState<{
@@ -111,7 +113,7 @@ export function ReviewPanel({
         reasonForChange: reason,
       });
       if (!res.ok) {
-        setError(res.error ?? "Could not perform action");
+        setError(res.error ?? t("couldNotPerformAction"));
         return;
       }
       setDialogOpen(null);
@@ -123,7 +125,7 @@ export function ReviewPanel({
     startTransition(async () => {
       const res = await unassignReviewerOrApprover({ assignmentId });
       if (!res.ok) {
-        setError(res.error ?? "Could not unassign");
+        setError(res.error ?? t("couldNotUnassign"));
         return;
       }
       router.refresh();
@@ -149,7 +151,7 @@ export function ReviewPanel({
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <h2 className="text-sm font-semibold text-foreground">
-            Review workflow
+            {t("reviewWorkflow")}
           </h2>
           <StatePill state={reviewState} />
         </div>
@@ -160,7 +162,7 @@ export function ReviewPanel({
               onClick={() => setAssignOpen(true)}
               className="rounded-md border border-card-border bg-background px-2.5 py-1 text-[11px] text-foreground/90 hover:border-brand-blue hover:text-foreground"
             >
-              + Assign reviewer
+              {t("assignReviewerShort")}
             </button>
           )}
           <button
@@ -168,16 +170,16 @@ export function ReviewPanel({
             onClick={() => setShowAudit((v) => !v)}
             className="rounded-md border border-card-border bg-background px-2.5 py-1 text-[11px] text-muted hover:border-brand-blue hover:text-foreground"
           >
-            {showAudit ? "Hide audit trail" : "Audit trail"}
+            {showAudit ? t("hideAuditTrail") : t("auditTrail")}
           </button>
           <a
             href={`/api/regwatch/documents/${docId}/audit-trail`}
             target="_blank"
             rel="noreferrer"
             className="rounded-md border border-card-border bg-background px-2.5 py-1 text-[11px] text-muted hover:border-brand-blue hover:text-foreground"
-            title="Download a Part-11-formatted PDF — signature manifest + event log"
+            title={t("exportAuditPdfTitle")}
           >
-            ↓ Export PDF
+            {t("exportPdf")}
           </a>
         </div>
       </div>
@@ -207,8 +209,10 @@ export function ReviewPanel({
         </div>
       ) : (
         <p className="mb-4 rounded-md border border-card-border bg-card-bg/30 p-2 text-[11px] text-muted">
-          No actions available from <strong>{reviewState}</strong> with your
-          role.
+          {t.rich("noActionsAvailable", {
+            state: reviewState,
+            strong: (chunks) => <strong>{chunks}</strong>,
+          })}
         </p>
       )}
 
@@ -227,22 +231,22 @@ export function ReviewPanel({
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="rounded-md border border-card-border bg-background/40 p-3">
           <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted">
-            Owner
+            {t("owner")}
           </p>
           {ownerUserId ? (
             <p className="text-xs text-foreground">
               {ownerDisplayName ?? ownerUserId}
             </p>
           ) : (
-            <p className="text-[11px] text-muted">No owner assigned.</p>
+            <p className="text-[11px] text-muted">{t("noOwnerAssigned")}</p>
           )}
         </div>
         <div className="rounded-md border border-card-border bg-background/40 p-3">
           <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted">
-            Open assignments
+            {t("openAssignments")}
           </p>
           {openAssignments.length === 0 ? (
-            <p className="text-[11px] text-muted">None yet.</p>
+            <p className="text-[11px] text-muted">{t("noneYet")}</p>
           ) : (
             <ul className="space-y-1.5">
               {openAssignments.map((a) => (
@@ -265,7 +269,7 @@ export function ReviewPanel({
                       disabled={pending}
                       className="text-[10px] text-muted hover:text-red-300 disabled:opacity-50"
                     >
-                      remove
+                      {t("removeLower")}
                     </button>
                   )}
                 </li>
@@ -278,12 +282,11 @@ export function ReviewPanel({
       {/* Signature manifest */}
       <div className="mt-3 rounded-md border border-card-border bg-background/40 p-3">
         <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted">
-          Signature manifest
+          {t("signatureManifest")}
         </p>
         {signatures.length === 0 ? (
           <p className="text-[11px] text-muted">
-            No signatures yet. Submitting for review captures the author
-            signature; reviewers + approvers sign on their actions.
+            {t("noSignaturesYet")}
           </p>
         ) : (
           <ul className="space-y-1.5">
@@ -294,10 +297,13 @@ export function ReviewPanel({
               >
                 <div className="min-w-0">
                   <p className="text-xs text-foreground">
-                    <span className="font-medium">
-                      {SIG_MEANING_LABEL[s.meaning]}
-                    </span>{" "}
-                    by {s.signerDisplayName}
+                    {t.rich("signatureBy", {
+                      meaning: t(SIG_MEANING_KEY[s.meaning]),
+                      signer: s.signerDisplayName,
+                      strong: (chunks) => (
+                        <span className="font-medium">{chunks}</span>
+                      ),
+                    })}
                   </p>
                   {s.signerEmail && (
                     <p className="text-[10px] text-muted">
@@ -324,10 +330,10 @@ export function ReviewPanel({
       {showAudit && (
         <div className="mt-3 rounded-md border border-card-border bg-background/40 p-3">
           <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted">
-            Audit trail ({auditEvents.length} events)
+            {t("auditTrailWithCount", { count: auditEvents.length })}
           </p>
           {auditEvents.length === 0 ? (
-            <p className="text-[11px] text-muted">No events yet.</p>
+            <p className="text-[11px] text-muted">{t("noEventsYet")}</p>
           ) : (
             <ol className="space-y-1.5">
               {auditEvents.map((e) => {
@@ -340,10 +346,15 @@ export function ReviewPanel({
                   >
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <p className="text-xs text-foreground">
-                        <span className="font-medium">
-                          {EVENT_LABEL[e.eventType] ?? e.eventType}
-                        </span>{" "}
-                        by {e.actorDisplayName}
+                        {t.rich("auditEventBy", {
+                          event: EVENT_LABEL_KEY[e.eventType]
+                            ? t(EVENT_LABEL_KEY[e.eventType])
+                            : e.eventType,
+                          actor: e.actorDisplayName,
+                          strong: (chunks) => (
+                            <span className="font-medium">{chunks}</span>
+                          ),
+                        })}
                       </p>
                       <span
                         className="text-[10px] text-muted"
@@ -371,10 +382,10 @@ export function ReviewPanel({
       <ReasonForChangeDialog
         open={dialogOpen !== null}
         onClose={() => setDialogOpen(null)}
-        title={activeRule?.label ?? "Confirm"}
+        title={activeRule?.label ?? t("confirm")}
         description={
           activeRule?.signature
-            ? `This action captures your e-signature with meaning='${activeRule.signature}' per 21 CFR Part 11.`
+            ? t("eSignatureDescription", { meaning: activeRule.signature })
             : undefined
         }
         warning={activeRule?.warning}

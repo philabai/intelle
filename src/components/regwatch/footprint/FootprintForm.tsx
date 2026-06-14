@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { saveFootprint, updateMyRole } from "@/lib/regwatch/footprint-actions";
 import { rematchMyFootprint } from "@/lib/regwatch/feed-actions";
@@ -46,6 +47,7 @@ export function FootprintForm({
   redirectTo,
   showRole = true,
 }: Props) {
+  const t = useTranslations("regwatch.comply");
   const router = useRouter();
   const [role, setRole] = useState(initialRole);
   const [geographies, setGeographies] = useState(initialFootprint.geographies);
@@ -63,7 +65,7 @@ export function FootprintForm({
       if (showRole && role) {
         const r = await updateMyRole({ functional_role: role });
         if (!r.ok) {
-          setMessage({ kind: "error", text: `Role update failed: ${r.error}` });
+          setMessage({ kind: "error", text: t("roleUpdateFailed", { error: r.error ?? "" }) });
           return;
         }
       }
@@ -75,10 +77,10 @@ export function FootprintForm({
         monitored_topics: topics,
       });
       if (!res.ok) {
-        setMessage({ kind: "error", text: res.error ?? "Could not save" });
+        setMessage({ kind: "error", text: res.error ?? t("errCouldNotSave") });
         return;
       }
-      setMessage({ kind: "ok", text: "Saved. Rescoring your Feed…" });
+      setMessage({ kind: "ok", text: t("savedRescoring") });
       // Fire-and-forget — the user shouldn't wait for the matcher to finish
       // before being redirected. The Feed page revalidates server-side once
       // the action completes, so a subsequent navigation shows fresh matches.
@@ -98,8 +100,8 @@ export function FootprintForm({
       {showRole && (
         <Section
           step={1}
-          title="Your role"
-          description="Drives default Feed filters and onboarding suggestions. You can change this later."
+          title={t("fpRoleTitle")}
+          description={t("fpRoleDescription")}
         >
           <RolePicker value={role} onChange={setRole} />
         </Section>
@@ -108,8 +110,8 @@ export function FootprintForm({
       <div data-tour="footprint-geographies">
         <Section
           step={showRole ? 2 : 1}
-          title="Geography"
-          description="Pick every country whose regulations might apply to your operations."
+          title={t("fpGeographyTitle")}
+          description={t("fpGeographyDescription")}
         >
           <GeographyPicker value={geographies} onChange={setGeographies} />
         </Section>
@@ -118,8 +120,8 @@ export function FootprintForm({
       <div data-tour="footprint-naics">
         <Section
           step={showRole ? 3 : 2}
-          title="Activities (NAICS)"
-          description="Which industrial activities does your org operate? Use the filter to narrow the list."
+          title={t("fpActivitiesTitle")}
+          description={t("fpActivitiesDescription")}
         >
           <ActivitiesPicker value={naics} onChange={setNaics} />
         </Section>
@@ -127,16 +129,16 @@ export function FootprintForm({
 
       <Section
         step={showRole ? 4 : 3}
-        title="Substances (CAS numbers)"
-        description="Substances you handle, store, or release. CAS-formatted IDs only."
+        title={t("fpSubstancesTitle")}
+        description={t("fpSubstancesDescription")}
       >
         <SubstancesEditor value={substances} onChange={setSubstances} />
       </Section>
 
       <Section
         step={showRole ? 5 : 4}
-        title="Monitored regulators"
-        description="Pre-selected from your geography choices won't be automatic in Phase 1.1 — pick the ones whose feeds you want to follow."
+        title={t("fpRegulatorsTitle")}
+        description={t("fpRegulatorsDescription")}
       >
         <RegulatorsPicker value={regs} options={regulators} onChange={setRegs} />
       </Section>
@@ -144,8 +146,8 @@ export function FootprintForm({
       <div data-tour="footprint-topics">
         <Section
           step={showRole ? 6 : 5}
-          title="Monitored topics"
-          description="Topic domains worth tracking — used to score relevance once Phase 1.2 matching is live."
+          title={t("fpTopicsTitle")}
+          description={t("fpTopicsDescription")}
         >
           <TopicsPicker value={topics} onChange={setTopics} />
         </Section>
@@ -154,8 +156,8 @@ export function FootprintForm({
       <div className="sticky bottom-0 z-10 flex flex-col gap-3 border-t border-card-border bg-background/95 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
         <div className="text-xs text-muted">
           {totalSelections > 0
-            ? `${totalSelections} configuration choices.`
-            : "Nothing configured yet — pick a few items above."}
+            ? t("configurationChoices", { count: totalSelections })
+            : t("nothingConfigured")}
           {message && (
             <span
               className={`ms-3 ${message.kind === "ok" ? "text-brand-teal" : "text-red-400"}`}
@@ -170,7 +172,7 @@ export function FootprintForm({
           data-tour="footprint-save"
           className="rounded-md bg-brand-blue px-5 py-2 text-sm font-medium text-white hover:bg-brand-blue/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {pending ? "Saving…" : submitLabel}
+          {pending ? t("saving") : submitLabel}
         </button>
       </div>
     </form>

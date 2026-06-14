@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { unlinkDocumentFromRegulation } from "@/lib/regwatch/internal-documents-actions";
 
@@ -32,6 +33,7 @@ interface Props {
 }
 
 export function ClauseCrosswalkPanel({ existingLinks }: Props) {
+  const t = useTranslations("regwatch.documents");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -53,9 +55,11 @@ export function ClauseCrosswalkPanel({ existingLinks }: Props) {
   if (crosswalkRows.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-4 text-center text-xs text-muted">
-        No clause mappings yet. Use the{" "}
-        <strong className="text-foreground">Clause mapping workspace</strong>{" "}
-        above to add the first one.
+        {t.rich("noClauseMappings", {
+          strong: (chunks) => (
+            <strong className="text-foreground">{chunks}</strong>
+          ),
+        })}
       </p>
     );
   }
@@ -71,9 +75,9 @@ export function ClauseCrosswalkPanel({ existingLinks }: Props) {
         </colgroup>
         <thead className="border-b border-card-border bg-card-bg/40 text-start text-[10px] uppercase tracking-wider text-muted">
           <tr>
-            <th className="px-3 py-2">Your document section</th>
-            <th className="px-3 py-2">Regulation clause</th>
-            <th className="px-3 py-2">Rationale / evidence</th>
+            <th className="px-3 py-2">{t("colYourSection")}</th>
+            <th className="px-3 py-2">{t("regulationClause")}</th>
+            <th className="px-3 py-2">{t("colRationaleEvidence")}</th>
             <th className="px-3 py-2"></th>
           </tr>
         </thead>
@@ -113,10 +117,10 @@ export function ClauseCrosswalkPanel({ existingLinks }: Props) {
                   type="button"
                   onClick={() => onUnlink(l.id)}
                   disabled={pending}
-                  title="Remove this crosswalk row"
+                  title={t("removeCrosswalkRowTitle")}
                   className="rounded-md border border-red-500/40 px-2 py-1 text-[10px] text-red-300 hover:border-red-500 hover:bg-red-500/10 disabled:opacity-50"
                 >
-                  Remove
+                  {t("remove")}
                 </button>
               </td>
             </tr>

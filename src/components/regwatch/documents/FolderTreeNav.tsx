@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useRouter } from "@/i18n/navigation";
 import {
@@ -32,6 +33,7 @@ export function FolderTreeNav({
   canEdit,
   totalDocCount,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -40,19 +42,19 @@ export function FolderTreeNav({
 
   async function handleCreate(parentId: string | null) {
     const name = await askPrompt({
-      title: parentId ? "New sub-folder" : "New project folder",
-      placeholder: "e.g. Refinery shutdown 2026 — EHS evidence",
+      title: parentId ? t("newSubFolder") : t("newProjectFolder"),
+      placeholder: t("folderNamePlaceholder"),
       description: parentId
-        ? "Created inside the current folder."
-        : "Created as a top-level project folder.",
-      confirmLabel: "Create",
+        ? t("createdInsideFolder")
+        : t("createdTopLevel"),
+      confirmLabel: t("create"),
     });
     if (!name) return;
     setError(null);
     startTransition(async () => {
       const res = await createFolder({ name, parentId });
       if (!res.ok) {
-        setError(res.error ?? "Could not create folder");
+        setError(res.error ?? t("couldNotCreateFolder"));
         return;
       }
       router.refresh();
@@ -61,16 +63,16 @@ export function FolderTreeNav({
 
   async function handleRename(node: DocumentFolderTreeNode) {
     const name = await askPrompt({
-      title: "Rename folder",
+      title: t("renameFolder"),
       defaultValue: node.name,
-      confirmLabel: "Rename",
+      confirmLabel: t("rename"),
     });
     if (!name || name === node.name) return;
     setError(null);
     startTransition(async () => {
       const res = await updateFolder({ id: node.id, name });
       if (!res.ok) {
-        setError(res.error ?? "Could not rename");
+        setError(res.error ?? t("couldNotRename"));
         return;
       }
       router.refresh();
@@ -81,11 +83,15 @@ export function FolderTreeNav({
     const hasContent =
       node.totalDocumentCount > 0 || node.children.length > 0;
     const ok = await askConfirm({
-      title: "Archive folder",
+      title: t("archiveFolder"),
       description: hasContent
-        ? `"${node.name}" contains ${node.totalDocumentCount} document${node.totalDocumentCount === 1 ? "" : "s"} and ${node.children.length} sub-folder${node.children.length === 1 ? "" : "s"}. Archiving moves the documents to Unfiled (so nothing is lost) and removes the folder structure. Continue?`
-        : `Archive the empty folder "${node.name}"?`,
-      confirmLabel: "Archive",
+        ? t("archiveFolderConfirm", {
+            name: node.name,
+            docCount: node.totalDocumentCount,
+            subCount: node.children.length,
+          })
+        : t("archiveEmptyFolderConfirm", { name: node.name }),
+      confirmLabel: t("archive"),
       danger: true,
     });
     if (!ok) return;
@@ -93,7 +99,7 @@ export function FolderTreeNav({
     startTransition(async () => {
       const res = await archiveFolder({ id: node.id, force: hasContent });
       if (!res.ok) {
-        setError(res.error ?? "Could not archive");
+        setError(res.error ?? t("couldNotArchive"));
         return;
       }
       router.refresh();
@@ -104,30 +110,32 @@ export function FolderTreeNav({
     <aside className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-xs font-medium uppercase tracking-wider text-muted">
-          Folders
+          {t("folders")}
         </p>
         {canEdit && (
           <button
             type="button"
             onClick={() => handleCreate(null)}
             disabled={pending}
-            title="Create a new top-level project folder"
+            title={t("createTopLevelTitle")}
             className="rounded-md border border-card-border bg-card-bg px-2 py-1 text-[10px] text-foreground hover:border-brand-blue disabled:opacity-50"
           >
-            + New
+            {t("newShort")}
           </button>
         )}
       </div>
       <nav className="space-y-1 text-sm">
         <RootRow
           href={ALL_HREF}
-          label="All documents"
+          label={t("headerAll")}
+          tooltip={t("allDocumentsTooltip")}
           count={totalDocCount}
           active={activeFolderKey === null}
         />
         <RootRow
           href={UNFILED_HREF}
-          label="Unfiled"
+          label={t("headerUnfiled")}
+          tooltip={t("unfiledTooltip")}
           count={unfiledCount}
           active={activeFolderKey === "unfiled"}
         />
@@ -135,7 +143,8 @@ export function FolderTreeNav({
       <ul className="space-y-1">
         {roots.length === 0 ? (
           <li className="rounded-md border border-dashed border-card-border bg-card-bg/30 p-3 text-center text-[11px] text-muted">
-            No folders yet. {canEdit ? "Click + New to create your first project folder." : "Ask an admin to create one."}
+            {t("noFoldersYet")}{" "}
+            {canEdit ? t("noFoldersCanEdit") : t("noFoldersAskAdmin")}
           </li>
         ) : (
           roots.map((n) => (
@@ -162,24 +171,20 @@ export function FolderTreeNav({
 function RootRow({
   href,
   label,
+  tooltip,
   count,
   active,
 }: {
   href: string;
   label: string;
+  tooltip: string;
   count: number;
   active: boolean;
 }) {
   return (
     <Link
       href={href}
-      title={
-        label === "All documents"
-          ? "Show every document across all folders"
-          : label === "Unfiled"
-            ? "Documents not yet placed in a project folder"
-            : label
-      }
+      title={tooltip}
       className={`flex items-center justify-between rounded-md px-2 py-1.5 text-sm transition ${
         active
           ? "bg-brand-teal/10 text-brand-teal"
@@ -209,6 +214,7 @@ function FolderRow({
   onArchive: (node: DocumentFolderTreeNode) => void;
   pending: boolean;
 }) {
+  const t = useTranslations("regwatch.documents");
   const [open, setOpen] = useState(true);
   const isActive = activeFolderKey === node.id;
   return (
@@ -223,8 +229,8 @@ function FolderRow({
             type="button"
             onClick={() => setOpen((o) => !o)}
             className="grid h-5 w-5 place-items-center text-muted hover:text-foreground"
-            aria-label={open ? "Collapse" : "Expand"}
-            title={open ? "Collapse sub-folders" : "Expand sub-folders"}
+            aria-label={open ? t("collapse") : t("expand")}
+            title={open ? t("collapseSubFolders") : t("expandSubFolders")}
           >
             {open ? "▾" : "▸"}
           </button>
@@ -233,7 +239,10 @@ function FolderRow({
         )}
         <Link
           href={`/regwatch/documents?folder=${node.id}`}
-          title={`Open "${node.name}" — ${node.totalDocumentCount} document${node.totalDocumentCount === 1 ? "" : "s"} including sub-folders`}
+          title={t("openFolderTitle", {
+            name: node.name,
+            count: node.totalDocumentCount,
+          })}
           className={`flex flex-1 items-center justify-between truncate ${
             isActive ? "text-brand-teal" : "text-foreground"
           }`}
@@ -249,8 +258,8 @@ function FolderRow({
               type="button"
               onClick={() => onAddChild(node.id)}
               disabled={pending}
-              aria-label={`Add sub-folder inside ${node.name}`}
-              title={`Add a sub-folder inside "${node.name}"`}
+              aria-label={t("addSubFolderAria", { name: node.name })}
+              title={t("addSubFolderTitle", { name: node.name })}
               className="grid h-5 w-5 place-items-center text-[12px] text-muted hover:text-brand-teal disabled:opacity-50"
             >
               +
@@ -259,8 +268,8 @@ function FolderRow({
               type="button"
               onClick={() => onRename(node)}
               disabled={pending}
-              aria-label={`Rename ${node.name}`}
-              title={`Rename "${node.name}"`}
+              aria-label={t("renameAria", { name: node.name })}
+              title={t("renameTitle", { name: node.name })}
               className="grid h-5 w-5 place-items-center text-[10px] text-muted hover:text-foreground disabled:opacity-50"
             >
               ✎
@@ -269,8 +278,8 @@ function FolderRow({
               type="button"
               onClick={() => onArchive(node)}
               disabled={pending}
-              aria-label={`Archive ${node.name}`}
-              title={`Archive "${node.name}" — documents inside move to Unfiled, nothing is deleted`}
+              aria-label={t("archiveAria", { name: node.name })}
+              title={t("archiveTitle", { name: node.name })}
               className="grid h-5 w-5 place-items-center text-[10px] text-muted hover:text-red-400 disabled:opacity-50"
             >
               ⊘

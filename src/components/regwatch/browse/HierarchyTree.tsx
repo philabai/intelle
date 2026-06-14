@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { SectionNode } from "@/lib/regwatch/regulatory-sections";
 import { loadSectionChildren } from "@/lib/regwatch/section-children-actions";
@@ -23,6 +24,7 @@ interface Props {
  * set for spinners. Deep links still work because every leaf is a hyperlink.
  */
 export function HierarchyTree({ roots, jurisdictionCode }: Props) {
+  const t = useTranslations("regwatch.discover");
   const [updatesOnly, setUpdatesOnly] = useState(false);
   const [openIds, setOpenIds] = useState<Set<string>>(
     () => new Set(roots.map((r) => r.id)),
@@ -83,7 +85,7 @@ export function HierarchyTree({ roots, jurisdictionCode }: Props) {
     <div>
       <div className="mb-4 flex items-center justify-between gap-3">
         <p className="text-[11px] text-muted">
-          Click any row to expand. Amber dot indicates recent updates.
+          {t("treeIntro")}
         </p>
         <label className="inline-flex cursor-pointer items-center gap-2 text-[11px] text-foreground/90">
           <input
@@ -92,15 +94,15 @@ export function HierarchyTree({ roots, jurisdictionCode }: Props) {
             onChange={(e) => setUpdatesOnly(e.target.checked)}
             className="h-3.5 w-3.5 cursor-pointer accent-brand-blue"
           />
-          Show only sections with recent updates
+          {t("treeUpdatesOnly")}
         </label>
       </div>
 
       {filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-card-border bg-card-bg/30 p-8 text-center text-xs text-muted">
           {updatesOnly
-            ? "No sections in this jurisdiction have updates in the last 30 days."
-            : "No hierarchy has been ingested for this jurisdiction yet. Run /api/cron/regwatch-hierarchy."}
+            ? t("treeEmptyUpdates")
+            : t("treeEmptyNoHierarchy")}
         </div>
       ) : (
         <ul className="space-y-1">
@@ -141,6 +143,7 @@ function TreeRow({
   getChildren,
   onToggle,
 }: RowProps) {
+  const t = useTranslations("regwatch.discover");
   const open = openIds.has(node.id);
   const loading = loadingIds.has(node.id);
   // childCount is denormalised, so a Part shows an expand arrow even before its
@@ -172,7 +175,9 @@ function TreeRow({
         </span>
       )}
       {node.childCount > 0 && (
-        <span className="text-[10px] text-muted">· {node.childCount} children</span>
+        <span className="text-[10px] text-muted">
+          {t("childrenCount", { count: node.childCount })}
+        </span>
       )}
     </div>
   );
@@ -188,7 +193,7 @@ function TreeRow({
             type="button"
             onClick={() => onToggle(node)}
             className="w-3 shrink-0 text-[10px] text-muted hover:text-foreground"
-            aria-label={open ? "Collapse" : "Expand"}
+            aria-label={open ? t("collapse") : t("expand")}
           >
             {loading ? "◌" : open ? "▾" : "▸"}
           </button>
@@ -221,8 +226,12 @@ function TreeRow({
           className={`shrink-0 text-[10px] ${node.hasUpdates30d ? "text-amber-300" : "text-muted/40"}`}
           title={
             node.hasUpdates30d
-              ? `Updated within the last 30 days${node.lastChangedAt ? ` (last change ${new Date(node.lastChangedAt).toLocaleDateString()})` : ""}`
-              : "No updates in the last 30 days"
+              ? node.lastChangedAt
+                ? t("treeUpdatedWithLastChange", {
+                    date: new Date(node.lastChangedAt).toLocaleDateString(),
+                  })
+                : t("treeUpdatedRecently")
+              : t("treeNoUpdates")
           }
         >
           ◉
@@ -236,7 +245,7 @@ function TreeRow({
               className="px-2 py-1 text-[11px] text-muted"
               style={{ paddingLeft: (depth + 1) * 16 + 8 }}
             >
-              Loading…
+              {t("loading")}
             </li>
           ) : (
             children.map((c) => (

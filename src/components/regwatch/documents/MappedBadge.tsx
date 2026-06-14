@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Modal } from "@/components/regwatch/Modal";
 
 export interface MappedRow {
@@ -40,6 +41,7 @@ interface Props {
  * Either form opens a modal with the full mapping details on click.
  */
 export function MappedBadge({ count, rows, side }: Props) {
+  const t = useTranslations("regwatch.documents");
   const [open, setOpen] = useState(false);
   if (count <= 0) return null;
   const numbered = rows.every((r) => typeof r.matchNumber === "number");
@@ -55,7 +57,7 @@ export function MappedBadge({ count, rows, side }: Props) {
                 e.stopPropagation();
                 setOpen(true);
               }}
-              title={`Pair #${r.matchNumber} — click to see details`}
+              title={t("pairNumberTitle", { number: r.matchNumber ?? 0 })}
               className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full border border-brand-teal/60 bg-brand-teal/15 px-1 text-[10px] font-semibold tabular-nums text-brand-teal hover:border-brand-teal hover:bg-brand-teal/25"
             >
               {r.matchNumber}
@@ -69,10 +71,10 @@ export function MappedBadge({ count, rows, side }: Props) {
             e.stopPropagation();
             setOpen(true);
           }}
-          title={`Already mapped to ${count} ${count === 1 ? "row" : "rows"} — click to see them`}
+          title={t("alreadyMappedTitle", { count })}
           className="rounded-full border border-brand-teal/50 bg-brand-teal/10 px-1.5 py-0.5 text-[10px] font-medium text-brand-teal hover:border-brand-teal hover:bg-brand-teal/20"
         >
-          ✓ {count} mapped
+          {t("countMapped", { count })}
         </button>
       )}
       <Modal
@@ -80,8 +82,8 @@ export function MappedBadge({ count, rows, side }: Props) {
         onClose={() => setOpen(false)}
         title={
           side === "internal"
-            ? "Mappings from this section"
-            : "Mappings to this clause"
+            ? t("mappingsFromSection")
+            : t("mappingsToClause")
         }
         size="lg"
       >
@@ -117,7 +119,7 @@ export function MappedBadge({ count, rows, side }: Props) {
               </p>
               {r.internalClauseAnchor && (
                 <p className="mt-1 text-[11px]">
-                  <span className="text-muted">Your section: </span>
+                  <span className="text-muted">{t("yourSectionPrefix")} </span>
                   <span className="font-medium text-foreground">
                     {r.internalClauseAnchor}
                   </span>

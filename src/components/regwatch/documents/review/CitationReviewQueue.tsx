@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import type { StaleCitation } from "@/lib/regwatch/internal-document-citations";
@@ -17,23 +18,21 @@ interface Props {
  * current `last_changed_at`.
  */
 export function CitationReviewQueue({ stale }: Props) {
+  const t = useTranslations("regwatch.documents");
   if (stale.length === 0) {
     return (
       <div className="rounded-md border border-card-border bg-background/40 p-3 text-[11px] text-muted">
-        <span className="text-brand-teal">✓</span> All cited clauses are
-        pinned to the latest regulation version on file.
+        <span className="text-brand-teal">✓</span> {t("allCitationsCurrent")}
       </div>
     );
   }
   return (
     <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-3">
       <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-amber-300">
-        Citation review queue · {stale.length} stale
+        {t("citationReviewQueue", { count: stale.length })}
       </p>
       <p className="mb-3 text-[11px] text-muted">
-        The source regulation has changed since these clauses were cited.
-        Re-open the compose workspace to refresh the pin or update the
-        surrounding text.
+        {t("citationQueueDescription")}
       </p>
       <ul className="space-y-2">
         {stale.map((s) => (
@@ -54,14 +53,14 @@ export function CitationReviewQueue({ stale }: Props) {
                 </Link>
               ) : (
                 <span className="text-[10px] text-red-300">
-                  regulation deleted
+                  {t("regulationDeleted")}
                 </span>
               )}
             </div>
             <p className="mt-1 text-[10px] text-muted">
               {s.pinnedVersion ? (
                 <>
-                  Pinned to{" "}
+                  {t("pinnedToPrefix")}{" "}
                   <span title={new Date(s.pinnedVersion).toLocaleString()}>
                     {formatDistanceToNowStrict(new Date(s.pinnedVersion), {
                       addSuffix: true,
@@ -69,11 +68,11 @@ export function CitationReviewQueue({ stale }: Props) {
                   </span>
                 </>
               ) : (
-                <>Never pinned</>
+                <>{t("neverPinned")}</>
               )}
               {s.currentVersion && (
                 <>
-                  {" · Current: "}
+                  {` · ${t("currentPrefix")}: `}
                   <span
                     className="text-amber-300"
                     title={new Date(s.currentVersion).toLocaleString()}

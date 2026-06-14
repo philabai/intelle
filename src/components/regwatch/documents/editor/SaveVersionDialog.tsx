@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Modal } from "@/components/regwatch/Modal";
 import {
   formatVersion,
@@ -32,6 +33,7 @@ export function SaveVersionDialog({
   errorMessage,
   onSubmit,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   const [bump, setBump] = useState<VersionBump>("minor");
   const [reason, setReason] = useState("");
 
@@ -47,14 +49,14 @@ export function SaveVersionDialog({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Save version" size="md">
+    <Modal open={open} onClose={onClose} title={t("saveVersion")} size="md">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="rounded-md border border-card-border bg-card-bg/30 p-3 text-xs">
-          <p className="text-muted">Current version</p>
+          <p className="text-muted">{t("currentVersionLabel")}</p>
           <p className="mt-0.5 font-mono text-foreground">
-            {currentVersion ? formatVersion(currentVersion) : "— (first save)"}
+            {currentVersion ? formatVersion(currentVersion) : t("firstSave")}
           </p>
-          <p className="mt-2 text-muted">After this save</p>
+          <p className="mt-2 text-muted">{t("afterThisSave")}</p>
           <p className="mt-0.5 font-mono text-brand-teal">
             {formatVersion(previewVersion)}
           </p>
@@ -62,7 +64,7 @@ export function SaveVersionDialog({
 
         <fieldset className="space-y-2">
           <legend className="text-[10px] font-medium uppercase tracking-wider text-muted">
-            Bump type
+            {t("bumpType")}
           </legend>
           {(["major", "minor", "patch"] as VersionBump[]).map((b) => (
             <label
@@ -87,21 +89,20 @@ export function SaveVersionDialog({
 
         <label className="block">
           <span className="text-[10px] font-medium uppercase tracking-wider text-muted">
-            Reason for change <span className="text-red-400">*</span>
+            {t("reasonForChange")} <span className="text-red-400">*</span>
           </span>
           <textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={3}
-            placeholder="Brief, specific. Auditors will read this. Example: 'Updated §4.2 to reflect the new gas-detection alarm setpoint per MoC-2026-014.'"
+            placeholder={t("reasonForChangePlaceholder")}
             className="mt-1 w-full rounded-md border border-card-border bg-card-bg px-3 py-2 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
             required
             minLength={3}
             maxLength={2000}
           />
           <p className="mt-1 text-[10px] text-muted">
-            Required by 21 CFR Part 11 / EU Annex 11 — every save is recorded
-            with this reason in the immutable audit trail.
+            {t("reasonForChangeHint")}
           </p>
         </label>
 
@@ -118,14 +119,16 @@ export function SaveVersionDialog({
             disabled={pending}
             className="rounded-md border border-card-border bg-background px-3 py-1.5 text-xs text-muted hover:text-foreground disabled:opacity-50"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="submit"
             disabled={pending || reason.trim().length < 3}
             className="rounded-md bg-brand-blue px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-blue/90 disabled:opacity-50"
           >
-            {pending ? "Saving…" : `Save ${formatVersion(previewVersion)}`}
+            {pending
+              ? t("saving")
+              : t("saveWithVersion", { version: formatVersion(previewVersion) })}
           </button>
         </div>
       </form>

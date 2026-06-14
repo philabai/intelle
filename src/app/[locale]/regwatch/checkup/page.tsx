@@ -1,9 +1,11 @@
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { RegwatchAppShell, RegwatchComingSoon } from "@/components/regwatch/AppShell";
 
 export const metadata = { title: "Footprint Checkup" };
 
 export default async function CheckupPage() {
+  const t = await getTranslations("regwatch.discover");
   const supabase = await createClient();
   const {
     data: { user },
@@ -12,8 +14,8 @@ export default async function CheckupPage() {
   return (
     <RegwatchAppShell authed={!!user}>
       <RegwatchComingSoon
-        title="Footprint Checkup."
-        description="5–7 question public quiz that outputs a sample Feed (Watershed Regulatory Checkup pattern). Doubles as lead-gen and as the seed footprint for paid signup. Phase 1 (nice-to-have)."
+        title={t("checkupComingSoonTitle")}
+        description={t("checkupComingSoonDescription")}
       />
     </RegwatchAppShell>
   );

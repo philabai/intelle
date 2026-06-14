@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { AssetTreeNode, AssetTrafficLight } from "@/lib/regwatch/assets";
 import { AssetComplianceDrawer } from "./AssetComplianceDrawer";
@@ -36,12 +37,6 @@ const LIGHT_STYLE: Record<AssetTrafficLight, string> = {
   green: "bg-emerald-400 shadow-[0_0_7px_2px_rgba(52,211,153,0.6)]",
 };
 
-const LIGHT_TITLE: Record<AssetTrafficLight, string> = {
-  red: "Open compliance item — non-compliant or critical",
-  amber: "Open compliance item — in progress",
-  green: "All compliance items addressed",
-};
-
 export function AssetTreeView({
   roots,
   levelLabels,
@@ -50,19 +45,22 @@ export function AssetTreeView({
   complianceLightByAssetId,
   complianceDrawer = false,
 }: Props) {
+  const t = useTranslations("regwatch.comply");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   if (roots.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-6 text-center text-sm text-muted">
-        No assets configured yet. Use{" "}
-        <Link
-          href="/regwatch/assets/setup"
-          className="text-brand-teal hover:underline"
-        >
-          Setup
-        </Link>{" "}
-        to add a Site or import a starter pack.
+        {t.rich("treeEmpty", {
+          link: (c) => (
+            <Link
+              href="/regwatch/assets/setup"
+              className="text-brand-teal hover:underline"
+            >
+              {c}
+            </Link>
+          ),
+        })}
       </p>
     );
   }
@@ -106,6 +104,12 @@ function AssetRow({
   complianceLightByAssetId?: Record<string, AssetTrafficLight>;
   onSelect?: (assetId: string) => void;
 }) {
+  const t = useTranslations("regwatch.comply");
+  const LIGHT_TITLE: Record<AssetTrafficLight, string> = {
+    red: t("lightTitleRed"),
+    amber: t("lightTitleAmber"),
+    green: t("lightTitleGreen"),
+  };
   const [open, setOpen] = useState(node.level <= 3);
   const accent = LEVEL_ACCENT[node.level] ?? "text-foreground";
   const obligations = obligationCountByAssetId?.[node.id] ?? 0;
@@ -149,8 +153,8 @@ function AssetRow({
             type="button"
             onClick={() => setOpen((o) => !o)}
             className="grid h-4 w-4 place-items-center text-muted hover:text-foreground"
-            aria-label={open ? "Collapse" : "Expand"}
-            title={open ? "Collapse children" : "Expand children"}
+            aria-label={open ? t("collapse") : t("expand")}
+            title={open ? t("collapseChildren") : t("expandChildren")}
           >
             {open ? "▾" : "▸"}
           </button>

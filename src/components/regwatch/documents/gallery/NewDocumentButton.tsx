@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { TemplateGalleryDialog } from "./TemplateGalleryDialog";
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
  * the documents page; replaces the inline CreateDocumentForm from v1.
  */
 export function NewDocumentButton({ defaultFolderId }: Props) {
+  const t = useTranslations("regwatch.documents");
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -19,9 +21,9 @@ export function NewDocumentButton({ defaultFolderId }: Props) {
         type="button"
         onClick={() => setOpen(true)}
         className="inline-flex items-center gap-1 rounded-md bg-brand-blue px-3.5 py-2 text-sm font-medium text-white hover:bg-brand-blue/90"
-        title="Create a new document from a template or blank"
+        title={t("newDocumentTitle")}
       >
-        <span className="text-base leading-none">+</span> New
+        <span className="text-base leading-none">+</span> {t("new")}
       </button>
       <TemplateGalleryDialog
         open={open}

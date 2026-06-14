@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Modal } from "@/components/regwatch/Modal";
 
 interface Props {
@@ -32,6 +33,7 @@ export function ReasonForChangeDialog({
   onSubmit,
   primaryLabel,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   const [reason, setReason] = useState("");
 
   function handleSubmit(e: React.FormEvent) {
@@ -59,21 +61,20 @@ export function ReasonForChangeDialog({
         )}
         <label className="block">
           <span className="text-[10px] font-medium uppercase tracking-wider text-muted">
-            Reason for change <span className="text-red-400">*</span>
+            {t("reasonForChange")} <span className="text-red-400">*</span>
           </span>
           <textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={3}
-            placeholder="Specific, auditor-readable. Example: 'Reviewer requested clarification of §4.2 setpoint range per MoC-2026-014.'"
+            placeholder={t("reasonForChangeTransitionPlaceholder")}
             className="mt-1 w-full rounded-md border border-card-border bg-card-bg px-3 py-2 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
             required
             minLength={3}
             maxLength={2000}
           />
           <p className="mt-1 text-[10px] text-muted">
-            Recorded in the immutable audit trail alongside your name +
-            timestamp per 21 CFR Part 11 / EU Annex 11.
+            {t("reasonForChangeAuditHint")}
           </p>
         </label>
         {errorMessage && (
@@ -88,14 +89,14 @@ export function ReasonForChangeDialog({
             disabled={pending}
             className="rounded-md border border-card-border bg-background px-3 py-1.5 text-xs text-muted hover:text-foreground disabled:opacity-50"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="submit"
             disabled={pending || reason.trim().length < 3}
             className="rounded-md bg-brand-blue px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-blue/90 disabled:opacity-50"
           >
-            {pending ? "Working…" : (primaryLabel ?? "Continue")}
+            {pending ? t("working") : (primaryLabel ?? t("continue"))}
           </button>
         </div>
       </form>

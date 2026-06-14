@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import type { NotificationItem } from "@/lib/regwatch/alerts";
@@ -20,6 +21,7 @@ const SEVERITY_DOT: Record<Severity, string> = {
 };
 
 export function NotificationBellClient({ initialCount, items }: Props) {
+  const t = useTranslations("regwatch.common");
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(initialCount);
   const [, startTransition] = useTransition();
@@ -57,7 +59,7 @@ export function NotificationBellClient({ initialCount, items }: Props) {
     <div ref={wrapperRef} className="relative">
       <button
         type="button"
-        aria-label={`Notifications ${count > 0 ? `(${count} unseen)` : ""}`}
+        aria-label={t("bellAriaLabel", { count })}
         onClick={() => setOpen((v) => !v)}
         className="relative inline-flex items-center justify-center rounded-md border border-card-border bg-card-bg px-2 py-1.5 text-foreground hover:border-brand-teal"
       >
@@ -84,18 +86,18 @@ export function NotificationBellClient({ initialCount, items }: Props) {
       {open && (
         <div
           role="dialog"
-          aria-label="Notifications"
+          aria-label={t("notifications")}
           className="absolute end-0 z-50 mt-2 w-[360px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-card-border bg-background shadow-2xl"
         >
           <header className="flex items-center justify-between gap-2 border-b border-card-border bg-card-bg/60 px-4 py-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wider text-muted">
-                Notifications
+                {t("notifications")}
               </p>
               <p className="text-sm font-medium text-foreground">
                 {count === 0
-                  ? "You're all caught up."
-                  : `${count} unseen ${count === 1 ? "match" : "matches"}`}
+                  ? t("allCaughtUp")
+                  : t("unseenMatches", { count })}
               </p>
             </div>
             {count > 0 && (
@@ -104,7 +106,7 @@ export function NotificationBellClient({ initialCount, items }: Props) {
                 onClick={onMarkAll}
                 className="text-[11px] text-muted underline hover:text-foreground"
               >
-                Mark all seen
+                {t("markAllSeen")}
               </button>
             )}
           </header>
@@ -112,7 +114,7 @@ export function NotificationBellClient({ initialCount, items }: Props) {
           <ul className="max-h-[420px] divide-y divide-card-border overflow-y-auto">
             {items.length === 0 ? (
               <li className="px-4 py-6 text-center text-xs text-muted">
-                No unseen matches. Open the Feed for the full list.
+                {t("noUnseenMatches")}
               </li>
             ) : (
               items.map((n) => {
@@ -138,7 +140,7 @@ export function NotificationBellClient({ initialCount, items }: Props) {
                         <span aria-hidden>·</span>
                         <span>{n.jurisdictionCode}</span>
                         <span aria-hidden>·</span>
-                        <span>{ago} ago</span>
+                        <span>{t("timeAgo", { duration: ago })}</span>
                       </div>
                       <p className="mt-1 text-xs font-medium text-foreground">
                         {n.title}
@@ -159,14 +161,14 @@ export function NotificationBellClient({ initialCount, items }: Props) {
               onClick={() => setOpen(false)}
               className="text-xs text-brand-teal hover:underline"
             >
-              View all in My Feed →
+              {t("viewAllInFeed")}
             </Link>
             <Link
               href="/regwatch/settings/alerts"
               onClick={() => setOpen(false)}
               className="text-[11px] text-muted hover:text-foreground"
             >
-              Preferences
+              {t("preferences")}
             </Link>
           </footer>
         </div>

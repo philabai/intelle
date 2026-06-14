@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import {
   createAsset,
@@ -88,6 +89,7 @@ export function AssetTreeBuilder({
   level6Enabled,
   activeStarterPack,
 }: Props) {
+  const t = useTranslations("regwatch.comply");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -119,55 +121,55 @@ export function AssetTreeBuilder({
     level: 2 | 3 | 4 | 5 | 6,
   ) {
     const name = await askPrompt({
-      title: `New ${levelLabels[level]}`,
-      placeholder: `${levelLabels[level]} name`,
-      confirmLabel: "Add",
+      title: t("newLevel", { label: levelLabels[level] }),
+      placeholder: t("levelNamePlaceholder", { label: levelLabels[level] }),
+      confirmLabel: t("add"),
     });
     if (!name) return;
     startTransition(async () => {
       const res = await createAsset({ parentId, level, name });
       if (!res.ok) {
-        notify("error", res.error ?? "Could not create asset");
+        notify("error", res.error ?? t("errCouldNotCreateAsset"));
         return;
       }
-      notify("ok", `Added ${levelLabels[level]} "${name}"`);
+      notify("ok", t("addedLevel", { label: levelLabels[level], name }));
       refresh();
     });
   }
 
   async function handleRename(id: string, currentName: string) {
     const name = await askPrompt({
-      title: "Rename",
+      title: t("rename"),
       defaultValue: currentName,
-      confirmLabel: "Rename",
+      confirmLabel: t("rename"),
     });
     if (!name || name === currentName) return;
     startTransition(async () => {
       const res = await updateAsset({ id, name });
       if (!res.ok) {
-        notify("error", res.error ?? "Could not rename");
+        notify("error", res.error ?? t("errCouldNotRename"));
         return;
       }
-      notify("ok", "Renamed");
+      notify("ok", t("renamed"));
       refresh();
     });
   }
 
   async function handleArchive(id: string, name: string) {
     const ok = await askConfirm({
-      title: "Archive asset",
-      description: `Archive "${name}"? This hides it from the tree but preserves obligations attached to it.`,
-      confirmLabel: "Archive",
+      title: t("archiveAsset"),
+      description: t("archiveAssetConfirm", { name }),
+      confirmLabel: t("archive"),
       danger: true,
     });
     if (!ok) return;
     startTransition(async () => {
       const res = await archiveAsset({ id });
       if (!res.ok) {
-        notify("error", res.error ?? "Could not archive");
+        notify("error", res.error ?? t("errCouldNotArchive"));
         return;
       }
-      notify("ok", "Archived");
+      notify("ok", t("archived"));
       if (selectedId === id) setSelectedId(null);
       refresh();
     });
@@ -178,14 +180,17 @@ export function AssetTreeBuilder({
       .filter((t) => t.level === 2)
       .map((s) => ({ id: s.id, name: s.name }));
     if (sites.length === 0) {
-      notify("error", `Add at least one ${levelLabels[2]} first`);
+      notify("error", t("seedNeedLevel", { label: levelLabels[2] }));
       return;
     }
     const choice = await askPrompt({
-      title: `Seed "${starterPack}"`,
-      description: `Type a comma-separated list of ${levelLabels[2]} names to seed under. Available: ${sites.map((s) => s.name).join(", ")}`,
+      title: t("seedTitle", { pack: starterPack }),
+      description: t("seedDescription", {
+        label: levelLabels[2],
+        available: sites.map((s) => s.name).join(", "),
+      }),
       defaultValue: sites.map((s) => s.name).join(", "),
-      confirmLabel: "Seed",
+      confirmLabel: t("seed"),
       multiline: true,
     });
     if (!choice) return;
@@ -197,18 +202,18 @@ export function AssetTreeBuilder({
       .filter((s) => names.includes(s.name.toLowerCase()))
       .map((s) => s.id);
     if (siteIds.length === 0) {
-      notify("error", `No matching ${levelLabels[2]}`);
+      notify("error", t("noMatchingLevel", { label: levelLabels[2] }));
       return;
     }
     startTransition(async () => {
       const res = await seedStarterPack({ starterPack, siteIds });
       if (!res.ok) {
-        notify("error", res.error ?? "Could not seed starter pack");
+        notify("error", res.error ?? t("errCouldNotSeed"));
         return;
       }
       notify(
         "ok",
-        `Seeded ${starterPack} under ${siteIds.length} ${levelLabels[2]}(s)`,
+        t("seeded", { pack: starterPack, count: siteIds.length, label: levelLabels[2] }),
       );
       refresh();
     });
@@ -218,21 +223,20 @@ export function AssetTreeBuilder({
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
       <div>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold text-foreground">Asset tree</h2>
+          <h2 className="text-sm font-semibold text-foreground">{t("assetTree")}</h2>
           <button
             type="button"
             onClick={() => handleAdd(null, 2)}
             disabled={pending}
-            title={`Add a new top-level ${levelLabels[2]}`}
+            title={t("addTopLevelTooltip", { label: levelLabels[2] })}
             className="rounded-md bg-brand-blue px-3 py-1.5 text-xs text-white hover:bg-brand-blue/90 disabled:opacity-50"
           >
-            + Add {levelLabels[2]}
+            {t("addLabel", { label: levelLabels[2] })}
           </button>
         </div>
         {tree.length === 0 ? (
           <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-6 text-center text-sm text-muted">
-            No assets yet. Start with a {levelLabels[2]} above, or seed an
-            industry starter pack from the right rail.
+            {t("builderEmpty", { label: levelLabels[2] })}
           </p>
         ) : (
           <ul className="space-y-1">
@@ -264,11 +268,10 @@ export function AssetTreeBuilder({
       <aside className="space-y-4">
         <section className="rounded-xl border border-card-border bg-card-bg/40 p-4">
           <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
-            Starter packs
+            {t("starterPacks")}
           </h2>
           <p className="mt-1 text-xs text-muted">
-            Seed L3 + L4 nodes under one or more {levelLabels[2]}s. Pick the
-            taxonomy closest to your operations.
+            {t("starterPacksHint", { label: levelLabels[2] })}
           </p>
           <ul className="mt-3 space-y-2">
             {STARTER_PACK_LIST.map((p) => (
@@ -296,13 +299,13 @@ export function AssetTreeBuilder({
         {selected && (
           <section className="rounded-xl border border-card-border bg-card-bg/40 p-4">
             <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
-              Selected
+              {t("selected")}
             </h2>
             <p className="mt-1 text-sm font-medium text-foreground">
               {selected.name}
             </p>
             <p className="mt-0.5 text-[11px] text-muted">
-              {levelLabels[selected.level]} · {selected.code ?? "no code"}
+              {levelLabels[selected.level]} · {selected.code ?? t("noCode")}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <button
@@ -311,7 +314,7 @@ export function AssetTreeBuilder({
                 disabled={pending}
                 className="rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-foreground hover:border-brand-blue disabled:opacity-50"
               >
-                Rename
+                {t("rename")}
               </button>
               <button
                 type="button"
@@ -319,7 +322,7 @@ export function AssetTreeBuilder({
                 disabled={pending}
                 className="rounded-md border border-red-500/40 bg-transparent px-3 py-1.5 text-xs text-red-300 hover:border-red-500 hover:bg-red-500/10 disabled:opacity-50"
               >
-                Archive
+                {t("archive")}
               </button>
             </div>
           </section>
@@ -352,6 +355,7 @@ function BuilderRow({
   onArchive: (id: string, name: string) => void;
   pending: boolean;
 }) {
+  const t = useTranslations("regwatch.comply");
   // Default-expand every level up to Asset Class (L4). Previously we only
   // expanded through Areas (L3), which meant that the moment a reviewer
   // added an Asset under an Asset Class the new child was created in the
@@ -376,8 +380,8 @@ function BuilderRow({
             type="button"
             onClick={() => setOpen((o) => !o)}
             className="grid h-4 w-4 place-items-center text-muted hover:text-foreground"
-            aria-label={open ? "Collapse" : "Expand"}
-            title={open ? "Collapse children" : "Expand children"}
+            aria-label={open ? t("collapse") : t("expand")}
+            title={open ? t("collapseChildren") : t("expandChildren")}
           >
             {open ? "▾" : "▸"}
           </button>
@@ -405,9 +409,9 @@ function BuilderRow({
             onClick={() => onAdd(node.id, nextLevel)}
             disabled={pending}
             className="rounded-md border border-card-border bg-card-bg px-2 py-0.5 text-[10px] text-foreground hover:border-brand-blue disabled:opacity-50"
-            title={`Add a new ${levelLabels[nextLevel]} inside ${node.name}`}
+            title={t("addChildTooltip", { label: levelLabels[nextLevel], parent: node.name })}
           >
-            + Add {levelLabels[nextLevel]}
+            {t("addLabel", { label: levelLabels[nextLevel] })}
           </button>
         )}
         <button
@@ -415,8 +419,8 @@ function BuilderRow({
           onClick={() => onRename(node.id, node.name)}
           disabled={pending}
           className="text-[10px] text-muted hover:text-foreground disabled:opacity-50"
-          aria-label={`Rename ${node.name}`}
-          title={`Rename "${node.name}"`}
+          aria-label={t("renameNode", { name: node.name })}
+          title={t("renameNodeTooltip", { name: node.name })}
         >
           ✎
         </button>
@@ -425,8 +429,8 @@ function BuilderRow({
           onClick={() => onArchive(node.id, node.name)}
           disabled={pending}
           className="text-[10px] text-muted hover:text-red-400 disabled:opacity-50"
-          aria-label={`Archive ${node.name}`}
-          title={`Archive "${node.name}" — hides it from the tree but preserves obligations attached to it`}
+          aria-label={t("archiveNode", { name: node.name })}
+          title={t("archiveNodeTooltip", { name: node.name })}
         >
           ⊘
         </button>

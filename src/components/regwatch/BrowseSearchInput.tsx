@@ -1,10 +1,12 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { useState, useTransition } from "react";
 
 export function BrowseSearchInput() {
+  const t = useTranslations("regwatch.discover");
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -27,14 +29,14 @@ export function BrowseSearchInput() {
         type="search"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Search regulations — try 'methane', '40 CFR 261', 'CBAM', 'PFAS'…"
+        placeholder={t("searchPlaceholder")}
         className="flex-1 rounded-md border border-card-border bg-card-bg px-3 py-2 text-sm text-foreground placeholder:text-muted/70 focus:border-brand-blue focus:outline-none"
       />
       <button
         type="submit"
         className="rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90"
       >
-        Search
+        {t("searchButton")}
       </button>
     </form>
   );

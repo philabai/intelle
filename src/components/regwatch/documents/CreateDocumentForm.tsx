@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import {
   createDocument,
@@ -42,6 +43,7 @@ export function CreateDocumentForm({
 }: {
   defaultFolderId?: string | null;
 } = {}) {
+  const t = useTranslations("regwatch.documents");
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [title, setTitle] = useState("");
@@ -82,7 +84,7 @@ export function CreateDocumentForm({
           folderId: defaultFolderId ?? null,
         });
         if (!res.ok || !res.id) {
-          setError(res.error ?? "Could not create document from template");
+          setError(res.error ?? t("errorCouldNotCreateFromTemplate"));
           return;
         }
         createdId = res.id;
@@ -97,7 +99,7 @@ export function CreateDocumentForm({
           folderId: defaultFolderId ?? null,
         });
         if (!createRes.ok || !createRes.id) {
-          setError(createRes.error ?? "Could not create document");
+          setError(createRes.error ?? t("errorCouldNotCreate"));
           return;
         }
         createdId = createRes.id;
@@ -113,7 +115,9 @@ export function CreateDocumentForm({
           // Don't lose the document — they can retry upload from the detail
           // page. Surface a friendly warning + still navigate.
           setError(
-            `Document created, but the file upload failed: ${upRes.error ?? "unknown error"}. You can retry from the document detail page.`,
+            t("errorUploadFailed", {
+              error: upRes.error ?? t("unknownError"),
+            }),
           );
           router.push(`/regwatch/documents/${createdId}`);
           return;
@@ -147,10 +151,10 @@ export function CreateDocumentForm({
     <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-2">
       <label
         className="flex flex-col gap-1 text-sm sm:col-span-2"
-        title="Pick a built-in template to pre-fill the document body with industry-standard sections, or start blank and author from scratch."
+        title={t("templateFieldTitle")}
       >
         <span className="text-xs font-medium uppercase tracking-wider text-muted">
-          Template
+          {t("templateLabel")}
         </span>
         <select
           value={templateKey}
@@ -158,7 +162,7 @@ export function CreateDocumentForm({
           className="rounded-md border border-card-border bg-card-bg px-3 py-2 text-sm text-foreground focus:border-brand-blue focus:outline-none"
         >
           <option value="__blank__">
-            Blank — no template (you author the body from scratch)
+            {t("blankOption")}
           </option>
           {Array.from(templatesByFamily.entries()).map(([family, list]) => (
             <optgroup key={family} label={TEMPLATE_FAMILY_LABEL[family]}>
@@ -172,23 +176,22 @@ export function CreateDocumentForm({
         </select>
         {isTemplatePath && (
           <span className="text-[10px] text-muted">
-            The body will be pre-populated with the template&apos;s standard
-            section structure. You&apos;ll land in the editor to start writing.
+            {t("templatePrepopulateHint")}
           </span>
         )}
       </label>
       <label
         className="flex flex-col gap-1 text-sm sm:col-span-2"
-        title="Display name shown on the document list and detail page. Required."
+        title={t("titleFieldTitle")}
       >
         <span className="text-xs font-medium uppercase tracking-wider text-muted">
-          Title
+          {t("titleLabel")}
         </span>
         <input
           required
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Lock-out/Tag-out SOP"
+          placeholder={t("titlePlaceholder")}
           className="rounded-md border border-card-border bg-card-bg px-3 py-2 text-sm text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
         />
       </label>
@@ -196,12 +199,12 @@ export function CreateDocumentForm({
         className={`flex flex-col gap-1 text-sm ${isTemplatePath ? "opacity-50" : ""}`}
         title={
           isTemplatePath
-            ? "Kind is determined by the chosen template."
-            : "What kind of document this is. Drives icon + filter chips."
+            ? t("kindFieldTitleTemplate")
+            : t("kindFieldTitle")
         }
       >
         <span className="text-xs font-medium uppercase tracking-wider text-muted">
-          Kind
+          {t("kindLabel")}
         </span>
         <select
           value={docKind}
@@ -218,10 +221,10 @@ export function CreateDocumentForm({
       </label>
       <label
         className="flex flex-col gap-1 text-sm"
-        title="Your organisation's reference number for this document — e.g. SOP-EHS-014."
+        title={t("internalCodeFieldTitle")}
       >
         <span className="text-xs font-medium uppercase tracking-wider text-muted">
-          Internal code
+          {t("internalCodeLabel")}
         </span>
         <input
           value={internalCode}
@@ -232,10 +235,10 @@ export function CreateDocumentForm({
       </label>
       <label
         className="flex flex-col gap-1 text-sm"
-        title="Current version number / revision identifier."
+        title={t("versionFieldTitle")}
       >
         <span className="text-xs font-medium uppercase tracking-wider text-muted">
-          Version
+          {t("versionLabel")}
         </span>
         <input
           value={version}
@@ -246,10 +249,10 @@ export function CreateDocumentForm({
       </label>
       <label
         className="flex flex-col gap-1 text-sm"
-        title="Role that owns this document (e.g. EHS Manager). Used as the contact + future role-based reviewer assignment."
+        title={t("ownerRoleFieldTitle")}
       >
         <span className="text-xs font-medium uppercase tracking-wider text-muted">
-          Owner role
+          {t("ownerRoleLabel")}
         </span>
         <input
           value={ownerRole}
@@ -262,16 +265,16 @@ export function CreateDocumentForm({
       <div className="sm:col-span-2">
         <span
           className="text-xs font-medium uppercase tracking-wider text-muted"
-          title="Optional: attach the actual file now. You can also skip and upload from the detail page later."
+          title={t("fileFieldTitle")}
         >
-          File (optional)
+          {t("fileOptionalLabel")}
         </span>
         <div className="mt-1 flex flex-wrap items-center gap-2">
           <label
             className="cursor-pointer rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-foreground hover:border-brand-blue"
-            title="Pick a file from your computer — PDF / DOCX / TXT or similar. Max 50MB."
+            title={t("chooseFileTitle")}
           >
-            {file ? "Replace file" : "Choose file"}
+            {file ? t("replaceFile") : t("chooseFile")}
             <input
               ref={fileInputRef}
               type="file"
@@ -292,7 +295,7 @@ export function CreateDocumentForm({
                   if (fileInputRef.current) fileInputRef.current.value = "";
                 }}
                 className="ms-2 text-muted hover:text-red-300"
-                title="Remove the picked file (the document metadata will still be saved)"
+                title={t("removePickedFileTitle")}
               >
                 ✕
               </button>
@@ -308,17 +311,17 @@ export function CreateDocumentForm({
           className="rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90 disabled:cursor-not-allowed disabled:opacity-50"
           title={
             file
-              ? "Create the document metadata and upload the picked file in one step"
-              : "Create the document metadata. You can attach a file later from the detail page."
+              ? t("submitTitleWithFile")
+              : t("submitTitleNoFile")
           }
         >
           {pending
             ? file
-              ? "Creating & uploading…"
-              : "Creating…"
+              ? t("creatingAndUploading")
+              : t("creating")
             : file
-              ? "Create & upload"
-              : "Create document"}
+              ? t("createAndUpload")
+              : t("createDocument")}
         </button>
         {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
       </div>

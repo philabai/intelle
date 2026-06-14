@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
@@ -38,6 +39,7 @@ interface Props {
 export const dynamic = "force-dynamic";
 
 export default async function DocumentDetailPage({ params }: Props) {
+  const t = useTranslations("regwatch.documents");
   const { id } = await params;
   const supabase = await createClient();
   const {
@@ -139,7 +141,7 @@ export default async function DocumentDetailPage({ params }: Props) {
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/documents" className="hover:text-foreground">
-            Company documents
+            {t("breadcrumbDocuments")}
           </Link>
           {folderBreadcrumb.map((f) => (
             <span key={f.id}>
@@ -180,10 +182,10 @@ export default async function DocumentDetailPage({ params }: Props) {
             )}
             {doc.version && <span>· {doc.version}</span>}
             <span>
-              · Owner: {doc.ownerName ?? doc.ownerEmail ?? "—"}
+              · {t("ownerLabel")}: {doc.ownerName ?? doc.ownerEmail ?? "—"}
               {doc.ownerRole ? ` (${doc.ownerRole})` : ""}
             </span>
-            <span>· Status: {doc.status}</span>
+            <span>· {t("statusLabel")}: {doc.status}</span>
           </div>
         </header>
 
@@ -247,7 +249,7 @@ export default async function DocumentDetailPage({ params }: Props) {
             {doc.links.some((l) => l.supersededAt) && (
               <div className="rounded-xl border border-card-border bg-card-bg/20 p-5">
                 <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
-                  Superseded links
+                  {t("supersededLinks")}
                 </h2>
                 <ul className="space-y-2 text-xs text-muted">
                   {doc.links
@@ -255,7 +257,7 @@ export default async function DocumentDetailPage({ params }: Props) {
                     .map((l) => (
                       <li key={l.id}>
                         <span className="font-mono">{l.regulationCitation}</span>{" "}
-                        — superseded {l.supersededAt}
+                        — {t("supersededOn", { date: l.supersededAt ?? "" })}
                       </li>
                     ))}
                 </ul>
@@ -266,7 +268,7 @@ export default async function DocumentDetailPage({ params }: Props) {
           <aside className="space-y-4">
             <section className="rounded-xl border border-card-border bg-card-bg/40 p-4">
               <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
-                File
+                {t("fileSection")}
               </h2>
               {doc.filePath ? (
                 <div className="space-y-2 text-xs text-foreground">
@@ -277,12 +279,11 @@ export default async function DocumentDetailPage({ params }: Props) {
                     </p>
                   )}
                   <p className="text-[10px] text-muted">
-                    Downloads use 60-second signed URLs; admin must use the
-                    download action from the obligations detail page.
+                    {t("fileDownloadHint")}
                   </p>
                 </div>
               ) : (
-                <p className="text-xs text-muted">No file uploaded yet.</p>
+                <p className="text-xs text-muted">{t("noFileUploaded")}</p>
               )}
               {canEdit && (
                 <div className="mt-3">
@@ -296,46 +297,46 @@ export default async function DocumentDetailPage({ params }: Props) {
 
             <section className="rounded-xl border border-card-border bg-card-bg/40 p-4">
               <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
-                Folder
+                {t("folderSection")}
               </h2>
               <div className="flex items-center justify-between gap-2">
                 <p className="min-w-0 truncate text-xs text-foreground">
-                  {currentFolder ? currentFolder.name : "Unfiled"}
+                  {currentFolder ? currentFolder.name : t("unfiled")}
                 </p>
                 <MoveDocumentMenu
                   documentId={doc.id}
                   currentFolderId={doc.folderId}
                   folderRoots={folderTree}
-                  label="Move"
+                  label={t("moveShort")}
                 />
               </div>
             </section>
 
             <section className="rounded-xl border border-card-border bg-card-bg/40 p-4">
               <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
-                Lifecycle
+                {t("lifecycleSection")}
               </h2>
               <dl className="space-y-1 text-[11px]">
                 <div className="flex justify-between">
-                  <dt className="text-muted">Effective</dt>
+                  <dt className="text-muted">{t("lifecycleEffective")}</dt>
                   <dd className="text-foreground">
                     {doc.effectiveDate ?? "—"}
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted">Next review</dt>
+                  <dt className="text-muted">{t("lifecycleNextReview")}</dt>
                   <dd className="text-foreground">
                     {doc.nextReviewDate ?? "—"}
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted">Created</dt>
+                  <dt className="text-muted">{t("lifecycleCreated")}</dt>
                   <dd className="text-foreground">
                     {new Date(doc.createdAt).toLocaleDateString()}
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted">Updated</dt>
+                  <dt className="text-muted">{t("lifecycleUpdated")}</dt>
                   <dd className="text-foreground">
                     {new Date(doc.updatedAt).toLocaleDateString()}
                   </dd>

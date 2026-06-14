@@ -1,6 +1,7 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "@/i18n/navigation";
@@ -51,6 +52,7 @@ export function DocEditor({
   initialUpdatedAt,
   currentVersion,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   const router = useRouter();
   const [saveState, setSaveState] = useState<SaveState>({ type: "idle" });
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -114,7 +116,7 @@ export function DocEditor({
       }
       setSaveState({
         type: "error",
-        message: res.error ?? "Autosave failed",
+        message: res.error ?? t("autosaveFailed"),
       });
       return;
     }
@@ -159,13 +161,11 @@ export function DocEditor({
     setCommitPending(false);
     if (!res.ok) {
       if (res.conflict) {
-        setCommitError(
-          "Someone else saved a newer version. Reload the page to merge their changes.",
-        );
+        setCommitError(t("conflictReloadMerge"));
         setSaveState({ type: "conflict" });
         return;
       }
-      setCommitError(res.error ?? "Could not save version");
+      setCommitError(res.error ?? t("couldNotSaveVersion"));
       return;
     }
     setSaveDialogOpen(false);
@@ -239,7 +239,7 @@ export function DocEditor({
           <Link
             href={`/regwatch/documents/${documentId}`}
             className="rounded-md border border-card-border bg-background px-2 py-1 text-[11px] text-muted hover:border-brand-blue hover:text-foreground"
-            title="Back to document detail"
+            title={t("backToDetail")}
           >
             ←
           </Link>
@@ -257,35 +257,35 @@ export function DocEditor({
           <button
             type="button"
             onClick={() => setOutlineOpen((v) => !v)}
-            title={outlineOpen ? "Hide outline" : "Show outline"}
+            title={outlineOpen ? t("hideOutline") : t("showOutline")}
             className={`rounded-md border px-3 py-1.5 text-xs ${
               outlineOpen
                 ? "border-brand-teal bg-brand-teal/15 text-brand-teal"
                 : "border-card-border bg-background text-foreground/90 hover:border-brand-teal hover:text-brand-teal"
             }`}
           >
-            📑 Outline
+            📑 {t("outline")}
           </button>
           <button
             type="button"
             onClick={() => setReferenceOpen((v) => !v)}
-            title="Open a regulation alongside the editor"
+            title={t("referenceButtonTitle")}
             className={`rounded-md border px-3 py-1.5 text-xs ${
               referenceOpen
                 ? "border-brand-teal bg-brand-teal/15 text-brand-teal"
                 : "border-card-border bg-background text-foreground/90 hover:border-brand-teal hover:text-brand-teal"
             }`}
           >
-            📖 Reference
+            📖 {t("reference")}
           </button>
           <button
             type="button"
             onClick={() => setTemplateDialogOpen(true)}
             disabled={!editor}
-            title="Drop a curated section structure into this document"
+            title={t("applyTemplateButtonTitle")}
             className="rounded-md border border-card-border bg-background px-3 py-1.5 text-xs text-foreground/90 hover:border-brand-teal hover:text-brand-teal disabled:opacity-50"
           >
-            ➕ Apply template
+            ➕ {t("applyTemplate")}
           </button>
           <ExportMenu
             documentId={documentId}
@@ -306,23 +306,24 @@ export function DocEditor({
             disabled={!editor || saveState.type === "conflict"}
             className="rounded-md bg-brand-blue px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-blue/90 disabled:opacity-50"
           >
-            Save version
+            {t("saveVersion")}
           </button>
         </div>
       </header>
 
       {saveState.type === "conflict" && (
         <div className="border-b border-amber-500/40 bg-amber-500/10 px-4 py-2 text-[11px] text-amber-200">
-          Another save landed on this document. To avoid overwriting their
-          changes, reload the page —{" "}
-          <button
-            type="button"
-            onClick={() => router.refresh()}
-            className="underline"
-          >
-            reload now
-          </button>
-          .
+          {t.rich("conflictBanner", {
+            reload: (chunks) => (
+              <button
+                type="button"
+                onClick={() => router.refresh()}
+                className="underline"
+              >
+                {chunks}
+              </button>
+            ),
+          })}
         </div>
       )}
 
@@ -337,7 +338,7 @@ export function DocEditor({
               type="button"
               onClick={zoomOut}
               disabled={zoom <= ZOOM_MIN}
-              title="Zoom out"
+              title={t("zoomOut")}
               className="px-2 py-1 text-xs text-foreground/90 hover:bg-card-bg disabled:cursor-not-allowed disabled:opacity-50"
             >
               −
@@ -345,7 +346,7 @@ export function DocEditor({
             <button
               type="button"
               onClick={() => setZoom(1)}
-              title="Reset zoom to 100%"
+              title={t("resetZoom")}
               className="border-x border-card-border px-2 py-1 font-mono text-[11px] text-foreground/90 hover:bg-card-bg"
             >
               {zoomPct}%
@@ -354,7 +355,7 @@ export function DocEditor({
               type="button"
               onClick={zoomIn}
               disabled={zoom >= ZOOM_MAX}
-              title="Zoom in"
+              title={t("zoomIn")}
               className="px-2 py-1 text-xs text-foreground/90 hover:bg-card-bg disabled:cursor-not-allowed disabled:opacity-50"
             >
               +
@@ -386,10 +387,10 @@ export function DocEditor({
                 type="button"
                 onClick={appendNewPage}
                 disabled={!editor}
-                title="Append a new blank page at the end of the document. To insert a page between existing pages, click an existing page break and press the ↵ Page break button."
+                title={t("newPageTitle")}
                 className="rounded-md border border-dashed border-card-border bg-card-bg/30 px-4 py-2 text-xs text-muted hover:border-brand-teal hover:bg-brand-teal/10 hover:text-brand-teal disabled:opacity-50"
               >
-                + New page
+                {t("newPage")}
               </button>
             </div>
           </div>
@@ -424,24 +425,27 @@ function SaveStateBadge({
   state: SaveState;
   version: SemVer | null;
 }) {
+  const t = useTranslations("regwatch.documents");
   const versionLabel = version ? formatVersion(version) : "draft";
   let label: string;
   let tone: string;
   switch (state.type) {
     case "idle":
-      label = version ? `Current: ${versionLabel}` : "Unsaved draft";
+      label = version
+        ? t("currentVersion", { version: versionLabel })
+        : t("unsavedDraft");
       tone = "text-muted";
       break;
     case "saving":
-      label = "Autosaving…";
+      label = t("autosaving");
       tone = "text-brand-blue";
       break;
     case "saved":
-      label = "Autosaved";
+      label = t("autosaved");
       tone = "text-brand-teal";
       break;
     case "conflict":
-      label = "Conflict — reload";
+      label = t("conflictReload");
       tone = "text-amber-300";
       break;
     case "error":

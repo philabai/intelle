@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { RegwatchAppShell, RegwatchComingSoon } from "@/components/regwatch/AppShell";
 
@@ -6,6 +7,7 @@ interface Props {
 }
 
 export default async function RegulationChangesPage({ params }: Props) {
+  const t = await getTranslations("regwatch.discover");
   const { jurisdiction, slug } = await params;
   const supabase = await createClient();
   const {
@@ -15,8 +17,11 @@ export default async function RegulationChangesPage({ params }: Props) {
   return (
     <RegwatchAppShell authed={!!user}>
       <RegwatchComingSoon
-        title={`Changes — ${jurisdiction.toUpperCase()} · ${slug}`}
-        description="Lifecycle timeline + amendment history (Enhesa Forecaster + LexisNexis Horizon Scanning pattern). Phase 1."
+        title={t("changesComingSoonTitle", {
+          jurisdiction: jurisdiction.toUpperCase(),
+          slug,
+        })}
+        description={t("changesComingSoonDescription")}
       />
     </RegwatchAppShell>
   );

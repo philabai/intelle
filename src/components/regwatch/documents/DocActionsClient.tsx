@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { DocSlideOver } from "./DocSlideOver";
 import { ReviewPanel } from "./review/ReviewPanel";
@@ -121,6 +122,7 @@ const REVIEW_TONE: Record<InternalDocumentReviewState, string> = {
 };
 
 export function DocActionsClient(props: Props) {
+  const t = useTranslations("regwatch.documents");
   const [drawer, setDrawer] = useState<DrawerKey>(null);
   const [zoom, setZoom] = useState(1);
 
@@ -159,10 +161,10 @@ export function DocActionsClient(props: Props) {
             type="button"
             onClick={() => setDrawer("workflow")}
             className={secondaryBtn(drawer === "workflow")}
-            title="Open the review workflow drawer — state, assignments, signatures, audit trail"
+            title={t("workflowButtonTitle")}
           >
             <span>📋</span>
-            <span>Workflow</span>
+            <span>{t("workflow")}</span>
             <span
               className={`rounded-full border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${REVIEW_TONE[props.reviewState]}`}
             >
@@ -174,10 +176,10 @@ export function DocActionsClient(props: Props) {
             type="button"
             onClick={() => setDrawer("regulations")}
             className={secondaryBtn(drawer === "regulations")}
-            title="Doc-level regulation links — 'this doc is in scope of these regulations'"
+            title={t("linkedRegulationsButtonTitle")}
           >
             <span>🔗</span>
-            <span>Linked regulations</span>
+            <span>{t("linkedRegulations")}</span>
             {docLevelRegCount > 0 && (
               <span className="rounded-full bg-brand-teal/15 px-1.5 py-0.5 font-mono text-[10px] text-brand-teal">
                 {docLevelRegCount}
@@ -189,10 +191,10 @@ export function DocActionsClient(props: Props) {
             type="button"
             onClick={() => setDrawer("clauses")}
             className={secondaryBtn(drawer === "clauses")}
-            title="Clause linking — section ↔ clause traceability matrix"
+            title={t("clauseLinkingButtonTitle")}
           >
             <span>⛓</span>
-            <span>Clause linking</span>
+            <span>{t("clauseLinking")}</span>
             {crosswalkCount > 0 && (
               <span className="rounded-full bg-brand-teal/15 px-1.5 py-0.5 font-mono text-[10px] text-brand-teal">
                 {crosswalkCount}
@@ -204,10 +206,10 @@ export function DocActionsClient(props: Props) {
             type="button"
             onClick={() => setDrawer("assets")}
             className={secondaryBtn(drawer === "assets")}
-            title="Pin this doc to sites / areas / asset classes / assets in the hierarchy"
+            title={t("linkedAssetsButtonTitle")}
           >
             <span>📍</span>
-            <span>Linked assets</span>
+            <span>{t("linkedAssets")}</span>
             {assetCount > 0 && (
               <span className="rounded-full bg-brand-blue/15 px-1.5 py-0.5 font-mono text-[10px] text-brand-blue">
                 {assetCount}
@@ -219,10 +221,10 @@ export function DocActionsClient(props: Props) {
             type="button"
             onClick={() => setDrawer("comments")}
             className={secondaryBtn(drawer === "comments")}
-            title="Review comments — anchored threads, reply chains, resolve when addressed"
+            title={t("commentsButtonTitle")}
           >
             <span>💬</span>
-            <span>Comments</span>
+            <span>{t("comments")}</span>
             {props.openCommentCount > 0 && (
               <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 font-mono text-[10px] text-amber-300">
                 {props.openCommentCount}
@@ -235,13 +237,13 @@ export function DocActionsClient(props: Props) {
             {props.hasBody && (
               <div
                 className={`${BTN_BASE} ${BTN_SECONDARY} gap-0 overflow-hidden p-0`}
-                title="Zoom in / out on the preview"
+                title={t("zoomPreviewTitle")}
               >
                 <button
                   type="button"
                   onClick={zoomOut}
                   disabled={zoom <= ZOOM_MIN}
-                  title="Zoom out"
+                  title={t("zoomOut")}
                   className="px-2 py-1.5 hover:bg-card-bg disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   −
@@ -249,7 +251,7 @@ export function DocActionsClient(props: Props) {
                 <button
                   type="button"
                   onClick={() => setZoom(1)}
-                  title="Reset zoom to 100%"
+                  title={t("resetZoom")}
                   className="border-x border-card-border px-2 py-1.5 font-mono text-[11px] hover:bg-card-bg"
                 >
                   {zoomPct}%
@@ -258,7 +260,7 @@ export function DocActionsClient(props: Props) {
                   type="button"
                   onClick={zoomIn}
                   disabled={zoom >= ZOOM_MAX}
-                  title="Zoom in"
+                  title={t("zoomIn")}
                   className="px-2 py-1.5 hover:bg-card-bg disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   +
@@ -269,10 +271,10 @@ export function DocActionsClient(props: Props) {
             <Link
               href={props.composeHref}
               className={`${BTN_BASE} ${BTN_SECONDARY}`}
-              title="Open the side-by-side workspace — regulation on the left, editor on the right. Click 'Cite this clause' to insert a pinned citation pill."
+              title={t("citationsButtonTitle")}
             >
               <span>🔗</span>
-              <span>Citations</span>
+              <span>{t("citations")}</span>
             </Link>
 
             {props.isOrgAdmin && (
@@ -281,12 +283,12 @@ export function DocActionsClient(props: Props) {
                 className={`${BTN_BASE} ${BTN_PRIMARY}`}
                 title={
                   props.hasBody
-                    ? "Open the single-pane editor"
-                    : "Start writing — opens the editor"
+                    ? t("editButtonTitle")
+                    : t("startWritingButtonTitle")
                 }
               >
                 <span>{props.hasBody ? "✎" : "✎"}</span>
-                <span>{props.hasBody ? "Edit" : "Start writing"}</span>
+                <span>{props.hasBody ? t("edit") : t("startWriting")}</span>
               </Link>
             )}
           </div>
@@ -309,8 +311,10 @@ export function DocActionsClient(props: Props) {
       <DocSlideOver
         open={drawer === "workflow"}
         onClose={close}
-        title="Review workflow"
-        subtitle={`Current state: ${props.reviewState.replace("_", " ")}`}
+        title={t("reviewWorkflow")}
+        subtitle={t("currentStateSubtitle", {
+          state: props.reviewState.replace("_", " "),
+        })}
       >
         <ReviewPanel
           docId={props.documentId}
@@ -331,8 +335,8 @@ export function DocActionsClient(props: Props) {
       <DocSlideOver
         open={drawer === "regulations"}
         onClose={close}
-        title="Linked regulations"
-        subtitle="Doc-level scope — this document is in scope of these regulations."
+        title={t("linkedRegulations")}
+        subtitle={t("linkedRegulationsSubtitle")}
       >
         <LinkRegulationForm
           documentId={props.documentId}
@@ -343,20 +347,21 @@ export function DocActionsClient(props: Props) {
       <DocSlideOver
         open={drawer === "clauses"}
         onClose={close}
-        title="Clause linking"
-        subtitle="Section-to-clause traceability matrix — the depth view auditors look for."
+        title={t("clauseLinking")}
+        subtitle={t("clauseLinkingSubtitle")}
       >
         <div className="mb-3 flex items-center justify-between gap-2">
           <p className="text-xs text-muted">
-            Map specific sections of <em>your</em> document to specific clauses
-            of external regulations.
+            {t.rich("clauseLinkingDescription", {
+              em: (chunks) => <em>{chunks}</em>,
+            })}
           </p>
           <Link
             href={`/regwatch/documents/${props.documentId}/crosswalk`}
             className={`${BTN_BASE} ${BTN_SECONDARY} shrink-0`}
-            title="Open the side-by-side clause mapping workspace"
+            title={t("mappingWorkspaceTitle")}
           >
-            Mapping workspace →
+            {t("mappingWorkspace")}
           </Link>
         </div>
         <ClauseCrosswalkPanel existingLinks={activeRegLinks} />
@@ -365,7 +370,7 @@ export function DocActionsClient(props: Props) {
       <DocSlideOver
         open={drawer === "assets"}
         onClose={close}
-        title="Linked assets"
+        title={t("linkedAssets")}
       >
         <LinkAssetsPanel
           documentId={props.documentId}
@@ -379,8 +384,8 @@ export function DocActionsClient(props: Props) {
       <DocSlideOver
         open={drawer === "comments"}
         onClose={close}
-        title="Comments"
-        subtitle="Review threads anchored to paragraphs or clauses. Bodies are immutable once posted; resolution is mutable."
+        title={t("comments")}
+        subtitle={t("commentsSubtitle")}
       >
         <CommentSidebar
           docId={props.documentId}

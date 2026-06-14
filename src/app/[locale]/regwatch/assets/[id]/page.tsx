@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
@@ -44,6 +45,7 @@ const REVIEW_BG: Record<string, string> = {
 };
 
 export default async function AssetDetailPage({ params }: Props) {
+  const t = useTranslations("regwatch.comply");
   const { id } = await params;
   const supabase = await createClient();
   const {
@@ -84,7 +86,7 @@ export default async function AssetDetailPage({ params }: Props) {
     3: config.level3Label,
     4: config.level4Label,
     5: config.level5Label,
-    6: config.level6Label ?? "Component",
+    6: config.level6Label ?? t("levelComponentFallback"),
   };
   const levelLabel = labels[asset.level as 2 | 3 | 4 | 5 | 6];
 
@@ -93,7 +95,7 @@ export default async function AssetDetailPage({ params }: Props) {
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/assets" className="hover:text-foreground">
-            Assets
+            {t("assetsTitle")}
           </Link>
           {ancestors.map((a) => (
             <span key={a.id}>
@@ -119,9 +121,9 @@ export default async function AssetDetailPage({ params }: Props) {
           </h1>
           <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted">
             {asset.code && <span className="font-mono">{asset.code}</span>}
-            {asset.assetType && <span>· type: {asset.assetType}</span>}
+            {asset.assetType && <span>· {t("typeLabel")}: {asset.assetType}</span>}
             {asset.jurisdictionCode && (
-              <span>· jurisdiction: {asset.jurisdictionCode}</span>
+              <span>· {t("jurisdictionLabelLower")}: {asset.jurisdictionCode}</span>
             )}
           </div>
         </header>
@@ -132,18 +134,18 @@ export default async function AssetDetailPage({ params }: Props) {
             <section className="rounded-xl border border-card-border bg-card-bg/40 p-5">
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-foreground">
-                  Compliance obligations
+                  {t("complianceObligations")}
                 </h2>
                 <Link
                   href={`/regwatch/obligations?filter=all`}
                   className="text-xs text-brand-teal hover:underline"
                 >
-                  Manage in dashboard →
+                  {t("manageInDashboard")}
                 </Link>
               </div>
               {obligations.length === 0 ? (
                 <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-4 text-center text-xs text-muted">
-                  No obligations pinned to this asset yet.
+                  {t("noObligationsPinned")}
                 </p>
               ) : (
                 <ul className="divide-y divide-card-border">
@@ -170,7 +172,7 @@ export default async function AssetDetailPage({ params }: Props) {
                             </>
                           ) : (
                             <span className="italic text-muted">
-                              No regulation
+                              {t("noRegulation")}
                             </span>
                           )}
                         </Link>
@@ -199,12 +201,11 @@ export default async function AssetDetailPage({ params }: Props) {
             {/* Company documents linked to this asset (or any ancestor) */}
             <section className="rounded-xl border border-card-border bg-card-bg/40 p-5">
               <h2 className="mb-3 text-sm font-semibold text-foreground">
-                Company documents
+                {t("companyDocuments")}
               </h2>
               {linkedDocs.length === 0 ? (
                 <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-4 text-center text-xs text-muted">
-                  No internal documents linked. Open a document and use the
-                  &ldquo;Linked assets&rdquo; panel to attach.
+                  {t("noDocumentsLinked")}
                 </p>
               ) : (
                 <ul className="divide-y divide-card-border">
@@ -232,13 +233,17 @@ export default async function AssetDetailPage({ params }: Props) {
                         </p>
                         {d.inheritedFromAssetId && d.inheritedFromAssetName && (
                           <p className="mt-0.5 text-[10px] text-amber-300">
-                            inherited from{" "}
-                            <Link
-                              href={`/regwatch/assets/${d.inheritedFromAssetId}`}
-                              className="underline"
-                            >
-                              {d.inheritedFromAssetName}
-                            </Link>
+                            {t.rich("inheritedFrom", {
+                              name: d.inheritedFromAssetName,
+                              link: (c) => (
+                                <Link
+                                  href={`/regwatch/assets/${d.inheritedFromAssetId}`}
+                                  className="underline"
+                                >
+                                  {c}
+                                </Link>
+                              ),
+                            })}
                           </p>
                         )}
                       </div>
@@ -253,7 +258,7 @@ export default async function AssetDetailPage({ params }: Props) {
             {children.length > 0 && (
               <section className="rounded-xl border border-card-border bg-card-bg p-4">
                 <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
-                  Children · {children.length}
+                  {t("childrenCount", { count: children.length })}
                 </h2>
                 <ul className="space-y-1.5">
                   {children.map((c) => (
@@ -282,11 +287,11 @@ export default async function AssetDetailPage({ params }: Props) {
 
             <section className="rounded-xl border border-card-border bg-card-bg p-4">
               <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
-                Lifecycle
+                {t("lifecycle")}
               </h2>
               <dl className="space-y-1 text-[11px]">
                 <div className="flex justify-between">
-                  <dt className="text-muted">Created</dt>
+                  <dt className="text-muted">{t("created")}</dt>
                   <dd className="text-foreground">
                     {formatDistanceToNowStrict(new Date(asset.createdAt), {
                       addSuffix: true,
@@ -294,7 +299,7 @@ export default async function AssetDetailPage({ params }: Props) {
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted">Updated</dt>
+                  <dt className="text-muted">{t("updated")}</dt>
                   <dd className="text-foreground">
                     {formatDistanceToNowStrict(new Date(asset.updatedAt), {
                       addSuffix: true,
@@ -303,7 +308,7 @@ export default async function AssetDetailPage({ params }: Props) {
                 </div>
                 {asset.archivedAt && (
                   <div className="flex justify-between">
-                    <dt className="text-muted">Archived</dt>
+                    <dt className="text-muted">{t("archived")}</dt>
                     <dd className="text-amber-300">
                       {formatDistanceToNowStrict(new Date(asset.archivedAt), {
                         addSuffix: true,
@@ -316,7 +321,7 @@ export default async function AssetDetailPage({ params }: Props) {
                 href="/regwatch/assets/setup"
                 className="mt-3 inline-block rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-foreground hover:border-brand-blue"
               >
-                Edit tree →
+                {t("editTree")}
               </Link>
             </section>
           </aside>

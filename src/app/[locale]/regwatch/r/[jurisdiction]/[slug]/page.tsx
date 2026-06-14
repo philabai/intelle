@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
@@ -33,6 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function RegulationDetailPage({ params }: Props) {
+  const t = useTranslations("regwatch.discover");
   const { jurisdiction, slug } = await params;
   const item = await getRegulation(jurisdiction, slug);
   if (!item) notFound();
@@ -64,7 +66,7 @@ export default async function RegulationDetailPage({ params }: Props) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <nav className="text-xs text-muted">
             <Link href="/regwatch/browse" className="hover:text-foreground">
-              Browse
+              {t("breadcrumbBrowse")}
             </Link>
             <span className="mx-2">/</span>
             <Link
@@ -81,7 +83,7 @@ export default async function RegulationDetailPage({ params }: Props) {
               href="/regwatch/feed"
               className="rounded-md border border-card-border bg-card-bg px-2.5 py-1 text-[11px] text-muted hover:border-brand-teal hover:text-foreground"
             >
-              ← Back to My Feed
+              {t("backToMyFeed")}
             </Link>
           )}
         </div>
@@ -105,7 +107,9 @@ export default async function RegulationDetailPage({ params }: Props) {
           {item.summary && (
             <p className="mt-3 max-w-3xl text-base text-muted">{item.summary}</p>
           )}
-          <p className="mt-3 text-xs text-muted">Last changed {changedAgo}.</p>
+          <p className="mt-3 text-xs text-muted">
+            {t("lastChangedAgo", { ago: changedAgo })}
+          </p>
         </header>
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_320px]">
@@ -129,15 +133,17 @@ export default async function RegulationDetailPage({ params }: Props) {
                     <p className="mt-8 whitespace-pre-line">{item.body_text}</p>
                   ) : (
                     <p className="mt-8 text-muted">
-                      No extracted body yet. Switch to the{" "}
-                      <strong className="text-foreground">Original</strong>{" "}
-                      tab to view the source PDF / HTML directly.
+                      {t.rich("noExtractedBody", {
+                        strong: (chunks) => (
+                          <strong className="text-foreground">{chunks}</strong>
+                        ),
+                      })}
                     </p>
                   )}
 
                   <div className="mt-12 rounded-lg border border-card-border bg-card-bg p-4 text-sm">
                     <p className="text-xs font-medium uppercase tracking-wider text-muted">
-                      Source
+                      {t("source")}
                     </p>
                     <a
                       href={item.source_url}
@@ -148,8 +154,7 @@ export default async function RegulationDetailPage({ params }: Props) {
                       {item.source_url}
                     </a>
                     <p className="mt-2 text-xs text-muted">
-                      Canonical document at the regulator. Always cite this URL — not the
-                      Vantage detail page — in compliance evidence.
+                      {t("sourceCanonicalNote")}
                     </p>
                   </div>
                 </article>
@@ -164,7 +169,7 @@ export default async function RegulationDetailPage({ params }: Props) {
             {item.topics.length > 0 && (
               <div className="rounded-lg border border-card-border bg-card-bg p-4">
                 <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
-                  Topics
+                  {t("topicsHeading2")}
                 </h2>
                 <ul className="mt-2 flex flex-wrap gap-1.5">
                   {item.topics.map((t) => (
@@ -184,7 +189,7 @@ export default async function RegulationDetailPage({ params }: Props) {
             {item.substances_cas.length > 0 && (
               <div className="rounded-lg border border-card-border bg-card-bg p-4">
                 <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
-                  Substances referenced
+                  {t("substancesReferenced")}
                 </h2>
                 <ul className="mt-2 space-y-1 font-mono text-xs text-foreground">
                   {item.substances_cas.map((cas) => (
@@ -201,7 +206,7 @@ export default async function RegulationDetailPage({ params }: Props) {
         {related.length > 0 && (
           <section className="mt-16">
             <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
-              Related in {item.regulator.jurisdiction_name}
+              {t("relatedIn", { jurisdiction: item.regulator.jurisdiction_name })}
             </h2>
             <div className="mt-3 overflow-hidden rounded-xl border border-card-border bg-background">
               {related.map((r) => (
@@ -229,29 +234,30 @@ function MetadataPanel({
 }: {
   item: Awaited<ReturnType<typeof getRegulation>> & object;
 }) {
+  const t = useTranslations("regwatch.discover");
   return (
     <div className="rounded-lg border border-card-border bg-card-bg p-4">
       <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
-        Metadata
+        {t("metadata")}
       </h2>
       <dl className="mt-3 space-y-3 text-sm">
-        <MetaRow label="Citation" value={<span className="font-mono">{item.citation}</span>} />
-        <MetaRow label="Instrument type" value={<InstrumentTypeBadge value={item.instrument_type} />} />
-        <MetaRow label="Status" value={<StatusChip status={item.status} />} />
+        <MetaRow label={t("metaCitation")} value={<span className="font-mono">{item.citation}</span>} />
+        <MetaRow label={t("metaInstrumentType")} value={<InstrumentTypeBadge value={item.instrument_type} />} />
+        <MetaRow label={t("metaStatus")} value={<StatusChip status={item.status} />} />
         {item.effective_date && (
-          <MetaRow label="Effective date" value={formatDate(item.effective_date)} />
+          <MetaRow label={t("metaEffectiveDate")} value={formatDate(item.effective_date)} />
         )}
         {item.proposed_date && (
-          <MetaRow label="Proposed date" value={formatDate(item.proposed_date)} />
+          <MetaRow label={t("metaProposedDate")} value={formatDate(item.proposed_date)} />
         )}
         {item.consultation_closes_at && (
           <MetaRow
-            label="Consultation closes"
+            label={t("metaConsultationCloses")}
             value={formatDate(item.consultation_closes_at)}
           />
         )}
-        <MetaRow label="Published" value={formatDate(item.published_at)} />
-        <MetaRow label="Last changed" value={formatDate(item.last_changed_at)} />
+        <MetaRow label={t("metaPublished")} value={formatDate(item.published_at)} />
+        <MetaRow label={t("metaLastChanged")} value={formatDate(item.last_changed_at)} />
       </dl>
     </div>
   );
@@ -271,11 +277,12 @@ function RegulatorCard({
 }: {
   item: Awaited<ReturnType<typeof getRegulation>> & object;
 }) {
+  const t = useTranslations("regwatch.discover");
   const r = item.regulator;
   return (
     <div className="rounded-lg border border-card-border bg-card-bg p-4">
       <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
-        Regulator
+        {t("regulator")}
       </h2>
       <p className="mt-2 text-sm font-medium text-foreground">{r.name}</p>
       {r.short_name && <p className="text-xs text-muted">{r.short_name}</p>}
@@ -285,7 +292,7 @@ function RegulatorCard({
           href={`/regwatch/regulator/${r.slug}`}
           className="rounded-md border border-card-border bg-background px-2 py-1 text-[11px] text-foreground hover:border-brand-teal"
         >
-          Regulator profile →
+          {t("regulatorProfile")}
         </Link>
         {r.canonical_url && (
           <a
@@ -294,7 +301,7 @@ function RegulatorCard({
             rel="noopener noreferrer"
             className="rounded-md border border-card-border bg-background px-2 py-1 text-[11px] text-foreground hover:border-brand-teal"
           >
-            Visit site ↗
+            {t("visitSite")}
           </a>
         )}
       </div>
@@ -307,19 +314,20 @@ function LifecycleStrip({
 }: {
   item: Awaited<ReturnType<typeof getRegulation>> & object;
 }) {
+  const t = useTranslations("regwatch.discover");
   // Render a horizontal strip showing the four lifecycle anchors that exist.
   const stages: { label: string; date: string | null }[] = [
-    { label: "Proposed", date: item.proposed_date },
-    { label: "Consultation closes", date: item.consultation_closes_at },
-    { label: "Effective", date: item.effective_date },
-    { label: "Last change", date: item.last_changed_at },
+    { label: t("lifecycleProposed"), date: item.proposed_date },
+    { label: t("lifecycleConsultationCloses"), date: item.consultation_closes_at },
+    { label: t("lifecycleEffective"), date: item.effective_date },
+    { label: t("lifecycleLastChange"), date: item.last_changed_at },
   ];
   const filled = stages.filter((s) => s.date);
   if (filled.length < 2) return null;
 
   return (
     <div className="not-prose rounded-lg border border-card-border bg-card-bg p-4">
-      <p className="text-xs font-medium uppercase tracking-wider text-muted">Lifecycle</p>
+      <p className="text-xs font-medium uppercase tracking-wider text-muted">{t("lifecycle")}</p>
       <ol className="mt-3 flex flex-wrap gap-x-6 gap-y-3">
         {filled.map((s) => (
           <li key={s.label} className="flex flex-col">

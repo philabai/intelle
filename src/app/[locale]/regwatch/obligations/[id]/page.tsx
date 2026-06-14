@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
@@ -48,6 +49,7 @@ const REVIEW_BG: Record<string, string> = {
 };
 
 export default async function ObligationDetailPage({ params }: Props) {
+  const t = useTranslations("regwatch.comply");
   const { id } = await params;
   const supabase = await createClient();
   const {
@@ -113,7 +115,7 @@ export default async function ObligationDetailPage({ params }: Props) {
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/obligations" className="hover:text-foreground">
-            Obligations
+            {t("obligationsTitle")}
           </Link>
           <span className="mx-2">/</span>
           <span className="text-foreground">{obligation.regulationCitation ?? "—"}</span>
@@ -138,18 +140,18 @@ export default async function ObligationDetailPage({ params }: Props) {
             </span>
             {obligation.adminSignedOffAt && (
               <span className="text-muted">
-                · signed off {format(new Date(obligation.adminSignedOffAt), "PP")}
+                · {t("signedOff", { date: format(new Date(obligation.adminSignedOffAt), "PP") })}
               </span>
             )}
           </div>
           <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-            {obligation.regulationTitle ?? "Obligation"}
+            {obligation.regulationTitle ?? t("obligationFallbackTitle")}
           </h1>
           {obligation.regulationCitation && (
             <p className="mt-1 text-sm text-muted">
               <span className="font-mono">{obligation.regulationCitation}</span>
               {obligation.clauseAnchor && (
-                <span className="ms-2">· clause {obligation.clauseAnchor}</span>
+                <span className="ms-2">· {t("clausePrefix")} {obligation.clauseAnchor}</span>
               )}
             </p>
           )}
@@ -160,7 +162,7 @@ export default async function ObligationDetailPage({ params }: Props) {
             {obligation.clauseText && (
               <section className="rounded-xl border border-card-border bg-card-bg/40 p-5">
                 <h2 className="mb-2 text-xs font-medium uppercase tracking-wider text-brand-teal">
-                  Clause text
+                  {t("clauseText")}
                 </h2>
                 <p className="whitespace-pre-line text-sm text-foreground/90">
                   {obligation.clauseText}
@@ -170,13 +172,10 @@ export default async function ObligationDetailPage({ params }: Props) {
 
             <section className="rounded-xl border border-card-border bg-card-bg/40 p-5">
               <h2 className="mb-1 text-xs font-medium uppercase tracking-wider text-brand-teal">
-                Evidence
+                {t("evidence")}
               </h2>
               <p className="mb-3 text-[11px] text-muted">
-                Upload one or more files supporting your review.
-                Each file is analysed by AI against the regulation and any
-                discrepancies appear inline. You can address them or
-                acknowledge them before submitting for approval.
+                {t("evidenceDescription")}
               </p>
               <EvidenceDropzone
                 obligationId={obligation.id}
@@ -193,7 +192,7 @@ export default async function ObligationDetailPage({ params }: Props) {
 
             <section className="rounded-xl border border-card-border bg-card-bg/40 p-5">
               <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-brand-teal">
-                Workflow
+                {t("workflow")}
               </h2>
               <ObligationWorkflow
                 obligationId={obligation.id}
@@ -213,10 +212,10 @@ export default async function ObligationDetailPage({ params }: Props) {
 
             <section className="rounded-xl border border-card-border bg-card-bg/40 p-5">
               <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-brand-teal">
-                State history
+                {t("stateHistory")}
               </h2>
               {history.length === 0 ? (
-                <p className="text-xs text-muted">No transitions recorded yet.</p>
+                <p className="text-xs text-muted">{t("stateHistoryEmpty")}</p>
               ) : (
                 <ol className="space-y-3">
                   {history.map((h) => (
@@ -260,7 +259,7 @@ export default async function ObligationDetailPage({ params }: Props) {
           <aside className="space-y-4">
             <section className="rounded-xl border border-card-border bg-card-bg p-4">
               <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
-                Asset
+                {t("asset")}
               </h2>
               {asset ? (
                 <div className="mt-2 text-sm">
@@ -281,18 +280,18 @@ export default async function ObligationDetailPage({ params }: Props) {
                   </p>
                   {asset.jurisdictionCode && (
                     <p className="text-[11px] text-muted">
-                      Jurisdiction: {asset.jurisdictionCode}
+                      {t("jurisdictionLabel")}: {asset.jurisdictionCode}
                     </p>
                   )}
                 </div>
               ) : (
-                <p className="mt-2 text-xs text-muted">Asset not found.</p>
+                <p className="mt-2 text-xs text-muted">{t("assetNotFound")}</p>
               )}
             </section>
 
             <section className="rounded-xl border border-card-border bg-card-bg p-4">
               <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
-                Regulation
+                {t("regulation")}
               </h2>
               {obligation.regulatoryItemId ? (
                 <div className="mt-2 text-sm">
@@ -305,26 +304,26 @@ export default async function ObligationDetailPage({ params }: Props) {
                 </div>
               ) : (
                 <p className="mt-2 text-xs italic text-muted">
-                  No regulation pinned.
+                  {t("noRegulationPinnedSentence")}
                 </p>
               )}
             </section>
 
             <section className="rounded-xl border border-card-border bg-card-bg p-4">
               <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
-                Lifecycle
+                {t("lifecycle")}
               </h2>
               <dl className="mt-2 space-y-1 text-[11px]">
                 <div className="flex justify-between">
-                  <dt className="text-muted">Cadence</dt>
+                  <dt className="text-muted">{t("cadence")}</dt>
                   <dd className="text-foreground">
                     {obligation.reviewCadence === "custom"
-                      ? `every ${obligation.reviewCadenceCustomDays ?? "?"} days`
+                      ? t("cadenceEveryDays", { days: obligation.reviewCadenceCustomDays ?? "?" })
                       : obligation.reviewCadence}
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted">Attested until</dt>
+                  <dt className="text-muted">{t("attestedUntil")}</dt>
                   <dd className="text-foreground">
                     {obligation.complianceAttestedUntil
                       ? format(
@@ -335,7 +334,7 @@ export default async function ObligationDetailPage({ params }: Props) {
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted">Review due</dt>
+                  <dt className="text-muted">{t("reviewDue")}</dt>
                   <dd className="text-foreground">
                     {obligation.reviewDueAt
                       ? format(new Date(obligation.reviewDueAt), "PP")
@@ -343,13 +342,13 @@ export default async function ObligationDetailPage({ params }: Props) {
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted">Created</dt>
+                  <dt className="text-muted">{t("created")}</dt>
                   <dd className="text-foreground">
                     {format(new Date(obligation.createdAt), "PP")}
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted">Updated</dt>
+                  <dt className="text-muted">{t("updated")}</dt>
                   <dd className="text-foreground">
                     {format(new Date(obligation.updatedAt), "PP")}
                   </dd>

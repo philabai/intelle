@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface Option {
   value: string;
@@ -40,10 +41,12 @@ export function MultiSelectCheckboxes({
   selected,
   onChange,
   searchable = false,
-  emptyLabel = "No options",
+  emptyLabel,
   showCount = true,
   className,
 }: Props) {
+  const t = useTranslations("regwatch.comply");
+  const resolvedEmptyLabel = emptyLabel ?? t("noOptions");
   const [filter, setFilter] = useState("");
 
   const flat = useMemo<Option[]>(() => {
@@ -80,7 +83,7 @@ export function MultiSelectCheckboxes({
           type="search"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Filter…"
+          placeholder={t("filterPlaceholder")}
           className="w-full rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-sm text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
         />
       )}
@@ -115,21 +118,21 @@ export function MultiSelectCheckboxes({
             }))}
             selected={selected}
             onToggle={toggle}
-            emptyLabel={emptyLabel}
+            emptyLabel={resolvedEmptyLabel}
           />
         ) : (
           <FlatList
             options={flat.filter(matches)}
             selected={selected}
             onToggle={toggle}
-            emptyLabel={emptyLabel}
+            emptyLabel={resolvedEmptyLabel}
           />
         )}
       </div>
 
       {showCount && (
         <p className="text-xs text-muted">
-          {selected.length} selected
+          {t("selectedCount", { count: selected.length })}
         </p>
       )}
     </div>

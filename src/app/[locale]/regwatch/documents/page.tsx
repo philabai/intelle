@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -39,6 +40,7 @@ function pick(
 }
 
 export default async function DocumentsPage({ searchParams }: Props) {
+  const t = useTranslations("regwatch.documents");
   const raw = await searchParams;
   const folderParam = pick(raw, "folder") ?? null;
   const ownerParam = (pick(raw, "owner") ?? "anyone") as "anyone" | "me";
@@ -117,10 +119,10 @@ export default async function DocumentsPage({ searchParams }: Props) {
     }));
   }
   const headerLabel = showAll
-    ? "All documents"
+    ? t("headerAll")
     : showUnfiled
-      ? "Unfiled"
-      : (activeFolderName ?? "Folder not found");
+      ? t("headerUnfiled")
+      : (activeFolderName ?? t("folderNotFound"));
 
   const activeFolderKey = showAll
     ? null
@@ -133,14 +135,14 @@ export default async function DocumentsPage({ searchParams }: Props) {
       <div className="mx-auto max-w-[1600px] px-4 py-10 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/feed" className="hover:text-foreground">
-            My Feed
+            {t("breadcrumbFeed")}
           </Link>
           <span className="mx-2">/</span>
           <Link
             href="/regwatch/documents"
             className="hover:text-foreground"
           >
-            Company documents
+            {t("breadcrumbDocuments")}
           </Link>
           {breadcrumb.map((b) => (
             <span key={b.id}>
@@ -164,24 +166,24 @@ export default async function DocumentsPage({ searchParams }: Props) {
         <header className="mt-4 mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-              {org?.organization.name ?? "Your organization"}
+              {org?.organization.name ?? t("yourOrganization")}
             </p>
             <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
               {headerLabel}
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted">
               {showAll
-                ? "Your SOPs, policies, permits, and standards. Author them in-app, organise them into project folders, link them to regulations + assets, and stay alerted when linked regulations change."
+                ? t("introAll")
                 : showUnfiled
-                  ? "Documents not yet assigned to a project folder. Use the document detail page to move them."
-                  : "Documents inside this project folder. Sub-folders show in the left-hand tree."}
+                  ? t("introUnfiled")
+                  : t("introFolder")}
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
             {canCreate && <NewDocumentButton defaultFolderId={folderId} />}
             <div className="text-end">
               <p className="text-[10px] uppercase tracking-wider text-muted">
-                {showAll ? "Total" : "In view"}
+                {showAll ? t("countTotal") : t("countInView")}
               </p>
               <p className="font-mono text-xl font-semibold text-foreground">
                 {visibleDocs.length}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface Props {
   value: string[];
@@ -21,6 +22,7 @@ const COMMON_PRESETS: { label: string; cas: string[] }[] = [
 ];
 
 export function SubstancesEditor({ value, onChange }: Props) {
+  const t = useTranslations("regwatch.comply");
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +35,7 @@ export function SubstancesEditor({ value, onChange }: Props) {
     if (candidates.length === 0) return;
     const invalid = candidates.filter((c) => !CAS_PATTERN.test(c));
     if (invalid.length > 0) {
-      setError(`Invalid CAS format: ${invalid.join(", ")}`);
+      setError(t("invalidCasFormat", { list: invalid.join(", ") }));
       return;
     }
     const merged = Array.from(new Set([...value, ...candidates]));
@@ -67,7 +69,7 @@ export function SubstancesEditor({ value, onChange }: Props) {
               addCas(draft);
             }
           }}
-          placeholder="Add CAS — e.g. 74-82-8 (or paste a comma-separated list)"
+          placeholder={t("addCasPlaceholder")}
           className="flex-1 rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-sm font-mono text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
         />
         <button
@@ -75,14 +77,14 @@ export function SubstancesEditor({ value, onChange }: Props) {
           onClick={() => addCas(draft)}
           className="rounded-md bg-brand-blue px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-blue/90"
         >
-          Add
+          {t("add")}
         </button>
       </div>
       {error && <p className="text-xs text-red-400">{error}</p>}
 
       <div>
         <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted">
-          Quick add
+          {t("quickAdd")}
         </p>
         <div className="flex flex-wrap gap-1.5">
           {COMMON_PRESETS.map((p) => {
@@ -108,7 +110,7 @@ export function SubstancesEditor({ value, onChange }: Props) {
       {value.length > 0 && (
         <div>
           <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted">
-            Tracked ({value.length})
+            {t("tracked", { count: value.length })}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {value.map((c) => (

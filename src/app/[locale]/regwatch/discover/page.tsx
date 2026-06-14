@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -19,6 +20,7 @@ export const dynamic = "force-dynamic";
  * lands, US/EU year-round) sit at the top with brand accents.
  */
 export default async function DiscoverLandingPage() {
+  const t = useTranslations("regwatch.discover");
   const supabase = await createClient();
   const [
     {
@@ -63,41 +65,41 @@ export default async function DiscoverLandingPage() {
       <header className="border-b border-card-border bg-card-bg/30">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
           <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-            Discover the corpus
+            {t("eyebrow")}
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            {totalItems.toLocaleString()} regulations · {totalRecent.toLocaleString()} updated this month
+            {t("heading", {
+              total: totalItems.toLocaleString(),
+              recent: totalRecent.toLocaleString(),
+            })}
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-muted">
-            Every regulation in the corpus, organised by jurisdiction and
-            publisher hierarchy — same way the publishers themselves
-            organise their codes. No signup required to read. Updates are
-            marked but never gating: the full code is always browsable.
+            {t("subheading")}
           </p>
           <div className="mt-4 flex gap-3 text-xs">
             <Link
               href="/regwatch/regulators"
               className="rounded-md border border-card-border px-3 py-1.5 text-foreground hover:border-brand-blue"
             >
-              All regulators →
+              {t("allRegulators")}
             </Link>
             <Link
               href="/regwatch/topics"
               className="rounded-md border border-card-border px-3 py-1.5 text-foreground hover:border-brand-blue"
             >
-              All topics →
+              {t("allTopics")}
             </Link>
             <Link
               href="/regwatch/search"
               className="rounded-md border border-card-border px-3 py-1.5 text-foreground hover:border-brand-blue"
             >
-              Search →
+              {t("searchLink")}
             </Link>
             <Link
               href="/regwatch/tutorials"
               className="rounded-md border border-brand-teal/40 bg-brand-teal/10 px-3 py-1.5 text-brand-teal hover:border-brand-teal"
             >
-              Watch tutorials →
+              {t("watchTutorials")}
             </Link>
           </div>
         </div>
@@ -107,7 +109,7 @@ export default async function DiscoverLandingPage() {
         {featured.length > 0 && (
           <section className="mb-10">
             <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted">
-              Featured jurisdictions
+              {t("featuredJurisdictions")}
             </p>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {featured.map((s) => (
@@ -128,7 +130,7 @@ export default async function DiscoverLandingPage() {
 
         <section>
           <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted">
-            All jurisdictions
+            {t("allJurisdictions")}
           </p>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {rest.map((s) => (

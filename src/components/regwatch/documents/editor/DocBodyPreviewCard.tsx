@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { DocPdfPreview } from "./DocPdfPreview";
 
 interface Props {
@@ -25,6 +26,7 @@ export function DocBodyPreviewCard({
   canEdit,
   editHref,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   if (hasBody) {
     return (
       <div className="rounded-xl border border-card-border bg-card-bg/40 p-3">
@@ -38,35 +40,39 @@ export function DocBodyPreviewCard({
     <div className="rounded-xl border border-dashed border-card-border bg-card-bg/30 p-8 text-center text-xs text-muted">
       {hasFile ? (
         <>
-          This document is the uploaded file in the right sidebar.
+          {t("bodyPreviewIsFile")}
           {canEdit && (
             <>
               {" "}
-              Click{" "}
-              <a
-                href={editHref}
-                className="font-medium text-brand-blue hover:underline"
-              >
-                Edit ✎
-              </a>{" "}
-              in the action bar above to add a native body alongside it.
+              {t.rich("bodyPreviewFileEditHint", {
+                edit: (chunks) => (
+                  <a
+                    href={editHref}
+                    className="font-medium text-brand-blue hover:underline"
+                  >
+                    {chunks}
+                  </a>
+                ),
+              })}
             </>
           )}
         </>
       ) : (
         <>
-          No body yet.
+          {t("bodyPreviewNoBody")}
           {canEdit && (
             <>
               {" "}
-              Click{" "}
-              <a
-                href={editHref}
-                className="font-medium text-brand-blue hover:underline"
-              >
-                Edit ✎
-              </a>{" "}
-              in the action bar above to start writing.
+              {t.rich("bodyPreviewNoBodyEditHint", {
+                edit: (chunks) => (
+                  <a
+                    href={editHref}
+                    className="font-medium text-brand-blue hover:underline"
+                  >
+                    {chunks}
+                  </a>
+                ),
+              })}
             </>
           )}
         </>

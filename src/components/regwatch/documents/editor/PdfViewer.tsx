@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -35,6 +36,7 @@ export default function PdfViewer({
   onLoadError,
   numPages,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
@@ -66,7 +68,7 @@ export default function PdfViewer({
         onLoadError={(e) => onLoadError(e.message)}
         loading={
           <div className="flex h-40 items-center justify-center text-xs text-muted">
-            Loading preview…
+            {t("loadingPreview")}
           </div>
         }
       >

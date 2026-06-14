@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { MultiSelectCheckboxes } from "./MultiSelectCheckboxes";
 
 interface RegulatorOption {
@@ -19,17 +20,17 @@ interface Props {
 
 const REGION_ORDER = ["na", "eu", "uk", "mea", "asia", "lac", "int"];
 
-const REGION_LABEL: Record<string, string> = {
-  na: "North America",
-  eu: "European Union",
-  uk: "United Kingdom",
-  mea: "Middle East & Africa",
-  asia: "Asia & Pacific",
-  lac: "Latin America & Caribbean",
-  int: "International",
-};
-
 export function RegulatorsPicker({ value, options, onChange }: Props) {
+  const t = useTranslations("regwatch.comply");
+  const REGION_LABEL: Record<string, string> = {
+    na: t("regionNa"),
+    eu: t("regionEu"),
+    uk: t("regionUk"),
+    mea: t("regionMea"),
+    asia: t("regionAsia"),
+    lac: t("regionLac"),
+    int: t("regionInt"),
+  };
   const groups = useMemo(() => {
     const byRegion = new Map<string, RegulatorOption[]>();
     options.forEach((r) => {
@@ -44,6 +45,7 @@ export function RegulatorsPicker({ value, options, onChange }: Props) {
         hint: r.short_name ?? r.jurisdiction_code,
       })),
     }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options]);
 
   return (
@@ -53,7 +55,7 @@ export function RegulatorsPicker({ value, options, onChange }: Props) {
       selected={value}
       onChange={onChange}
       searchable
-      emptyLabel="No regulators match the filter"
+      emptyLabel={t("noRegulatorsMatch")}
       className="max-h-96 overflow-y-auto rounded-lg border border-card-border bg-background/40 p-3"
     />
   );

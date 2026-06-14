@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { listRegulators } from "@/lib/regwatch/queries";
@@ -12,17 +13,9 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 const REGION_ORDER = ["na", "eu", "uk", "mea", "asia", "lac", "int"] as const;
-const REGION_LABEL: Record<string, string> = {
-  na: "North America",
-  eu: "European Union",
-  uk: "United Kingdom",
-  mea: "Middle East & Africa",
-  asia: "Asia & Pacific",
-  lac: "Latin America & Caribbean",
-  int: "International",
-};
 
 export default async function RegulatorsIndexPage() {
+  const t = useTranslations("regwatch.discover");
   const supabase = await createClient();
   const [
     {
@@ -46,16 +39,16 @@ export default async function RegulatorsIndexPage() {
       <header className="border-b border-card-border bg-card-bg/30">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
           <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-            Monitored regulators
+            {t("regulatorsEyebrow")}
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            {totalRegulators} regulators · {totalItems.toLocaleString()}{" "}
-            regulations
+            {t("regulatorsHeading", {
+              regulators: totalRegulators,
+              regulations: totalItems.toLocaleString(),
+            })}
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-muted">
-            Every regulator Vantage monitors today, grouped by region. Click a
-            card for the full per-regulator feed of items. Public corpus — no
-            signup required to read.
+            {t("regulatorsSubheading")}
           </p>
         </div>
       </header>
@@ -68,12 +61,13 @@ export default async function RegulatorsIndexPage() {
             <section key={region} className="mb-12">
               <div className="mb-4 flex items-baseline justify-between">
                 <h2 className="text-lg font-semibold tracking-tight text-foreground">
-                  {REGION_LABEL[region] ?? region}
+                  {t(`region.${region}`)}
                 </h2>
                 <p className="text-xs text-muted">
-                  {rows.length}{" "}
-                  {rows.length === 1 ? "regulator" : "regulators"} ·{" "}
-                  {rows.reduce((a, r) => a + r.item_count, 0)} items
+                  {t("regulatorsItemsCount", {
+                    regulators: rows.length,
+                    items: rows.reduce((a, r) => a + r.item_count, 0),
+                  })}
                 </p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -86,14 +80,16 @@ export default async function RegulatorsIndexPage() {
         })}
 
         <p className="mt-12 text-center text-xs text-muted">
-          Want a regulator we&apos;re not monitoring yet?{" "}
-          <Link
-            href="/contact?service_interest=regwatch-coverage"
-            className="text-brand-teal hover:underline"
-          >
-            Tell us
-          </Link>{" "}
-          — most are a single connector away.
+          {t.rich("regulatorsCta", {
+            link: (chunks) => (
+              <Link
+                href="/contact?service_interest=regwatch-coverage"
+                className="text-brand-teal hover:underline"
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       </div>
     </RegwatchAppShell>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
 interface DrawerObligation {
@@ -61,6 +62,7 @@ export function AssetComplianceDrawer({
   assetId: string | null;
   onClose: () => void;
 }) {
+  const t = useTranslations("regwatch.comply");
   const [data, setData] = useState<DrawerData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,10 +80,11 @@ export function AssetComplianceDrawer({
       .then((d: DrawerData) => setData(d))
       .catch((e) => {
         if ((e as Error).name !== "AbortError")
-          setError("Couldn't load this asset's compliance.");
+          setError(t("drawerLoadError"));
       })
       .finally(() => setLoading(false));
     return () => ctrl.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assetId]);
 
   useEffect(() => {
@@ -122,29 +125,29 @@ export function AssetComplianceDrawer({
             {data ? (
               <>
                 <p className="text-[11px] font-medium uppercase tracking-wider text-brand-teal">
-                  {data.asset.levelLabel} · Compliance
+                  {data.asset.levelLabel} · {t("compliance")}
                 </p>
                 <h2 className="mt-0.5 truncate text-base font-semibold leading-snug text-foreground">
                   {data.asset.name}
                 </h2>
                 <p className="mt-0.5 text-[11px] text-muted">
                   {openCount > 0
-                    ? `${openCount} open · ${obligations.length} total`
+                    ? t("drawerOpenTotal", { open: openCount, total: obligations.length })
                     : obligations.length > 0
-                      ? `${obligations.length} obligation${obligations.length === 1 ? "" : "s"} · all addressed`
-                      : "No obligations pinned"}
+                      ? t("drawerAllAddressed", { count: obligations.length })
+                      : t("drawerNoObligations")}
                 </p>
               </>
             ) : (
               <p className="text-sm text-muted">
-                {loading ? "Loading…" : "Compliance"}
+                {loading ? t("loading") : t("compliance")}
               </p>
             )}
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t("close")}
             className="shrink-0 rounded-md p-1.5 text-muted transition hover:bg-card-bg hover:text-foreground"
           >
             <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -169,7 +172,7 @@ export function AssetComplianceDrawer({
           )}
           {data && obligations.length === 0 && (
             <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-6 text-center text-xs text-muted">
-              No obligations pinned to this asset yet.
+              {t("noObligationsPinned")}
             </p>
           )}
           {data && obligations.length > 0 && (
@@ -192,7 +195,7 @@ export function AssetComplianceDrawer({
                             )}
                           </p>
                         ) : (
-                          <p className="text-sm italic text-muted">No regulation</p>
+                          <p className="text-sm italic text-muted">{t("noRegulation")}</p>
                         )}
                         {o.regulationTitle && (
                           <p className="mt-0.5 line-clamp-2 text-[11px] text-muted">
@@ -237,7 +240,7 @@ export function AssetComplianceDrawer({
               href={`/regwatch/assets/${data.asset.id}`}
               className="rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90"
             >
-              Open full asset page →
+              {t("openFullAssetPage")}
             </Link>
           </footer>
         )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { useRouter } from "@/i18n/navigation";
@@ -57,6 +58,7 @@ export function ComposeWorkspace({
   initialUpdatedAt,
   currentVersion,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   const router = useRouter();
   const [saveState, setSaveState] = useState<SaveState>({ type: "idle" });
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -118,7 +120,7 @@ export function ComposeWorkspace({
       }
       setSaveState({
         type: "error",
-        message: res.error ?? "Autosave failed",
+        message: res.error ?? t("autosaveFailed"),
       });
       return;
     }
@@ -160,13 +162,11 @@ export function ComposeWorkspace({
     setCommitPending(false);
     if (!res.ok) {
       if (res.conflict) {
-        setCommitError(
-          "Someone else saved a newer version. Reload the page to merge their changes.",
-        );
+        setCommitError(t("conflictReloadMerge"));
         setSaveState({ type: "conflict" });
         return;
       }
-      setCommitError(res.error ?? "Could not save version");
+      setCommitError(res.error ?? t("couldNotSaveVersion"));
       return;
     }
     setSaveDialogOpen(false);
@@ -190,7 +190,7 @@ export function ComposeWorkspace({
       clauseAnchor: params.clauseAnchor,
     });
     if (!res.ok || !res.payload) {
-      setCiteError(res.error ?? "Could not cite this clause");
+      setCiteError(res.error ?? t("couldNotCiteClause"));
       return;
     }
     editor.chain().insertCitedClause(res.payload).run();
@@ -204,13 +204,13 @@ export function ComposeWorkspace({
           <Link
             href={`/regwatch/documents/${documentId}`}
             className="rounded-md border border-card-border bg-background px-2 py-1 text-[11px] text-muted hover:border-brand-blue hover:text-foreground"
-            title="Back to document detail"
+            title={t("backToDetail")}
           >
             ←
           </Link>
           <div className="min-w-0">
             <p className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">
-              Compose workspace
+              {t("composeWorkspace")}
             </p>
             <h1 className="truncate text-sm font-semibold text-foreground">
               {documentTitle}
@@ -227,9 +227,9 @@ export function ComposeWorkspace({
           <Link
             href={`/regwatch/documents/${documentId}/edit`}
             className="rounded-md border border-card-border bg-background px-3 py-1.5 text-xs text-foreground/90 hover:border-brand-blue hover:text-brand-blue"
-            title="Switch to the single-pane editor (no reference)"
+            title={t("switchToEditTitle")}
           >
-            Switch to Edit
+            {t("switchToEdit")}
           </Link>
           <button
             type="button"
@@ -240,23 +240,24 @@ export function ComposeWorkspace({
             disabled={!editor || saveState.type === "conflict"}
             className="rounded-md bg-brand-blue px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-blue/90 disabled:opacity-50"
           >
-            Save version
+            {t("saveVersion")}
           </button>
         </div>
       </header>
 
       {saveState.type === "conflict" && (
         <div className="border-b border-amber-500/40 bg-amber-500/10 px-4 py-2 text-[11px] text-amber-200">
-          Another save landed on this document. To avoid overwriting their
-          changes, reload the page —{" "}
-          <button
-            type="button"
-            onClick={() => router.refresh()}
-            className="underline"
-          >
-            reload now
-          </button>
-          .
+          {t.rich("conflictBanner", {
+            reload: (chunks) => (
+              <button
+                type="button"
+                onClick={() => router.refresh()}
+                className="underline"
+              >
+                {chunks}
+              </button>
+            ),
+          })}
         </div>
       )}
 
@@ -268,7 +269,7 @@ export function ComposeWorkspace({
             onClick={() => setCiteError(null)}
             className="underline"
           >
-            dismiss
+            {t("dismiss")}
           </button>
         </div>
       )}
@@ -287,14 +288,14 @@ export function ComposeWorkspace({
               {/* Document zoom controls (kept outside the zoomed content). */}
               <div className="flex items-center justify-end gap-1 border-b border-card-border bg-card-bg/30 px-3 py-1">
                 <span className="me-1 text-[10px] font-medium uppercase tracking-wider text-muted">
-                  Document
+                  {t("documentZoomLabel")}
                 </span>
                 <button
                   type="button"
                   onClick={() => adjustZoom(-0.1)}
                   disabled={zoom <= 0.6}
-                  title="Zoom out"
-                  aria-label="Zoom out"
+                  title={t("zoomOut")}
+                  aria-label={t("zoomOut")}
                   className="rounded border border-card-border bg-background px-2 py-0.5 text-sm leading-none text-foreground/90 hover:border-brand-blue hover:text-brand-blue disabled:opacity-40"
                 >
                   −
@@ -302,7 +303,7 @@ export function ComposeWorkspace({
                 <button
                   type="button"
                   onClick={() => setZoom(1)}
-                  title="Reset zoom to 100%"
+                  title={t("resetZoom")}
                   className="rounded border border-card-border bg-background px-2 py-0.5 text-[11px] tabular-nums text-foreground/90 hover:border-brand-blue hover:text-brand-blue"
                 >
                   {Math.round(zoom * 100)}%
@@ -311,8 +312,8 @@ export function ComposeWorkspace({
                   type="button"
                   onClick={() => adjustZoom(0.1)}
                   disabled={zoom >= 2}
-                  title="Zoom in"
-                  aria-label="Zoom in"
+                  title={t("zoomIn")}
+                  aria-label={t("zoomIn")}
                   className="rounded border border-card-border bg-background px-2 py-0.5 text-sm leading-none text-foreground/90 hover:border-brand-blue hover:text-brand-blue disabled:opacity-40"
                 >
                   +
@@ -353,24 +354,27 @@ function SaveStateBadge({
   state: SaveState;
   version: SemVer | null;
 }) {
+  const t = useTranslations("regwatch.documents");
   const versionLabel = version ? formatVersion(version) : "draft";
   let label: string;
   let tone: string;
   switch (state.type) {
     case "idle":
-      label = version ? `Current: ${versionLabel}` : "Unsaved draft";
+      label = version
+        ? t("currentVersion", { version: versionLabel })
+        : t("unsavedDraft");
       tone = "text-muted";
       break;
     case "saving":
-      label = "Autosaving…";
+      label = t("autosaving");
       tone = "text-brand-blue";
       break;
     case "saved":
-      label = "Autosaved";
+      label = t("autosaved");
       tone = "text-brand-teal";
       break;
     case "conflict":
-      label = "Conflict — reload";
+      label = t("conflictReload");
       tone = "text-amber-300";
       break;
     case "error":

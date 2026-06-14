@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { RegulationPicker } from "@/components/regwatch/RegulationPicker";
 import type { RegulationPickerResult } from "@/lib/regwatch/regulation-picker-actions";
 import { getRegulationBody } from "@/lib/regwatch/regulation-body-actions";
@@ -22,6 +23,7 @@ interface Props {
  * the editor on the right.
  */
 export function ComposeReferencePane({ onCite }: Props) {
+  const t = useTranslations("regwatch.documents");
   const [regulation, setRegulation] = useState<RegulationPickerResult | null>(
     null,
   );
@@ -46,9 +48,7 @@ export function ComposeReferencePane({ onCite }: Props) {
       const r = await getRegulationBody({ id: regulation.id });
       if (cancelled) return;
       if (!r) {
-        setError(
-          "Could not load this regulation. Try opening its source link.",
-        );
+        setError(t("regulationLoadFailed"));
         setLoading(false);
         return;
       }
@@ -81,7 +81,7 @@ export function ComposeReferencePane({ onCite }: Props) {
     <div className="flex h-full min-h-0 flex-col">
       <div className="border-b border-card-border bg-card-bg/40 px-3 py-2">
         <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-          Reference
+          {t("reference")}
         </p>
       </div>
       <div className="border-b border-card-border bg-card-bg/30 p-3">
@@ -89,7 +89,7 @@ export function ComposeReferencePane({ onCite }: Props) {
           value={regulation}
           onChange={setRegulation}
           showClauseField={false}
-          placeholder="Pick a regulation to cite from…"
+          placeholder={t("composePickerPlaceholder")}
         />
         {regulation && body?.sourceUrl && (
           <p className="mt-1 text-[10px] text-muted">
@@ -99,7 +99,7 @@ export function ComposeReferencePane({ onCite }: Props) {
               rel="noreferrer"
               className="text-brand-blue hover:underline"
             >
-              Open source ↗
+              {t("openSource")}
             </a>
           </p>
         )}
@@ -107,18 +107,17 @@ export function ComposeReferencePane({ onCite }: Props) {
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         {!regulation ? (
           <p className="text-center text-xs text-muted">
-            Pick a regulation above to read it side-by-side with your editor.
+            {t("pickRegulationSideBySide")}
           </p>
         ) : loading ? (
-          <p className="text-center text-xs text-muted">Loading body…</p>
+          <p className="text-center text-xs text-muted">{t("loadingBody")}</p>
         ) : error ? (
           <p className="rounded-md border border-red-500/40 bg-red-500/10 p-2 text-[11px] text-red-300">
             {error}
           </p>
         ) : body && body.paragraphs.length === 0 ? (
           <p className="text-xs text-muted">
-            No body text on file for this regulation yet. Use the source link
-            above to read it directly.
+            {t("noBodyTextUseSource")}
           </p>
         ) : body ? (
           <ol className="space-y-2">
@@ -140,10 +139,10 @@ export function ComposeReferencePane({ onCite }: Props) {
                   <button
                     type="button"
                     onClick={() => handleCite(p)}
-                    title="Insert this clause as a cited pill in the editor"
+                    title={t("citeClauseTitle")}
                     className="ms-auto rounded-md border border-card-border bg-background px-2 py-1 text-[10px] font-medium text-foreground/90 opacity-100 transition hover:border-brand-teal hover:text-brand-teal focus:opacity-100 md:opacity-0 md:group-hover:opacity-100"
                   >
-                    🔗 Cite this clause
+                    🔗 {t("citeThisClause")}
                   </button>
                 </div>
                 <p
@@ -161,8 +160,7 @@ export function ComposeReferencePane({ onCite }: Props) {
         ) : null}
       </div>
       <div className="border-t border-card-border bg-card-bg/40 px-3 py-2 text-[10px] text-muted">
-        Citations pin to the regulation&apos;s current version — when the
-        regulation updates, the pill flags for review.
+        {t("composeReferenceFooter")}
       </div>
     </div>
   );

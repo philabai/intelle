@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { formatDistanceToNowStrict } from "date-fns";
@@ -21,6 +22,7 @@ export const dynamic = "force-dynamic";
  * remember what they'd been assigned to.
  */
 export default async function ReviewerInboxPage() {
+  const t = useTranslations("regwatch.comply");
   const supabase = await createClient();
   const {
     data: { user },
@@ -35,33 +37,32 @@ export default async function ReviewerInboxPage() {
         <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
           <nav className="text-xs text-muted">
             <Link href="/regwatch/comply" className="hover:text-foreground">
-              Comply
+              {t("breadcrumbComply")}
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-foreground">Reviewer Inbox</span>
+            <span className="text-foreground">{t("inboxTitle")}</span>
           </nav>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Reviewer Inbox · {bundle.total} pending
+            {t("inboxHeading", { count: bundle.total })}
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted">
-            Documents and obligations assigned to you across the org. Click
-            any row to open the source for review.
+            {t("inboxSubheading")}
           </p>
         </div>
       </header>
 
       <div className="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6">
         <Section
-          title="Document reviews"
-          subtitle="Review / approve in-flight internal documents."
+          title={t("inboxDocReviewsTitle")}
+          subtitle={t("inboxDocReviewsSubtitle")}
           items={bundle.docReviews}
-          emptyLabel="No open document reviews assigned to you."
+          emptyLabel={t("inboxDocReviewsEmpty")}
         />
         <Section
-          title="Obligation reviews"
-          subtitle="Compliance obligations awaiting your attestation + evidence."
+          title={t("inboxObligationReviewsTitle")}
+          subtitle={t("inboxObligationReviewsSubtitle")}
           items={bundle.obligationReviews}
-          emptyLabel="No open obligation reviews assigned to you."
+          emptyLabel={t("inboxObligationReviewsEmpty")}
         />
       </div>
     </RegwatchAppShell>
@@ -79,6 +80,7 @@ function Section({
   items: InboxItem[];
   emptyLabel: string;
 }) {
+  const t = useTranslations("regwatch.comply");
   return (
     <section>
       <div className="mb-3 flex items-baseline justify-between gap-2">
@@ -112,13 +114,14 @@ function Section({
                 </div>
                 <p className="mt-0.5 text-[11px] text-muted">{item.subtitle}</p>
                 <p className="mt-0.5 text-[10px] text-muted">
-                  Assigned{" "}
+                  {t("inboxAssignedPrefix")}{" "}
                   {formatDistanceToNowStrict(new Date(item.assignedAt), {
                     addSuffix: true,
                   })}
                   {item.dueAt && (
                     <>
-                      {" · Due "}
+                      {" · "}
+                      {t("inboxDuePrefix")}{" "}
                       <span className="text-amber-300">
                         {new Date(item.dueAt).toLocaleDateString()}
                       </span>

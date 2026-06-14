@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -13,6 +14,7 @@ export const metadata = { title: "Asset setup" };
 export const dynamic = "force-dynamic";
 
 export default async function AssetsSetupPage() {
+  const t = useTranslations("regwatch.comply");
   const supabase = await createClient();
   const {
     data: { user },
@@ -47,7 +49,7 @@ export default async function AssetsSetupPage() {
     3: config.level3Label,
     4: config.level4Label,
     5: config.level5Label,
-    6: config.level6Label ?? "Component",
+    6: config.level6Label ?? t("levelComponentFallback"),
   };
 
   return (
@@ -55,38 +57,42 @@ export default async function AssetsSetupPage() {
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/feed" className="hover:text-foreground">
-            My Feed
+            {t("breadcrumbMyFeed")}
           </Link>
           <span className="mx-2">/</span>
           <Link href="/regwatch/assets" className="hover:text-foreground">
-            Assets
+            {t("assetsTitle")}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-foreground">Setup</span>
+          <span className="text-foreground">{t("setupTitle")}</span>
         </nav>
 
         <header className="mt-4 mb-8">
           <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-            {org?.organization.name ?? "Your organization"}
+            {org?.organization.name ?? t("yourOrganization")}
           </p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Build your asset tree
+            {t("setupHeading")}
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted">
-            Start with at least one {labels[2]}. Add {labels[3]}s, {labels[4]}s, and{" "}
-            {labels[5]}s under it, or seed an industry starter pack from the right
-            rail.
+            {t("setupSubheading", {
+              l2: labels[2],
+              l3: labels[3],
+              l4: labels[4],
+              l5: labels[5],
+            })}
           </p>
         </header>
 
         {!canEdit ? (
           <p className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-4 text-xs text-amber-300">
-            Only owners and admins can edit the asset tree. You can view the
-            current tree at{" "}
-            <Link href="/regwatch/assets" className="underline">
-              /regwatch/assets
-            </Link>
-            .
+            {t.rich("setupReadOnly", {
+              link: (c) => (
+                <Link href="/regwatch/assets" className="underline">
+                  {c}
+                </Link>
+              ),
+            })}
           </p>
         ) : (
           <AssetTreeBuilder

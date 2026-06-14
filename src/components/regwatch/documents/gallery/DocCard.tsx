@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import { createServiceClient } from "@/lib/regwatch/supabase/service";
@@ -34,6 +35,7 @@ const REVIEW_STATE_TONE: Record<InternalDocumentReviewState, string> = {
  * @tiptap/html.
  */
 export async function DocCard({ doc }: Props) {
+  const t = useTranslations("regwatch.documents");
   // Body_doc isn't on the list item shape — fetch it separately. The card
   // is server-rendered so this is cheap and goes through the service
   // client (RLS still gates by org_id below).
@@ -50,7 +52,7 @@ export async function DocCard({ doc }: Props) {
     .trim()
     .charAt(0)
     .toUpperCase();
-  const ownerTitle = doc.ownerName ?? doc.ownerEmail ?? "Unknown owner";
+  const ownerTitle = doc.ownerName ?? doc.ownerEmail ?? t("unknownOwner");
 
   return (
     <Link
@@ -75,7 +77,9 @@ export async function DocCard({ doc }: Props) {
           </p>
           <span
             className={`shrink-0 rounded-full border px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider ${REVIEW_STATE_TONE[doc.reviewState]}`}
-            title={`Review state: ${REVIEW_STATE_LABEL[doc.reviewState]}`}
+            title={t("reviewStateTitle", {
+              state: REVIEW_STATE_LABEL[doc.reviewState],
+            })}
           >
             {REVIEW_STATE_LABEL[doc.reviewState]}
           </span>
@@ -115,17 +119,17 @@ export async function DocCard({ doc }: Props) {
             {doc.linkCount > 0 && (
               <span
                 className="rounded-md bg-brand-teal/15 px-1.5 py-0.5 font-mono text-brand-teal"
-                title={`${doc.linkCount} regulation link${doc.linkCount === 1 ? "" : "s"}`}
+                title={t("regulationLinkCount", { count: doc.linkCount })}
               >
-                {doc.linkCount} reg
+                {t("regBadge", { count: doc.linkCount })}
               </span>
             )}
             {doc.assetLinkCount > 0 && (
               <span
                 className="rounded-md bg-brand-blue/15 px-1.5 py-0.5 font-mono text-brand-blue"
-                title={`${doc.assetLinkCount} asset link${doc.assetLinkCount === 1 ? "" : "s"}`}
+                title={t("assetLinkCount", { count: doc.assetLinkCount })}
               >
-                {doc.assetLinkCount} asset
+                {t("assetBadge", { count: doc.assetLinkCount })}
               </span>
             )}
           </div>

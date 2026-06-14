@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Modal } from "@/components/regwatch/Modal";
 import { assignReviewerOrApprover } from "@/lib/regwatch/internal-document-workflow-actions";
@@ -31,6 +32,7 @@ export function AssignReviewerDialog({
   docId,
   members,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +60,7 @@ export function AssignReviewerDialog({
 
   function onSubmit() {
     if (!userId) {
-      setError("Pick a member first");
+      setError(t("pickMemberFirst"));
       return;
     }
     setError(null);
@@ -69,7 +71,7 @@ export function AssignReviewerDialog({
         role,
       });
       if (!res.ok) {
-        setError(res.error ?? "Could not assign");
+        setError(res.error ?? t("couldNotAssign"));
         return;
       }
       router.refresh();
@@ -78,7 +80,7 @@ export function AssignReviewerDialog({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Assign reviewer or approver" size="md">
+    <Modal open={open} onClose={onClose} title={t("assignReviewerOrApprover")} size="md">
       <div className="space-y-3">
         <fieldset className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {(["reviewer", "approver"] as const).map((r) => (
@@ -102,8 +104,8 @@ export function AssignReviewerDialog({
               </span>
               <p className="mt-0.5 text-[10px] text-muted">
                 {r === "reviewer"
-                  ? "Reviews the body; signature meaning='reviewed'."
-                  : "Approves for use; signature meaning='approved'."}
+                  ? t("reviewerRoleHint")
+                  : t("approverRoleHint")}
               </p>
             </label>
           ))}
@@ -111,12 +113,12 @@ export function AssignReviewerDialog({
 
         <label className="block">
           <span className="text-[10px] font-medium uppercase tracking-wider text-muted">
-            Find a member
+            {t("findMember")}
           </span>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name or email…"
+            placeholder={t("searchByNameEmail")}
             className="mt-1 w-full rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
           />
         </label>
@@ -124,7 +126,7 @@ export function AssignReviewerDialog({
         <div className="max-h-60 overflow-y-auto rounded-md border border-card-border bg-card-bg/20">
           {filtered.length === 0 ? (
             <p className="px-3 py-2 text-[11px] text-muted">
-              No members match.
+              {t("noMembersMatch")}
             </p>
           ) : (
             filtered.map((m) => (
@@ -169,7 +171,7 @@ export function AssignReviewerDialog({
             disabled={pending}
             className="rounded-md border border-card-border bg-background px-3 py-1.5 text-xs text-muted hover:text-foreground"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="button"
@@ -177,7 +179,7 @@ export function AssignReviewerDialog({
             disabled={pending || !userId}
             className="rounded-md bg-brand-blue px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-blue/90 disabled:opacity-50"
           >
-            {pending ? "Assigning…" : "Assign"}
+            {pending ? t("assigning") : t("assign")}
           </button>
         </div>
       </div>

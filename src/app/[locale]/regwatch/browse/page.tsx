@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import {
@@ -32,6 +33,7 @@ function pickFilter(
 }
 
 export default async function BrowsePage({ searchParams }: Props) {
+  const t = useTranslations("regwatch.discover");
   const raw = await searchParams;
   const hideNewsParam = pickFilter(raw, "hide_news");
   // hide_news defaults to ON; pass "0" to include news/notices.
@@ -109,15 +111,16 @@ export default async function BrowsePage({ searchParams }: Props) {
       <header className="border-b border-card-border bg-card-bg/30">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
           <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-            Global regulations corpus
+            {t("browseEyebrow")}
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Browse {totalItems.toLocaleString()} regulations from{" "}
-            {totalRegulators.toLocaleString()} regulators
+            {t("browseHeading", {
+              items: totalItems.toLocaleString(),
+              regulators: totalRegulators.toLocaleString(),
+            })}
           </h1>
           <p className="mt-2 text-sm text-muted">
-            {totalRecent.toLocaleString()} updated in the last 30 days. Public corpus —
-            no signup required to read.
+            {t("browseSubheading", { recent: totalRecent.toLocaleString() })}
           </p>
           <div className="mt-6">
             <Suspense fallback={null}>
@@ -160,18 +163,19 @@ function TileGrid({
 }: {
   summaries: Awaited<ReturnType<typeof getJurisdictionSummaries>>;
 }) {
+  const t = useTranslations("regwatch.discover");
   if (summaries.length === 0) {
     return (
       <EmptyState
-        title="Corpus is empty."
-        description="Apply the seed migration at supabase/migrations/20260605_regwatch_regulator_seed.sql, or wait for Phase 1.x connectors to start writing regulators + items."
+        title={t("corpusEmptyTitle")}
+        description={t("corpusEmptyDescription")}
       />
     );
   }
   return (
     <>
       <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted">
-        Browse by jurisdiction
+        {t("browseByJurisdiction")}
       </p>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {summaries.map((s) => (
@@ -199,14 +203,15 @@ function ResultList({
   totalPages: number;
   pageHref: (n: number) => string;
 }) {
+  const t = useTranslations("regwatch.discover");
   if (items.length === 0) {
     return (
       <EmptyState
-        title="No regulations match these filters."
+        title={t("noMatchTitle")}
         description={
           filters.q
-            ? `Try a broader search than "${filters.q}", or clear a facet from the sidebar.`
-            : "Try clearing the most restrictive facet, or widen the date range."
+            ? t("noMatchWithQuery", { q: filters.q })
+            : t("noMatchDescription")
         }
       />
     );
@@ -216,14 +221,17 @@ function ResultList({
   return (
     <>
       <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted">
-        Showing {rangeStart.toLocaleString()}–{rangeEnd.toLocaleString()} of{" "}
-        {totalCount.toLocaleString()}{" "}
-        {totalCount === 1 ? "regulation" : "regulations"}
-        {filters.q && (
-          <>
-            {" "}for <span className="text-foreground">&ldquo;{filters.q}&rdquo;</span>
-          </>
-        )}
+        {t.rich("showingRange", {
+          start: rangeStart.toLocaleString(),
+          end: rangeEnd.toLocaleString(),
+          count: totalCount,
+          total: totalCount.toLocaleString(),
+          hasQuery: filters.q ? "yes" : "no",
+          q: filters.q ?? "",
+          highlight: (chunks) => (
+            <span className="text-foreground">{chunks}</span>
+          ),
+        })}
       </p>
       <div className="overflow-hidden rounded-xl border border-card-border bg-background">
         {items.map((item) => (
@@ -237,26 +245,29 @@ function ResultList({
               href={pageHref(page - 1)}
               className="rounded-md border border-card-border px-3 py-1.5 text-muted hover:text-foreground"
             >
-              ← Previous
+              {t("previous")}
             </Link>
           ) : (
             <span className="rounded-md border border-card-border/40 px-3 py-1.5 text-muted/40">
-              ← Previous
+              {t("previous")}
             </span>
           )}
           <span className="text-xs text-muted">
-            Page {page.toLocaleString()} of {totalPages.toLocaleString()}
+            {t("pageOf", {
+              page: page.toLocaleString(),
+              total: totalPages.toLocaleString(),
+            })}
           </span>
           {page < totalPages ? (
             <Link
               href={pageHref(page + 1)}
               className="rounded-md border border-card-border px-3 py-1.5 text-muted hover:text-foreground"
             >
-              Next →
+              {t("next")}
             </Link>
           ) : (
             <span className="rounded-md border border-card-border/40 px-3 py-1.5 text-muted/40">
-              Next →
+              {t("next")}
             </span>
           )}
         </nav>

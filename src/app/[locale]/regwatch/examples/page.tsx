@@ -1,9 +1,11 @@
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { RegwatchAppShell, RegwatchComingSoon } from "@/components/regwatch/AppShell";
 
 export const metadata = { title: "Sample Briefings" };
 
 export default async function ExamplesPage() {
+  const t = await getTranslations("regwatch.discover");
   const supabase = await createClient();
   const {
     data: { user },
@@ -12,8 +14,8 @@ export default async function ExamplesPage() {
   return (
     <RegwatchAppShell authed={!!user}>
       <RegwatchComingSoon
-        title="Sample impact briefings."
-        description="Public, indexed gallery of sample impact briefings and Iris queries (Lexis+ Protégé Prompt Library pattern). SEO + trust signal — no signup required. Phase 1 (should-have)."
+        title={t("examplesComingSoonTitle")}
+        description={t("examplesComingSoonDescription")}
       />
     </RegwatchAppShell>
   );

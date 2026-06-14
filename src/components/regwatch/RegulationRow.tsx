@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import type { RegulationListItem } from "@/lib/regwatch/queries";
@@ -5,6 +6,7 @@ import { StatusChip } from "./StatusChip";
 import { InstrumentTypeBadge } from "./InstrumentTypeBadge";
 
 export function RegulationRow({ item }: { item: RegulationListItem }) {
+  const t = useTranslations("regwatch.discover");
   const href = `/regwatch/r/${item.jurisdiction_code.toLowerCase()}/${item.slug}`;
   const changedAgo = formatDistanceToNowStrict(new Date(item.last_changed_at), {
     addSuffix: false,
@@ -37,10 +39,10 @@ export function RegulationRow({ item }: { item: RegulationListItem }) {
           )}
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2 text-end text-[11px] text-muted">
-          <span>{changedAgo} ago</span>
+          <span>{t("agoLabel", { ago: changedAgo })}</span>
           {item.effective_date && (
             <span>
-              eff.{" "}
+              {t("effAbbr")}{" "}
               <time dateTime={item.effective_date}>
                 {new Date(item.effective_date).toLocaleDateString("en-GB", {
                   day: "2-digit",

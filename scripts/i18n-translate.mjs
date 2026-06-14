@@ -64,13 +64,36 @@ async function translateBatch(entries, language) {
 - Return ONLY a JSON object, same keys, translated values. No prose.`;
   const msg = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 8000,
+    max_tokens: 16000,
     system: sys,
     messages: [{ role: "user", content: JSON.stringify(payload, null, 2) }],
   });
   const text = msg.content.find((b) => b.type === "text")?.text ?? "{}";
   const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
   return JSON.parse(json);
+}
+
+/** Run a batch with retries; the model occasionally emits malformed JSON
+ * (unescaped char in a value, or truncation). Retry a few times, then give
+ * up on this batch and let the caller continue — never abort the whole run. */
+async function translateBatchSafe(entries, language, label) {
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    try {
+      return await translateBatch(entries, language);
+    } catch (e) {
+      console.warn(`  ${label} attempt ${attempt} failed: ${e.message}`);
+    }
+  }
+  // Last resort: translate one key at a time so a single bad value can't
+  // sink the surrounding keys.
+  const out = {};
+  for (const [k, v] of entries) {
+    for (let a = 1; a <= 2; a++) {
+      try { Object.assign(out, await translateBatch([[k, v]], language)); break; }
+      catch (e) { if (a === 2) console.warn(`  drop ${k}: ${e.message}`); }
+    }
+  }
+  return out;
 }
 
 async function main() {
@@ -87,19 +110,25 @@ async function main() {
     console.log(`${t}: translating ${missing.length} keys…`);
     const reviewPath = `${DIR}/${t}.review.json`;
     const review = read(reviewPath);
-    // Chunk to keep each request bounded.
-    for (let i = 0; i < missing.length; i += 60) {
-      const chunk = missing.slice(i, i + 60);
-      const out = await translateBatch(chunk, LANG[t]);
+    // Chunk to keep each request bounded. Arabic is token-heavy and more
+    // prone to malformed output, so use smaller chunks for it.
+    const SIZE = t === "ar" ? 35 : 60;
+    let filled = 0;
+    for (let i = 0; i < missing.length; i += SIZE) {
+      const chunk = missing.slice(i, i + SIZE);
+      const out = await translateBatchSafe(chunk, LANG[t], `${t} batch ${i}-${i + chunk.length}`);
       for (const [k] of chunk) {
         if (out[k] != null) {
           setDeep(target, k, out[k]);
           review[k] = "needs-review";
+          filled++;
         }
       }
+      // Persist after every chunk so a later failure never loses progress.
+      writeFileSync(targetPath, JSON.stringify(target, null, 2) + "\n");
+      writeFileSync(reviewPath, JSON.stringify(review, null, 2) + "\n");
+      console.log(`  ${t}: ${filled}/${missing.length} filled…`);
     }
-    writeFileSync(targetPath, JSON.stringify(target, null, 2) + "\n");
-    writeFileSync(reviewPath, JSON.stringify(review, null, 2) + "\n");
     console.log(`${t}: wrote ${targetPath} (+${Object.keys(review).length} to review)`);
   }
 }

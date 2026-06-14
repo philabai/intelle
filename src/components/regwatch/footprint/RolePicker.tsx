@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { REGWATCH_ROLES } from "@/lib/regwatch/reference/roles";
 
 interface Props {
@@ -8,9 +9,10 @@ interface Props {
 }
 
 export function RolePicker({ value, onChange }: Props) {
+  const t = useTranslations("regwatch.comply");
   return (
     <fieldset className="grid gap-2 sm:grid-cols-2">
-      <legend className="sr-only">Your functional role</legend>
+      <legend className="sr-only">{t("functionalRoleLegend")}</legend>
       {REGWATCH_ROLES.map((r) => {
         const active = value === r.value;
         return (

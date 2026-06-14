@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { notFound } from "next/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -21,6 +22,7 @@ interface Props {
 export const dynamic = "force-dynamic";
 
 export default async function ComposeDocumentPage({ params }: Props) {
+  const t = useTranslations("regwatch.documents");
   const { id } = await params;
   const supabase = await createClient();
   const {
@@ -54,10 +56,10 @@ export default async function ComposeDocumentPage({ params }: Props) {
       <RegwatchAppShell authed>
         <div className="mx-auto max-w-2xl px-4 py-16 text-center">
           <h1 className="text-xl font-semibold text-foreground">
-            Read-only access
+            {t("readOnlyAccess")}
           </h1>
           <p className="mt-2 text-sm text-muted">
-            Only owners and admins can compose documents in this organization.
+            {t("readOnlyComposeBody")}
           </p>
         </div>
       </RegwatchAppShell>

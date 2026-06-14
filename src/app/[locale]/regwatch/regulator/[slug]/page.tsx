@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -38,6 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function RegulatorProfilePage({ params }: Props) {
+  const t = useTranslations("regwatch.discover");
   const { slug } = await params;
   const regulator = await getRegulatorBySlug(slug);
   if (!regulator) notFound();
@@ -58,7 +60,7 @@ export default async function RegulatorProfilePage({ params }: Props) {
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/regulators" className="hover:text-foreground">
-            Regulators
+            {t("breadcrumbRegulators")}
           </Link>
           <span className="mx-2">/</span>
           <span className="text-foreground">
@@ -84,7 +86,7 @@ export default async function RegulatorProfilePage({ params }: Props) {
           </h1>
           {regulator.short_name && regulator.short_name !== regulator.name && (
             <p className="mt-1 text-sm text-muted">
-              Short name: {regulator.short_name}
+              {t("shortName", { name: regulator.short_name })}
             </p>
           )}
           {regulator.description && (
@@ -108,15 +110,15 @@ export default async function RegulatorProfilePage({ params }: Props) {
         </header>
 
         <div className="mt-8 grid gap-3 sm:grid-cols-3">
-          <Stat label="Items tracked" value={String(regulator.item_count)} />
+          <Stat label={t("itemsTracked")} value={String(regulator.item_count)} />
           <Stat
-            label="Last 30 days"
+            label={t("last30Days")}
             value={String(regulator.recent_item_count)}
             accent
           />
           <div className="rounded-lg border border-card-border bg-card-bg p-4">
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-              Canonical site
+              {t("canonicalSite")}
             </p>
             {regulator.canonical_url ? (
               <a
@@ -128,7 +130,7 @@ export default async function RegulatorProfilePage({ params }: Props) {
                 {regulator.canonical_url.replace(/^https?:\/\//, "")}
               </a>
             ) : (
-              <p className="mt-2 text-xs text-muted">Not on file.</p>
+              <p className="mt-2 text-xs text-muted">{t("notOnFile")}</p>
             )}
           </div>
         </div>
@@ -136,19 +138,19 @@ export default async function RegulatorProfilePage({ params }: Props) {
         <section className="mt-10">
           <div className="mb-3 flex items-baseline justify-between">
             <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
-              Latest items
+              {t("latestItems")}
             </h2>
             <Link
               href={`/regwatch/browse?regulator=${regulator.slug}`}
               className="text-xs text-brand-teal hover:underline"
             >
-              Open in Browser →
+              {t("openInBrowser")}
             </Link>
           </div>
           {items.length === 0 ? (
             <EmptyState
-              title="No items tracked for this regulator yet."
-              description="The next crawl cron run will populate items here. If this regulator has no automated connector, items are added via the seed migration or manual entry."
+              title={t("regulatorEmptyTitle")}
+              description={t("regulatorEmptyDescription")}
             />
           ) : (
             <div className="overflow-hidden rounded-xl border border-card-border bg-background">

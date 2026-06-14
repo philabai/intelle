@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -16,50 +17,36 @@ export const dynamic = "force-dynamic";
 // matching topic tiles.
 const TOPIC_GROUPS: {
   key: string;
-  label: string;
-  description: string;
   topics: string[];
   accent: "teal" | "blue" | "violet" | "amber" | "red" | "muted";
 }[] = [
   {
     key: "climate",
-    label: "Climate & emissions",
-    description: "GHG, methane, and carbon-market regulation.",
     topics: ["emissions", "methane", "carbon-market"],
     accent: "teal",
   },
   {
     key: "reporting",
-    label: "Reporting & disclosure",
-    description: "Sustainability, climate-related, and financial disclosure rules.",
     topics: ["reporting"],
     accent: "blue",
   },
   {
     key: "permitting",
-    label: "Permitting & licensing",
-    description: "Operational permits and consents.",
     topics: ["permitting"],
     accent: "violet",
   },
   {
     key: "safety",
-    label: "Health & safety",
-    description: "Workplace and process-safety obligations.",
     topics: ["worker-safety", "process-safety"],
     accent: "amber",
   },
   {
     key: "chemicals",
-    label: "Chemicals & substances",
-    description: "Substance restrictions, bunker spec.",
     topics: ["pfas", "bunker-spec"],
     accent: "red",
   },
   {
     key: "other",
-    label: "Other regulatory streams",
-    description: "Tax and trade-related compliance.",
     topics: ["tax", "sanctions"],
     accent: "muted",
   },
@@ -75,6 +62,7 @@ const ACCENT_STYLES: Record<string, { border: string; bg: string; text: string }
 };
 
 export default async function TopicsCloudPage() {
+  const t = useTranslations("regwatch.discover");
   const supabase = await createClient();
   const [
     {
@@ -123,36 +111,37 @@ export default async function TopicsCloudPage() {
       <header className="border-b border-card-border bg-card-bg/30">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
           <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-            Topics
+            {t("topicsEyebrow")}
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Every topic we track,{" "}
-            <span className="gradient-text">curated for compliance</span>
+            {t.rich("topicsHeading", {
+              highlight: (chunks) => (
+                <span className="gradient-text">{chunks}</span>
+              ),
+            })}
           </h1>
           <p className="mt-3 max-w-3xl text-sm text-muted">
-            {TOPIC_TAXONOMY.length} curated topic domains spanning climate,
-            disclosure, safety, chemicals, and trade. Click any topic to see every
-            regulation in our corpus that touches it.
+            {t("topicsSubheading", { count: TOPIC_TAXONOMY.length })}
           </p>
 
           {/* Hero stats — three biggest topics */}
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            {hero.map((t) => (
+            {hero.map((topic) => (
               <Link
-                key={t.value}
-                href={`/regwatch/topic/${t.value}`}
+                key={topic.value}
+                href={`/regwatch/topic/${topic.value}`}
                 className="group rounded-xl border border-brand-teal/40 bg-brand-teal/5 p-4 transition-all hover:border-brand-teal hover:shadow-lg hover:shadow-brand-teal/10"
               >
                 <p className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">
-                  Top topic
+                  {t("topTopic")}
                 </p>
                 <p className="mt-1 text-xl font-semibold tracking-tight text-foreground">
-                  {t.label}
+                  {topic.label}
                 </p>
                 <p className="mt-2 font-mono text-2xl font-semibold text-brand-teal">
-                  {t.count}
+                  {topic.count}
                 </p>
-                <p className="text-[11px] text-muted">items in corpus</p>
+                <p className="text-[11px] text-muted">{t("itemsInCorpus")}</p>
               </Link>
             ))}
           </div>
@@ -163,20 +152,22 @@ export default async function TopicsCloudPage() {
         {/* Coverage strip */}
         <div className="mb-12 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-card-border bg-card-bg/40 px-5 py-4 text-xs">
           <p className="text-muted">
-            <span className="font-medium text-foreground">
-              {grandTotal.toLocaleString()}
-            </span>{" "}
-            topic-tag attributions across the corpus ·{" "}
-            <span className="font-medium text-brand-teal">
-              {grandRecent.toLocaleString()}
-            </span>{" "}
-            in the last 30 days
+            {t.rich("topicCoverage", {
+              total: grandTotal.toLocaleString(),
+              recent: grandRecent.toLocaleString(),
+              strong: (chunks) => (
+                <span className="font-medium text-foreground">{chunks}</span>
+              ),
+              accent: (chunks) => (
+                <span className="font-medium text-brand-teal">{chunks}</span>
+              ),
+            })}
           </p>
           <Link
             href="/regwatch/browse"
             className="text-brand-teal hover:underline"
           >
-            Open Browser →
+            {t("openBrowser")}
           </Link>
         </div>
 
@@ -189,29 +180,30 @@ export default async function TopicsCloudPage() {
                 <header className="mb-4 flex items-baseline justify-between gap-3">
                   <div>
                     <h2 className={`text-lg font-semibold tracking-tight ${styles.text}`}>
-                      {group.label}
+                      {t(`topicGroup.${group.key}.label`)}
                     </h2>
                     <p className="mt-0.5 text-xs text-muted">
-                      {group.description}
+                      {t(`topicGroup.${group.key}.description`)}
                     </p>
                   </div>
                   <span className="text-[11px] text-muted">
-                    {group.topics.length}{" "}
-                    {group.topics.length === 1 ? "topic" : "topics"}
+                    {t("topicCount", { count: group.topics.length })}
                   </span>
                 </header>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {group.topics.map((slug) => {
-                    const t = total.get(slug) ?? 0;
+                    const count = total.get(slug) ?? 0;
                     const r = recent.get(slug) ?? 0;
                     return (
                       <TopicTile
                         key={slug}
                         slug={slug}
                         label={topicLabel(slug)}
-                        total={t}
+                        total={count}
                         recent30d={r}
                         styles={styles}
+                        itemsLabel={t("itemsLabel", { count })}
+                        viewFeedLabel={t("viewTopicFeed")}
                       />
                     );
                   })}
@@ -225,16 +217,14 @@ export default async function TopicsCloudPage() {
               <header className="mb-4 flex items-baseline justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-semibold tracking-tight text-muted">
-                    Other topics in the corpus
+                    {t("otherTopicsTitle")}
                   </h2>
                   <p className="mt-0.5 text-xs text-muted">
-                    Topics attached by publisher connectors, beyond the curated
-                    domains above.
+                    {t("otherTopicsDescription")}
                   </p>
                 </div>
                 <span className="text-[11px] text-muted">
-                  {otherTopics.length}{" "}
-                  {otherTopics.length === 1 ? "topic" : "topics"}
+                  {t("topicCount", { count: otherTopics.length })}
                 </span>
               </header>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -246,6 +236,8 @@ export default async function TopicsCloudPage() {
                     total={total.get(slug) ?? 0}
                     recent30d={recent.get(slug) ?? 0}
                     styles={ACCENT_STYLES.muted}
+                    itemsLabel={t("itemsLabel", { count: total.get(slug) ?? 0 })}
+                    viewFeedLabel={t("viewTopicFeed")}
                   />
                 ))}
               </div>
@@ -255,14 +247,16 @@ export default async function TopicsCloudPage() {
 
         {/* Suggest a topic CTA */}
         <p className="mt-16 text-center text-xs text-muted">
-          Want a topic we&apos;re not tracking?{" "}
-          <Link
-            href="/contact?service_interest=regwatch-coverage"
-            className="text-brand-teal hover:underline"
-          >
-            Tell us
-          </Link>{" "}
-          — we add new topics as taxonomy entries plus enrichment-prompt updates.
+          {t.rich("topicsCta", {
+            link: (chunks) => (
+              <Link
+                href="/contact?service_interest=regwatch-coverage"
+                className="text-brand-teal hover:underline"
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       </div>
     </RegwatchAppShell>
@@ -275,9 +269,19 @@ interface TileProps {
   total: number;
   recent30d: number;
   styles: { border: string; bg: string; text: string };
+  itemsLabel: string;
+  viewFeedLabel: string;
 }
 
-function TopicTile({ slug, label, total, recent30d, styles }: TileProps) {
+function TopicTile({
+  slug,
+  label,
+  total,
+  recent30d,
+  styles,
+  itemsLabel,
+  viewFeedLabel,
+}: TileProps) {
   return (
     <Link
       href={`/regwatch/topic/${slug}`}
@@ -310,11 +314,11 @@ function TopicTile({ slug, label, total, recent30d, styles }: TileProps) {
           {total}
         </p>
         <p className="text-[11px] text-muted">
-          {total === 1 ? "item" : "items"}
+          {itemsLabel}
         </p>
       </div>
       <p className="mt-2 ps-2 text-[11px] text-muted opacity-0 transition-opacity group-hover:opacity-100">
-        View topic feed →
+        {viewFeedLabel}
       </p>
     </Link>
   );

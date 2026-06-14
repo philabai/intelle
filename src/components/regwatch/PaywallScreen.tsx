@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { TIERS, type Tier } from "@/lib/regwatch/stripe";
 import { FEATURE_DESCRIPTIONS, type GatedFeature } from "@/lib/regwatch/tier";
@@ -22,13 +23,14 @@ export function PaywallScreen({
   requiredTier,
   extra,
 }: Props) {
+  const t = useTranslations("regwatch.common");
   const def = FEATURE_DESCRIPTIONS[feature];
   const requiredDef = TIERS[requiredTier];
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
       <div className="rounded-2xl border border-brand-teal/40 bg-brand-teal/5 p-8 text-center">
         <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-          Upgrade to unlock
+          {t("paywallEyebrow")}
         </p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
           {def.name}
@@ -63,22 +65,25 @@ export function PaywallScreen({
             href="/regwatch/settings/billing"
             className="rounded-md bg-brand-blue px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-blue/90"
           >
-            See all plans → Upgrade
+            {t("paywallSeeAllPlans")}
           </Link>
           <Link
             href="/regwatch/browse"
             className="rounded-md border border-card-border bg-card-bg px-5 py-2.5 text-sm text-foreground hover:border-brand-teal"
           >
-            Browse the corpus instead
+            {t("paywallBrowseInstead")}
           </Link>
         </div>
 
         <p className="mt-6 text-[11px] text-muted">
-          You&apos;re currently on{" "}
-          <span className="font-medium capitalize text-foreground">
-            {TIERS[currentTier].label}
-          </span>
-          . Upgrades take effect within seconds of Stripe webhook confirmation.
+          {t.rich("paywallCurrentPlan", {
+            tier: TIERS[currentTier].label,
+            plan: (chunks) => (
+              <span className="font-medium capitalize text-foreground">
+                {chunks}
+              </span>
+            ),
+          })}
         </p>
       </div>
     </div>

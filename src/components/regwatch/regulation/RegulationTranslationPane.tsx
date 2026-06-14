@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { formatDistanceToNowStrict } from "date-fns";
 
 interface Props {
@@ -17,13 +18,7 @@ interface StatusBundle {
   error?: string;
 }
 
-const LANG_LABEL: Record<string, string> = {
-  ar: "Arabic",
-  fr: "French",
-  es: "Spanish",
-  zh: "Chinese",
-  de: "German",
-};
+const KNOWN_LANGS = new Set(["ar", "fr", "es", "zh", "de"]);
 
 const POLL_INTERVAL_MS = 2000;
 const EXPECTED_DURATION_MS = 45_000;
@@ -44,6 +39,7 @@ const EXPECTED_DURATION_MS = 45_000;
  * best-guess animation that caps at 95% until the result lands.
  */
 export function RegulationTranslationPane({ regId, sourceLang }: Props) {
+  const t = useTranslations("regwatch.discover");
   const [state, setState] = useState<StatusBundle>({ status: "not_started" });
   const [elapsedMs, setElapsedMs] = useState(0);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -125,7 +121,9 @@ export function RegulationTranslationPane({ regId, sourceLang }: Props) {
     };
   }, [state.status]);
 
-  const sourceLangLabel = LANG_LABEL[sourceLang] ?? sourceLang.toUpperCase();
+  const sourceLangLabel = KNOWN_LANGS.has(sourceLang)
+    ? t(`lang.${sourceLang}`)
+    : sourceLang.toUpperCase();
 
   return (
     <div className="space-y-4">
@@ -133,7 +131,7 @@ export function RegulationTranslationPane({ regId, sourceLang }: Props) {
 
       {state.status === "not_started" && (
         <div className="rounded-md border border-card-border bg-card-bg/40 p-6 text-center text-xs text-muted">
-          Preparing translation…
+          {t("translatePreparing")}
         </div>
       )}
 
@@ -146,8 +144,8 @@ export function RegulationTranslationPane({ regId, sourceLang }: Props) {
 
       {state.status === "failed" && (
         <div className="rounded-md border border-red-500/40 bg-red-500/10 p-4 text-xs text-red-300">
-          <p className="mb-2 font-medium">Translation failed</p>
-          <p>{state.error ?? "Unknown error"}</p>
+          <p className="mb-2 font-medium">{t("translateFailed")}</p>
+          <p>{state.error ?? t("translateUnknownError")}</p>
           <button
             type="button"
             onClick={() => {
@@ -168,15 +166,16 @@ export function RegulationTranslationPane({ regId, sourceLang }: Props) {
             }}
             className="mt-3 rounded-md border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-[11px] text-red-300 hover:bg-red-500/20"
           >
-            Retry translation
+            {t("translateRetry")}
           </button>
         </div>
       )}
 
       {state.status === "not_needed" && (
         <div className="rounded-md border border-brand-teal/40 bg-brand-teal/5 p-4 text-xs text-foreground">
-          The source document is already in English. No translation is needed
-          — see the <strong>Original</strong> tab.
+          {t.rich("translateNotNeeded", {
+            strong: (chunks) => <strong>{chunks}</strong>,
+          })}
         </div>
       )}
 
@@ -184,10 +183,10 @@ export function RegulationTranslationPane({ regId, sourceLang }: Props) {
         <article className="overflow-hidden rounded-xl border border-card-border bg-card-bg/40">
           <header className="flex items-center justify-between gap-2 border-b border-card-border bg-card-bg/60 px-5 py-3">
             <p className="text-[11px] text-muted">
-              Machine translation · {sourceLangLabel} → English
+              {t("translateMachineLabel", { lang: sourceLangLabel })}
               {state.translatedAt && (
                 <>
-                  {" · cached "}
+                  {t("translateCachedPrefix")}
                   {formatDistanceToNowStrict(new Date(state.translatedAt), {
                     addSuffix: true,
                   })}
@@ -195,7 +194,10 @@ export function RegulationTranslationPane({ regId, sourceLang }: Props) {
               )}
             </p>
             <p className="font-mono text-[10px] text-muted">
-              {state.text.length.toLocaleString()} chars
+              {t("translateCharCount", {
+                count: state.text.length,
+                formatted: state.text.length.toLocaleString(),
+              })}
             </p>
           </header>
           {/* Own scroll container so the translation doesn't push the
@@ -221,6 +223,7 @@ function InProgressPanel({
   sourceLangLabel: string;
   elapsedMs: number;
 }) {
+  const t = useTranslations("regwatch.discover");
   // Progress bar fills toward 95% over EXPECTED_DURATION_MS, then holds
   // at 95% until the actual result arrives (we don't fake 100%).
   const ratio = Math.min(elapsedMs / EXPECTED_DURATION_MS, 0.95);
@@ -232,14 +235,14 @@ function InProgressPanel({
     <div className="rounded-xl border border-brand-blue/40 bg-brand-blue/5 p-5">
       <div className="flex items-baseline justify-between gap-2">
         <p className="text-sm font-medium text-foreground">
-          Translating from {sourceLangLabel}…
+          {t("translateInProgressTitle", { lang: sourceLangLabel })}
         </p>
-        <p className="font-mono text-[11px] text-muted">{elapsedSec}s</p>
+        <p className="font-mono text-[11px] text-muted">
+          {t("translateElapsedSeconds", { seconds: elapsedSec })}
+        </p>
       </div>
       <p className="mt-1 text-[11px] text-muted">
-        Claude is reading the {sourceLangLabel} source and producing a clean
-        English rendering. This usually takes 30–60 seconds for a
-        regulation-length document.
+        {t("translateInProgressBody", { lang: sourceLangLabel })}
       </p>
 
       <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-card-bg">
@@ -249,40 +252,35 @@ function InProgressPanel({
         />
       </div>
       <p className="mt-2 text-[11px] text-muted">
-        {isSlow
-          ? "Larger documents take longer. Translation continues in the background — feel free to navigate elsewhere; it'll be cached when you come back."
-          : "Translation runs in the background. If you leave this tab and come back later, the result will be cached and load instantly."}
+        {isSlow ? t("translateSlowNote") : t("translateBackgroundNote")}
       </p>
     </div>
   );
 }
 
 function DisclaimerBanner({ sourceLangLabel }: { sourceLangLabel: string }) {
+  const t = useTranslations("regwatch.discover");
   return (
     <div className="rounded-xl border-2 border-amber-500/60 bg-amber-500/10 p-4">
       <p className="text-[10px] font-bold uppercase tracking-wider text-amber-300">
-        ⚠ Machine translation — read before relying on this
+        {t("translateDisclaimerEyebrow")}
       </p>
       <p className="mt-2 text-sm font-bold leading-snug text-foreground">
-        This is a machine-generated translation from {sourceLangLabel} produced
-        by an AI language model. It is offered as a navigation aid only.
-        It is <span className="underline">not a legally valid</span>{" "}
-        rendering of the source regulation.
+        {t.rich("translateDisclaimerLead", {
+          lang: sourceLangLabel,
+          underline: (chunks) => <span className="underline">{chunks}</span>,
+        })}
       </p>
       <p className="mt-2 text-xs leading-relaxed text-foreground/90">
-        Before acting on anything in this translation, you{" "}
-        <strong>must consult an {sourceLangLabel}-speaking engineering or
-        legal specialist</strong> to confirm the meaning against the original
-        Arabic source on the <strong>Original</strong> tab. Compliance
-        evidence, audit submissions, and regulatory citations must use the
-        canonical {sourceLangLabel} document — not this translation.
+        {t.rich("translateDisclaimerBody", {
+          lang: sourceLangLabel,
+          strong: (chunks) => <strong>{chunks}</strong>,
+        })}
       </p>
       <p className="mt-2 text-[11px] leading-relaxed text-muted">
-        <strong>SparkLab LLC (intelle.io) accepts no responsibility</strong>{" "}
-        for misinterpretations, omissions, errors, or any losses or liability
-        arising from reliance on this AI-generated translation. The
-        translation is provided &ldquo;as is&rdquo; with no warranty of any
-        kind. Use at your own risk.
+        {t.rich("translateDisclaimerLiability", {
+          strong: (chunks) => <strong>{chunks}</strong>,
+        })}
       </p>
     </div>
   );

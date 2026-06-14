@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { notFound } from "next/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -18,6 +19,7 @@ interface Props {
 export const dynamic = "force-dynamic";
 
 export default async function CrosswalkWorkspacePage({ params }: Props) {
+  const t = useTranslations("regwatch.documents");
   const { id } = await params;
   const supabase = await createClient();
   const {
@@ -54,8 +56,7 @@ export default async function CrosswalkWorkspacePage({ params }: Props) {
     paragraphs: [],
     extractedChars: 0,
     usableForMapping: false,
-    fallbackReason:
-      "Could not load this document — make sure a file has been uploaded.",
+    fallbackReason: t("crosswalkLoadFailed"),
   };
 
   const subtitleParts = [

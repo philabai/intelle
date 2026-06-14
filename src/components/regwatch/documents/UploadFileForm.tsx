@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { uploadDocumentFile } from "@/lib/regwatch/internal-documents-actions";
 
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function UploadFileForm({ documentId, currentFileName }: Props) {
+  const t = useTranslations("regwatch.documents");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +26,7 @@ export function UploadFileForm({ documentId, currentFileName }: Props) {
     startTransition(async () => {
       const res = await uploadDocumentFile(formData);
       if (!res.ok) {
-        setError(res.error ?? "Upload failed");
+        setError(res.error ?? t("uploadFailed"));
         return;
       }
       router.refresh();
@@ -35,10 +37,10 @@ export function UploadFileForm({ documentId, currentFileName }: Props) {
     <div className="flex flex-wrap items-center gap-3">
       <label className="cursor-pointer rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-foreground hover:border-brand-blue">
         {pending
-          ? "Uploading…"
+          ? t("uploading")
           : currentFileName
-            ? "Replace file"
-            : "Upload file"}
+            ? t("replaceFile")
+            : t("uploadFile")}
         <input
           type="file"
           className="hidden"
@@ -48,7 +50,7 @@ export function UploadFileForm({ documentId, currentFileName }: Props) {
       </label>
       {currentFileName && (
         <span className="text-[11px] text-muted">
-          Current: <span className="font-mono">{currentFileName}</span>
+          {t("currentFilePrefix")} <span className="font-mono">{currentFileName}</span>
         </span>
       )}
       {error && <p className="text-xs text-red-400">{error}</p>}

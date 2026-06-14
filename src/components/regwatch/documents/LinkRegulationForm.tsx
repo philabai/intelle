@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import {
   linkDocumentToRegulation,
@@ -38,6 +39,7 @@ interface Props {
 }
 
 export function LinkRegulationForm({ documentId, existingLinks }: Props) {
+  const t = useTranslations("regwatch.documents");
   const router = useRouter();
   const [picked, setPicked] = useState<RegulationPickerResult | null>(null);
   const [rationale, setRationale] = useState("");
@@ -48,7 +50,7 @@ export function LinkRegulationForm({ documentId, existingLinks }: Props) {
     e.preventDefault();
     setError(null);
     if (!picked) {
-      setError("Pick a regulation first");
+      setError(t("pickRegulationFirst"));
       return;
     }
     startTransition(async () => {
@@ -60,7 +62,7 @@ export function LinkRegulationForm({ documentId, existingLinks }: Props) {
         linkRationale: rationale.trim() || null,
       });
       if (!res.ok) {
-        setError(res.error ?? "Could not link");
+        setError(res.error ?? t("couldNotLink"));
         return;
       }
       setPicked(null);
@@ -73,7 +75,7 @@ export function LinkRegulationForm({ documentId, existingLinks }: Props) {
     startTransition(async () => {
       const res = await unlinkDocumentFromRegulation({ linkId });
       if (!res.ok) {
-        setError(res.error ?? "Could not unlink");
+        setError(res.error ?? t("couldNotUnlink"));
         return;
       }
       router.refresh();
@@ -119,17 +121,17 @@ export function LinkRegulationForm({ documentId, existingLinks }: Props) {
                 type="button"
                 onClick={() => onUnlink(l.id)}
                 disabled={pending}
-                title="Remove this regulation link (history is preserved)"
+                title={t("removeLinkTitle")}
                 className="shrink-0 rounded-md border border-red-500/40 px-2 py-1 text-[10px] text-red-300 hover:border-red-500 hover:bg-red-500/10 disabled:opacity-50"
               >
-                Unlink
+                {t("unlink")}
               </button>
             </li>
           ))}
         </ul>
       ) : (
         <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-4 text-center text-xs text-muted">
-          No regulations linked yet.
+          {t("noRegulationsLinked")}
         </p>
       )}
 
@@ -138,13 +140,12 @@ export function LinkRegulationForm({ documentId, existingLinks }: Props) {
         className="space-y-3 rounded-lg border border-card-border bg-card-bg/40 p-3"
       >
         <p className="text-xs font-medium uppercase tracking-wider text-muted">
-          Link a regulation
+          {t("linkARegulation")}
         </p>
         <p className="text-[11px] text-muted">
-          Pin this document to a regulation as a whole — &ldquo;this document
-          is in scope of this regulation&rdquo;. For mapping specific
-          sections of your document to specific clauses of the regulation,
-          use the <strong>Clause crosswalk</strong> panel below.
+          {t.rich("linkRegulationDescription", {
+            strong: (chunks) => <strong>{chunks}</strong>,
+          })}
         </p>
         {/* No clause picker here — RegulationPicker without showClauseField
             simplifies the flow to "just pick a regulation". */}
@@ -156,7 +157,7 @@ export function LinkRegulationForm({ documentId, existingLinks }: Props) {
         <textarea
           value={rationale}
           onChange={(e) => setRationale(e.target.value)}
-          placeholder="Why is this doc linked? (optional — e.g. 'covers all flare-stack obligations')"
+          placeholder={t("linkRationalePlaceholder")}
           rows={2}
           className="w-full rounded-md border border-card-border bg-card-bg px-2 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
         />
@@ -165,10 +166,10 @@ export function LinkRegulationForm({ documentId, existingLinks }: Props) {
           <button
             type="submit"
             disabled={pending || !picked}
-            title="Save this whole-regulation link"
+            title={t("linkButtonTitle")}
             className="ms-auto rounded-md bg-brand-blue px-3 py-1.5 text-xs text-white hover:bg-brand-blue/90 disabled:opacity-50"
           >
-            {pending ? "Linking…" : "Link"}
+            {pending ? t("linking") : t("link")}
           </button>
         </div>
       </form>

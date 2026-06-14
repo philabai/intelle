@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useCallback } from "react";
 
@@ -11,12 +12,6 @@ interface Props {
   ownerFilter: OwnerFilter;
   sort: SortOption;
 }
-
-const SORT_LABEL: Record<SortOption, string> = {
-  updated: "Last modified",
-  title: "Title",
-  kind: "Kind",
-};
 
 /**
  * URL-state filter + sort controls. Owner filter mirrors the Google Docs
@@ -61,6 +56,7 @@ function OwnerPill({
   active: OwnerFilter;
   onChange: (next: OwnerFilter) => void;
 }) {
+  const t = useTranslations("regwatch.documents");
   return (
     <div className="inline-flex rounded-full border border-card-border bg-card-bg/30 p-0.5 text-[11px]">
       {(["anyone", "me"] as OwnerFilter[]).map((opt) => (
@@ -75,11 +71,11 @@ function OwnerPill({
           }`}
           title={
             opt === "anyone"
-              ? "Show all documents in your org"
-              : "Show only documents you own"
+              ? t("ownerAnyoneTitle")
+              : t("ownerMeTitle")
           }
         >
-          {opt === "anyone" ? "Owned by anyone" : "Owned by me"}
+          {opt === "anyone" ? t("ownedByAnyone") : t("ownedByMe")}
         </button>
       ))}
     </div>
@@ -93,9 +89,15 @@ function SortPill({
   active: SortOption;
   onChange: (next: SortOption) => void;
 }) {
+  const t = useTranslations("regwatch.documents");
+  const SORT_LABEL: Record<SortOption, string> = {
+    updated: t("sortUpdated"),
+    title: t("sortTitle"),
+    kind: t("sortKind"),
+  };
   return (
     <label className="inline-flex items-center gap-1 rounded-full border border-card-border bg-card-bg/30 px-3 py-1 text-[11px] text-muted">
-      <span>Sort:</span>
+      <span>{t("sortLabel")}</span>
       <select
         value={active}
         onChange={(e) => onChange(e.target.value as SortOption)}

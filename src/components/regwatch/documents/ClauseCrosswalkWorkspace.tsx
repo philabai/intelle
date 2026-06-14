@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { linkDocumentToRegulation } from "@/lib/regwatch/internal-documents-actions";
@@ -55,6 +56,7 @@ export function ClauseCrosswalkWorkspace({
   internalBody,
   existingLinks,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -93,9 +95,7 @@ export function ClauseCrosswalkWorkspace({
       const body = await getRegulationBody({ id: regulation.id });
       if (cancelled) return;
       if (!body) {
-        setBodyError(
-          "Could not load the regulation body — try opening the source link.",
-        );
+        setBodyError(t("regulationBodyLoadFailed"));
         setBodyLoading(false);
         return;
       }
@@ -222,15 +222,15 @@ export function ClauseCrosswalkWorkspace({
     setError(null);
     setSuccess(null);
     if (!regulation) {
-      setError("Pick a regulation on the right first.");
+      setError(t("errorPickRegulationRight"));
       return;
     }
     if (!internalAnchor.trim()) {
-      setError("Pick or type a section from your document on the left.");
+      setError(t("errorPickSectionLeft"));
       return;
     }
     if (!regulationAnchor.trim()) {
-      setError("Pick or type a clause from the regulation on the right.");
+      setError(t("errorPickClauseRight"));
       return;
     }
     startTransition(async () => {
@@ -248,11 +248,14 @@ export function ClauseCrosswalkWorkspace({
         linkRationale: effectiveRationale,
       });
       if (!res.ok) {
-        setError(res.error ?? "Could not save mapping.");
+        setError(res.error ?? t("couldNotSaveMapping"));
         return;
       }
       setSuccess(
-        `Mapped ${internalAnchor.trim()} ↔ ${regulationAnchor.trim()}. Saved.`,
+        t("mappingSaved", {
+          internal: internalAnchor.trim(),
+          regulation: regulationAnchor.trim(),
+        }),
       );
       clearPair();
       router.refresh();
@@ -267,7 +270,7 @@ export function ClauseCrosswalkWorkspace({
       <header className="flex items-center justify-between gap-4 border-b border-card-border bg-card-bg/30 px-4 py-2.5">
         <div className="min-w-0">
           <p className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">
-            Clause crosswalk workspace
+            {t("crosswalkWorkspace")}
           </p>
           <h1 className="truncate text-sm font-semibold text-foreground">
             {documentTitle}
@@ -280,7 +283,7 @@ export function ClauseCrosswalkWorkspace({
           href={`/regwatch/documents/${documentId}`}
           className="shrink-0 rounded-md border border-card-border bg-background px-3 py-1.5 text-xs font-medium text-foreground/90 hover:border-brand-blue hover:text-brand-blue"
         >
-          ← Done
+          {t("done")}
         </Link>
       </header>
 
@@ -290,7 +293,7 @@ export function ClauseCrosswalkWorkspace({
         <section className="flex min-h-0 flex-col border-b border-card-border lg:border-b-0 lg:border-e">
           <div className="border-b border-card-border bg-card-bg/20 px-3 py-2">
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-              Your document
+              {t("yourDocument")}
             </p>
             <p className="truncate text-xs text-foreground">
               {internalBody.fileName ?? internalBody.title}
@@ -299,12 +302,11 @@ export function ClauseCrosswalkWorkspace({
           {showFallback ? (
             <div className="flex-1 overflow-auto p-4">
               <div className="mb-3 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-[11px] text-amber-200">
-                {internalBody.fallbackReason ??
-                  "Couldn't parse the document for inline picking."}
+                {internalBody.fallbackReason ?? t("couldNotParseDocument")}
               </div>
               <label className="block">
                 <span className="text-[10px] font-medium uppercase tracking-wider text-muted">
-                  Type your section anchor
+                  {t("typeSectionAnchor")}
                 </span>
                 <input
                   value={internalAnchor}
@@ -312,27 +314,25 @@ export function ClauseCrosswalkWorkspace({
                     setInternalAnchor(e.target.value);
                     setInternalText("");
                   }}
-                  placeholder="e.g. §4.2, Step 7, Section 3, Annex B"
+                  placeholder={t("sectionAnchorPlaceholder")}
                   className="mt-1 w-full rounded-md border border-card-border bg-card-bg/40 px-3 py-2 text-sm text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
                 />
               </label>
               <p className="mt-2 text-[11px] text-muted">
-                Type whichever anchor your document uses. The right side still
-                works normally — once you pick a regulation clause and click
-                Save, the row is created with both anchors.
+                {t("fallbackAnchorHint")}
               </p>
             </div>
           ) : (
             <CrosswalkParagraphPane
               paragraphs={internalBody.paragraphs}
               mappingsByKey={mappingsByInternalKey}
-              pickLabel="Use this section"
+              pickLabel={t("useThisSection")}
               side="internal"
               activeAnchor={internalAnchor || null}
               onPick={onPickInternal}
               emptyState={
                 <p className="text-xs text-muted">
-                  No paragraphs extracted from this document.
+                  {t("noParagraphsExtracted")}
                 </p>
               }
             />
@@ -343,7 +343,7 @@ export function ClauseCrosswalkWorkspace({
         <section className="flex min-h-0 flex-col">
           <div className="space-y-2 border-b border-card-border bg-card-bg/20 px-3 py-2">
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-              Regulation
+              {t("regulation")}
             </p>
             <RegulationPicker
               value={regulation}
@@ -353,17 +353,16 @@ export function ClauseCrosswalkWorkspace({
                 setRegulationText("");
               }}
               showClauseField={false}
-              placeholder="Search regulations to crosswalk against…"
+              placeholder={t("crosswalkRegulationPlaceholder")}
             />
           </div>
           {!regulation ? (
             <div className="flex flex-1 items-center justify-center p-6 text-center text-xs text-muted">
-              Pick a regulation above to see its clauses and map them to your
-              document.
+              {t("pickRegulationToMap")}
             </div>
           ) : bodyLoading ? (
             <div className="flex flex-1 items-center justify-center p-6 text-xs text-muted">
-              Loading regulation body…
+              {t("loadingRegulationBody")}
             </div>
           ) : bodyError ? (
             <div className="flex-1 overflow-auto p-4">
@@ -375,24 +374,27 @@ export function ClauseCrosswalkWorkspace({
             <CrosswalkParagraphPane
               paragraphs={regulationBody.paragraphs}
               mappingsByKey={mappingsByRegulationKey}
-              pickLabel="Use this clause"
+              pickLabel={t("useThisClause")}
               side="regulation"
               activeAnchor={regulationAnchor || null}
               onPick={onPickRegulation}
               emptyState={
                 <div className="text-xs text-muted">
-                  <p>No body text on file for this regulation yet.</p>
+                  <p>{t("noRegulationBodyYet")}</p>
                   {regulationBody.sourceUrl && (
                     <p className="mt-2">
-                      <a
-                        href={regulationBody.sourceUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-brand-blue hover:underline"
-                      >
-                        Open the source ↗
-                      </a>{" "}
-                      and type the clause anchor manually below.
+                      {t.rich("openSourceTypeAnchor", {
+                        source: (chunks) => (
+                          <a
+                            href={regulationBody.sourceUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-brand-blue hover:underline"
+                          >
+                            {chunks}
+                          </a>
+                        ),
+                      })}
                     </p>
                   )}
                 </div>
@@ -407,12 +409,12 @@ export function ClauseCrosswalkWorkspace({
         <div className="mx-auto grid max-w-[1600px] gap-2 lg:grid-cols-[1fr_1fr_1fr_auto]">
           <div className="rounded-md border border-card-border bg-background p-2">
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-              Your section
+              {t("yourSection")}
             </p>
             <input
               value={internalAnchor}
               onChange={(e) => setInternalAnchor(e.target.value)}
-              placeholder="Pick on the left, or type"
+              placeholder={t("pickLeftOrType")}
               className="mt-1 w-full bg-transparent text-xs text-foreground placeholder:text-muted/60 focus:outline-none"
             />
             {internalText && (
@@ -423,12 +425,12 @@ export function ClauseCrosswalkWorkspace({
           </div>
           <div className="rounded-md border border-card-border bg-background p-2">
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-              Regulation clause
+              {t("regulationClause")}
             </p>
             <input
               value={regulationAnchor}
               onChange={(e) => setRegulationAnchor(e.target.value)}
-              placeholder="Pick on the right, or type"
+              placeholder={t("pickRightOrType")}
               className="mt-1 w-full bg-transparent text-xs text-foreground placeholder:text-muted/60 focus:outline-none"
             />
             {regulationText && (
@@ -439,12 +441,12 @@ export function ClauseCrosswalkWorkspace({
           </div>
           <div className="rounded-md border border-card-border bg-background p-2">
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-              Rationale (optional)
+              {t("rationaleOptional")}
             </p>
             <input
               value={rationale}
               onChange={(e) => setRationale(e.target.value)}
-              placeholder="Why these match — auditors read this"
+              placeholder={t("rationalePlaceholder")}
               className="mt-1 w-full bg-transparent text-xs text-foreground placeholder:text-muted/60 focus:outline-none"
             />
           </div>
@@ -455,7 +457,7 @@ export function ClauseCrosswalkWorkspace({
               disabled={pending}
               className="rounded-md border border-card-border px-3 py-1.5 text-xs text-muted hover:border-card-border/80 hover:text-foreground disabled:opacity-50"
             >
-              Clear
+              {t("clear")}
             </button>
             <button
               type="button"
@@ -463,7 +465,7 @@ export function ClauseCrosswalkWorkspace({
               disabled={pending || !regulation}
               className="rounded-md bg-brand-blue px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-blue/90 disabled:opacity-50"
             >
-              {pending ? "Saving…" : "Save mapping"}
+              {pending ? t("saving") : t("saveMapping")}
             </button>
           </div>
         </div>

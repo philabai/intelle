@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -34,6 +35,7 @@ function pickFilter(
 }
 
 export default async function JurisdictionBrowsePage({ params, searchParams }: Props) {
+  const t = useTranslations("regwatch.discover");
   const { jurisdiction } = await params;
   const raw = await searchParams;
   const jurisdictionCode = jurisdiction.toUpperCase();
@@ -137,7 +139,7 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
           <nav className="text-xs text-muted">
             <Link href="/regwatch/browse" className="hover:text-foreground">
-              All jurisdictions
+              {t("allJurisdictions")}
             </Link>
             <span className="mx-2">/</span>
             <span className="text-foreground">{summary.jurisdiction_name}</span>
@@ -146,11 +148,14 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
             {summary.jurisdiction_name}
           </h1>
           <p className="mt-2 text-sm text-muted">
-            {Number(summary.regulator_count).toLocaleString()} regulators ·{" "}
-            {Number(summary.item_count).toLocaleString()} regulations ·{" "}
-            <span className="text-brand-teal">
-              {Number(summary.recent_item_count).toLocaleString()} updated in the last 30 days
-            </span>
+            {t.rich("jurisdictionStats", {
+              regulators: Number(summary.regulator_count).toLocaleString(),
+              regulations: Number(summary.item_count).toLocaleString(),
+              recent: Number(summary.recent_item_count).toLocaleString(),
+              accent: (chunks) => (
+                <span className="text-brand-teal">{chunks}</span>
+              ),
+            })}
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-4">
             <Suspense fallback={null}>
@@ -166,7 +171,7 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
                       : "text-muted hover:text-foreground"
                   }`}
                 >
-                  Hierarchy
+                  {t("viewHierarchy")}
                 </Link>
                 <Link
                   href={`/regwatch/browse/${jurisdiction}?view=list`}
@@ -176,7 +181,7 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
                       : "text-muted hover:text-foreground"
                   }`}
                 >
-                  List
+                  {t("viewList")}
                 </Link>
               </div>
             )}
@@ -201,15 +206,18 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
           <section>
             {items.length === 0 ? (
               <EmptyState
-                title="No regulations match these filters."
-                description="Try clearing a facet or broadening your search."
+                title={t("noMatchTitle")}
+                description={t("noMatchSimpleDescription")}
               />
             ) : (
               <>
                 <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted">
-                  Showing {rangeStart.toLocaleString()}–{rangeEnd.toLocaleString()} of{" "}
-                  {totalCount.toLocaleString()}{" "}
-                  {totalCount === 1 ? "regulation" : "regulations"}
+                  {t("showingRangeSimple", {
+                    start: rangeStart.toLocaleString(),
+                    end: rangeEnd.toLocaleString(),
+                    count: totalCount,
+                    total: totalCount.toLocaleString(),
+                  })}
                 </p>
                 <div className="overflow-hidden rounded-xl border border-card-border bg-background">
                   {items.map((item) => (
@@ -223,26 +231,29 @@ export default async function JurisdictionBrowsePage({ params, searchParams }: P
                         href={pageHref(page - 1)}
                         className="rounded-md border border-card-border px-3 py-1.5 text-muted hover:text-foreground"
                       >
-                        ← Previous
+                        {t("previous")}
                       </Link>
                     ) : (
                       <span className="rounded-md border border-card-border/40 px-3 py-1.5 text-muted/40">
-                        ← Previous
+                        {t("previous")}
                       </span>
                     )}
                     <span className="text-xs text-muted">
-                      Page {page.toLocaleString()} of {totalPages.toLocaleString()}
+                      {t("pageOf", {
+                        page: page.toLocaleString(),
+                        total: totalPages.toLocaleString(),
+                      })}
                     </span>
                     {page < totalPages ? (
                       <Link
                         href={pageHref(page + 1)}
                         className="rounded-md border border-card-border px-3 py-1.5 text-muted hover:text-foreground"
                       >
-                        Next →
+                        {t("next")}
                       </Link>
                     ) : (
                       <span className="rounded-md border border-card-border/40 px-3 py-1.5 text-muted/40">
-                        Next →
+                        {t("next")}
                       </span>
                     )}
                   </nav>

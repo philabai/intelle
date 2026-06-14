@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { acknowledgeFinding } from "@/lib/regwatch/evidence-actions";
 import type { EvidenceFinding } from "@/lib/regwatch/evidence";
 
@@ -27,11 +28,11 @@ export function FindingsPanel({
   canAcknowledge = true,
   onChanged,
 }: Props) {
+  const t = useTranslations("regwatch.comply");
   if (findings.length === 0) {
     return (
       <p className="rounded-md border border-brand-teal/30 bg-brand-teal/5 p-3 text-xs text-brand-teal">
-        No discrepancies detected. The evidence aligns with the regulation as
-        far as the AI can tell.
+        {t("noDiscrepancies")}
       </p>
     );
   }
@@ -61,6 +62,7 @@ function FindingRow({
   canAcknowledge: boolean;
   onChanged?: () => void;
 }) {
+  const t = useTranslations("regwatch.comply");
   const [showAck, setShowAck] = useState(false);
   const [note, setNote] = useState("");
   const [pending, startTransition] = useTransition();
@@ -75,7 +77,7 @@ function FindingRow({
         note: note.trim() || null,
       });
       if (!res.ok) {
-        setError(res.error ?? "Could not acknowledge");
+        setError(res.error ?? t("errCouldNotAcknowledge"));
         return;
       }
       setShowAck(false);
@@ -103,7 +105,7 @@ function FindingRow({
               {finding.severity}
             </span>
             <span className="text-muted">
-              conf {(finding.confidence * 100).toFixed(0)}%
+              {t("confidenceAbbrev")} {(finding.confidence * 100).toFixed(0)}%
             </span>
             {finding.regulation_citation_anchor && (
               <span className="font-mono text-muted">
@@ -119,21 +121,20 @@ function FindingRow({
           </p>
           {finding.anchor && (
             <p className="mt-1 text-[11px] italic text-muted">
-              In the evidence: {finding.anchor}
+              {t("inTheEvidence")}: {finding.anchor}
             </p>
           )}
           {finding.suggested_action && (
             <p className="mt-1 rounded-md bg-brand-blue/10 px-2 py-1 text-[11px] text-foreground/90">
-              Suggested action: {finding.suggested_action}
+              {t("suggestedAction")}: {finding.suggested_action}
             </p>
           )}
           {isAcknowledged && (
             <div className="mt-2 rounded-md border border-brand-teal/30 bg-brand-teal/5 p-2 text-[11px]">
               <p className="font-medium text-brand-teal">
-                Acknowledged
                 {finding.acknowledged_at
-                  ? ` ${new Date(finding.acknowledged_at).toLocaleString()}`
-                  : ""}
+                  ? t("acknowledgedAt", { date: new Date(finding.acknowledged_at).toLocaleString() })
+                  : t("acknowledgedLabel")}
               </p>
               {finding.acknowledgement_note && (
                 <p className="mt-0.5 whitespace-pre-line text-foreground/80">
@@ -153,7 +154,7 @@ function FindingRow({
               onClick={() => setShowAck(true)}
               className="rounded-md border border-card-border bg-card-bg px-2 py-1 text-[10px] text-foreground hover:border-brand-blue"
             >
-              Acknowledge / respond
+              {t("acknowledgeRespond")}
             </button>
           ) : (
             <div className="space-y-2">
@@ -161,7 +162,7 @@ function FindingRow({
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 rows={2}
-                placeholder="Optional: explain how you've addressed this, or why it's acceptable."
+                placeholder={t("acknowledgePlaceholder")}
                 className="w-full rounded-md border border-card-border bg-card-bg px-2 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
               />
               {error && <p className="text-xs text-red-400">{error}</p>}
@@ -176,7 +177,7 @@ function FindingRow({
                   disabled={pending}
                   className="rounded-md border border-card-border bg-card-bg px-2 py-1 text-[10px] text-muted hover:text-foreground disabled:opacity-50"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
                 <button
                   type="button"
@@ -184,7 +185,7 @@ function FindingRow({
                   disabled={pending}
                   className="rounded-md bg-brand-blue px-2 py-1 text-[10px] text-white hover:bg-brand-blue/90 disabled:opacity-50"
                 >
-                  {pending ? "Saving…" : "Acknowledge"}
+                  {pending ? t("saving") : t("acknowledge")}
                 </button>
               </div>
             </div>

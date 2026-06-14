@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getDocumentPreviewPdf } from "@/lib/regwatch/exports/preview-actions";
 
 /**
@@ -21,12 +22,22 @@ const PdfViewer = dynamic(() => import("./PdfViewer"), {
   loading: () => <PdfLoading />,
 });
 
+function PdfLoading() {
+  const t = useTranslations("regwatch.documents");
+  return (
+    <div className="flex h-40 items-center justify-center text-xs text-muted">
+      {t("generatingPreview")}
+    </div>
+  );
+}
+
 interface Props {
   documentId: string;
   zoom: number;
 }
 
 export function DocPdfPreview({ documentId, zoom }: Props) {
+  const t = useTranslations("regwatch.documents");
   const [url, setUrl] = useState<string | null>(null);
   const [numPages, setNumPages] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +54,7 @@ export function DocPdfPreview({ documentId, zoom }: Props) {
         if (cancelled) return;
         setGenerating(false);
         if (!res.ok || !res.signedUrl) {
-          setError(res.error ?? "Preview unavailable");
+          setError(res.error ?? t("previewUnavailable"));
           return;
         }
         setUrl(res.signedUrl);
@@ -77,13 +88,5 @@ export function DocPdfPreview({ documentId, zoom }: Props) {
       onLoadSuccess={setNumPages}
       onLoadError={setError}
     />
-  );
-}
-
-function PdfLoading() {
-  return (
-    <div className="flex h-40 items-center justify-center text-xs text-muted">
-      Generating preview…
-    </div>
   );
 }

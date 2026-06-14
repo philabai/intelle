@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 
@@ -58,6 +59,7 @@ export function RegwatchChatWidget({
   scopedItemId,
   scopedItemCitation,
 }: Props) {
+  const t = useTranslations("regwatch.common");
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"corpus" | "help">("corpus");
@@ -155,7 +157,7 @@ export function RegwatchChatWidget({
                   return copy;
                 });
               } else if (ev.type === "error") {
-                setError(ev.message ?? "Iris encountered an error.");
+                setError(ev.message ?? t("irisError"));
               }
             } catch {
               /* ignore */
@@ -189,7 +191,7 @@ export function RegwatchChatWidget({
     <>
       <button
         type="button"
-        aria-label={open ? "Close Iris chat" : "Open Iris chat"}
+        aria-label={open ? t("irisClose") : t("irisOpen")}
         onClick={() => setOpen((v) => !v)}
         className="fixed bottom-5 right-5 z-50 inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-violet text-white shadow-lg shadow-brand-violet/40 transition-transform hover:scale-105"
       >
@@ -223,7 +225,7 @@ export function RegwatchChatWidget({
       {open && (
         <div
           role="dialog"
-          aria-label="Iris chatbot"
+          aria-label={t("irisChatbot")}
           className="fixed bottom-20 right-3 z-50 flex h-[600px] max-h-[calc(100dvh-100px)] w-[400px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-xl border border-card-border bg-background shadow-2xl"
         >
           <header className="flex items-center justify-between gap-2 border-b border-card-border bg-card-bg/60 px-4 py-3">
@@ -233,10 +235,10 @@ export function RegwatchChatWidget({
               </p>
               <p className="text-sm font-medium text-foreground">
                 {mode === "help"
-                  ? "Ask about how Vantage works"
+                  ? t("irisHeaderHelp")
                   : effectiveScopedId
-                  ? "Asking about this regulation"
-                  : "Ask anything about the corpus"}
+                  ? t("irisHeaderScoped")
+                  : t("irisHeaderCorpus")}
               </p>
               {headerLabel && effectiveScopedId && mode === "corpus" && (
                 <p className="font-mono text-[10px] text-muted">{headerLabel}</p>
@@ -248,7 +250,7 @@ export function RegwatchChatWidget({
                 onClick={reset}
                 className="text-[11px] text-muted underline hover:text-foreground"
               >
-                Reset
+                {t("reset")}
               </button>
             )}
           </header>
@@ -265,7 +267,7 @@ export function RegwatchChatWidget({
                     setMessages([]);
                   }
                 }}
-                label="Ask the corpus"
+                label={t("tabCorpus")}
               />
               <ModeTab
                 active={mode === "help"}
@@ -275,7 +277,7 @@ export function RegwatchChatWidget({
                     setMessages([]);
                   }
                 }}
-                label="Help · Vantage"
+                label={t("tabHelp")}
               />
             </div>
           )}
@@ -287,22 +289,20 @@ export function RegwatchChatWidget({
             {messages.length === 0 && mode === "corpus" && (
               <div className="space-y-3">
                 <p className="text-xs text-muted">
-                  Multi-turn Q&amp;A over the Vantage corpus, powered by
-                  Claude Haiku. Every answer is grounded in citations to
-                  specific items — never made up.
+                  {t("irisIntroCorpus", { model: "Claude Haiku" })}
                 </p>
                 <div className="grid gap-1.5">
                   <SuggestionButton
-                    text="What does the EU Methane Regulation require for importers from 2030?"
-                    onPick={(t) => setInput(t)}
+                    text={t("irisSuggestCorpus1")}
+                    onPick={(s) => setInput(s)}
                   />
                   <SuggestionButton
-                    text="Which US regulations cover methane LDAR in oil & gas?"
-                    onPick={(t) => setInput(t)}
+                    text={t("irisSuggestCorpus2")}
+                    onPick={(s) => setInput(s)}
                   />
                   <SuggestionButton
-                    text="Compare CBAM vs UK ETS coverage of cement."
-                    onPick={(t) => setInput(t)}
+                    text={t("irisSuggestCorpus3")}
+                    onPick={(s) => setInput(s)}
                   />
                 </div>
               </div>
@@ -310,25 +310,24 @@ export function RegwatchChatWidget({
             {messages.length === 0 && mode === "help" && (
               <div className="space-y-3">
                 <p className="text-xs text-muted">
-                  Ask anything about how Vantage works — features, workflows,
-                  the review state machine, citations, tours.
+                  {t("irisIntroHelp")}
                 </p>
                 <div className="grid gap-1.5">
                   <SuggestionButton
-                    text="How do I cite a clause in my SOP?"
-                    onPick={(t) => setInput(t)}
+                    text={t("irisSuggestHelp1")}
+                    onPick={(s) => setInput(s)}
                   />
                   <SuggestionButton
-                    text="What's the difference between Articles and Original tab?"
-                    onPick={(t) => setInput(t)}
+                    text={t("irisSuggestHelp2")}
+                    onPick={(s) => setInput(s)}
                   />
                   <SuggestionButton
-                    text="How does the review workflow work?"
-                    onPick={(t) => setInput(t)}
+                    text={t("irisSuggestHelp3")}
+                    onPick={(s) => setInput(s)}
                   />
                   <SuggestionButton
-                    text="How is the relevance feed scored?"
-                    onPick={(t) => setInput(t)}
+                    text={t("irisSuggestHelp4")}
+                    onPick={(s) => setInput(s)}
                   />
                 </div>
               </div>
@@ -337,7 +336,7 @@ export function RegwatchChatWidget({
               <Bubble key={idx} message={m} />
             ))}
             {pending && messages.length > 0 && (
-              <p className="text-[11px] text-muted">Iris is thinking…</p>
+              <p className="text-[11px] text-muted">{t("irisThinking")}</p>
             )}
             {error && <p className="text-xs text-red-400">{error}</p>}
           </div>
@@ -355,8 +354,8 @@ export function RegwatchChatWidget({
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={
                   effectiveScopedId
-                    ? "Ask about this regulation…"
-                    : "Ask Iris…"
+                    ? t("irisPlaceholderScoped")
+                    : t("irisPlaceholder")
                 }
                 className="flex-1 rounded-md border border-card-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
                 disabled={pending}
@@ -366,11 +365,11 @@ export function RegwatchChatWidget({
                 disabled={pending || !input.trim()}
                 className="rounded-md bg-brand-violet px-3 py-2 text-sm font-medium text-white hover:bg-brand-violet/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {pending ? "…" : "Send"}
+                {pending ? "…" : t("send")}
               </button>
             </div>
             <p className="mt-1.5 text-[10px] text-muted">
-              AI-generated. Verify every claim against the cited source.
+              {t("irisDisclaimer")}
             </p>
           </form>
         </div>

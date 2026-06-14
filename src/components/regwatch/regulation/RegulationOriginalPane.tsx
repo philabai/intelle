@@ -2,12 +2,18 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getRegulationOriginalDocument } from "@/lib/regwatch/regulation-original-actions";
 
 const PdfViewer = dynamic(
   () => import("../documents/editor/PdfViewer").then((m) => m.default),
-  { ssr: false, loading: () => <PaneLoading /> },
+  { ssr: false, loading: () => <PdfLoading /> },
 );
+
+function PdfLoading() {
+  const t = useTranslations("regwatch.discover");
+  return <PaneLoading label={t("loading")} />;
+}
 
 interface Props {
   regId: string;
@@ -29,6 +35,7 @@ interface Props {
  * reuse the cache.
  */
 export function RegulationOriginalPane({ regId, sourceUrl, hasCached }: Props) {
+  const t = useTranslations("regwatch.discover");
   const [state, setState] = useState<{
     loading: boolean;
     signedUrl?: string;
@@ -68,7 +75,9 @@ export function RegulationOriginalPane({ regId, sourceUrl, hasCached }: Props) {
     return (
       <PaneLoading
         label={
-          hasCached ? "Loading cached document…" : "Fetching from publisher…"
+          hasCached
+            ? t("originalLoadingCached")
+            : t("originalFetchingPublisher")
         }
       />
     );
@@ -77,9 +86,10 @@ export function RegulationOriginalPane({ regId, sourceUrl, hasCached }: Props) {
   if (state.reason === "disallowed") {
     return (
       <CtaPane
-        title="Publisher requested no redistribution"
-        body="We don't cache this publisher's documents in-app. Open the canonical source on the publisher's site."
+        title={t("originalDisallowedTitle")}
+        body={t("originalDisallowedBody")}
         sourceUrl={state.sourceUrl}
+        ctaLabel={t("openAtSource")}
       />
     );
   }
@@ -87,9 +97,10 @@ export function RegulationOriginalPane({ regId, sourceUrl, hasCached }: Props) {
   if (state.reason === "too_large") {
     return (
       <CtaPane
-        title="Source exceeds 50 MB"
-        body="The source document is larger than the in-app cache ceiling. Open the canonical source on the publisher's site."
+        title={t("originalTooLargeTitle")}
+        body={t("originalTooLargeBody")}
         sourceUrl={state.sourceUrl}
+        ctaLabel={t("openAtSource")}
       />
     );
   }
@@ -97,13 +108,14 @@ export function RegulationOriginalPane({ regId, sourceUrl, hasCached }: Props) {
   if (state.error || !state.signedUrl) {
     return (
       <CtaPane
-        title="Source temporarily unavailable"
+        title={t("originalUnavailableTitle")}
         body={
           state.error
-            ? `Couldn't fetch from the publisher: ${state.error}. Try again later, or open the canonical source.`
-            : "Couldn't fetch from the publisher. Try again later, or open the canonical source."
+            ? t("originalUnavailableBodyWithError", { error: state.error })
+            : t("originalUnavailableBody")
         }
         sourceUrl={state.sourceUrl}
+        ctaLabel={t("openAtSource")}
       />
     );
   }
@@ -140,13 +152,10 @@ export function RegulationOriginalPane({ regId, sourceUrl, hasCached }: Props) {
     <div className="rounded-xl border border-card-border bg-card-bg/40 p-8 text-center">
       <p className="text-2xl">📄</p>
       <p className="mt-3 text-sm font-medium text-foreground">
-        Source is an HTML page at the publisher&apos;s site
+        {t("originalHtmlTitle")}
       </p>
       <p className="mt-2 max-w-md text-xs text-muted">
-        Regulator HTML pages (EUR-Lex, GOV.UK, ESMA, etc.) carry their
-        own navigation, search and styling — opening them inline strips
-        most of that. We open them in a new tab so you see the full
-        canonical document the regulator publishes.
+        {t("originalHtmlBody")}
       </p>
       {state.sourceUrl && (
         <a
@@ -155,7 +164,7 @@ export function RegulationOriginalPane({ regId, sourceUrl, hasCached }: Props) {
           rel="noopener noreferrer"
           className="mt-5 inline-flex items-center gap-2 rounded-md bg-brand-blue px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-blue/90"
         >
-          Open at publisher ↗
+          {t("openAtPublisher")}
         </a>
       )}
       <p className="mt-4 break-all text-[10px] text-muted">
@@ -177,10 +186,12 @@ function CtaPane({
   title,
   body,
   sourceUrl,
+  ctaLabel,
 }: {
   title: string;
   body: string;
   sourceUrl: string | undefined;
+  ctaLabel: string;
 }) {
   return (
     <div className="rounded-xl border border-card-border bg-card-bg/40 p-8 text-center">
@@ -193,7 +204,7 @@ function CtaPane({
           rel="noopener noreferrer"
           className="mt-4 inline-block rounded-md border border-brand-teal/40 bg-brand-teal/10 px-4 py-2 text-xs font-medium text-brand-teal hover:bg-brand-teal/20"
         >
-          Open at source ↗
+          {ctaLabel}
         </a>
       )}
     </div>

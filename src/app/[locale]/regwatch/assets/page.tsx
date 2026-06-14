@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -17,6 +18,7 @@ export const metadata = { title: "Assets" };
 export const dynamic = "force-dynamic";
 
 export default async function AssetsPage() {
+  const t = useTranslations("regwatch.comply");
   const supabase = await createClient();
   const {
     data: { user },
@@ -47,7 +49,7 @@ export default async function AssetsPage() {
     3: config.level3Label,
     4: config.level4Label,
     5: config.level5Label,
-    6: config.level6Label ?? "Component",
+    6: config.level6Label ?? t("levelComponentFallback"),
   };
   // Per-asset compliance traffic-light, rolled up the hierarchy.
   const lights = await getAssetComplianceLights(tree);
@@ -57,29 +59,34 @@ export default async function AssetsPage() {
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/feed" className="hover:text-foreground">
-            My Feed
+            {t("breadcrumbMyFeed")}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-foreground">Assets</span>
+          <span className="text-foreground">{t("assetsTitle")}</span>
         </nav>
 
         <header className="mt-4 mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-              {org?.organization.name ?? "Your organization"}
+              {org?.organization.name ?? t("yourOrganization")}
             </p>
             <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Asset hierarchy
+              {t("assetsHeading")}
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted">
-              The org&apos;s {labels[2]} → {labels[3]} → {labels[4]} → {labels[5]}
-              {config.level6Enabled ? ` → ${labels[6]}` : ""} tree. Used to attach
-              regulations (and specific clauses) to specific assets, then route
-              them to reviewers.
+              {t("assetsSubheading", {
+                chain: [
+                  labels[2],
+                  labels[3],
+                  labels[4],
+                  labels[5],
+                  ...(config.level6Enabled ? [labels[6]] : []),
+                ].join(" → "),
+              })}
             </p>
           </div>
           <div className="text-end">
-            <p className="text-xs uppercase tracking-wider text-muted">Total</p>
+            <p className="text-xs uppercase tracking-wider text-muted">{t("total")}</p>
             <p className="font-mono text-2xl font-semibold text-foreground">
               {counts.total}
             </p>
@@ -100,32 +107,32 @@ export default async function AssetsPage() {
             href="/regwatch/assets/setup"
             className="rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90"
           >
-            Edit tree →
+            {t("editTree")}
           </Link>
           <Link
             href="/regwatch/obligations"
             className="rounded-md border border-card-border bg-card-bg px-4 py-2 text-sm text-foreground hover:border-brand-teal"
           >
-            Obligations dashboard →
+            {t("obligationsDashboard")}
           </Link>
         </div>
 
         <section className="rounded-xl border border-card-border bg-card-bg/40 p-4 sm:p-6">
           <div className="mb-4 flex flex-wrap items-center gap-4 text-[11px] text-muted">
-            <span className="uppercase tracking-wider">Compliance</span>
+            <span className="uppercase tracking-wider">{t("compliance")}</span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_8px_2px_rgba(239,68,68,0.75)]" />
-              Non-compliant / critical
+              {t("legendNonCompliant")}
             </span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_2px_rgba(251,191,36,0.7)]" />
-              Open, in progress
+              {t("legendInProgress")}
             </span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_7px_2px_rgba(52,211,153,0.6)]" />
-              All addressed
+              {t("legendAllAddressed")}
             </span>
-            <span className="ms-auto italic">Click an asset to view its compliance →</span>
+            <span className="ms-auto italic">{t("legendClickHint")}</span>
           </div>
           <AssetTreeView
             roots={tree}

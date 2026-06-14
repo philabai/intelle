@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
 interface Props {
@@ -28,6 +29,7 @@ export function JurisdictionCard({
   accentColor,
   featured,
 }: Props) {
+  const t = useTranslations("regwatch.discover");
   return (
     <Link
       href={`/regwatch/browse/${jurisdictionCode.toLowerCase()}`}
@@ -44,7 +46,7 @@ export function JurisdictionCard({
         </p>
         {recentCount > 0 && (
           <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-300">
-            {recentCount} updated 30d
+            {t("updated30d", { count: recentCount })}
           </span>
         )}
       </div>
@@ -52,12 +54,14 @@ export function JurisdictionCard({
         {jurisdictionName}
       </h3>
       <p className="mt-2 text-xs text-muted">
-        {publisherCount} {publisherCount === 1 ? "publisher" : "publishers"} ·{" "}
-        {itemCount.toLocaleString()}{" "}
-        {itemCount === 1 ? "regulation" : "regulations"}
+        {t("publishersRegulationsCount", {
+          publishers: publisherCount,
+          regulations: itemCount,
+          regulationsLabel: itemCount.toLocaleString(),
+        })}
       </p>
       <p className="mt-3 text-[11px] text-brand-blue opacity-100 transition md:opacity-0 md:group-hover:opacity-100">
-        Browse the hierarchy →
+        {t("browseHierarchy")}
       </p>
     </Link>
   );

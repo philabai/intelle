@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import {
   COUNTRIES,
   REGION_LABEL,
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export function GeographyPicker({ value, onChange }: Props) {
+  const t = useTranslations("regwatch.comply");
   const groups = useMemo(
     () =>
       REGION_ORDER.map((region) => ({
@@ -36,7 +38,7 @@ export function GeographyPicker({ value, onChange }: Props) {
       selected={value}
       onChange={onChange}
       searchable
-      emptyLabel="No countries match the filter"
+      emptyLabel={t("noCountriesMatch")}
       className="max-h-80 overflow-y-auto rounded-lg border border-card-border bg-background/40 p-3"
     />
   );

@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { localizedRedirect } from "@/i18n/redirect";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -13,6 +14,7 @@ export const metadata = { title: "Footprint" };
 export const dynamic = "force-dynamic";
 
 export default async function FootprintSettingsPage() {
+  const t = useTranslations("regwatch.comply");
   const supabase = await createClient();
   const {
     data: { user },
@@ -62,35 +64,33 @@ export default async function FootprintSettingsPage() {
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/feed" className="hover:text-foreground">
-            My Feed
+            {t("breadcrumbMyFeed")}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-foreground">Footprint</span>
+          <span className="text-foreground">{t("footprintTitle")}</span>
         </nav>
 
         <header className="mt-4 mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-              {org?.organization.name ?? "Your footprint"}
+              {org?.organization.name ?? t("yourFootprint")}
             </p>
             <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Footprint configurator
+              {t("footprintHeading")}
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted">
-              Tells Vantage which jurisdictions, activities, substances, regulators, and
-              topics to score against. Save as often as you like — changes propagate to
-              your Relevance Feed automatically.
+              {t("footprintSubheading")}
             </p>
           </div>
           <div className="flex flex-col items-end gap-1 text-end">
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted">
-              Role
+              {t("roleLabel")}
             </span>
             <span className="text-sm text-foreground">
               {roleLabel(initialRole)}
             </span>
             <span className="text-[10px] uppercase tracking-wider text-muted">
-              {footprint?.is_configured ? "Configured" : "Not yet configured"}
+              {footprint?.is_configured ? t("configured") : t("notYetConfigured")}
             </span>
           </div>
         </header>
@@ -106,7 +106,7 @@ export default async function FootprintSettingsPage() {
               (r as unknown as { jurisdiction_code: string }).jurisdiction_code,
             region: (r as unknown as { region: string }).region,
           }))}
-          submitLabel="Save and view my Feed →"
+          submitLabel={t("footprintSaveSubmit")}
           redirectTo="/regwatch/feed"
         />
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { BodyParagraph } from "@/lib/regwatch/paragraph-split";
 import { normaliseAnchorKey } from "@/lib/regwatch/paragraph-split";
 import { MappedBadge, type MappedRow } from "./MappedBadge";
@@ -34,6 +35,7 @@ export function CrosswalkParagraphPane({
   onPick,
   emptyState,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   const [search, setSearch] = useState("");
 
   const headings = useMemo(
@@ -78,7 +80,7 @@ export function CrosswalkParagraphPane({
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search this document…"
+          placeholder={t("searchThisDocument")}
           className="w-full rounded-md border border-card-border bg-card-bg/40 px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
         />
       </div>
@@ -106,7 +108,7 @@ export function CrosswalkParagraphPane({
         <ol className="min-w-0 flex-1 overflow-y-auto p-3">
           {filtered.length === 0 ? (
             <li className="rounded-md border border-dashed border-card-border p-4 text-center text-xs text-muted">
-              No paragraphs match &ldquo;{search}&rdquo;.
+              {t("noParagraphsMatch", { search })}
             </li>
           ) : (
             filtered.map((p) => {

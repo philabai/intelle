@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { RegulationOriginalPane } from "./RegulationOriginalPane";
 import { RegulationTranslationPane } from "./RegulationTranslationPane";
 
@@ -17,13 +18,7 @@ interface Props {
 
 type TabKey = "articles" | "original" | "translation";
 
-const LANG_LABEL: Record<string, string> = {
-  ar: "Arabic",
-  fr: "French",
-  es: "Spanish",
-  zh: "Chinese",
-  de: "German",
-};
+const KNOWN_LANGS = new Set(["ar", "fr", "es", "zh", "de"]);
 
 /**
  * Articles ↔ Original ↔ English tab switcher for the regulation reader.
@@ -44,9 +39,12 @@ export function RegulationTabsClient({
   sourceLanguage,
   articlesContent,
 }: Props) {
+  const t = useTranslations("regwatch.discover");
   const [tab, setTab] = useState<TabKey>("articles");
   const showTranslation = sourceLanguage !== "en";
-  const sourceLabel = LANG_LABEL[sourceLanguage] ?? sourceLanguage.toUpperCase();
+  const sourceLabel = KNOWN_LANGS.has(sourceLanguage)
+    ? t(`lang.${sourceLanguage}`)
+    : sourceLanguage.toUpperCase();
 
   return (
     <div>
@@ -54,19 +52,19 @@ export function RegulationTabsClient({
         <TabButton
           active={tab === "articles"}
           onClick={() => setTab("articles")}
-          label="Articles"
-          subtitle="Extracted body"
+          label={t("tabArticles")}
+          subtitle={t("tabArticlesSubtitle")}
         />
         <TabButton
           active={tab === "original"}
           onClick={() => setTab("original")}
-          label="Original"
+          label={t("tabOriginal")}
           subtitle={
             showTranslation
-              ? `Source ${sourceLabel}`
+              ? t("tabOriginalSourceLang", { lang: sourceLabel })
               : hasCached
-              ? "Cached source"
-              : "From publisher"
+              ? t("tabOriginalCached")
+              : t("tabOriginalFromPublisher")
           }
           highlight={hasCached}
         />
@@ -74,15 +72,15 @@ export function RegulationTabsClient({
           <TabButton
             active={tab === "translation"}
             onClick={() => setTab("translation")}
-            label="English"
-            subtitle={`AI ${sourceLabel} → EN`}
+            label={t("tabEnglish")}
+            subtitle={t("tabEnglishSubtitle", { lang: sourceLabel })}
             highlight
           />
         )}
         <span className="ms-auto pb-1 text-[10px] text-muted">
           {showTranslation
-            ? "Original is canonical · English is a machine-translation aid only"
-            : "Extracted view for reading · Original for compliance evidence"}
+            ? t("tabHintTranslated")
+            : t("tabHintExtracted")}
         </span>
       </div>
 

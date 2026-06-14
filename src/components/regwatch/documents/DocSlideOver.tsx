@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 
 interface Props {
   open: boolean;
@@ -26,6 +27,7 @@ export function DocSlideOver({
   children,
   size = "lg",
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   const panelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -66,10 +68,10 @@ export function DocSlideOver({
           <button
             type="button"
             onClick={onClose}
-            title="Close (Esc)"
+            title={t("closeEsc")}
             className="shrink-0 rounded-md border border-card-border bg-background px-2 py-1 text-[11px] text-muted hover:border-brand-blue hover:text-foreground"
           >
-            ✕ Close
+            ✕ {t("close")}
           </button>
         </header>
         <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>

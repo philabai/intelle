@@ -1,17 +1,14 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { JurisdictionSummary } from "@/lib/regwatch/queries";
 
-const REGION_LABEL: Record<string, string> = {
-  na: "North America",
-  eu: "European Union",
-  uk: "United Kingdom",
-  mea: "Middle East & Africa",
-  asia: "Asia",
-  lac: "Latin America",
-  int: "International",
-};
+const KNOWN_REGIONS = new Set(["na", "eu", "uk", "mea", "asia", "lac", "int"]);
 
 export function JurisdictionTile({ summary }: { summary: JurisdictionSummary }) {
+  const t = useTranslations("regwatch.discover");
+  const regionLabel = KNOWN_REGIONS.has(summary.region)
+    ? t(`regionShort.${summary.region}`)
+    : summary.region;
   return (
     <Link
       href={`/regwatch/browse/${summary.jurisdiction_code.toLowerCase()}`}
@@ -20,7 +17,7 @@ export function JurisdictionTile({ summary }: { summary: JurisdictionSummary }) 
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-            {REGION_LABEL[summary.region] ?? summary.region}
+            {regionLabel}
           </p>
           <h3 className="mt-1 text-lg font-semibold tracking-tight text-foreground">
             {summary.jurisdiction_name}
@@ -32,26 +29,26 @@ export function JurisdictionTile({ summary }: { summary: JurisdictionSummary }) 
       </div>
       <dl className="mt-4 grid grid-cols-3 gap-3 text-xs">
         <div>
-          <dt className="text-muted">Regulators</dt>
+          <dt className="text-muted">{t("statRegulators")}</dt>
           <dd className="mt-0.5 text-base font-semibold text-foreground">
             {summary.regulator_count}
           </dd>
         </div>
         <div>
-          <dt className="text-muted">Items</dt>
+          <dt className="text-muted">{t("statItems")}</dt>
           <dd className="mt-0.5 text-base font-semibold text-foreground">
             {summary.item_count}
           </dd>
         </div>
         <div>
-          <dt className="text-muted">Last 30d</dt>
+          <dt className="text-muted">{t("statLast30d")}</dt>
           <dd className="mt-0.5 text-base font-semibold text-brand-teal">
             {summary.recent_item_count}
           </dd>
         </div>
       </dl>
       <p className="mt-4 text-xs text-muted group-hover:text-foreground">
-        Browse {summary.jurisdiction_name} →
+        {t("browseJurisdiction", { name: summary.jurisdiction_name })}
       </p>
     </Link>
   );

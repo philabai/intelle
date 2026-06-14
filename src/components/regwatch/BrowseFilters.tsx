@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { useTransition } from "react";
 import {
@@ -43,6 +44,7 @@ export function BrowseFilters({
   lockedJurisdiction,
   lockedRegulator,
 }: Props) {
+  const t = useTranslations("regwatch.discover");
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -89,14 +91,14 @@ export function BrowseFilters({
     <aside className="space-y-5">
       <div className="flex items-center justify-between">
         <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
-          Filters
+          {t("filters")}
         </h2>
         {hasActive && (
           <button
             onClick={clearAll}
             className="text-[11px] text-muted underline hover:text-foreground"
           >
-            Clear all
+            {t("clearAll")}
           </button>
         )}
       </div>
@@ -111,16 +113,17 @@ export function BrowseFilters({
           className="mt-0.5 h-3.5 w-3.5 rounded border-card-border bg-card-bg text-brand-blue focus:ring-brand-blue"
         />
         <span>
-          <span className="font-medium text-foreground">Hide news</span>
+          <span className="font-medium text-foreground">{t("hideNews")}</span>
           <span className="block text-[11px] text-muted">
-            Excludes regulator press releases. On by default.
+            {t("hideNewsHint")}
           </span>
         </span>
       </label>
 
       {!lockedJurisdiction && (
         <FacetSelect
-          label="Jurisdiction"
+          label={t("facetJurisdiction")}
+          allLabel={t("facetAll")}
           value={activeJurisdiction}
           onChange={(v) => updateParam("jurisdiction", v)}
           options={jurisdictions.map((j) => ({
@@ -131,7 +134,8 @@ export function BrowseFilters({
       )}
       {!lockedRegulator && filteredRegulators.length > 0 && (
         <FacetSelect
-          label="Regulator"
+          label={t("facetRegulator")}
+          allLabel={t("facetAll")}
           value={activeRegulator}
           onChange={(v) => updateParam("regulator", v)}
           options={filteredRegulators.map((r) => ({
@@ -141,19 +145,22 @@ export function BrowseFilters({
         />
       )}
       <FacetSelect
-        label="Topic"
+        label={t("facetTopic")}
+        allLabel={t("facetAll")}
         value={activeTopic}
         onChange={(v) => updateParam("topic", v)}
         options={TOPIC_TAXONOMY}
       />
       <FacetSelect
-        label="Instrument type"
+        label={t("facetInstrumentType")}
+        allLabel={t("facetAll")}
         value={activeInstrument}
         onChange={(v) => updateParam("instrument_type", v)}
         options={INSTRUMENT_TYPE_TAXONOMY}
       />
       <FacetSelect
-        label="Status"
+        label={t("facetStatus")}
+        allLabel={t("facetAll")}
         value={activeStatus}
         onChange={(v) => updateParam("status", v)}
         options={STATUS_TAXONOMY}
@@ -164,11 +171,13 @@ export function BrowseFilters({
 
 function FacetSelect({
   label,
+  allLabel,
   value,
   onChange,
   options,
 }: {
   label: string;
+  allLabel: string;
   value: string;
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
@@ -183,7 +192,7 @@ function FacetSelect({
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-md border border-card-border bg-card-bg px-3 py-2 text-sm text-foreground focus:border-brand-blue focus:outline-none"
       >
-        <option value="">All</option>
+        <option value="">{allLabel}</option>
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}

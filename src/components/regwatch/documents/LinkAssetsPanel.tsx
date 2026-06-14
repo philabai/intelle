@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { setDocumentAssetLinks } from "@/lib/regwatch/internal-documents-actions";
@@ -37,6 +38,7 @@ export function LinkAssetsPanel({
   currentLinks,
   canEdit,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [selected, setSelected] = useState<string[]>(
@@ -56,14 +58,18 @@ export function LinkAssetsPanel({
         assetIds: selected,
       });
       if (!res.ok) {
-        setError(res.error ?? "Could not save");
+        setError(res.error ?? t("couldNotSave"));
         return;
       }
       setEditing(false);
       const bits: string[] = [];
       if (res.added) bits.push(`+${res.added}`);
       if (res.removed) bits.push(`-${res.removed}`);
-      setMessage(bits.length > 0 ? `Saved (${bits.join(" / ")})` : "No changes");
+      setMessage(
+        bits.length > 0
+          ? t("savedWithChanges", { changes: bits.join(" / ") })
+          : t("noChanges"),
+      );
       router.refresh();
     });
   }
@@ -80,7 +86,7 @@ export function LinkAssetsPanel({
       <div className="space-y-3">
         {currentLinks.length === 0 ? (
           <p className="rounded-lg border border-dashed border-card-border bg-card-bg/30 p-4 text-center text-xs text-muted">
-            Not linked to any assets yet.
+            {t("notLinkedToAssets")}
           </p>
         ) : (
           <ul className="space-y-1.5">
@@ -116,7 +122,7 @@ export function LinkAssetsPanel({
             onClick={() => setEditing(true)}
             className="rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-foreground hover:border-brand-blue"
           >
-            {currentLinks.length === 0 ? "Link to assets" : "Edit asset links"}
+            {currentLinks.length === 0 ? t("linkToAssets") : t("editAssetLinks")}
           </button>
         )}
         {message && <p className="text-xs text-brand-teal">{message}</p>}
@@ -130,7 +136,7 @@ export function LinkAssetsPanel({
       <input
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search asset by name or code…"
+        placeholder={t("searchAssetPlaceholder")}
         className="w-full rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
       />
       <div className="max-h-96 overflow-auto">
@@ -143,9 +149,12 @@ export function LinkAssetsPanel({
         />
       </div>
       <p className="text-[10px] text-muted">
-        Click any parent (e.g. a {levelLabels[2]} or {levelLabels[3]}) to
-        select / deselect its entire sub-tree. Selecting {selected.length} of{" "}
-        {allAssets.length} assets.
+        {t("assetTreeHint", {
+          level2: levelLabels[2],
+          level3: levelLabels[3],
+          selected: selected.length,
+          total: allAssets.length,
+        })}
       </p>
       {error && <p className="text-xs text-red-400">{error}</p>}
       <div className="flex items-center justify-end gap-2">
@@ -155,7 +164,7 @@ export function LinkAssetsPanel({
           disabled={pending}
           className="rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-foreground hover:border-brand-blue disabled:opacity-50"
         >
-          Cancel
+          {t("cancel")}
         </button>
         <button
           type="button"
@@ -163,7 +172,7 @@ export function LinkAssetsPanel({
           disabled={pending}
           className="rounded-md bg-brand-blue px-3 py-1.5 text-xs text-white hover:bg-brand-blue/90 disabled:opacity-50"
         >
-          {pending ? "Saving…" : "Save links"}
+          {pending ? t("saving") : t("saveLinks")}
         </button>
       </div>
     </div>

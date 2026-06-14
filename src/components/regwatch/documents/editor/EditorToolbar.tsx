@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { Editor } from "@tiptap/react";
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
  * tooltip-only hint so users find it.
  */
 export function EditorToolbar({ editor }: Props) {
+  const t = useTranslations("regwatch.documents");
   if (!editor) return null;
 
   const btn = (
@@ -59,19 +61,19 @@ export function EditorToolbar({ editor }: Props) {
         "B",
         editor.isActive("bold"),
         () => editor.chain().focus().toggleBold().run(),
-        "Bold (⌘B)",
+        t("boldTitle"),
       )}
       {btn(
         "I",
         editor.isActive("italic"),
         () => editor.chain().focus().toggleItalic().run(),
-        "Italic (⌘I)",
+        t("italicTitle"),
       )}
       {btn(
         "U",
         editor.isActive("underline"),
         () => editor.chain().focus().toggleUnderline().run(),
-        "Underline (⌘U)",
+        t("underlineTitle"),
       )}
       <Separator />
       {btn(
@@ -99,35 +101,35 @@ export function EditorToolbar({ editor }: Props) {
             .focus()
             .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
             .run(),
-        "Insert table",
+        t("insertTable"),
       )}
       {btn(
         "+ Row",
         false,
         () => editor.chain().focus().addRowAfter().run(),
-        "Add row below",
+        t("addRowBelow"),
       )}
       {btn(
         "+ Col",
         false,
         () => editor.chain().focus().addColumnAfter().run(),
-        "Add column right",
+        t("addColumnRight"),
       )}
       <Separator />
       {btn(
         "↵ Page break",
         false,
         () => editor.chain().focus().insertPageBreak().run(),
-        "Insert a page break here (⌘↩)",
+        t("insertPageBreakTitle"),
       )}
       <Separator />
       <button
         type="button"
         disabled
-        title="Inserting a regulation clause is done from the Compose workspace (Phase 5). Switch to /compose to do it."
+        title={t("citeClauseDisabledTitle")}
         className="cursor-not-allowed rounded-md border border-card-border bg-card-bg/40 px-2 py-1 text-[11px] text-muted/60"
       >
-        🔗 Cite clause
+        🔗 {t("citeClause")}
       </button>
     </div>
   );

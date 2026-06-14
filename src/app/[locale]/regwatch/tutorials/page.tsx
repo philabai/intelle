@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
 import { RegwatchAppShell } from "@/components/regwatch/AppShell";
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function TutorialsPage() {
+  const t = useTranslations("regwatch.discover");
   const supabase = await createClient();
   const {
     data: { user },
@@ -25,16 +27,17 @@ export default async function TutorialsPage() {
       <header className="border-b border-card-border bg-card-bg/30">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
           <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-            Tutorials
+            {t("tutorialsEyebrow")}
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            See Vantage in action
+            {t("tutorialsHeading")}
           </h1>
           <p className="mt-3 max-w-2xl text-sm text-muted">
-            Four narrated, interactive walkthroughs — one per top menu. Each plays
-            section by section with a voiceover and on-screen labels; click{" "}
-            <span className="text-foreground">Continue</span> to move through each
-            menu item at your own pace.
+            {t.rich("tutorialsSubheading", {
+              continue: (chunks) => (
+                <span className="text-foreground">{chunks}</span>
+              ),
+            })}
           </p>
         </div>
       </header>
@@ -48,8 +51,11 @@ export default async function TutorialsPage() {
               </h2>
               <span className="shrink-0 text-[11px] text-muted">
                 {course.sections.length > 0
-                  ? `${course.sections.length} sections · ${courseDurationLabel(course)}`
-                  : "Coming soon"}
+                  ? t("tutorialSectionsDuration", {
+                      count: course.sections.length,
+                      duration: courseDurationLabel(course),
+                    })
+                  : t("comingSoon")}
               </span>
             </div>
             <p className="mb-4 max-w-2xl text-sm text-muted">

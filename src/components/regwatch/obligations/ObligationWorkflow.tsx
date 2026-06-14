@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import {
   transitionObligationState,
@@ -87,6 +88,7 @@ export function ObligationWorkflow({
   assignees,
   unacknowledgedHighSeverityFindings,
 }: Props) {
+  const t = useTranslations("regwatch.comply");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -111,7 +113,7 @@ export function ObligationWorkflow({
     startTransition(async () => {
       const res = await transitionObligationState(payload);
       if (!res.ok) {
-        setError(res.error ?? "Action failed");
+        setError(res.error ?? t("errActionFailed"));
         return;
       }
       setDialog(null);
@@ -139,7 +141,7 @@ export function ObligationWorkflow({
         notes: notes.trim() || undefined,
       });
       if (!res.ok) {
-        setError(res.error ?? "Could not submit for approval");
+        setError(res.error ?? t("errCouldNotSubmit"));
         return;
       }
       setDialog(null);
@@ -149,23 +151,21 @@ export function ObligationWorkflow({
   }
   function handleKickback() {
     if (!notes.trim()) {
-      setError("Provide kick-back notes for the reviewer");
+      setError(t("errKickbackNotes"));
       return;
     }
     fire({ id: obligationId, toStatus: "in-review", notes: notes.trim() });
   }
   function handleSignOff() {
     if (!rationale.trim()) {
-      setError("Sign-off rationale is required");
+      setError(t("errSignoffRationaleRequired"));
       return;
     }
     if (
       unacknowledgedHighSeverityFindings.length > 0 &&
       !signoffAcknowledged
     ) {
-      setError(
-        "Tick the acknowledgement box to confirm you've reviewed the AI-flagged discrepancies",
-      );
+      setError(t("errSignoffAcknowledge"));
       return;
     }
     fire({
@@ -176,7 +176,7 @@ export function ObligationWorkflow({
   }
   function handleNotApplicable() {
     if (!notes.trim()) {
-      setError("Provide a rationale");
+      setError(t("errProvideRationale"));
       return;
     }
     fire({
@@ -204,7 +204,7 @@ export function ObligationWorkflow({
         ...next,
       });
       if (!res.ok) {
-        setError(res.error ?? "Could not update");
+        setError(res.error ?? t("errCouldNotUpdate"));
         return;
       }
       router.refresh();
@@ -219,7 +219,7 @@ export function ObligationWorkflow({
         assigneeUserId: userId || null,
       });
       if (!res.ok) {
-        setError(res.error ?? "Could not assign");
+        setError(res.error ?? t("errCouldNotAssign"));
         return;
       }
       router.refresh();
@@ -235,9 +235,9 @@ export function ObligationWorkflow({
   }[] = [];
 
   if (reviewStatus === "awaiting-triage" && (isReviewer || isAdmin)) {
-    actions.push({ label: "Start review", onClick: handleClaim });
+    actions.push({ label: t("actStartReview"), onClick: handleClaim });
     actions.push({
-      label: "Not applicable",
+      label: t("actNotApplicable"),
       onClick: () => {
         reset();
         setDialog({ kind: "not-applicable" });
@@ -246,14 +246,14 @@ export function ObligationWorkflow({
   }
   if (reviewStatus === "in-review" && (isReviewer || isAdmin)) {
     actions.push({
-      label: "Submit for approval",
+      label: t("actSubmitForApproval"),
       onClick: () => {
         reset();
         setDialog({ kind: "complete-review" });
       },
     });
     actions.push({
-      label: "Not applicable",
+      label: t("actNotApplicable"),
       onClick: () => {
         reset();
         setDialog({ kind: "not-applicable" });
@@ -262,14 +262,14 @@ export function ObligationWorkflow({
   }
   if (reviewStatus === "pending-approval" && isAdmin) {
     actions.push({
-      label: "Sign off & verify",
+      label: t("actSignOffVerify"),
       onClick: () => {
         reset();
         setDialog({ kind: "sign-off" });
       },
     });
     actions.push({
-      label: "Kick back to reviewer",
+      label: t("actKickBack"),
       onClick: () => {
         reset();
         setDialog({ kind: "kickback" });
@@ -278,7 +278,7 @@ export function ObligationWorkflow({
     });
   }
   if (reviewStatus === "verified" && isAdmin) {
-    actions.push({ label: "Close", onClick: handleClose });
+    actions.push({ label: t("actClose"), onClick: handleClose });
   }
   if (
     isAdmin &&
@@ -287,7 +287,7 @@ export function ObligationWorkflow({
     )
   ) {
     actions.push({
-      label: "Re-open",
+      label: t("actReopen"),
       onClick: () => {
         reset();
         setDialog({ kind: "reopen" });
@@ -307,7 +307,7 @@ export function ObligationWorkflow({
     !["closed", "not-applicable"].includes(reviewStatus)
   ) {
     actions.push({
-      label: "Save and come back later",
+      label: t("actSaveComeBack"),
       onClick: () => router.push("/regwatch/obligations"),
       secondary: true,
     });
@@ -341,12 +341,12 @@ export function ObligationWorkflow({
       {isAdmin && (
         <section className="rounded-xl border border-card-border bg-card-bg/40 p-4">
           <h3 className="text-xs font-medium uppercase tracking-wider text-muted">
-            Admin grading
+            {t("adminGrading")}
           </h3>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <label className="block">
               <span className="text-[10px] font-medium uppercase tracking-wider text-muted">
-                Severity
+                {t("severity")}
               </span>
               <select
                 value={severity}
@@ -367,7 +367,7 @@ export function ObligationWorkflow({
             </label>
             <label className="block">
               <span className="text-[10px] font-medium uppercase tracking-wider text-muted">
-                Compliance status
+                {t("complianceStatus")}
               </span>
               <select
                 value={complianceStatus}
@@ -388,7 +388,7 @@ export function ObligationWorkflow({
             </label>
             <label className="block">
               <span className="text-[10px] font-medium uppercase tracking-wider text-muted">
-                Re-review cadence
+                {t("reReviewCadence")}
               </span>
               <select
                 value={reviewCadence}
@@ -420,13 +420,13 @@ export function ObligationWorkflow({
                     })
                   }
                   className="mt-2 w-full rounded-md border border-card-border bg-card-bg px-2 py-1.5 text-xs text-foreground focus:border-brand-blue focus:outline-none"
-                  placeholder="Days"
+                  placeholder={t("days")}
                 />
               )}
             </label>
             <label className="block">
               <span className="text-[10px] font-medium uppercase tracking-wider text-muted">
-                Assign reviewer
+                {t("assignReviewer")}
               </span>
               <select
                 value={assignedReviewerUserId ?? ""}
@@ -434,7 +434,7 @@ export function ObligationWorkflow({
                 onChange={(e) => handleAssign(e.target.value)}
                 className="mt-1 w-full rounded-md border border-card-border bg-card-bg px-2 py-1.5 text-xs text-foreground focus:border-brand-blue focus:outline-none"
               >
-                <option value="">(unassigned)</option>
+                <option value="">{t("optionUnassigned")}</option>
                 {assignees.map((a) => (
                   <option key={a.userId} value={a.userId}>
                     {a.displayName}
@@ -444,8 +444,7 @@ export function ObligationWorkflow({
             </label>
           </div>
           <p className="mt-2 text-[10px] text-muted">
-            These fields are locked to owners and admins. The reviewer sees
-            them but cannot edit.
+            {t("adminGradingHint")}
           </p>
         </section>
       )}
@@ -453,48 +452,53 @@ export function ObligationWorkflow({
       {error && <p className="text-xs text-red-400">{error}</p>}
 
       {dialog && (
-        <Dialog onClose={() => setDialog(null)} title={titleFor(dialog)}>
+        <Dialog onClose={() => setDialog(null)} title={titleFor(dialog, t)} closeLabel={t("dialogClose")} closeTitle={t("dialogCloseTitle")}>
           {dialog.kind === "complete-review" && (
             <div className="space-y-3">
               <p className="text-xs text-muted">
-                The obligation moves to <strong>pending-approval</strong>; an
-                admin signs off to verify. Evidence files are managed in the
-                <em> Evidence</em> section above &mdash; make sure at least
-                one file is uploaded before submitting.
+                {t.rich("dialogCompleteReviewBody", {
+                  strong: (c) => <strong>{c}</strong>,
+                  em: (c) => <em>{c}</em>,
+                })}
               </p>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
-                placeholder="Review notes (optional)"
+                placeholder={t("reviewNotesPlaceholder")}
                 className="w-full rounded-md border border-card-border bg-card-bg px-2 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
               />
               <DialogActions
                 pending={pending}
                 onCancel={() => setDialog(null)}
                 onConfirm={handleCompleteReview}
-                confirmLabel="Submit for approval"
+                confirmLabel={t("actSubmitForApproval")}
+                cancelLabel={t("cancel")}
+                workingLabel={t("working")}
               />
             </div>
           )}
           {dialog.kind === "kickback" && (
             <div className="space-y-3">
               <p className="text-xs text-muted">
-                Send back to the reviewer with notes on what needs to be
-                revised. State returns to <strong>in-review</strong>.
+                {t.rich("dialogKickbackBody", {
+                  strong: (c) => <strong>{c}</strong>,
+                })}
               </p>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={5}
-                placeholder="What needs to be redone?"
+                placeholder={t("kickbackPlaceholder")}
                 className="w-full rounded-md border border-card-border bg-card-bg px-2 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
               />
               <DialogActions
                 pending={pending}
                 onCancel={() => setDialog(null)}
                 onConfirm={handleKickback}
-                confirmLabel="Kick back"
+                confirmLabel={t("actKickBackShort")}
+                cancelLabel={t("cancel")}
+                workingLabel={t("working")}
                 danger
               />
             </div>
@@ -502,18 +506,14 @@ export function ObligationWorkflow({
           {dialog.kind === "sign-off" && (
             <div className="space-y-3">
               <p className="text-xs text-muted">
-                Sign-off is recorded with your identity, timestamp, and rationale.
-                The rationale is stored on the obligation and in the audit
-                history.
+                {t("dialogSignOffBody")}
               </p>
               {unacknowledgedHighSeverityFindings.length > 0 && (
                 <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
                   <p className="text-[11px] font-medium text-amber-200">
-                    {unacknowledgedHighSeverityFindings.length} AI-flagged{" "}
-                    {unacknowledgedHighSeverityFindings.length === 1
-                      ? "discrepancy"
-                      : "discrepancies"}{" "}
-                    not yet acknowledged
+                    {t("unacknowledgedFindings", {
+                      count: unacknowledgedHighSeverityFindings.length,
+                    })}
                   </p>
                   <ul className="mt-2 space-y-1 text-[11px] text-amber-100/90">
                     {unacknowledgedHighSeverityFindings.map((f) => (
@@ -544,9 +544,7 @@ export function ObligationWorkflow({
                       className="mt-0.5 h-3 w-3"
                     />
                     <span>
-                      I have reviewed these AI-flagged discrepancies and am
-                      proceeding with sign-off despite them being
-                      unacknowledged.
+                      {t("signoffAcknowledgeCheckbox")}
                     </span>
                   </label>
                 </div>
@@ -555,49 +553,55 @@ export function ObligationWorkflow({
                 value={rationale}
                 onChange={(e) => setRationale(e.target.value)}
                 rows={5}
-                placeholder="Sign-off rationale (required) — what was reviewed, why this status, any caveats."
+                placeholder={t("signoffRationalePlaceholder")}
                 className="w-full rounded-md border border-card-border bg-card-bg px-2 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
               />
               <DialogActions
                 pending={pending}
                 onCancel={() => setDialog(null)}
                 onConfirm={handleSignOff}
-                confirmLabel="Sign off & verify"
+                confirmLabel={t("actSignOffVerify")}
+                cancelLabel={t("cancel")}
+                workingLabel={t("working")}
               />
             </div>
           )}
           {dialog.kind === "not-applicable" && (
             <div className="space-y-3">
               <p className="text-xs text-muted">
-                Mark as Not Applicable with a rationale. The obligation is
-                terminal (no further review).
+                {t("dialogNotApplicableBody")}
               </p>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
-                placeholder="Why is this not applicable to the asset?"
+                placeholder={t("notApplicablePlaceholder")}
                 className="w-full rounded-md border border-card-border bg-card-bg px-2 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
               />
               <DialogActions
                 pending={pending}
                 onCancel={() => setDialog(null)}
                 onConfirm={handleNotApplicable}
-                confirmLabel="Mark N/A"
+                confirmLabel={t("actMarkNA")}
+                cancelLabel={t("cancel")}
+                workingLabel={t("working")}
               />
             </div>
           )}
           {dialog.kind === "reopen" && (
             <div className="space-y-3">
               <p className="text-xs text-amber-300">
-                Re-opening clears the workflow state back to <strong>open</strong>.
-                The audit history will record this with your identity.
+                {t.rich("dialogReopenBody", {
+                  strong: (c) => <strong>{c}</strong>,
+                })}
               </p>
               <DialogActions
                 pending={pending}
                 onCancel={() => setDialog(null)}
                 onConfirm={handleReopen}
-                confirmLabel="Re-open"
+                confirmLabel={t("actReopenShort")}
+                cancelLabel={t("cancel")}
+                workingLabel={t("working")}
                 danger
               />
             </div>
@@ -608,28 +612,35 @@ export function ObligationWorkflow({
   );
 }
 
-function titleFor(d: NonNullable<DialogKind>): string {
+function titleFor(
+  d: NonNullable<DialogKind>,
+  t: ReturnType<typeof useTranslations>,
+): string {
   switch (d.kind) {
     case "complete-review":
-      return "Submit review for approval";
+      return t("dialogTitleCompleteReview");
     case "kickback":
-      return "Kick back to reviewer";
+      return t("dialogTitleKickback");
     case "sign-off":
-      return "Admin sign-off";
+      return t("dialogTitleSignOff");
     case "not-applicable":
-      return "Mark as not applicable";
+      return t("dialogTitleNotApplicable");
     case "reopen":
-      return "Re-open obligation";
+      return t("dialogTitleReopen");
   }
 }
 
 function Dialog({
   title,
   onClose,
+  closeLabel,
+  closeTitle,
   children,
 }: {
   title: string;
   onClose: () => void;
+  closeLabel: string;
+  closeTitle: string;
   children: React.ReactNode;
 }) {
   return (
@@ -641,8 +652,8 @@ function Dialog({
             type="button"
             onClick={onClose}
             className="text-muted hover:text-foreground"
-            aria-label="Close"
-            title="Close this dialog without submitting"
+            aria-label={closeLabel}
+            title={closeTitle}
           >
             ✕
           </button>
@@ -657,12 +668,16 @@ function DialogActions({
   onCancel,
   onConfirm,
   confirmLabel,
+  cancelLabel,
+  workingLabel,
   pending,
   danger,
 }: {
   onCancel: () => void;
   onConfirm: () => void;
   confirmLabel: string;
+  cancelLabel: string;
+  workingLabel: string;
   pending: boolean;
   danger?: boolean;
 }) {
@@ -674,7 +689,7 @@ function DialogActions({
         disabled={pending}
         className="rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-foreground hover:border-brand-blue disabled:opacity-50"
       >
-        Cancel
+        {cancelLabel}
       </button>
       <button
         type="button"
@@ -686,7 +701,7 @@ function DialogActions({
             : "bg-brand-blue text-white hover:bg-brand-blue/90"
         }`}
       >
-        {pending ? "Working…" : confirmLabel}
+        {pending ? workingLabel : confirmLabel}
       </button>
     </div>
   );

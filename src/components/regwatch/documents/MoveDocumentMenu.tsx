@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { moveDocumentToFolder } from "@/lib/regwatch/document-folders-actions";
 import type { DocumentFolderTreeNode } from "@/lib/regwatch/document-folders";
@@ -29,8 +30,10 @@ export function MoveDocumentMenu({
   documentId,
   currentFolderId,
   folderRoots,
-  label = "Move to…",
+  label,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
+  const resolvedLabel = label ?? t("moveTo");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -86,7 +89,7 @@ export function MoveDocumentMenu({
     startTransition(async () => {
       const res = await moveDocumentToFolder({ documentId, folderId });
       if (!res.ok) {
-        setError(res.error ?? "Could not move");
+        setError(res.error ?? t("couldNotMove"));
         return;
       }
       setOpen(false);
@@ -103,10 +106,10 @@ export function MoveDocumentMenu({
         type="button"
         onClick={() => setOpen((o) => !o)}
         disabled={pending}
-        title="Move this document into a project folder (or back to Unfiled)"
+        title={t("moveDocumentTitle")}
         className="rounded-md border border-card-border bg-card-bg px-2 py-1 text-[10px] text-foreground hover:border-brand-blue disabled:opacity-50"
       >
-        {label}
+        {resolvedLabel}
       </button>
       {open && pos && (
         <div
@@ -123,7 +126,7 @@ export function MoveDocumentMenu({
                 : "text-foreground hover:bg-brand-navy/40"
             }`}
           >
-            Unfiled
+            {t("unfiled")}
           </button>
           {flat.length > 0 && (
             <div className="max-h-72 overflow-auto border-t border-card-border">

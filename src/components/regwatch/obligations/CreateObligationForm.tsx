@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { createObligation } from "@/lib/regwatch/obligations-actions";
 import { RegulationPicker } from "@/components/regwatch/RegulationPicker";
@@ -54,6 +55,7 @@ export function CreateObligationForm({
   levelLabels,
   assignees,
 }: Props) {
+  const t = useTranslations("regwatch.comply");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -72,11 +74,11 @@ export function CreateObligationForm({
     e.preventDefault();
     setError(null);
     if (!assetId) {
-      setError("Pick an asset");
+      setError(t("errPickAsset"));
       return;
     }
     if (!regulation) {
-      setError("Pick a regulation");
+      setError(t("errPickRegulation"));
       return;
     }
     startTransition(async () => {
@@ -95,7 +97,7 @@ export function CreateObligationForm({
         assignedReviewerUserId: assigneeUserId || null,
       });
       if (!res.ok || !res.id) {
-        setError(res.error ?? "Could not create obligation");
+        setError(res.error ?? t("errCouldNotCreate"));
         return;
       }
       router.push(`/regwatch/obligations/${res.id}`);
@@ -106,7 +108,7 @@ export function CreateObligationForm({
     <form onSubmit={onSubmit} className="space-y-5">
       <div>
         <label className="text-xs font-medium uppercase tracking-wider text-muted">
-          Asset
+          {t("asset")}
         </label>
         <div className="mt-1">
           <AssetPicker
@@ -120,7 +122,7 @@ export function CreateObligationForm({
 
       <div>
         <label className="text-xs font-medium uppercase tracking-wider text-muted">
-          Regulation
+          {t("regulation")}
         </label>
         <div className="mt-1">
           <RegulationPicker
@@ -138,7 +140,7 @@ export function CreateObligationForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="text-xs font-medium uppercase tracking-wider text-muted">
-            Severity
+            {t("severity")}
           </span>
           <select
             value={severity}
@@ -154,7 +156,7 @@ export function CreateObligationForm({
         </label>
         <label className="block">
           <span className="text-xs font-medium uppercase tracking-wider text-muted">
-            Compliance status
+            {t("complianceStatus")}
           </span>
           <select
             value={complianceStatus}
@@ -170,7 +172,7 @@ export function CreateObligationForm({
         </label>
         <label className="block">
           <span className="text-xs font-medium uppercase tracking-wider text-muted">
-            Re-review cadence
+            {t("reReviewCadence")}
           </span>
           <select
             value={reviewCadence}
@@ -190,21 +192,21 @@ export function CreateObligationForm({
               max={3650}
               value={reviewCadenceCustomDays}
               onChange={(e) => setReviewCadenceCustomDays(e.target.value)}
-              placeholder="Days"
+              placeholder={t("days")}
               className="mt-2 w-full rounded-md border border-card-border bg-card-bg px-3 py-2 text-sm text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
             />
           )}
         </label>
         <label className="block">
           <span className="text-xs font-medium uppercase tracking-wider text-muted">
-            Assign reviewer
+            {t("assignReviewer")}
           </span>
           <select
             value={assigneeUserId}
             onChange={(e) => setAssigneeUserId(e.target.value)}
             className="mt-1 w-full rounded-md border border-card-border bg-card-bg px-3 py-2 text-sm text-foreground focus:border-brand-blue focus:outline-none"
           >
-            <option value="">(no reviewer)</option>
+            <option value="">{t("optionNoReviewer")}</option>
             {assignees.map((a) => (
               <option key={a.userId} value={a.userId}>
                 {a.displayName}
@@ -221,7 +223,7 @@ export function CreateObligationForm({
           disabled={pending || !assetId || !regulation}
           className="ms-auto rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {pending ? "Creating…" : "Create obligation"}
+          {pending ? t("creating") : t("createObligationButton")}
         </button>
       </div>
     </form>

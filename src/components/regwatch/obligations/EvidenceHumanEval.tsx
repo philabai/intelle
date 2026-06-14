@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import {
   saveEvidenceEvaluation,
@@ -21,6 +22,7 @@ interface Props {
  * for the assigned reviewer / admins.
  */
 export function EvidenceHumanEval({ obligationId, evidenceFileId, evaluation, canManage }: Props) {
+  const t = useTranslations("regwatch.comply");
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(evaluation?.text ?? "");
@@ -53,7 +55,7 @@ export function EvidenceHumanEval({ obligationId, evidenceFileId, evaluation, ca
       recorderRef.current = mr;
       setRecording(true);
     } catch {
-      setError("Microphone unavailable or permission denied.");
+      setError(t("micUnavailable"));
     }
   }
 
@@ -74,10 +76,10 @@ export function EvidenceHumanEval({ obligationId, evidenceFileId, evaluation, ca
       const fd = new FormData();
       fd.set("audio", blob, `recording.${ext}`);
       const res = await transcribeEvidenceAudio(fd);
-      if (!res.ok || !res.text) setError(res.error ?? "Couldn't transcribe the recording.");
-      else setText((t) => (t.trim() ? `${t.trim()}\n${res.text}` : res.text!));
+      if (!res.ok || !res.text) setError(res.error ?? t("transcribeFailed"));
+      else setText((prev) => (prev.trim() ? `${prev.trim()}\n${res.text}` : res.text!));
     } catch (e) {
-      setError(`Transcription failed: ${(e as Error).message}`);
+      setError(t("transcriptionError", { message: (e as Error).message }));
     } finally {
       setTranscribing(false);
     }
@@ -87,7 +89,7 @@ export function EvidenceHumanEval({ obligationId, evidenceFileId, evaluation, ca
     setError(null);
     start(async () => {
       const res = await saveEvidenceEvaluation({ obligationId, evidenceFileId, text });
-      if (!res.ok) setError(res.error ?? "Could not save");
+      if (!res.ok) setError(res.error ?? t("errCouldNotSave"));
       else {
         setEditing(false);
         router.refresh();
@@ -100,7 +102,7 @@ export function EvidenceHumanEval({ obligationId, evidenceFileId, evaluation, ca
       <div className="rounded-md border border-brand-teal/40 bg-brand-teal/5 p-3">
         <div className="flex items-center justify-between gap-2">
           <p className="text-[10px] font-medium uppercase tracking-wider text-brand-teal">
-            Human evaluation
+            {t("humanEvaluation")}
           </p>
           {canManage && (
             <button
@@ -108,7 +110,7 @@ export function EvidenceHumanEval({ obligationId, evidenceFileId, evaluation, ca
               onClick={() => setEditing(true)}
               className="text-[10px] text-muted hover:text-foreground"
             >
-              Edit
+              {t("edit")}
             </button>
           )}
         </div>
@@ -129,7 +131,7 @@ export function EvidenceHumanEval({ obligationId, evidenceFileId, evaluation, ca
         onClick={() => setEditing(true)}
         className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-card-border px-2.5 py-1.5 text-xs text-muted hover:border-brand-teal hover:text-foreground"
       >
-        <span className="text-base leading-none">+</span> Add human evaluation
+        <span className="text-base leading-none">+</span> {t("addHumanEvaluation")}
       </button>
     );
   }
@@ -138,14 +140,14 @@ export function EvidenceHumanEval({ obligationId, evidenceFileId, evaluation, ca
     <div className="rounded-md border border-card-border bg-card-bg/30 p-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-          Human evaluation
+          {t("humanEvaluation")}
         </p>
         {canRecord && (
           <button
             type="button"
             onClick={recording ? stopRecording : startRecording}
             disabled={transcribing}
-            title="Dictate your note — recorded audio is transcribed (any language → English) into the box below"
+            title={t("dictateTooltip")}
             className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] disabled:opacity-60 ${
               recording
                 ? "border-red-500/60 bg-red-500/15 text-red-200"
@@ -153,14 +155,14 @@ export function EvidenceHumanEval({ obligationId, evidenceFileId, evaluation, ca
             }`}
           >
             {transcribing ? (
-              "Transcribing…"
+              t("transcribing")
             ) : recording ? (
               <>
                 <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-red-400" />
-                Stop &amp; transcribe
+                {t("stopAndTranscribe")}
               </>
             ) : (
-              <>🎤 Record</>
+              <>🎤 {t("record")}</>
             )}
           </button>
         )}
@@ -169,7 +171,7 @@ export function EvidenceHumanEval({ obligationId, evidenceFileId, evaluation, ca
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={3}
-        placeholder="Type your assessment, or tap Record to dictate it — do you agree with the AI? Add context, corrections, or the decision a reviewer should act on."
+        placeholder={t("humanEvalPlaceholder")}
         className="mt-1.5 w-full rounded-md border border-card-border bg-background px-2.5 py-2 text-xs text-foreground focus:border-brand-blue focus:outline-none"
       />
       {error && <p className="mt-1 text-[11px] text-red-400">{error}</p>}
@@ -180,7 +182,7 @@ export function EvidenceHumanEval({ obligationId, evidenceFileId, evaluation, ca
           disabled={pending}
           className="rounded-md bg-brand-blue px-3 py-1 text-xs font-medium text-white hover:bg-brand-blue/90 disabled:opacity-60"
         >
-          {pending ? "Saving…" : "Save evaluation"}
+          {pending ? t("saving") : t("saveEvaluation")}
         </button>
         <button
           type="button"
@@ -191,7 +193,7 @@ export function EvidenceHumanEval({ obligationId, evidenceFileId, evaluation, ca
           }}
           className="rounded-md border border-card-border px-3 py-1 text-xs text-muted hover:text-foreground"
         >
-          Cancel
+          {t("cancel")}
         </button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Modal } from "@/components/regwatch/Modal";
 import { createDocumentFromTemplate } from "@/lib/regwatch/internal-document-revision-actions";
@@ -37,6 +38,7 @@ export function TemplateGalleryDialog({
   onClose,
   defaultFolderId,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [activeFamily, setActiveFamily] = useState<TemplateFamily>("osha-psm");
@@ -79,11 +81,11 @@ export function TemplateGalleryDialog({
   function onCreate(asBlank: boolean) {
     setError(null);
     if (!title.trim()) {
-      setError("Give the document a title first.");
+      setError(t("errorTitleRequired"));
       return;
     }
     if (!asBlank && !selected) {
-      setError("Pick a template, or use 'Blank document' instead.");
+      setError(t("errorPickTemplate"));
       return;
     }
     startTransition(async () => {
@@ -94,7 +96,7 @@ export function TemplateGalleryDialog({
           folderId: defaultFolderId ?? null,
         });
         if (!res.ok || !res.id) {
-          setError(res.error ?? "Could not create document");
+          setError(res.error ?? t("errorCouldNotCreate"));
           return;
         }
         onClose();
@@ -107,7 +109,7 @@ export function TemplateGalleryDialog({
         folderId: defaultFolderId ?? null,
       });
       if (!res.ok || !res.id) {
-        setError(res.error ?? "Could not create document from template");
+        setError(res.error ?? t("errorCouldNotCreateFromTemplate"));
         return;
       }
       onClose();
@@ -116,7 +118,7 @@ export function TemplateGalleryDialog({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="New document" size="lg">
+    <Modal open={open} onClose={onClose} title={t("newDocument")} size="lg">
       <div className="grid h-[70vh] grid-cols-[160px_220px_1fr] gap-3">
         {/* Family rail */}
         <nav className="overflow-y-auto rounded-md border border-card-border bg-card-bg/30 p-1">
@@ -175,12 +177,12 @@ export function TemplateGalleryDialog({
               <div className="space-y-2 rounded-md border border-card-border bg-card-bg/30 p-3">
                 <label className="block">
                   <span className="text-[10px] font-medium uppercase tracking-wider text-muted">
-                    Document title
+                    {t("documentTitleLabel")}
                   </span>
                   <input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g. Wellhead Operating Procedure — Unit 3"
+                    placeholder={t("documentTitlePlaceholder")}
                     className="mt-1 w-full rounded-md border border-card-border bg-card-bg px-3 py-1.5 text-xs text-foreground placeholder:text-muted/60 focus:border-brand-blue focus:outline-none"
                   />
                 </label>
@@ -193,9 +195,9 @@ export function TemplateGalleryDialog({
                     onClick={() => onCreate(true)}
                     disabled={pending}
                     className="rounded-md border border-card-border bg-background px-3 py-1.5 text-[11px] text-muted hover:text-foreground disabled:opacity-50"
-                    title="Skip the template and create an empty document"
+                    title={t("createBlankTitle")}
                   >
-                    Create blank instead
+                    {t("createBlankInstead")}
                   </button>
                   <button
                     type="button"
@@ -203,14 +205,14 @@ export function TemplateGalleryDialog({
                     disabled={pending || !title.trim()}
                     className="rounded-md bg-brand-blue px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-blue/90 disabled:opacity-50"
                   >
-                    {pending ? "Creating…" : "Create from template"}
+                    {pending ? t("creating") : t("createFromTemplate")}
                   </button>
                 </div>
               </div>
             </>
           ) : (
             <div className="flex flex-1 items-center justify-center rounded-md border border-dashed border-card-border bg-card-bg/20 p-6 text-center text-xs text-muted">
-              Pick a template from the list to preview its structure here.
+              {t("pickTemplateToPreview")}
             </div>
           )}
         </div>

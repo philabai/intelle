@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import {
@@ -30,6 +31,7 @@ export function CommentSidebar({
   currentUserId,
   canResolve,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [newBody, setNewBody] = useState("");
@@ -51,7 +53,7 @@ export function CommentSidebar({
           : undefined,
       });
       if (!res.ok) {
-        setError(res.error ?? "Could not post comment");
+        setError(res.error ?? t("couldNotPostComment"));
         return;
       }
       setNewBody("");
@@ -70,7 +72,7 @@ export function CommentSidebar({
         body: replyBody.trim(),
       });
       if (!res.ok) {
-        setError(res.error ?? "Could not reply");
+        setError(res.error ?? t("couldNotReply"));
         return;
       }
       setReplyFor(null);
@@ -88,7 +90,7 @@ export function CommentSidebar({
         resolve: !resolved,
       });
       if (!res.ok) {
-        setError(res.error ?? "Could not update");
+        setError(res.error ?? t("couldNotUpdate"));
         return;
       }
       router.refresh();
@@ -105,32 +107,32 @@ export function CommentSidebar({
         className="rounded-md border border-card-border bg-background/40 p-3"
       >
         <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted">
-          New comment
+          {t("newComment")}
         </p>
         <input
           type="text"
           value={newAnchor}
           onChange={(e) => setNewAnchor(e.target.value)}
-          placeholder="Anchor (e.g. ¶4, §3.1, 'Title page')"
+          placeholder={t("commentAnchorPlaceholder")}
           className="mb-2 w-full rounded-md border border-card-border bg-background px-2 py-1 text-xs text-foreground placeholder:text-muted focus:border-brand-blue focus:outline-none"
         />
         <textarea
           value={newBody}
           onChange={(e) => setNewBody(e.target.value)}
           rows={3}
-          placeholder="Leave a review comment for the next reviewer…"
+          placeholder={t("commentBodyPlaceholder")}
           className="mb-2 w-full rounded-md border border-card-border bg-background px-2 py-1 text-xs text-foreground placeholder:text-muted focus:border-brand-blue focus:outline-none"
         />
         <div className="flex items-center justify-between gap-2">
           <p className="text-[10px] text-muted">
-            Visible to everyone in your org. Immutable once posted.
+            {t("commentVisibilityNote")}
           </p>
           <button
             type="submit"
             disabled={pending || !newBody.trim()}
             className="rounded-md bg-brand-blue px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-blue/90 disabled:opacity-50"
           >
-            Post
+            {t("post")}
           </button>
         </div>
       </form>
@@ -143,14 +145,14 @@ export function CommentSidebar({
 
       {open.length === 0 && resolved.length === 0 && (
         <p className="rounded-md border border-dashed border-card-border bg-card-bg/30 p-4 text-center text-[11px] text-muted">
-          No comments yet. Be the first to leave one.
+          {t("noCommentsYet")}
         </p>
       )}
 
       {open.length > 0 && (
         <section>
           <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted">
-            Open · {open.length}
+            {t("openWithCount", { count: open.length })}
           </p>
           <ul className="space-y-2">
             {open.map((t) => (
@@ -179,7 +181,7 @@ export function CommentSidebar({
       {resolved.length > 0 && (
         <section>
           <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted">
-            Resolved · {resolved.length}
+            {t("resolvedWithCount", { count: resolved.length })}
           </p>
           <ul className="space-y-2 opacity-70">
             {resolved.map((t) => (
@@ -232,6 +234,7 @@ function CommentThreadCard({
   onSubmitReply,
   onToggleResolve,
 }: CardProps) {
+  const t = useTranslations("regwatch.documents");
   const isResolved = !!thread.root.resolvedAt;
   return (
     <li className="rounded-md border border-card-border bg-background/40 p-3">
@@ -257,12 +260,12 @@ function CommentThreadCard({
             onClick={onOpenReply}
             className="text-[11px] text-brand-blue hover:underline"
           >
-            Reply
+            {t("reply")}
           </button>
         )}
         {isResolved && thread.root.resolvedByDisplayName && (
           <span className="text-[10px] text-muted">
-            Resolved by {thread.root.resolvedByDisplayName}
+            {t("resolvedBy", { name: thread.root.resolvedByDisplayName })}
           </span>
         )}
         {(canResolve || thread.root.authorUserId === currentUserId) && (
@@ -272,7 +275,7 @@ function CommentThreadCard({
             disabled={pending}
             className="ms-auto text-[10px] text-muted hover:text-foreground disabled:opacity-50"
           >
-            {isResolved ? "Re-open" : "Resolve"}
+            {isResolved ? t("reopen") : t("resolve")}
           </button>
         )}
       </div>
@@ -282,7 +285,7 @@ function CommentThreadCard({
             value={replyBody}
             onChange={(e) => onChangeReply(e.target.value)}
             rows={2}
-            placeholder="Reply…"
+            placeholder={t("replyPlaceholder")}
             className="w-full rounded-md border border-card-border bg-background px-2 py-1 text-xs text-foreground placeholder:text-muted focus:border-brand-blue focus:outline-none"
           />
           <div className="flex items-center justify-end gap-2">
@@ -291,7 +294,7 @@ function CommentThreadCard({
               onClick={onCloseReply}
               className="text-[11px] text-muted hover:text-foreground"
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               type="button"
@@ -299,7 +302,7 @@ function CommentThreadCard({
               disabled={pending || !replyBody.trim()}
               className="rounded-md bg-brand-blue px-2 py-1 text-[11px] font-medium text-white hover:bg-brand-blue/90 disabled:opacity-50"
             >
-              Reply
+              {t("reply")}
             </button>
           </div>
         </div>

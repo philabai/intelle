@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Modal } from "@/components/regwatch/Modal";
 import { TEMPLATE_REGISTRY } from "@/lib/regwatch/templates/registry";
 import {
@@ -41,6 +42,7 @@ export function ApplyTemplateDialog({
   hasExistingContent,
   onApply,
 }: Props) {
+  const t = useTranslations("regwatch.documents");
   const [activeFamily, setActiveFamily] = useState<TemplateFamily>("osha-psm");
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
@@ -85,7 +87,7 @@ export function ApplyTemplateDialog({
   }
 
   return (
-    <Modal open={open} onClose={handleClose} title="Apply template structure" size="lg">
+    <Modal open={open} onClose={handleClose} title={t("applyTemplateStructure")} size="lg">
       <div className="grid h-[60vh] grid-cols-[160px_1fr] gap-3">
         <nav className="overflow-y-auto rounded-md border border-card-border bg-card-bg/30 p-1">
           {FAMILIES.map((f) => (
@@ -132,15 +134,18 @@ export function ApplyTemplateDialog({
             <div className="space-y-2 rounded-md border border-card-border bg-card-bg/30 p-3">
               {confirming && hasExistingContent ? (
                 <p className="rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-[11px] text-amber-200">
-                  Applying <strong>{selected.label}</strong> will{" "}
-                  <strong>replace</strong> the document body with this template
-                  structure. Your current content will be lost on the next
-                  autosave (existing committed versions are preserved). Continue?
+                  {t.rich("applyTemplateConfirm", {
+                    label: selected.label,
+                    strong: (chunks) => <strong>{chunks}</strong>,
+                  })}
                 </p>
               ) : (
                 <p className="text-[11px] text-muted">
-                  Applies the <strong>{selected.label}</strong> scaffolding to
-                  the document body. {hasExistingContent ? "Existing content will be replaced — committed versions are preserved." : ""}
+                  {t.rich("applyTemplateInfo", {
+                    label: selected.label,
+                    strong: (chunks) => <strong>{chunks}</strong>,
+                  })}{" "}
+                  {hasExistingContent ? t("applyTemplateReplaceNote") : ""}
                 </p>
               )}
               <div className="flex items-center justify-end gap-2">
@@ -149,7 +154,7 @@ export function ApplyTemplateDialog({
                   onClick={handleClose}
                   className="rounded-md border border-card-border bg-background px-3 py-1.5 text-[11px] text-muted hover:text-foreground"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
                 <button
                   type="button"
@@ -157,8 +162,8 @@ export function ApplyTemplateDialog({
                   className="rounded-md bg-brand-blue px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-blue/90"
                 >
                   {confirming && hasExistingContent
-                    ? "Yes, replace content"
-                    : "Apply template"}
+                    ? t("yesReplaceContent")
+                    : t("applyTemplate")}
                 </button>
               </div>
             </div>

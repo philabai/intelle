@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import {
   uploadObligationEvidenceFile,
@@ -45,6 +46,7 @@ export function EvidenceDropzone({
   evaluations,
   onFilesChanged,
 }: Props) {
+  const t = useTranslations("regwatch.comply");
   const router = useRouter();
   const [files, setFiles] = useState<EvidenceFileRecord[]>(initialFiles);
   const [uploading, setUploading] = useState<UploadingItem[]>([]);
@@ -129,12 +131,10 @@ export function EvidenceDropzone({
         }`}
       >
         <p className="text-sm text-foreground">
-          Drop evidence files here, or click to choose
+          {t("dropzoneTitle")}
         </p>
         <p className="mt-1 text-[11px] text-muted">
-          Documents (PDF / DOCX / TXT), images (JPG / PNG / HEIC / WEBP), or
-          video (MP4 / MOV, mobile-recorded). Each file is analysed against
-          the regulation in the background — findings appear inline.
+          {t("dropzoneHint")}
         </p>
         <input
           ref={fileInputRef}
@@ -166,7 +166,9 @@ export function EvidenceDropzone({
                 </span>
               </span>
               <span>
-                {u.status === "uploading" ? "Uploading…" : `Failed: ${u.error}`}
+                {u.status === "uploading"
+                  ? t("uploading")
+                  : t("uploadFailed", { error: u.error ?? "" })}
               </span>
             </li>
           ))}

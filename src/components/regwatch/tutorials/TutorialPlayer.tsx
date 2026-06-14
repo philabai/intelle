@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   sectionVideoUrl,
   type TutorialCourse,
@@ -16,6 +17,7 @@ import {
  * browsers block autoplay-with-sound until the user interacts.
  */
 export function TutorialPlayer({ course }: { course: TutorialCourse }) {
+  const t = useTranslations("regwatch.discover");
   const sections = course.sections;
   const videoRef = useRef<HTMLVideoElement>(null);
   const [started, setStarted] = useState(false);
@@ -41,7 +43,7 @@ export function TutorialPlayer({ course }: { course: TutorialCourse }) {
   if (sections.length === 0) {
     return (
       <div className="grid aspect-video w-full place-items-center rounded-xl border border-dashed border-card-border bg-card-bg/30 text-sm text-muted">
-        Coming soon
+        {t("comingSoon")}
       </div>
     );
   }
@@ -114,7 +116,7 @@ export function TutorialPlayer({ course }: { course: TutorialCourse }) {
                 ▶
               </span>
               <span className="text-sm font-medium text-white">
-                Start tutorial · {sections.length} sections
+                {t("startTutorial", { count: sections.length })}
               </span>
             </span>
           </button>
@@ -126,8 +128,11 @@ export function TutorialPlayer({ course }: { course: TutorialCourse }) {
             <div className="flex flex-col items-center gap-4 px-6 text-center">
               <p className="text-sm text-white/80">
                 {isLast
-                  ? "That's the end of this walkthrough."
-                  : `Section ${idx + 1} of ${sections.length} complete.`}
+                  ? t("tutorialEnd")
+                  : t("tutorialSectionComplete", {
+                      current: idx + 1,
+                      total: sections.length,
+                    })}
               </p>
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <button
@@ -135,7 +140,7 @@ export function TutorialPlayer({ course }: { course: TutorialCourse }) {
                   onClick={replay}
                   className="rounded-md border border-card-border bg-background/80 px-4 py-2 text-sm text-foreground/90 hover:border-brand-blue hover:text-brand-blue"
                 >
-                  ↺ Replay section
+                  {t("replaySection")}
                 </button>
                 {!isLast ? (
                   <button
@@ -143,11 +148,11 @@ export function TutorialPlayer({ course }: { course: TutorialCourse }) {
                     onClick={goNext}
                     className="rounded-md bg-brand-blue px-5 py-2 text-sm font-medium text-white hover:bg-brand-blue/90"
                   >
-                    Continue → {sections[idx + 1].title}
+                    {t("continueTo", { title: sections[idx + 1].title })}
                   </button>
                 ) : (
                   <span className="rounded-md bg-brand-teal/15 px-4 py-2 text-sm font-medium text-brand-teal">
-                    Done 🎉
+                    {t("tutorialDone")}
                   </span>
                 )}
               </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { Editor } from "@tiptap/react";
 
 interface Heading {
@@ -23,6 +24,7 @@ interface Props {
  * author types, applies templates, or pastes content.
  */
 export function DocSectionNav({ editor, onClose }: Props) {
+  const t = useTranslations("regwatch.documents");
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [activePos, setActivePos] = useState<number | null>(null);
 
@@ -37,7 +39,7 @@ export function DocSectionNav({ editor, onClose }: Props) {
           if (level >= 1 && level <= 3) {
             list.push({
               level: level as 1 | 2 | 3,
-              text: node.textContent.trim() || "(untitled)",
+              text: node.textContent.trim() || t("untitledHeading"),
               pos,
             });
           }
@@ -75,12 +77,12 @@ export function DocSectionNav({ editor, onClose }: Props) {
     <aside className="flex w-60 shrink-0 flex-col border-e border-card-border bg-card-bg/20">
       <div className="flex items-center justify-between gap-2 border-b border-card-border bg-card-bg/40 px-3 py-2">
         <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-          Outline
+          {t("outline")}
         </p>
         <button
           type="button"
           onClick={onClose}
-          title="Hide outline (toggle via View ▾ → Show outline)"
+          title={t("hideOutlineTitle")}
           className="rounded-md border border-card-border bg-background px-1.5 py-0.5 text-[9px] text-muted hover:border-brand-blue hover:text-foreground"
         >
           ✕
@@ -89,10 +91,11 @@ export function DocSectionNav({ editor, onClose }: Props) {
       <div className="min-h-0 flex-1 overflow-y-auto py-2">
         {headings.length === 0 ? (
           <p className="px-3 py-2 text-[11px] leading-relaxed text-muted">
-            Headings (H1 / H2 / H3) in your document will appear here for
-            quick navigation. Add a heading via{" "}
-            <strong className="text-foreground">Format ▾ → Heading 1</strong>{" "}
-            or the H1 / H2 / H3 buttons in the toolbar.
+            {t.rich("outlineEmpty", {
+              strong: (chunks) => (
+                <strong className="text-foreground">{chunks}</strong>
+              ),
+            })}
           </p>
         ) : (
           <ol className="space-y-0.5">

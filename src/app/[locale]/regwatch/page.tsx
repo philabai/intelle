@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/regwatch/supabase/server";
@@ -12,17 +13,9 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const REGION_ORDER = ["na", "eu", "uk", "mea", "int"] as const;
-const REGION_LABEL: Record<string, string> = {
-  na: "North America",
-  eu: "European Union",
-  uk: "United Kingdom",
-  mea: "Middle East & Africa",
-  asia: "Asia & Pacific",
-  lac: "Latin America & Caribbean",
-  int: "International",
-};
 
 export default async function RegwatchLanding() {
+  const t = useTranslations("regwatch.discover");
   const supabase = await createClient();
   const [
     {
@@ -47,37 +40,36 @@ export default async function RegwatchLanding() {
       <section className="relative overflow-hidden">
         <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6 sm:py-28">
           <span className="inline-block rounded-full border border-brand-teal/40 bg-brand-teal/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-brand-teal">
-            Pull-model regulatory monitoring
+            {t("landingEyebrow")}
           </span>
           <h1 className="mt-6 text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">
-            Know which regulations actually matter — for{" "}
-            <span className="gradient-text">your operations.</span>
+            {t.rich("landingHeading", {
+              highlight: (chunks) => (
+                <span className="gradient-text">{chunks}</span>
+              ),
+            })}
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-muted">
-            Vantage monitors {totalRegulators} regulators across global energy,
-            environmental, industrial, and chemical jurisdictions, scores each
-            change against your operations footprint, and delivers a 4-section
-            impact briefing — citation-grounded, mobile-readable, no sales call
-            required.
+            {t("landingSubheading", { count: totalRegulators })}
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
             <Link
               href="/regwatch/signup"
               className="rounded-md bg-brand-blue px-5 py-3 text-sm font-medium text-white hover:bg-brand-blue/90"
             >
-              Start free — browse the corpus
+              {t("landingStartFree")}
             </Link>
             <Link
               href="/regwatch/browse"
               className="rounded-md border border-card-border bg-card-bg px-5 py-3 text-sm font-medium text-foreground hover:border-brand-teal"
             >
-              Browse regulations
+              {t("browseRegulations")}
             </Link>
             <Link
               href="/regwatch/regulators"
               className="rounded-md border border-card-border bg-card-bg px-5 py-3 text-sm font-medium text-foreground hover:border-brand-teal"
             >
-              See all {totalRegulators} regulators →
+              {t("seeAllRegulators", { count: totalRegulators })}
             </Link>
           </div>
         </div>
@@ -87,10 +79,10 @@ export default async function RegwatchLanding() {
       <section className="border-t border-card-border bg-card-bg/20">
         <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
           <div className="grid gap-4 sm:grid-cols-3">
-            <Stat label="Regulators monitored" value={totalRegulators} />
-            <Stat label="Regulations tracked" value={totalItems} />
+            <Stat label={t("statRegulatorsMonitored")} value={totalRegulators} />
+            <Stat label={t("statRegulationsTracked")} value={totalItems} />
             <Stat
-              label="Updated in last 30 days"
+              label={t("statUpdatedLast30")}
               value={totalRecent}
               accent
             />
@@ -99,13 +91,13 @@ export default async function RegwatchLanding() {
           <div className="mt-12">
             <div className="mb-4 flex items-baseline justify-between">
               <h2 className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-                Coverage by region
+                {t("coverageByRegion")}
               </h2>
               <Link
                 href="/regwatch/regulators"
                 className="text-xs text-muted hover:text-foreground"
               >
-                Full list →
+                {t("fullList")}
               </Link>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -126,10 +118,13 @@ export default async function RegwatchLanding() {
                     className="rounded-xl border border-card-border bg-background p-4"
                   >
                     <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-                      {REGION_LABEL[region] ?? region}
+                      {t(`region.${region}`)}
                     </p>
                     <p className="mt-1 text-sm font-medium text-foreground">
-                      {rows.length} regulators · {totalItemsRegion} items
+                      {t("regulatorsItemsCount", {
+                        regulators: rows.length,
+                        items: totalItemsRegion,
+                      })}
                     </p>
                     <ul className="mt-3 space-y-1 text-xs">
                       {top.map((r) => (
@@ -147,7 +142,7 @@ export default async function RegwatchLanding() {
                       ))}
                       {rows.length > 4 && (
                         <li className="text-[10px] text-muted/70">
-                          +{rows.length - 4} more
+                          {t("plusMore", { count: rows.length - 4 })}
                         </li>
                       )}
                     </ul>

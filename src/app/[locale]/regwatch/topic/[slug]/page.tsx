@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -27,6 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function TopicPage({ params }: Props) {
+  const tr = useTranslations("regwatch.discover");
   const { slug } = await params;
   const known = TOPIC_TAXONOMY.find((t) => t.value === slug);
 
@@ -55,7 +57,7 @@ export default async function TopicPage({ params }: Props) {
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         <nav className="text-xs text-muted">
           <Link href="/regwatch/browse" className="hover:text-foreground">
-            Browse
+            {tr("breadcrumbBrowse")}
           </Link>
           <span className="mx-2">/</span>
           <span className="text-foreground">{label}</span>
@@ -63,25 +65,27 @@ export default async function TopicPage({ params }: Props) {
 
         <header className="mt-4">
           <p className="text-xs font-medium uppercase tracking-wider text-brand-teal">
-            Topic
+            {tr("topicEyebrow")}
           </p>
           <h1 className="mt-2 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
             {label}
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-muted">
-            Every regulation in the Vantage corpus tagged with{" "}
-            <span className="font-mono text-foreground">{slug}</span>. Items are
-            tagged by the enrichment cron once they land, plus any topic
-            attribution the connector pre-populates.
+            {tr.rich("topicDetailSubheading", {
+              slug,
+              mono: (chunks) => (
+                <span className="font-mono text-foreground">{chunks}</span>
+              ),
+            })}
           </p>
         </header>
 
         <div className="mt-8 grid gap-3 sm:grid-cols-3">
-          <Stat label="Items tagged" value={stats.total} />
-          <Stat label="Last 30 days" value={stats.recent30d} accent />
+          <Stat label={tr("itemsTagged")} value={stats.total} />
+          <Stat label={tr("last30Days")} value={stats.recent30d} accent />
           <div className="rounded-lg border border-card-border bg-card-bg p-4">
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
-              Top jurisdictions
+              {tr("topJurisdictions")}
             </p>
             <ul className="mt-2 space-y-0.5 text-xs">
               {stats.byJurisdiction.slice(0, 4).map((j) => (
@@ -96,7 +100,7 @@ export default async function TopicPage({ params }: Props) {
                 </li>
               ))}
               {stats.byJurisdiction.length === 0 && (
-                <li className="text-muted">No items yet.</li>
+                <li className="text-muted">{tr("noItemsYet")}</li>
               )}
             </ul>
           </div>
@@ -105,19 +109,19 @@ export default async function TopicPage({ params }: Props) {
         <section className="mt-10">
           <div className="mb-3 flex items-baseline justify-between">
             <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
-              Latest items
+              {tr("latestItems")}
             </h2>
             <Link
               href={`/regwatch/browse?topic=${slug}`}
               className="text-xs text-brand-teal hover:underline"
             >
-              Open in Browser →
+              {tr("openInBrowser")}
             </Link>
           </div>
           {items.length === 0 ? (
             <EmptyState
-              title={`No items tagged ${label} yet.`}
-              description="The next crawl + enrichment cycle will populate items here as Claude Haiku tags incoming regulations with this topic."
+              title={tr("topicEmptyTitle", { label })}
+              description={tr("topicEmptyDescription")}
             />
           ) : (
             <div className="overflow-hidden rounded-xl border border-card-border bg-background">
