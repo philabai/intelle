@@ -2,9 +2,11 @@
 
 **Engagement:** pre-production QA + security review · multi-tenant, multi-company SaaS for
 regulated industries (oil & gas / engineering).
-**Status:** INTERIM — static analysis complete; **9 findings (F1–F6, F8, F9, F11) already
-fixed** (see §0). Live phases (multi-tenant isolation proof, DAST, load, e2e, billing) are
-**pending a dedicated test Supabase project + Stripe test keys** (see §7).
+**Status:** Static phase + live Phases 2/A/B/C complete. **10 findings fixed**
+(F1–F6, F8, F9, F11, F18). Live results: multi-tenant isolation **39/39 PASS** (§5b),
+app authz/IDOR **7/7 PASS** (§5c), load/DB **clean, F14 recalibrated** (§5d), DAST found
++ fixed an open redirect (§5e). Remaining: Stripe billing tests (need test-mode keys);
+authenticated ZAP scan in CI; F10/F12/F16 needs-decision.
 
 ---
 
@@ -85,6 +87,8 @@ Severity = exploitability × blast-radius for a multi-company regulated SaaS. `C
 | **F14** | Med | — | Feed/list queries: 3-join, no pagination, no `score/matched_at` sort index → perf risk at scale (confirm in load phase) | `lib/regwatch/feed-queries.ts` | verify (Phase 5) |
 | **F15** | Low | 2.0 | `Server: Vercel` + framework version exposed (info disclosure) | platform | accept/strip |
 | **F16** | Low | 3.0 | Audit log is non-blocking + non-exhaustive (some cron/Stripe ops unlogged) — weakens forensic trail for a regulated buyer | `audit_log` writers | needs-decision |
+| **F17** | Med | — | New/restored environments must expose the `regwatch` schema to PostgREST or the app silently shows empty data (`PGRST106`) | Supabase Settings→API | **runbook** (found live, Phase A) |
+| **F18** | **High** | 6.1 | Open redirect via post-login `next` param (CWE-601, phishing vector) | `regwatch/login`, `auth/login`, `regwatch/auth/callback` | ✅ **FIXED** `30a6c16` |
 
 ### Detail on the top findings
 
@@ -224,6 +228,33 @@ recompile), so the latency (p95 ≈ 2.4 s) is NOT a capacity number — producti
 k6 script against a Vercel **preview** deployment.
 *(Note: an early run showed ~18% errors — all from the regulation-detail path, which 500s
 in the test env only because `SUPABASE_SERVICE_ROLE_KEY` is blank there; not a product bug.)*
+
+## 5e. Live results — Phase C: DAST / cybersecurity
+
+**F18 (NEW, High → FIXED) — open redirect via post-login `next` (CWE-601).**
+DAST confirmed `/{locale}/regwatch/login?next=https://evil.com/x` redirected the
+browser **off-site after a successful login** (`tests/e2e/open-redirect.spec.ts`
+showed post-login URL = `https://example.com/evil`). A phishing vector: a victim
+clicks a legit-looking intelle login link, authenticates, then lands on an
+attacker page. **Fixed** (`30a6c16`) with `safeRelativePath()` applied to both
+login forms + the regwatch auth callback; re-tested → now lands on
+`/en/regwatch/dashboard`. The main `/auth/callback` already required a `/{locale}/` prefix.
+
+**Manual DAST probes (all SAFE):**
+| Check | Result |
+|-------|--------|
+| Reflected XSS via `?q=` | Safe — Next escapes to HTML entities in markup and `<` in the RSC payload; no `</script>` breakout |
+| CORS | Safe — no `Access-Control-Allow-Origin` echoed for an attacker `Origin` |
+| Security headers (incl. CSP from F6) on API + pages | Present: CSP, X-Frame-Options DENY, nosniff, Referrer-Policy |
+| Auth cookies | Supabase SSR session cookie is not HttpOnly *by design* (client JS reads the session) — known Supabase tradeoff, informational |
+
+**OWASP ZAP** — attempted a headless spider+active scan against the local
+instance but it was OOM-killed (exit 137; ZAP's JVM + the dev-mode app are
+memory-heavy on this machine). The DAST surface was instead covered by the
+targeted probes above (which found the one real issue, F18). **Recommended
+follow-up:** run the official `ghcr.io/zaproxy/zaproxy zap-baseline.py` in
+Docker/CI against a Vercel **preview** URL — lightweight, repeatable, and
+authenticated-context capable.
 
 ## 6. Pending — live phases (need the test environment)
 Not yet executed; require the dedicated test Supabase + Stripe test mode:
