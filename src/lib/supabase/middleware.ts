@@ -79,7 +79,9 @@ export async function updateSession(
     return r;
   };
 
-  const isAdminRoute = rest.startsWith("/admin");
+  // /admin (consulting back-office) and /outreach (marketing-automation) are both
+  // platform-admin-only and share the same deny-by-default role gate.
+  const isAdminRoute = rest.startsWith("/admin") || rest.startsWith("/outreach");
   const isDashboardRoute = rest.startsWith("/dashboard");
   const isAuthRoute = rest.startsWith("/auth");
   const isRegwatchAuthRoute =
