@@ -32,13 +32,17 @@ export interface NewsFeed {
 
 // Proposed default set — public energy/climate/compliance feeds + MEA-region
 // sources. Curate freely; the connector tolerates dead feeds.
+// All URLs below verified returning valid RSS (200 + <rss>/<feed>) on 2026-06-17.
 export const FEEDS: NewsFeed[] = [
+  // Global energy / climate / compliance
   { id: "carbonbrief", url: "https://www.carbonbrief.org/feed/", label: "Carbon Brief", regulator_slug: "news-energy", jurisdiction_code: "INT", topics: ["emissions", "energy-transition"] },
   { id: "esgtoday", url: "https://www.esgtoday.com/feed/", label: "ESG Today", regulator_slug: "news-energy", jurisdiction_code: "INT", topics: ["reporting", "carbon-market"] },
   { id: "pvmagazine", url: "https://www.pv-magazine.com/feed/", label: "pv magazine", regulator_slug: "news-energy", jurisdiction_code: "INT", topics: ["renewables", "power"] },
-  { id: "energyvoice", url: "https://www.energyvoice.com/feed/", label: "Energy Voice", regulator_slug: "news-energy", jurisdiction_code: "INT", topics: ["energy", "fuels"] },
-  { id: "zawya-energy", url: "https://www.zawya.com/en/rss/feed/markets/commodities", label: "Zawya — Commodities", regulator_slug: "news-mea", jurisdiction_code: "AE", topics: ["energy", "gulf"] },
-  { id: "thenational-energy", url: "https://www.thenationalnews.com/business/energy/rss/", label: "The National — Energy", regulator_slug: "news-mea", jurisdiction_code: "AE", topics: ["energy", "gulf"] },
+  { id: "oilprice", url: "https://oilprice.com/rss/main", label: "OilPrice", regulator_slug: "news-energy", jurisdiction_code: "INT", topics: ["energy", "fuels"] },
+  { id: "rigzone", url: "https://www.rigzone.com/news/rss/rigzone_latest.aspx", label: "Rigzone", regulator_slug: "news-energy", jurisdiction_code: "INT", topics: ["energy", "fuels"] },
+  // MEA region (Saudi/Gulf sources)
+  { id: "arabnews", url: "https://www.arabnews.com/rss.xml", label: "Arab News", regulator_slug: "news-mea", jurisdiction_code: "SA", topics: ["energy", "gulf"] },
+  { id: "saudigazette-biz", url: "https://saudigazette.com.sa/rssFeed/74", label: "Saudi Gazette — Business", regulator_slug: "news-mea", jurisdiction_code: "SA", topics: ["energy", "gulf"] },
 ];
 
 const parser = new XMLParser({

@@ -184,20 +184,13 @@ export async function runAlertDigest(
     }
     if (candidates.length === 0) continue;
 
-    // 4. Idempotency — skip matches we've already emailed to this user.
-    const { data: priorDeliveries } = await supabase
-      .from("alert_deliveries")
-      .select("regulatory_item_id")
-      .eq("user_id", pref.user_id)
-      .eq("channel", "email")
-      .in(
-        "regulatory_item_id",
-        candidates.map((c) => c.matchId), // we'll re-join via match → item below
-      );
-    // We deduped by regulatory_item_id but candidates carry matchIds. Convert.
-    // Re-read: alert_deliveries records by regulatory_item_id, not by match_id.
-    // Pull item ids from candidates by joining once more — easier path: do a
-    // single lookup mapping match_id → regulatory_item_id.
+    // 4. Idempotency — skip items we've already emailed to this user.
+    // alert_deliveries is keyed by regulatory_item_id, but candidates carry
+    // match_ids (footprint_matches.id), which the matcher re-stamps on every
+    // run — so we must resolve match_id -> regulatory_item_id FIRST, then dedup
+    // the delivery log against those item ids. The previous code filtered
+    // alert_deliveries.regulatory_item_id against match_ids, which never
+    // matched, so every digest re-sent the same item daily.
     const { data: matchToItem } = await supabase
       .from("footprint_matches")
       .select("id, regulatory_item_id")
@@ -211,6 +204,23 @@ export async function runAlertDigest(
         r.regulatory_item_id as string,
       ]),
     );
+    const candidateItemIds = Array.from(
+      new Set(
+        candidates
+          .map((c) => itemIdByMatchId.get(c.matchId))
+          .filter((id): id is string => Boolean(id)),
+      ),
+    );
+
+    const { data: priorDeliveries } = candidateItemIds.length
+      ? await supabase
+          .from("alert_deliveries")
+          .select("regulatory_item_id")
+          .eq("user_id", pref.user_id)
+          .eq("channel", "email")
+          .in("regulatory_item_id", candidateItemIds)
+      : { data: [] as { regulatory_item_id: string }[] };
+
     const deliveredItemIds = new Set<string>(
       (priorDeliveries ?? []).map((d) => d.regulatory_item_id as string),
     );
@@ -271,9 +281,15 @@ export async function runAlertDigest(
       }));
 
     if (deliveryRows.length > 0) {
+      // Idempotent write: a unique (user_id, regulatory_item_id, channel)
+      // constraint guards re-delivery, so a re-send attempt must no-op rather
+      // than fail the whole batch insert.
       const { error: insErr } = await supabase
         .from("alert_deliveries")
-        .insert(deliveryRows);
+        .upsert(deliveryRows, {
+          onConflict: "user_id,regulatory_item_id,channel",
+          ignoreDuplicates: true,
+        });
       if (insErr) {
         result.errors.push(`delivery insert for ${recipient.email}: ${insErr.message}`);
       }
