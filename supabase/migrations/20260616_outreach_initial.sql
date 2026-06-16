@@ -5,8 +5,11 @@
 -- Reads go through the authenticated client (RLS: outreach.is_admin); writes go
 -- through the service-role client in server actions / crons (which also re-check
 -- canManageContent at the app layer). Mirrors the regwatch grant+RLS style.
--- NOTE: expose the `outreach` schema to PostgREST (Settings → API → Exposed
--- schemas: public, graphql_public, regwatch, outreach) or authed reads 404.
+-- NOTE: after applying, expose the `outreach` schema to PostgREST (Settings →
+-- API → Exposed schemas: public, graphql_public, regwatch, outreach) AND refresh
+-- the table cache, or authed reads 404 (PGRST205). Via SQL:
+--   alter role authenticator set pgrst.db_schemas = 'public, graphql_public, regwatch, outreach';
+--   notify pgrst, 'reload config';  notify pgrst, 'reload schema';
 -- ============================================================================
 
 create schema if not exists outreach;
