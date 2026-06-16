@@ -25,6 +25,19 @@ import {
 
 const TOPIC_VALUES = TOPIC_TAXONOMY.map((t) => t.value);
 
+/**
+ * Models increasingly wrap JSON in markdown code fences (```json … ```) even
+ * when asked not to. Strip the fence and isolate the outermost object so
+ * JSON.parse succeeds regardless of surrounding prose.
+ */
+function extractJsonObject(raw: string): string {
+  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const body = (fenced ? fenced[1] : raw).trim();
+  const start = body.indexOf("{");
+  const end = body.lastIndexOf("}");
+  return start >= 0 && end > start ? body.slice(start, end + 1) : body;
+}
+
 const enrichmentResultSchema = z.object({
   topics: z.array(z.enum(TOPIC_VALUES as [string, ...string[]])).max(8),
   substances_cas: z
@@ -120,7 +133,7 @@ ${(row.body_text ?? "").slice(0, 4000)}`;
         message.content[0]?.type === "text" ? message.content[0].text : "";
       let parsed: EnrichmentResult;
       try {
-        const obj = JSON.parse(text);
+        const obj = JSON.parse(extractJsonObject(text));
         parsed = enrichmentResultSchema.parse(obj);
       } catch (e) {
         result.failed += 1;

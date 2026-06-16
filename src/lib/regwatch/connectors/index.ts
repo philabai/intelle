@@ -9,6 +9,7 @@ import { CNSC_CONNECTORS } from "./cnsc-scraper";
 import { CER_CONNECTORS } from "./cer-act";
 import { ECFR_TITLE_CONNECTORS } from "./ecfr-title";
 import { IEA_POLICY_CONNECTORS } from "./iea-policies";
+import { RSS_NEWS_CONNECTORS } from "./rss-sources";
 import {
   attachEcfrHierarchy,
   FEDERAL_REGISTER_ECFR_SCOPES,
@@ -54,6 +55,7 @@ export const REGWATCH_CONNECTORS: Connector[] = [
  */
 export const SCHEDULED_ONLY_CONNECTORS: Connector[] = [
   ...IEA_POLICY_CONNECTORS,
+  ...RSS_NEWS_CONNECTORS,
 ];
 
 /** Every connector, including the scheduled-only ones — used for lookup. */
