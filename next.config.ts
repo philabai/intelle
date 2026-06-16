@@ -4,6 +4,11 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
+  // Bundle the Outreach .md prompt files into serverless functions that read
+  // them at runtime (src/lib/outreach/prompts/index.ts).
+  outputFileTracingIncludes: {
+    "/api/**": ["./src/lib/outreach/prompts/**"],
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
