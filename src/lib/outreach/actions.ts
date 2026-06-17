@@ -276,12 +276,14 @@ interface GenInput {
   pillarId: string;
   brief?: string;
   useSeed?: boolean;
+  /** Explicit seed to use. When set, overrides the "next unused seed" default. */
+  seedId?: string;
   targetPlatforms?: Platform[];
   targetGeos?: GeoRegion[];
 }
 
-/** Resolve a pillar + its next unused seed (with citation) into the args
- * generatePost needs. Shared by the sync and async generation entry points. */
+/** Resolve a pillar + the seed to use (explicit, next-unused, or none) into the
+ * args generatePost needs. Shared by the sync and async generation entry points. */
 async function resolveGenerationContext(svc: ReturnType<typeof createServiceClient>, input: GenInput) {
   const { data: pillar } = await svc
     .from("content_pillars").select("id, name, editorial_voice_notes").eq("id", input.pillarId).single();
@@ -291,22 +293,37 @@ async function resolveGenerationContext(svc: ReturnType<typeof createServiceClie
   let seedTitle: string | undefined, seedSummary: string | undefined;
   let seedCitation: string | null = null, seedSourceUrl: string | null = null;
   let seedGeos: GeoRegion[] = [];
-  if (input.useSeed !== false) {
+
+  // Pick the seed: explicit id wins; otherwise the newest unused for the pillar.
+  type SeedRow = { id: string; title: string; summary: string; source_reference_id: string | null; geo_relevance: string[] | null; consumed?: boolean };
+  let chosen: SeedRow | null = null;
+  if (input.seedId) {
+    const { data: seed } = await svc
+      .from("content_seeds")
+      .select("id, title, summary, source_reference_id, geo_relevance, consumed")
+      .eq("id", input.seedId).maybeSingle();
+    if (!seed) return { ok: false as const, error: "Selected seed not found." };
+    if (seed.consumed) return { ok: false as const, error: "That seed has already been used — pick another or choose Auto." };
+    chosen = seed as SeedRow;
+  } else if (input.useSeed !== false) {
     const { data: seed } = await svc
       .from("content_seeds")
       .select("id, title, summary, source_reference_id, geo_relevance")
       .eq("pillar_id", pillar.id).eq("consumed", false)
       .order("discovered_at", { ascending: false }).limit(1).maybeSingle();
-    if (seed) {
-      seedId = seed.id; seedTitle = seed.title; seedSummary = seed.summary;
-      seedGeos = (seed.geo_relevance as GeoRegion[]) ?? [];
-      if (seed.source_reference_id) {
-        const { createServiceClient: rw } = await import("@/lib/regwatch/supabase/service");
-        const { data: item } = await rw().from("regulatory_items").select("citation, source_url").eq("id", seed.source_reference_id).maybeSingle();
-        seedCitation = item?.citation ?? null; seedSourceUrl = item?.source_url ?? null;
-      }
-    } else if (!input.brief?.trim()) {
-      return { ok: false as const, error: "No unused seed for this pillar — add a brief to generate without one." };
+    if (seed) chosen = seed as SeedRow;
+    else if (!input.brief?.trim()) {
+      return { ok: false as const, error: "No unused seed for this pillar — pick a seed, or add a brief to generate without one." };
+    }
+  }
+
+  if (chosen) {
+    seedId = chosen.id; seedTitle = chosen.title; seedSummary = chosen.summary;
+    seedGeos = (chosen.geo_relevance as GeoRegion[]) ?? [];
+    if (chosen.source_reference_id) {
+      const { createServiceClient: rw } = await import("@/lib/regwatch/supabase/service");
+      const { data: item } = await rw().from("regulatory_items").select("citation, source_url").eq("id", chosen.source_reference_id).maybeSingle();
+      seedCitation = item?.citation ?? null; seedSourceUrl = item?.source_url ?? null;
     }
   }
   const geos = (input.targetGeos?.length ? input.targetGeos : seedGeos.length ? seedGeos : ["international"]) as GeoRegion[];

@@ -1,4 +1,5 @@
 import { getWeeklyPillarStatus } from "@/lib/outreach/weekly-status";
+import { createClient } from "@/lib/outreach/supabase/server";
 import { GenerateForm } from "@/components/outreach/GenerateForm";
 
 export const metadata = { title: "Generate — Outreach" };
@@ -7,6 +8,19 @@ export const maxDuration = 300;
 
 export default async function OutreachGeneratePage() {
   const { pillars, weekStart } = await getWeeklyPillarStatus();
+  const supabase = await createClient();
+  const { data: seedRows } = await supabase
+    .from("content_seeds")
+    .select("id, title, summary, source_type, pillar_id, discovered_at")
+    .eq("consumed", false)
+    .order("discovered_at", { ascending: false });
+  const seeds = (seedRows ?? []).map((s) => ({
+    id: s.id as string,
+    title: s.title as string,
+    summary: (s.summary as string) ?? "",
+    sourceType: s.source_type as string,
+    pillarId: s.pillar_id as string | null,
+  }));
   const active = pillars.filter((p) => p.active);
   const weekLabel = new Intl.DateTimeFormat("en", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(weekStart));
   const totalRemaining = active.reduce((n, p) => n + p.remaining, 0);
@@ -48,6 +62,7 @@ export default async function OutreachGeneratePage() {
 
       <GenerateForm
         pillars={active.map((p) => ({ id: p.id, name: p.name, seeds: p.seedsAvailable, remaining: p.remaining }))}
+        seeds={seeds}
       />
     </div>
   );

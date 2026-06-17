@@ -23,7 +23,12 @@ const MAX_TRIES = 80; // ~4 minutes before we give up polling
 type Job = { id: string; tries: number };
 type Done = { id: string; title: string | null; ok: boolean; timedOut?: boolean };
 
-export function GenerateForm({ pillars }: { pillars: { id: string; name: string; seeds: number; remaining?: number }[] }) {
+type Seed = { id: string; title: string; summary: string; sourceType: string; pillarId: string | null };
+
+export function GenerateForm({ pillars, seeds }: {
+  pillars: { id: string; name: string; seeds: number; remaining?: number }[];
+  seeds: Seed[];
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -31,12 +36,15 @@ export function GenerateForm({ pillars }: { pillars: { id: string; name: string;
   const [done, setDone] = useState<Done[]>([]);
 
   const [pillarId, setPillarId] = useState(pillars[0]?.id ?? "");
-  const [useSeed, setUseSeed] = useState(true);
+  const [seedChoice, setSeedChoice] = useState<string>("auto"); // "auto" | "none" | <seedId>
   const [brief, setBrief] = useState("");
   const [platforms, setPlatforms] = useState<Platform[]>(["linkedin", "x"]);
   const [geos, setGeos] = useState<GeoRegion[]>(["international"]);
 
-  const selected = pillars.find((p) => p.id === pillarId);
+  const pillarSeeds = seeds.filter((s) => s.pillarId === pillarId);
+  const chosenSeed = pillarSeeds.find((s) => s.id === seedChoice) ?? null;
+  const autoSeed = pillarSeeds[0] ?? null; // newest unused = what "Auto" will use
+  const briefRequired = seedChoice === "none" || (seedChoice === "auto" && !autoSeed);
 
   // Keep a ref to the live job list so the interval closure always sees current.
   const activeRef = useRef<Job[]>(active);
@@ -72,7 +80,11 @@ export function GenerateForm({ pillars }: { pillars: { id: string; name: string;
   async function submit() {
     setError(null);
     setSubmitting(true);
-    const r = await startGeneration({ pillarId, brief: brief || undefined, useSeed, targetPlatforms: platforms, targetGeos: geos });
+    const seedArgs =
+      seedChoice === "none" ? { useSeed: false }
+      : seedChoice === "auto" ? { useSeed: true }
+      : { useSeed: true, seedId: seedChoice };
+    const r = await startGeneration({ pillarId, brief: brief || undefined, ...seedArgs, targetPlatforms: platforms, targetGeos: geos });
     setSubmitting(false);
     if (!r.ok) { setError(r.error); return; }
     if (r.postId) {
@@ -107,7 +119,7 @@ export function GenerateForm({ pillars }: { pillars: { id: string; name: string;
 
       <label className="block">
         <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted">Pillar</span>
-        <select value={pillarId} onChange={(e) => setPillarId(e.target.value)}
+        <select value={pillarId} onChange={(e) => { setPillarId(e.target.value); setSeedChoice("auto"); }}
           className="w-full rounded-lg border border-card-border bg-background px-3 py-2 text-sm text-foreground">
           {pillars.map((p) => (
             <option key={p.id} value={p.id}>
@@ -117,17 +129,26 @@ export function GenerateForm({ pillars }: { pillars: { id: string; name: string;
         </select>
       </label>
 
-      <label className="flex items-center gap-2 text-sm text-foreground">
-        <input type="checkbox" checked={useSeed} onChange={(e) => setUseSeed(e.target.checked)} />
-        Use the next unused seed for this pillar
-        {selected && selected.seeds === 0 && useSeed && (
-          <span className="text-xs text-amber-400">— none available, add a brief below</span>
+      <label className="block">
+        <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted">Seed</span>
+        <select value={seedChoice} onChange={(e) => setSeedChoice(e.target.value)}
+          className="w-full rounded-lg border border-card-border bg-background px-3 py-2 text-sm text-foreground">
+          <option value="auto">{autoSeed ? `Auto — next unused: ${autoSeed.title.slice(0, 70)}` : "Auto — (no unused seed; brief only)"}</option>
+          {pillarSeeds.map((s) => (
+            <option key={s.id} value={s.id}>{s.title.slice(0, 90)}</option>
+          ))}
+          <option value="none">No seed — generate from my brief only</option>
+        </select>
+        {(chosenSeed || (seedChoice === "auto" && autoSeed)) && (
+          <p className="mt-1.5 line-clamp-3 rounded border border-card-border bg-background/60 px-2 py-1.5 text-xs text-muted">
+            {(chosenSeed ?? autoSeed)!.summary || "(no summary)"}
+          </p>
         )}
       </label>
 
       <label className="block">
         <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted">
-          Brief / direction {useSeed ? "(optional)" : "(required)"}
+          Brief / direction {briefRequired ? "(required)" : "(optional)"}
         </span>
         <textarea value={brief} onChange={(e) => setBrief(e.target.value)} rows={4}
           placeholder="e.g. Angle this around what compliance teams should do this quarter."
