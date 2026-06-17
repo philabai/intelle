@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { generateOnDemand } from "@/lib/outreach/actions";
 import type { GeoRegion, Platform } from "@/lib/outreach/types";
 
@@ -17,10 +17,11 @@ const GEOS: { value: GeoRegion; label: string }[] = [
   { value: "india", label: "India" },
 ];
 
-export function GenerateForm({ pillars }: { pillars: { id: string; name: string; seeds: number }[] }) {
+export function GenerateForm({ pillars }: { pillars: { id: string; name: string; seeds: number; remaining?: number }[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [lastDraftId, setLastDraftId] = useState<string | null>(null);
 
   const [pillarId, setPillarId] = useState(pillars[0]?.id ?? "");
   const [useSeed, setUseSeed] = useState(true);
@@ -41,8 +42,14 @@ export function GenerateForm({ pillars }: { pillars: { id: string; name: string;
         pillarId, brief: brief || undefined, useSeed,
         targetPlatforms: platforms, targetGeos: geos,
       });
-      if (!r.ok) setError(r.error);
-      else if (r.postId) router.push(`/outreach/posts/${r.postId}`);
+      if (!r.ok) { setError(r.error); return; }
+      if (r.postId) {
+        // Stay on the page so the weekly tracker updates live; surface a link
+        // to review the new draft. router.refresh() re-runs the server page.
+        setLastDraftId(r.postId);
+        setBrief("");
+        router.refresh();
+      }
     });
   }
 
@@ -53,7 +60,9 @@ export function GenerateForm({ pillars }: { pillars: { id: string; name: string;
         <select value={pillarId} onChange={(e) => setPillarId(e.target.value)}
           className="w-full rounded-lg border border-card-border bg-background px-3 py-2 text-sm text-foreground">
           {pillars.map((p) => (
-            <option key={p.id} value={p.id}>{p.name} ({p.seeds} seed{p.seeds === 1 ? "" : "s"})</option>
+            <option key={p.id} value={p.id}>
+              {p.name} — {p.remaining ?? 0} to go · {p.seeds} seed{p.seeds === 1 ? "" : "s"}
+            </option>
           ))}
         </select>
       </label>
@@ -101,10 +110,20 @@ export function GenerateForm({ pillars }: { pillars: { id: string; name: string;
 
       {error && <p className="text-sm text-red-400">{error}</p>}
 
-      <button onClick={submit} disabled={pending || !pillarId || platforms.length === 0}
-        className="rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90 disabled:opacity-50">
-        {pending ? "Generating… (~20s)" : "Generate draft"}
-      </button>
+      {lastDraftId && !pending && (
+        <div className="flex items-center justify-between rounded-md border border-brand-teal/40 bg-brand-teal/10 px-3 py-2 text-sm">
+          <span className="text-brand-teal">Draft created and added to the review queue.</span>
+          <Link href={`/outreach/posts/${lastDraftId}`} className="font-medium text-brand-teal hover:underline">Review it →</Link>
+        </div>
+      )}
+
+      <div className="flex items-center gap-3">
+        <button onClick={submit} disabled={pending || !pillarId || platforms.length === 0}
+          className="rounded-md bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue/90 disabled:opacity-50">
+          {pending ? "Generating + refining… (up to ~90s)" : "Generate draft"}
+        </button>
+        {lastDraftId && !pending && <span className="text-xs text-muted">Generate another, or review above.</span>}
+      </div>
     </div>
   );
 }

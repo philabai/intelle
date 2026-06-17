@@ -15,6 +15,135 @@ async function ensureAdmin() {
   return user;
 }
 
+export type MutationResult = { ok: true; id?: string } | { ok: false; error: string };
+
+function slugify(s: string): string {
+  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+}
+
+// ---- Content pillars -------------------------------------------------------
+
+export async function updatePillar(input: {
+  pillarId: string;
+  name?: string;
+  description?: string;
+  editorialVoiceNotes?: string | null;
+  weeklyPostTarget?: number;
+  active?: boolean;
+}): Promise<MutationResult> {
+  const user = await ensureAdmin();
+  if (!user) return { ok: false, error: "Not authorized" };
+  const patch: Record<string, unknown> = {};
+  if (input.name !== undefined) patch.name = input.name;
+  if (input.description !== undefined) patch.description = input.description;
+  if (input.editorialVoiceNotes !== undefined) patch.editorial_voice_notes = input.editorialVoiceNotes;
+  if (input.weeklyPostTarget !== undefined) patch.weekly_post_target = Math.max(0, Math.min(50, Math.floor(input.weeklyPostTarget)));
+  if (input.active !== undefined) patch.active = input.active;
+  if (Object.keys(patch).length === 0) return { ok: true, id: input.pillarId };
+
+  const { error } = await createServiceClient().from("content_pillars").update(patch).eq("id", input.pillarId);
+  if (error) return { ok: false, error: error.message };
+  await recordOutreachAudit({ actorId: user.id, action: "pillar.updated", targetType: "pillar", targetId: input.pillarId, metadata: patch });
+  revalidatePath("/outreach/pillars");
+  revalidatePath("/outreach/generate");
+  return { ok: true, id: input.pillarId };
+}
+
+export async function createPillar(input: {
+  name: string;
+  description?: string;
+  editorialVoiceNotes?: string;
+  weeklyPostTarget?: number;
+}): Promise<MutationResult> {
+  const user = await ensureAdmin();
+  if (!user) return { ok: false, error: "Not authorized" };
+  if (!input.name.trim()) return { ok: false, error: "Name is required" };
+  const svc = createServiceClient();
+  const slug = slugify(input.name);
+  const { data, error } = await svc
+    .from("content_pillars")
+    .insert({
+      slug,
+      name: input.name.trim(),
+      description: input.description?.trim() || input.name.trim(),
+      editorial_voice_notes: input.editorialVoiceNotes?.trim() || null,
+      weekly_post_target: Math.max(0, Math.min(50, Math.floor(input.weeklyPostTarget ?? 0))),
+      active: true,
+    })
+    .select("id")
+    .single();
+  if (error) return { ok: false, error: error.code === "23505" ? `A pillar with slug "${slug}" already exists` : error.message };
+  await recordOutreachAudit({ actorId: user.id, action: "pillar.created", targetType: "pillar", targetId: data.id, metadata: { slug } });
+  revalidatePath("/outreach/pillars");
+  revalidatePath("/outreach/generate");
+  return { ok: true, id: data.id };
+}
+
+// ---- Content seeds ---------------------------------------------------------
+
+export async function updateSeed(input: {
+  seedId: string;
+  title?: string;
+  summary?: string;
+  geoRelevance?: GeoRegion[];
+  pillarId?: string;
+}): Promise<MutationResult> {
+  const user = await ensureAdmin();
+  if (!user) return { ok: false, error: "Not authorized" };
+  const patch: Record<string, unknown> = {};
+  if (input.title !== undefined) patch.title = input.title;
+  if (input.summary !== undefined) patch.summary = input.summary;
+  if (input.geoRelevance !== undefined) patch.geo_relevance = input.geoRelevance;
+  if (input.pillarId !== undefined) patch.pillar_id = input.pillarId;
+  if (Object.keys(patch).length === 0) return { ok: true, id: input.seedId };
+
+  const { error } = await createServiceClient().from("content_seeds").update(patch).eq("id", input.seedId);
+  if (error) return { ok: false, error: error.message };
+  await recordOutreachAudit({ actorId: user.id, action: "seed.updated", targetType: "seed", targetId: input.seedId, metadata: patch });
+  revalidatePath("/outreach/seeds");
+  revalidatePath("/outreach/generate");
+  return { ok: true, id: input.seedId };
+}
+
+export async function createSeed(input: {
+  pillarId: string;
+  title: string;
+  summary: string;
+  geoRelevance?: GeoRegion[];
+}): Promise<MutationResult> {
+  const user = await ensureAdmin();
+  if (!user) return { ok: false, error: "Not authorized" };
+  if (!input.title.trim()) return { ok: false, error: "Title is required" };
+  const { data, error } = await createServiceClient()
+    .from("content_seeds")
+    .insert({
+      source_type: "manual",
+      source_reference_id: null,
+      title: input.title.trim(),
+      summary: input.summary.trim() || input.title.trim(),
+      pillar_id: input.pillarId,
+      geo_relevance: input.geoRelevance?.length ? input.geoRelevance : ["international"],
+    })
+    .select("id")
+    .single();
+  if (error) return { ok: false, error: error.message };
+  await recordOutreachAudit({ actorId: user.id, action: "seed.created", targetType: "seed", targetId: data.id, metadata: { pillarId: input.pillarId } });
+  revalidatePath("/outreach/seeds");
+  revalidatePath("/outreach/generate");
+  return { ok: true, id: data.id };
+}
+
+export async function deleteSeed(input: { seedId: string }): Promise<MutationResult> {
+  const user = await ensureAdmin();
+  if (!user) return { ok: false, error: "Not authorized" };
+  const { error } = await createServiceClient().from("content_seeds").delete().eq("id", input.seedId);
+  if (error) return { ok: false, error: error.message };
+  await recordOutreachAudit({ actorId: user.id, action: "seed.deleted", targetType: "seed", targetId: input.seedId });
+  revalidatePath("/outreach/seeds");
+  revalidatePath("/outreach/generate");
+  return { ok: true };
+}
+
 /** Save editor changes to a draft (bodies, hashtags, citations). */
 export async function savePostEdits(input: {
   postId: string;
