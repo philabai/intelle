@@ -13,6 +13,7 @@ const navItems: { label: string; href: string; icon: string }[] = [
   { label: "Generate", href: "/outreach/generate", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
   { label: "Pillars", href: "/outreach/pillars", icon: "M4 6a2 2 0 012-2h2a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v12a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z" },
   { label: "Seeds", href: "/outreach/seeds", icon: "M12 3v18m0 0c-3 0-6-1.5-6-5 3 0 6 1.5 6 5zm0 0c3 0 6-1.5 6-5-3 0-6 1.5-6 5zm0-7c-2.5 0-5-1.2-5-4 2.5 0 5 1.2 5 4zm0 0c2.5 0 5-1.2 5-4-2.5 0-5 1.2-5 4z" },
+  { label: "Quality", href: "/outreach/quality", icon: "M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
   { label: "Platforms", href: "/outreach/platforms", icon: "M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" },
 ];
 

@@ -2,17 +2,12 @@ import { z } from "zod";
 import type Anthropic from "@anthropic-ai/sdk";
 import { getAnthropic } from "@/lib/anthropic/client";
 import { OUTREACH_LONGFORM_MODEL, OUTREACH_MEDIUM_MODEL } from "@/lib/outreach/models";
-import { loadPrompt } from "@/lib/outreach/prompts";
+import { loadGenerationConfig, composeSystem } from "@/lib/outreach/generation-config";
 import { createServiceClient } from "@/lib/outreach/supabase/service";
 import { logLlmCall, recordOutreachAudit } from "@/lib/outreach/audit";
 import type { GeoRegion, Platform } from "@/lib/outreach/types";
 
-const GENERATE_PROMPT_VERSION = "generate_v1";
-
-/** Revise a draft until the QC confidence reaches this, or MAX_REVISIONS is hit.
- * Override with OUTREACH_QUALITY_TARGET (0–1). */
-const QUALITY_TARGET = Math.min(0.99, Math.max(0.5, Number(process.env.OUTREACH_QUALITY_TARGET) || 0.92));
-const MAX_REVISIONS = Math.max(0, Math.min(3, Number(process.env.OUTREACH_MAX_REVISIONS) || 2));
+const GENERATE_PROMPT_VERSION = "generate_v2";
 
 const composeSchema = z.object({
   title: z.string().max(200),
@@ -108,10 +103,14 @@ export async function generatePost(input: GeneratePostInput): Promise<string> {
     .filter(Boolean)
     .join("\n");
 
+  // Live, admin-editable config (prompts, quality bar, revise budget,
+  // characteristics) from the Quality & Prompts page.
+  const config = await loadGenerationConfig();
+
   // 1. Generation (Opus, forced tool).
   let composed = await callTool({
     model: OUTREACH_LONGFORM_MODEL,
-    system: loadPrompt("generate_v1"),
+    system: composeSystem(config),
     user,
     toolName: "compose_post",
     toolDescription: "Return the long-form piece and its platform variants.",
@@ -121,13 +120,13 @@ export async function generatePost(input: GeneratePostInput): Promise<string> {
   });
 
   // 2. Quality check + revise-until-threshold loop. The Sonnet QC scores the
-  // draft against a strict rubric; if it's below target or has a blocker, Opus
-  // revises addressing the specific issues, then we re-check. Capped to keep
-  // cost/latency bounded; the final confidence is whatever we converged to.
+  // draft against the configured rubric; if it's below target or has a blocker,
+  // Opus revises addressing the specific issues, then we re-check. Capped at
+  // config.maxRevisions; the final confidence is whatever we converged to.
   const reviewOf = (draft: typeof composed) =>
     callTool({
       model: OUTREACH_MEDIUM_MODEL,
-      system: loadPrompt("quality_check_v2"),
+      system: config.qualityCheckPrompt,
       user: JSON.stringify(draft),
       toolName: "review_post",
       toolDescription: "Audit the draft and return a verdict.",
@@ -144,14 +143,14 @@ export async function generatePost(input: GeneratePostInput): Promise<string> {
   }
 
   let revisions = 0;
-  const needsWork = () => review.confidence < QUALITY_TARGET || review.issues.some((i) => i.severity === "blocker");
-  while (needsWork() && revisions < MAX_REVISIONS) {
+  const needsWork = () => review.confidence < config.qualityTarget || review.issues.some((i) => i.severity === "blocker");
+  while (needsWork() && revisions < config.maxRevisions) {
     revisions += 1;
     try {
       composed = await callTool({
         model: OUTREACH_LONGFORM_MODEL,
-        system: loadPrompt("revise_v1"),
-        user: `${user}\n\nCURRENT DRAFT (JSON):\n${JSON.stringify(composed)}\n\nQC ISSUES TO FIX:\n${JSON.stringify(review.issues)}\n\nTarget confidence: ${QUALITY_TARGET}. Return the complete improved post.`,
+        system: config.revisePrompt,
+        user: `${user}\n\nCURRENT DRAFT (JSON):\n${JSON.stringify(composed)}\n\nQC ISSUES TO FIX:\n${JSON.stringify(review.issues)}\n\nTarget confidence: ${config.qualityTarget}. Return the complete improved post.`,
         toolName: "compose_post",
         toolDescription: "Return the improved long-form piece and its platform variants.",
         inputSchema: COMPOSE_TOOL_SCHEMA,
@@ -166,6 +165,7 @@ export async function generatePost(input: GeneratePostInput): Promise<string> {
   }
 
   const confidence = Math.min(composed.ai_confidence, review.confidence);
+  const meetsBar = confidence >= config.qualityTarget;
 
   // 3. Persist as pending_review — fill the placeholder if the async flow made
   // one, otherwise insert a fresh row.
@@ -187,7 +187,7 @@ export async function generatePost(input: GeneratePostInput): Promise<string> {
     ai_confidence: confidence,
     prompt_version: GENERATE_PROMPT_VERSION,
     model_used: OUTREACH_LONGFORM_MODEL,
-    edit_history: [{ at: new Date().toISOString(), event: "generated", review, revisions, qualityTarget: QUALITY_TARGET }],
+    edit_history: [{ at: new Date().toISOString(), event: "generated", review, revisions, qualityTarget: config.qualityTarget, meetsBar }],
   };
 
   let postId: string;
@@ -212,7 +212,7 @@ export async function generatePost(input: GeneratePostInput): Promise<string> {
     action: "post.generated",
     targetType: "post",
     targetId: postId,
-    metadata: { pillar: input.pillarName, qc_passed: review.passed, confidence, revisions, seedId: input.seedId ?? null },
+    metadata: { pillar: input.pillarName, qc_passed: review.passed, confidence, revisions, meetsBar, seedId: input.seedId ?? null },
   });
   return postId;
 }

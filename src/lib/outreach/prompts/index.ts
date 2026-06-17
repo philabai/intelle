@@ -8,7 +8,7 @@ import { join } from "node:path";
  */
 const cache = new Map<string, string>();
 
-export type PromptName = "generate_v1" | "quality_check_v1" | "quality_check_v2" | "revise_v1";
+export type PromptName = "generate_v1" | "generate_v2" | "quality_check_v1" | "quality_check_v2" | "revise_v1";
 
 export function loadPrompt(name: PromptName): string {
   const cached = cache.get(name);

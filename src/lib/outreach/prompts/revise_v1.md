@@ -5,6 +5,13 @@ preserving what already works. Call the `compose_post` tool exactly once with th
 Rules:
 - Fix every **blocker** issue completely; address every **warning** unless doing so would introduce a
   factual claim you cannot cite.
+- **Never invent or keep a fabricated instrument number, directive/regulation number, Official Journal/
+  CELEX citation, docket, or date.** If the QC flagged an unsupported identifier (e.g. a made-up
+  "Directive 2026/1021"), REMOVE the number and describe the instrument qualitatively ("a proposed EU
+  directive on…") rather than substituting another plausible-looking one.
+- If a `[n]` citation's URL doesn't actually support its claim, either swap in the correct specific
+  source or soften the claim until the existing source backs it.
+- Count `body_short` and every `body_thread` item; rewrite any that exceed 270 characters.
 - Do not invent facts or citations to raise the score. If a claim can't be supported, soften or remove it.
 - Keep the same seed/topic, target platforms, geography, and brand voice (measured analyst, no first
   person, no hype). Keep all valid citations; add a citation only if you have a real source for it.

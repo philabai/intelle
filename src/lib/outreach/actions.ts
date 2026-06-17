@@ -80,6 +80,59 @@ export async function createPillar(input: {
   return { ok: true, id: data.id };
 }
 
+// ---- Generation config (Quality & Prompts page) ----------------------------
+
+export async function getGenerationConfig(): Promise<
+  { ok: true; config: import("@/lib/outreach/generation-config").GenerationConfig } | { ok: false; error: string }
+> {
+  const user = await ensureAdmin();
+  if (!user) return { ok: false, error: "Not authorized" };
+  const { loadGenerationConfig } = await import("@/lib/outreach/generation-config");
+  return { ok: true, config: await loadGenerationConfig() };
+}
+
+export async function updateGenerationConfig(input: {
+  qualityTarget: number;
+  maxRevisions: number;
+  composePrompt: string;
+  qualityCheckPrompt: string;
+  revisePrompt: string;
+  characteristics: import("@/lib/outreach/generation-config").QualityCharacteristic[];
+}): Promise<MutationResult> {
+  const user = await ensureAdmin();
+  if (!user) return { ok: false, error: "Not authorized" };
+  const svc = createServiceClient();
+  const row = {
+    singleton: true,
+    quality_target: Math.min(0.99, Math.max(0.5, input.qualityTarget)),
+    max_revisions: Math.max(0, Math.min(5, Math.floor(input.maxRevisions))),
+    compose_prompt: input.composePrompt,
+    quality_check_prompt: input.qualityCheckPrompt,
+    revise_prompt: input.revisePrompt,
+    characteristics: input.characteristics,
+    updated_at: new Date().toISOString(),
+    updated_by: user.id,
+  };
+  // Upsert the single row (singleton unique).
+  const { error } = await svc.from("generation_config").upsert(row, { onConflict: "singleton" });
+  if (error) return { ok: false, error: error.message };
+  await recordOutreachAudit({ actorId: user.id, action: "generation_config.updated", targetType: "config", metadata: { qualityTarget: row.quality_target, maxRevisions: row.max_revisions } });
+  revalidatePath("/outreach/quality");
+  revalidatePath("/outreach/generate");
+  return { ok: true };
+}
+
+/** Reset to the shipped .md defaults (drops the override row; next read reseeds). */
+export async function resetGenerationConfig(): Promise<MutationResult> {
+  const user = await ensureAdmin();
+  if (!user) return { ok: false, error: "Not authorized" };
+  const { error } = await createServiceClient().from("generation_config").delete().eq("singleton", true);
+  if (error) return { ok: false, error: error.message };
+  await recordOutreachAudit({ actorId: user.id, action: "generation_config.reset", targetType: "config" });
+  revalidatePath("/outreach/quality");
+  return { ok: true };
+}
+
 // ---- Content seeds ---------------------------------------------------------
 
 export async function updateSeed(input: {

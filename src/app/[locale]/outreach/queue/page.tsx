@@ -1,5 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/outreach/supabase/server";
+import { loadGenerationConfig } from "@/lib/outreach/generation-config";
 
 export const metadata = { title: "Review Queue — Outreach" };
 
@@ -16,6 +17,8 @@ export default async function OutreachQueuePage() {
     .order("created_at", { ascending: true });
 
   const rows = posts ?? [];
+  const { qualityTarget } = await loadGenerationConfig();
+  const barPct = Math.round(qualityTarget * 100);
 
   return (
     <div className="max-w-5xl">
@@ -51,8 +54,11 @@ export default async function OutreachQueuePage() {
                     ))}
                   </div>
                   {conf != null && (
-                    <span className={`text-xs ${conf >= 80 ? "text-brand-teal" : conf >= 60 ? "text-amber-400" : "text-red-400"}`}>
-                      {conf}%
+                    <span className="flex items-center gap-1.5">
+                      <span className={`text-xs ${conf >= barPct ? "text-brand-teal" : "text-amber-400"}`}>{conf}%</span>
+                      {conf < barPct && (
+                        <span className="rounded bg-amber-400/15 px-1.5 py-0.5 text-[10px] text-amber-400">below bar</span>
+                      )}
                     </span>
                   )}
                   <span className="w-14 text-end text-xs text-muted">{ageH}h ago</span>
