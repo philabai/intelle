@@ -2,6 +2,8 @@ import { getWeeklyPillarStatus } from "@/lib/outreach/weekly-status";
 import { GenerateForm } from "@/components/outreach/GenerateForm";
 
 export const metadata = { title: "Generate — Outreach" };
+// Generation runs after the response via after(); give the function headroom.
+export const maxDuration = 300;
 
 export default async function OutreachGeneratePage() {
   const { pillars, weekStart } = await getWeeklyPillarStatus();

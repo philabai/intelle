@@ -84,6 +84,9 @@ export interface GeneratePostInput {
   targetGeos: GeoRegion[];
   targetPersonas?: string[];
   actorId?: string | null;
+  /** When set, fill this existing (status='generating') post instead of
+   * inserting a new one — used by the async on-demand flow. */
+  placeholderPostId?: string;
 }
 
 /** Generate one post (long-form + platform variants), quality-check it, and
@@ -164,33 +167,39 @@ export async function generatePost(input: GeneratePostInput): Promise<string> {
 
   const confidence = Math.min(composed.ai_confidence, review.confidence);
 
-  // 3. Persist as pending_review.
+  // 3. Persist as pending_review — fill the placeholder if the async flow made
+  // one, otherwise insert a fresh row.
   const svc = createServiceClient();
-  const { data, error } = await svc
-    .from("posts")
-    .insert({
-      pillar_id: input.pillarId,
-      seed_id: input.seedId ?? null,
-      target_platforms: input.targetPlatforms,
-      target_geos: input.targetGeos,
-      target_personas: input.targetPersonas ?? [],
-      title: composed.title,
-      body_long: composed.body_long,
-      body_medium: composed.body_medium,
-      body_short: composed.body_short,
-      body_thread: composed.body_thread,
-      hashtags: composed.hashtags,
-      citations: composed.citations,
-      status: "pending_review",
-      ai_confidence: confidence,
-      prompt_version: GENERATE_PROMPT_VERSION,
-      model_used: OUTREACH_LONGFORM_MODEL,
-      edit_history: [{ at: new Date().toISOString(), event: "generated", review, revisions, qualityTarget: QUALITY_TARGET }],
-    })
-    .select("id")
-    .single();
-  if (error) throw new Error(`persist post failed: ${error.message}`);
-  const postId = data.id as string;
+  const fields = {
+    pillar_id: input.pillarId,
+    seed_id: input.seedId ?? null,
+    target_platforms: input.targetPlatforms,
+    target_geos: input.targetGeos,
+    target_personas: input.targetPersonas ?? [],
+    title: composed.title,
+    body_long: composed.body_long,
+    body_medium: composed.body_medium,
+    body_short: composed.body_short,
+    body_thread: composed.body_thread,
+    hashtags: composed.hashtags,
+    citations: composed.citations,
+    status: "pending_review",
+    ai_confidence: confidence,
+    prompt_version: GENERATE_PROMPT_VERSION,
+    model_used: OUTREACH_LONGFORM_MODEL,
+    edit_history: [{ at: new Date().toISOString(), event: "generated", review, revisions, qualityTarget: QUALITY_TARGET }],
+  };
+
+  let postId: string;
+  if (input.placeholderPostId) {
+    const { error } = await svc.from("posts").update(fields).eq("id", input.placeholderPostId);
+    if (error) throw new Error(`persist post failed: ${error.message}`);
+    postId = input.placeholderPostId;
+  } else {
+    const { data, error } = await svc.from("posts").insert(fields).select("id").single();
+    if (error) throw new Error(`persist post failed: ${error.message}`);
+    postId = data.id as string;
+  }
 
   if (input.seedId) {
     await svc

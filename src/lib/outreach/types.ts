@@ -4,7 +4,7 @@
 export type GeoRegion = "gcc" | "us" | "canada" | "india" | "international";
 export type Platform = "linkedin" | "x" | "newsletter" | "youtube" | "reddit";
 export type PostStatus =
-  | "draft" | "pending_review" | "under_review" | "approved"
+  | "draft" | "generating" | "pending_review" | "under_review" | "approved"
   | "scheduled" | "publishing" | "published" | "rejected" | "failed";
 export type PillarSlug =
   | "regulatory-briefings" | "mea-compliance" | "standards-engineering"

@@ -1,5 +1,6 @@
 "use server";
 
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { canManageContent, getSessionUser } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/outreach/supabase/service";
@@ -218,22 +219,20 @@ export async function rejectPost(input: { postId: string; reason: string }): Pro
   return { ok: true };
 }
 
-/** On-demand generation from the Generate workspace. Drafts a post for a pillar,
- * optionally consuming the next unused seed and/or applying a free-text brief. */
-export async function generateOnDemand(input: {
+interface GenInput {
   pillarId: string;
   brief?: string;
   useSeed?: boolean;
   targetPlatforms?: Platform[];
   targetGeos?: GeoRegion[];
-}): Promise<ActionResult> {
-  const user = await ensureAdmin();
-  if (!user) return { ok: false, error: "Not authorized" };
-  const svc = createServiceClient();
+}
 
+/** Resolve a pillar + its next unused seed (with citation) into the args
+ * generatePost needs. Shared by the sync and async generation entry points. */
+async function resolveGenerationContext(svc: ReturnType<typeof createServiceClient>, input: GenInput) {
   const { data: pillar } = await svc
-    .from("content_pillars").select("id, name, editorial_voice_notes, active").eq("id", input.pillarId).single();
-  if (!pillar) return { ok: false, error: "Pillar not found" };
+    .from("content_pillars").select("id, name, editorial_voice_notes").eq("id", input.pillarId).single();
+  if (!pillar) return { ok: false as const, error: "Pillar not found" };
 
   let seedId: string | null = null;
   let seedTitle: string | undefined, seedSummary: string | undefined;
@@ -243,11 +242,8 @@ export async function generateOnDemand(input: {
     const { data: seed } = await svc
       .from("content_seeds")
       .select("id, title, summary, source_reference_id, geo_relevance")
-      .eq("pillar_id", pillar.id)
-      .eq("consumed", false)
-      .order("discovered_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .eq("pillar_id", pillar.id).eq("consumed", false)
+      .order("discovered_at", { ascending: false }).limit(1).maybeSingle();
     if (seed) {
       seedId = seed.id; seedTitle = seed.title; seedSummary = seed.summary;
       seedGeos = (seed.geo_relevance as GeoRegion[]) ?? [];
@@ -257,26 +253,86 @@ export async function generateOnDemand(input: {
         seedCitation = item?.citation ?? null; seedSourceUrl = item?.source_url ?? null;
       }
     } else if (!input.brief?.trim()) {
-      return { ok: false, error: "No unused seed for this pillar — add a brief to generate without one." };
+      return { ok: false as const, error: "No unused seed for this pillar — add a brief to generate without one." };
     }
   }
-
   const geos = (input.targetGeos?.length ? input.targetGeos : seedGeos.length ? seedGeos : ["international"]) as GeoRegion[];
+  const platforms = (input.targetPlatforms?.length ? input.targetPlatforms : ["linkedin", "x"]) as Platform[];
+  return { ok: true as const, pillar, seedId, seedTitle, seedSummary, seedCitation, seedSourceUrl, geos, platforms };
+}
 
+/** Synchronous generation (blocks until the draft is ready). Kept for
+ * non-interactive callers; the Generate UI uses startGeneration. */
+export async function generateOnDemand(input: GenInput): Promise<ActionResult> {
+  const user = await ensureAdmin();
+  if (!user) return { ok: false, error: "Not authorized" };
+  const ctx = await resolveGenerationContext(createServiceClient(), input);
+  if (!ctx.ok) return { ok: false, error: ctx.error };
   try {
     const newId = await generatePost({
-      pillarId: pillar.id, pillarName: pillar.name, pillarVoiceNotes: pillar.editorial_voice_notes,
-      seedId, seedTitle, seedSummary, seedCitation, seedSourceUrl,
+      pillarId: ctx.pillar.id, pillarName: ctx.pillar.name, pillarVoiceNotes: ctx.pillar.editorial_voice_notes,
+      seedId: ctx.seedId, seedTitle: ctx.seedTitle, seedSummary: ctx.seedSummary, seedCitation: ctx.seedCitation, seedSourceUrl: ctx.seedSourceUrl,
       brief: input.brief?.trim() || undefined,
-      targetPlatforms: input.targetPlatforms?.length ? input.targetPlatforms : ["linkedin", "x"],
-      targetGeos: geos,
-      actorId: user.id,
+      targetPlatforms: ctx.platforms, targetGeos: ctx.geos, actorId: user.id,
     });
     revalidatePath("/outreach/queue");
     return { ok: true, postId: newId };
   } catch (e) {
     return { ok: false, error: (e as Error).message };
   }
+}
+
+/** Async generation: create a `generating` placeholder, return its id at once,
+ * and run the slow multi-pass generation AFTER the response via next/server
+ * `after()`. The client polls getGenerationStatus until the draft is ready. */
+export async function startGeneration(input: GenInput): Promise<ActionResult> {
+  const user = await ensureAdmin();
+  if (!user) return { ok: false, error: "Not authorized" };
+  const svc = createServiceClient();
+  const ctx = await resolveGenerationContext(svc, input);
+  if (!ctx.ok) return { ok: false, error: ctx.error };
+
+  const { data: placeholder, error } = await svc
+    .from("posts")
+    .insert({ pillar_id: ctx.pillar.id, target_platforms: ctx.platforms, target_geos: ctx.geos, title: "Generating…", status: "generating" })
+    .select("id")
+    .single();
+  if (error) return { ok: false, error: error.message };
+  const postId = placeholder.id as string;
+
+  after(async () => {
+    try {
+      await generatePost({
+        pillarId: ctx.pillar.id, pillarName: ctx.pillar.name, pillarVoiceNotes: ctx.pillar.editorial_voice_notes,
+        seedId: ctx.seedId, seedTitle: ctx.seedTitle, seedSummary: ctx.seedSummary, seedCitation: ctx.seedCitation, seedSourceUrl: ctx.seedSourceUrl,
+        brief: input.brief?.trim() || undefined,
+        targetPlatforms: ctx.platforms, targetGeos: ctx.geos, actorId: user.id,
+        placeholderPostId: postId,
+      });
+    } catch (e) {
+      await createServiceClient().from("posts")
+        .update({ status: "failed", rejection_reason: `generation error: ${(e as Error).message}` })
+        .eq("id", postId);
+    }
+  });
+
+  return { ok: true, postId };
+}
+
+export type GenerationStatus =
+  | { ok: true; status: string; title: string | null }
+  | { ok: false; error: string };
+
+/** Poll a draft's status — the Generate page calls this until it leaves
+ * 'generating'. */
+export async function getGenerationStatus(postId: string): Promise<GenerationStatus> {
+  const user = await ensureAdmin();
+  if (!user) return { ok: false, error: "Not authorized" };
+  const { data, error } = await createServiceClient()
+    .from("posts").select("status, title").eq("id", postId).maybeSingle();
+  if (error) return { ok: false, error: error.message };
+  if (!data) return { ok: false, error: "Draft not found" };
+  return { ok: true, status: data.status as string, title: (data.title as string) ?? null };
 }
 
 /** Regenerate: produce a fresh draft from the same seed+pillar (optional
