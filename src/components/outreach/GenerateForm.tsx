@@ -16,6 +16,10 @@ const GEOS: { value: GeoRegion; label: string }[] = [
   { value: "canada", label: "Canada" },
   { value: "india", label: "India" },
 ];
+const SOURCE_LABEL: Record<string, string> = {
+  regulator_update: "regulator", industry_news: "news", topic_calendar: "calendar", manual: "manual",
+};
+const srcTag = (s: string) => `[${SOURCE_LABEL[s] ?? s}]`;
 
 const POLL_MS = 3000;
 const MAX_TRIES = 80; // ~4 minutes before we give up polling
@@ -133,14 +137,17 @@ export function GenerateForm({ pillars, seeds }: {
         <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted">Seed</span>
         <select value={seedChoice} onChange={(e) => setSeedChoice(e.target.value)}
           className="w-full rounded-lg border border-card-border bg-background px-3 py-2 text-sm text-foreground">
-          <option value="auto">{autoSeed ? `Auto — next unused: ${autoSeed.title.slice(0, 70)}` : "Auto — (no unused seed; brief only)"}</option>
+          <option value="auto">{autoSeed ? `Auto — next unused ${srcTag(autoSeed.sourceType)}: ${autoSeed.title.slice(0, 64)}` : "Auto — (no unused seed; brief only)"}</option>
           {pillarSeeds.map((s) => (
-            <option key={s.id} value={s.id}>{s.title.slice(0, 90)}</option>
+            <option key={s.id} value={s.id}>{srcTag(s.sourceType)} {s.title.slice(0, 84)}</option>
           ))}
           <option value="none">No seed — generate from my brief only</option>
         </select>
         {(chosenSeed || (seedChoice === "auto" && autoSeed)) && (
           <p className="mt-1.5 line-clamp-3 rounded border border-card-border bg-background/60 px-2 py-1.5 text-xs text-muted">
+            <span className="mr-1 rounded bg-white/10 px-1 py-0.5 text-[10px] uppercase tracking-wide text-muted">
+              {SOURCE_LABEL[(chosenSeed ?? autoSeed)!.sourceType] ?? (chosenSeed ?? autoSeed)!.sourceType}
+            </span>
             {(chosenSeed ?? autoSeed)!.summary || "(no summary)"}
           </p>
         )}
