@@ -5,8 +5,10 @@ export const metadata = { title: "Calendar — Outreach" };
 
 const DAY_MS = 86_400_000;
 const PLATFORM_BADGE: Record<string, string> = { linkedin: "in", x: "X", newsletter: "✉" };
+// "approved/scheduled" use non-green hues so only an actually-published post
+// reads as green (avoids confusing "scheduled" with "published").
 const STATUS_COLOR: Record<string, string> = {
-  approved: "border-l-brand-teal", scheduled: "border-l-brand-blue",
+  approved: "border-l-brand-violet", scheduled: "border-l-brand-blue",
   publishing: "border-l-amber-400", published: "border-l-emerald-500",
   pending_review: "border-l-muted", under_review: "border-l-muted", failed: "border-l-red-500",
 };
@@ -107,7 +109,7 @@ export default async function OutreachCalendarPage({
       </div>
 
       <p className="mt-4 text-xs text-muted">
-        Legend: <span className="text-brand-teal">approved</span> · <span className="text-brand-blue">scheduled</span> ·{" "}
+        Legend: <span className="text-brand-violet">approved</span> · <span className="text-brand-blue">scheduled</span> ·{" "}
         <span className="text-amber-400">publishing</span> · <span className="text-emerald-500">published</span> ·{" "}
         <span className="text-red-500">failed</span>
       </p>

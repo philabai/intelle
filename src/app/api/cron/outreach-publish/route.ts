@@ -70,14 +70,24 @@ async function handle(request: Request) {
     await svc.from("posts").update({ status: "publishing" }).eq("id", post.id);
 
     const platforms = (post.target_platforms as Platform[]) ?? [];
-    let anyFailed = false;
-    let anyPosted = false;
+    // Newsletter is deferred to the Brevo pipeline; it isn't a Buffer target.
+    const targets = platforms.filter((p) => p !== "newsletter");
+    let posted = 0;
+    let failedPlatforms = 0;
 
-    for (const platform of platforms) {
-      if (platform === "newsletter") continue; // deferred to Brevo pipeline
+    for (const platform of targets) {
       const channelId = BUFFER_CHANNEL[platform];
       if (!channelId) {
+        // No channel wired for this platform — record an explicit failure so it
+        // surfaces (rather than silently skipping and faking a "published").
+        failedPlatforms += 1;
         errors.push(`${post.id}/${platform}: no Buffer channel configured`);
+        await svc.from("publications").insert({
+          post_id: post.id,
+          platform,
+          status: "failed",
+          error_message: `No Buffer channel configured (set BUFFER_${platform === "x" ? "TWITTER" : platform.toUpperCase()}_CHANNEL_ID)`,
+        });
         continue;
       }
       try {
@@ -90,9 +100,9 @@ async function handle(request: Request) {
           status: "published",
           published_at: now,
         });
-        anyPosted = true;
+        posted += 1;
       } catch (e) {
-        anyFailed = true;
+        failedPlatforms += 1;
         const message = e instanceof Error ? e.message : String(e);
         errors.push(`${post.id}/${platform}: ${message}`);
         await svc.from("publications").insert({
@@ -104,7 +114,13 @@ async function handle(request: Request) {
       }
     }
 
-    const finalStatus = anyFailed && !anyPosted ? "failed" : "published";
+    // Only mark "published" if at least one platform actually posted. A post
+    // where every target was skipped/failed must NOT show green. Per-platform
+    // failures are recorded as publication rows regardless.
+    const finalStatus = posted > 0 ? "published" : "failed";
+    if (failedPlatforms > 0 && posted > 0) {
+      errors.push(`${post.id}: partial — ${posted} posted, ${failedPlatforms} failed`);
+    }
     await svc.from("posts").update({ status: finalStatus }).eq("id", post.id);
     // Reflect on the calendar if a planned event references this post.
     await svc.from("calendar_events")
