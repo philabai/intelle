@@ -2,7 +2,7 @@ import { z } from "zod";
 import type Anthropic from "@anthropic-ai/sdk";
 import { getAnthropic } from "@/lib/anthropic/client";
 import { OUTREACH_LONGFORM_MODEL, OUTREACH_MEDIUM_MODEL } from "@/lib/outreach/models";
-import { loadGenerationConfig, composeSystem } from "@/lib/outreach/generation-config";
+import { loadGenerationConfig, composeSystem, type GenerationConfig } from "@/lib/outreach/generation-config";
 import { createServiceClient } from "@/lib/outreach/supabase/service";
 import { logLlmCall, recordOutreachAudit } from "@/lib/outreach/audit";
 import type { GeoRegion, Platform } from "@/lib/outreach/types";
@@ -26,10 +26,23 @@ const composeSchema = z.object({
 const reviewSchema = z.object({
   passed: z.boolean(),
   confidence: z.number().min(0).max(1),
+  breakdown: z
+    .array(z.object({ criterion: z.string(), score: z.number().min(0).max(1), note: z.string().optional() }))
+    .default([]),
   issues: z
     .array(z.object({ severity: z.enum(["blocker", "warning"]), note: z.string() }))
     .default([]),
 });
+
+/** Appended to whatever (user-editable) QC rubric is in use, so the verdict
+ * always carries a per-criterion breakdown regardless of the rubric text. */
+const QC_BREAKDOWN_INSTRUCTION = `
+
+## Output: per-criterion breakdown (required)
+In addition to passed/confidence/issues, populate \`breakdown\`: one entry per distinct
+criterion or dimension you evaluated above, each with \`criterion\` (a short name), \`score\`
+(0–1, calibrated), and \`note\` (one line on what earned or lost the points). Cover every
+major dimension in the rubric so the writer can see exactly where the score came from.`;
 
 /** Force Claude to call one tool and return its validated input + usage. */
 async function callTool<T>(opts: {
@@ -82,6 +95,9 @@ export interface GeneratePostInput {
   /** When set, fill this existing (status='generating') post instead of
    * inserting a new one — used by the async on-demand flow. */
   placeholderPostId?: string;
+  /** Per-article quality override (merged over the global config). Persisted on
+   * the post so future regenerations of this article reuse it. */
+  configOverride?: Partial<GenerationConfig>;
 }
 
 /** Generate one post (long-form + platform variants), quality-check it, and
@@ -104,8 +120,10 @@ export async function generatePost(input: GeneratePostInput): Promise<string> {
     .join("\n");
 
   // Live, admin-editable config (prompts, quality bar, revise budget,
-  // characteristics) from the Quality & Prompts page.
-  const config = await loadGenerationConfig();
+  // characteristics) from the Quality & Prompts page, with any per-article
+  // override merged on top.
+  const loadedConfig = await loadGenerationConfig();
+  const config = input.configOverride ? { ...loadedConfig, ...input.configOverride } : loadedConfig;
 
   // 1. Generation (Opus, forced tool).
   let composed = await callTool({
@@ -126,7 +144,7 @@ export async function generatePost(input: GeneratePostInput): Promise<string> {
   const reviewOf = (draft: typeof composed) =>
     callTool({
       model: OUTREACH_MEDIUM_MODEL,
-      system: config.qualityCheckPrompt,
+      system: config.qualityCheckPrompt + QC_BREAKDOWN_INSTRUCTION,
       user: JSON.stringify(draft),
       toolName: "review_post",
       toolDescription: "Audit the draft and return a verdict.",
@@ -135,7 +153,12 @@ export async function generatePost(input: GeneratePostInput): Promise<string> {
       purpose: "quality_check",
     });
 
-  let review = { passed: true, confidence: composed.ai_confidence, issues: [] as { severity: string; note: string }[] };
+  let review = {
+    passed: true,
+    confidence: composed.ai_confidence,
+    breakdown: [] as { criterion: string; score: number; note?: string }[],
+    issues: [] as { severity: string; note: string }[],
+  };
   try {
     review = await reviewOf(composed);
   } catch (e) {
@@ -170,7 +193,7 @@ export async function generatePost(input: GeneratePostInput): Promise<string> {
   // 3. Persist as pending_review — fill the placeholder if the async flow made
   // one, otherwise insert a fresh row.
   const svc = createServiceClient();
-  const fields = {
+  const fields: Record<string, unknown> = {
     pillar_id: input.pillarId,
     seed_id: input.seedId ?? null,
     target_platforms: input.targetPlatforms,
@@ -189,6 +212,9 @@ export async function generatePost(input: GeneratePostInput): Promise<string> {
     model_used: OUTREACH_LONGFORM_MODEL,
     edit_history: [{ at: new Date().toISOString(), event: "generated", review, revisions, qualityTarget: config.qualityTarget, meetsBar }],
   };
+  // Persist the per-article override so future regenerations reuse it. Only set
+  // when present so normal generation never touches the (migration-gated) column.
+  if (input.configOverride) fields.generation_overrides = input.configOverride;
 
   let postId: string;
   if (input.placeholderPostId) {
@@ -215,6 +241,31 @@ export async function generatePost(input: GeneratePostInput): Promise<string> {
     metadata: { pillar: input.pillarName, qc_passed: review.passed, confidence, revisions, meetsBar, seedId: input.seedId ?? null },
   });
   return postId;
+}
+
+export interface QualityReview {
+  passed: boolean;
+  confidence: number;
+  breakdown: { criterion: string; score: number; note?: string }[];
+  issues: { severity: string; note: string }[];
+}
+
+/** Run only the quality-check on an existing draft (no generation/revision).
+ * Used by the "re-score" action to explain a draft's score on demand. */
+export async function runQualityCheck(
+  draft: Record<string, unknown>,
+  qualityCheckPrompt: string,
+): Promise<QualityReview> {
+  return callTool({
+    model: OUTREACH_MEDIUM_MODEL,
+    system: qualityCheckPrompt + QC_BREAKDOWN_INSTRUCTION,
+    user: JSON.stringify(draft),
+    toolName: "review_post",
+    toolDescription: "Audit the draft and return a verdict with a per-criterion breakdown.",
+    inputSchema: REVIEW_TOOL_SCHEMA,
+    schema: reviewSchema,
+    purpose: "quality_check",
+  });
 }
 
 // ---- JSON tool schemas (Anthropic input_schema) ---------------------------
@@ -245,6 +296,15 @@ const REVIEW_TOOL_SCHEMA: Anthropic.Messages.Tool.InputSchema = {
   properties: {
     passed: { type: "boolean" },
     confidence: { type: "number" },
+    breakdown: {
+      type: "array",
+      description: "Per-criterion scores: one entry per rubric dimension evaluated.",
+      items: {
+        type: "object",
+        properties: { criterion: { type: "string" }, score: { type: "number" }, note: { type: "string" } },
+        required: ["criterion", "score"],
+      },
+    },
     issues: {
       type: "array",
       items: {
@@ -254,5 +314,5 @@ const REVIEW_TOOL_SCHEMA: Anthropic.Messages.Tool.InputSchema = {
       },
     },
   },
-  required: ["passed", "confidence", "issues"],
+  required: ["passed", "confidence", "breakdown", "issues"],
 };

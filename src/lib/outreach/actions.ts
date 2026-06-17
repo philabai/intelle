@@ -4,9 +4,10 @@ import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { canManageContent, getSessionUser } from "@/lib/auth/roles";
 import { createServiceClient } from "@/lib/outreach/supabase/service";
-import { generatePost } from "@/lib/outreach/generate";
+import { generatePost, runQualityCheck, type QualityReview } from "@/lib/outreach/generate";
 import { recordOutreachAudit } from "@/lib/outreach/audit";
 import type { GeoRegion, Platform } from "@/lib/outreach/types";
+import type { GenerationConfig } from "@/lib/outreach/generation-config";
 
 export type ActionResult = { ok: true; postId?: string } | { ok: false; error: string };
 
@@ -405,9 +406,69 @@ export async function getGenerationStatus(postId: string): Promise<GenerationSta
   return { ok: true, status: data.status as string, title: (data.title as string) ?? null };
 }
 
+async function readPostOverride(svc: ReturnType<typeof createServiceClient>, postId: string): Promise<Partial<GenerationConfig> | undefined> {
+  try {
+    const { data } = await svc.from("posts").select("generation_overrides").eq("id", postId).maybeSingle();
+    return (data?.generation_overrides as Partial<GenerationConfig>) ?? undefined;
+  } catch {
+    return undefined; // column not present yet (migration not applied)
+  }
+}
+
+/** Re-run only the quality-check on a draft's current content and return the
+ * per-criterion breakdown — so the editor can see why it scored what it did
+ * without regenerating. Uses the post's quality override rubric if set. */
+export async function rescorePost(input: { postId: string }): Promise<{ ok: true; review: QualityReview } | { ok: false; error: string }> {
+  const user = await ensureAdmin();
+  if (!user) return { ok: false, error: "Not authorized" };
+  const svc = createServiceClient();
+  const { data: post } = await svc
+    .from("posts")
+    .select("id, title, body_long, body_medium, body_short, body_thread, hashtags, citations, edit_history")
+    .eq("id", input.postId).single();
+  if (!post) return { ok: false, error: "Post not found" };
+
+  const { loadGenerationConfig } = await import("@/lib/outreach/generation-config");
+  const cfg = await loadGenerationConfig();
+  const override = await readPostOverride(svc, input.postId);
+  const qcPrompt = override?.qualityCheckPrompt ?? cfg.qualityCheckPrompt;
+
+  try {
+    const review = await runQualityCheck(
+      {
+        title: post.title, body_long: post.body_long, body_medium: post.body_medium,
+        body_short: post.body_short, body_thread: post.body_thread, hashtags: post.hashtags, citations: post.citations,
+      },
+      qcPrompt,
+    );
+    const history = Array.isArray(post.edit_history) ? post.edit_history : [];
+    await svc.from("posts").update({
+      ai_confidence: review.confidence,
+      edit_history: [...history, { at: new Date().toISOString(), event: "rescored", review }],
+    }).eq("id", input.postId);
+    await recordOutreachAudit({ actorId: user.id, action: "post.rescored", targetType: "post", targetId: input.postId, metadata: { confidence: review.confidence } });
+    revalidatePath(`/outreach/posts/${input.postId}`);
+    return { ok: true, review };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
+}
+
+/** Save a per-article quality override (rubric/prompt/threshold) without
+ * regenerating — persisted so the next regeneration of this article uses it. */
+export async function savePostQualityOverride(input: { postId: string; override: Partial<GenerationConfig> }): Promise<MutationResult> {
+  const user = await ensureAdmin();
+  if (!user) return { ok: false, error: "Not authorized" };
+  const { error } = await createServiceClient().from("posts").update({ generation_overrides: input.override }).eq("id", input.postId);
+  if (error) return { ok: false, error: error.message };
+  await recordOutreachAudit({ actorId: user.id, action: "post.quality_override_saved", targetType: "post", targetId: input.postId });
+  revalidatePath(`/outreach/posts/${input.postId}`);
+  return { ok: true };
+}
+
 /** Regenerate: produce a fresh draft from the same seed+pillar (optional
- * guidance), and supersede the current one. Returns the new post id. */
-export async function regeneratePost(input: { postId: string; guidance?: string }): Promise<ActionResult> {
+ * guidance + per-article quality override), and supersede the current one. */
+export async function regeneratePost(input: { postId: string; guidance?: string; override?: Partial<GenerationConfig> }): Promise<ActionResult> {
   const user = await ensureAdmin();
   if (!user) return { ok: false, error: "Not authorized" };
   const svc = createServiceClient();
@@ -417,6 +478,8 @@ export async function regeneratePost(input: { postId: string; guidance?: string 
     .eq("id", input.postId)
     .single();
   if (!post) return { ok: false, error: "Post not found" };
+  // Use the explicit override if given, else carry over any saved on this post.
+  const configOverride = input.override ?? (await readPostOverride(svc, input.postId));
   const { data: pillar } = await svc
     .from("content_pillars").select("id, name, editorial_voice_notes").eq("id", post.pillar_id).single();
   if (!pillar) return { ok: false, error: "Pillar not found" };
@@ -443,6 +506,7 @@ export async function regeneratePost(input: { postId: string; guidance?: string 
       targetGeos: (post.target_geos as GeoRegion[]) ?? ["international"],
       targetPersonas: post.target_personas as string[] | undefined,
       actorId: user.id,
+      configOverride,
     });
     await svc.from("posts").update({ status: "rejected", rejection_reason: "superseded by regeneration" }).eq("id", input.postId);
     await recordOutreachAudit({ actorId: user.id, action: "post.regenerated", targetType: "post", targetId: input.postId, metadata: { newPostId: newId } });
