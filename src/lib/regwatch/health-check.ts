@@ -37,11 +37,44 @@ const HEAD = { count: "exact", head: true } as const;
 const worst = (levels: HealthLevel[]): HealthLevel =>
   levels.includes("critical") ? "critical" : levels.includes("warn") ? "warn" : "ok";
 
+/** Probe the Anthropic API with a 1-token call and classify the result. There
+ * is no public balance endpoint, so we surface OK / OUT-OF-CREDITS / key-error
+ * rather than a dollar figure (the exact balance lives in the console). */
+async function anthropicSignal(): Promise<HealthSignal> {
+  try {
+    const { getAnthropic } = await import("@/lib/anthropic/client");
+    const { ENRICHMENT_MODEL } = await import("@/lib/regwatch/anthropic/models");
+    await getAnthropic().messages.create({
+      model: ENRICHMENT_MODEL,
+      max_tokens: 1,
+      messages: [{ role: "user", content: "ok" }],
+    });
+    return { key: "anthropic", label: "Anthropic API", level: "ok", value: "reachable · has credit" };
+  } catch (e) {
+    const msg = ((e as Error)?.message ?? String(e)).toLowerCase();
+    if (msg.includes("credit balance") || msg.includes("too low") || msg.includes("billing")) {
+      return {
+        key: "anthropic", label: "Anthropic API", level: "critical", value: "OUT OF CREDITS",
+        detail: "Balance is zero — enrichment + Outreach generation are blocked. Top up at console.anthropic.com → Plans & Billing, and turn ON auto-reload so this can't recur.",
+      };
+    }
+    if (msg.includes("401") || msg.includes("authentication") || msg.includes("x-api-key") || msg.includes("invalid api")) {
+      return { key: "anthropic", label: "Anthropic API", level: "critical", value: "key rejected", detail: "ANTHROPIC_API_KEY is invalid or revoked." };
+    }
+    return { key: "anthropic", label: "Anthropic API", level: "warn", value: "unreachable", detail: ((e as Error)?.message ?? "error").slice(0, 160) };
+  }
+}
+
 export async function runHealthCheck(): Promise<HealthReport> {
   const rw = regwatchService();
   const out = outreachService();
   const since = new Date(Date.now() - DAY_MS).toISOString();
   const signals: HealthSignal[] = [];
+
+  // ---- Anthropic API: reachable + has credit? ----------------------------
+  // The whole pipeline (enrichment + Outreach generation) dies the moment the
+  // credit balance hits zero, so check it explicitly with a 1-token call.
+  signals.push(await anthropicSignal());
 
   // ---- Ingestion: items crawled in the last 24h --------------------------
   const ingested24h = await headCount(
