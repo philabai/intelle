@@ -38,16 +38,29 @@ function extractJsonObject(raw: string): string {
   return start >= 0 && end > start ? body.slice(start, end + 1) : body;
 }
 
+// Lenient parse: accept whatever the model returns as string arrays, then
+// sanitise post-parse (drop off-taxonomy topics / malformed codes, cap counts).
+// A single off-list topic must NOT fail the whole item — that was silently
+// failing ~5% of enrichments.
 const enrichmentResultSchema = z.object({
-  topics: z.array(z.enum(TOPIC_VALUES as [string, ...string[]])).max(8),
-  substances_cas: z
-    .array(z.string().regex(/^\d{1,7}-\d{2}-\d$/))
-    .max(20),
-  naics_codes: z.array(z.string().regex(/^\d{2,6}$/)).max(20),
-  clean_summary: z.string().max(800),
+  topics: z.array(z.string()).default([]),
+  substances_cas: z.array(z.string()).default([]),
+  naics_codes: z.array(z.string()).default([]),
+  clean_summary: z.string().max(2000),
 });
 
+const TOPIC_SET = new Set(TOPIC_VALUES);
 type EnrichmentResult = z.infer<typeof enrichmentResultSchema>;
+
+/** Keep only valid topics/codes; cap counts. Never throws. */
+function sanitiseEnrichment(r: EnrichmentResult): EnrichmentResult {
+  return {
+    topics: r.topics.filter((t) => TOPIC_SET.has(t)).slice(0, 8),
+    substances_cas: r.substances_cas.filter((s) => /^\d{1,7}-\d{2}-\d$/.test(s)).slice(0, 20),
+    naics_codes: r.naics_codes.filter((n) => /^\d{2,6}$/.test(n)).slice(0, 20),
+    clean_summary: r.clean_summary.slice(0, 800),
+  };
+}
 
 const SYSTEM_PROMPT = `You enrich regulatory item metadata for intelle.io RegWatch.
 
@@ -134,7 +147,7 @@ ${(row.body_text ?? "").slice(0, 4000)}`;
       let parsed: EnrichmentResult;
       try {
         const obj = JSON.parse(extractJsonObject(text));
-        parsed = enrichmentResultSchema.parse(obj);
+        parsed = sanitiseEnrichment(enrichmentResultSchema.parse(obj));
       } catch (e) {
         result.failed += 1;
         result.errors.push(

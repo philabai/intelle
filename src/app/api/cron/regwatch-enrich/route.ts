@@ -3,7 +3,9 @@ import { runEnrichmentBatch } from "@/lib/regwatch/enrichment";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+// Headroom so a full batch (Haiku + best-effort embedding per item) completes
+// comfortably; 60s previously, which a throttled Voyage call could exhaust.
+export const maxDuration = 300;
 
 /**
  * Enrichment orchestrator. Pulls a batch of `enrichment_status='pending'`
@@ -14,7 +16,7 @@ export const maxDuration = 60;
  * Auth: same Bearer-token check as the crawl route.
  *
  * Query params:
- *   ?batch=N  — items to process this invocation (default 8, max 25)
+ *   ?batch=N  — items to process this invocation (default 25, max 60)
  */
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -25,8 +27,8 @@ export async function GET(request: Request) {
   }
 
   const batchSize = Math.min(
-    Math.max(parseInt(url.searchParams.get("batch") ?? "8", 10) || 8, 1),
-    25,
+    Math.max(parseInt(url.searchParams.get("batch") ?? "25", 10) || 25, 1),
+    60,
   );
 
   const started = Date.now();

@@ -12,6 +12,8 @@
 const VOYAGE_URL = "https://api.voyageai.com/v1/embeddings";
 export const VOYAGE_MODEL = "voyage-3-large";
 export const VOYAGE_DIM = 1024;
+/** Per-request ceiling so a throttled Voyage can't stall the enrichment cron. */
+const VOYAGE_TIMEOUT_MS = Number(process.env.VOYAGE_TIMEOUT_MS) || 8000;
 
 /** Voyage embedding "input_type" — narrows the projection for retrieval vs. ingest. */
 export type VoyageInputType = "document" | "query";
@@ -64,6 +66,10 @@ export async function embedBatch(
         input_type: opts.inputType,
         output_dimension: VOYAGE_DIM,
       }),
+      // Hard cap so a slow/rate-limited Voyage can never hang a caller. The
+      // enrichment cron treats embeddings as best-effort, so a timeout here just
+      // skips the embedding rather than burning the whole function budget.
+      signal: AbortSignal.timeout(VOYAGE_TIMEOUT_MS),
     });
     if (!res.ok) {
       const body = await res.text().catch(() => "");
