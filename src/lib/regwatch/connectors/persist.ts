@@ -46,6 +46,9 @@ export async function persistItems(items: NormalisedItem[]): Promise<PersistResu
     summary: string | null;
     enrichment_status: string | null;
     last_changed_at: string | null;
+    topics: string[] | null;
+    substances_cas: string[] | null;
+    naics_codes: string[] | null;
   };
   const existing = new Map<string, Existing>();
   const citationsByReg = new Map<string, Set<string>>();
@@ -61,7 +64,7 @@ export async function persistItems(items: NormalisedItem[]): Promise<PersistResu
       const slice = cits.slice(i, i + 100);
       const { data: rows, error: exErr } = await supabase
         .from("regulatory_items")
-        .select("citation, body_text, body_html, summary, enrichment_status, last_changed_at")
+        .select("citation, body_text, body_html, summary, enrichment_status, last_changed_at, topics, substances_cas, naics_codes")
         .eq("regulator_id", rid)
         .in("citation", slice);
       if (exErr) {
@@ -75,6 +78,9 @@ export async function persistItems(items: NormalisedItem[]): Promise<PersistResu
           summary: (r.summary as string | null) ?? null,
           enrichment_status: (r.enrichment_status as string | null) ?? null,
           last_changed_at: (r.last_changed_at as string | null) ?? null,
+          topics: (r.topics as string[] | null) ?? null,
+          substances_cas: (r.substances_cas as string[] | null) ?? null,
+          naics_codes: (r.naics_codes as string[] | null) ?? null,
         });
       }
     }
@@ -142,9 +148,11 @@ export async function persistItems(items: NormalisedItem[]): Promise<PersistResu
       body_text: item.body_text ?? ex?.body_text ?? null,
       body_html: item.body_html ?? ex?.body_html ?? null,
       jurisdiction_code: item.jurisdiction_code,
-      topics: item.topics ?? [],
-      substances_cas: item.substances_cas ?? [],
-      naics_codes: item.naics_codes ?? [],
+      // Carry forward enrichment-owned arrays when the connector emits none, so
+      // a re-crawl doesn't wipe topics/codes off an already-enriched item.
+      topics: item.topics?.length ? item.topics : (ex?.topics ?? []),
+      substances_cas: item.substances_cas?.length ? item.substances_cas : (ex?.substances_cas ?? []),
+      naics_codes: item.naics_codes?.length ? item.naics_codes : (ex?.naics_codes ?? []),
       enrichment_status,
     });
   }
