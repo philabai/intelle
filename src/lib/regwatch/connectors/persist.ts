@@ -44,6 +44,8 @@ export async function persistItems(items: NormalisedItem[]): Promise<PersistResu
     body_text: string | null;
     body_html: string | null;
     summary: string | null;
+    enrichment_status: string | null;
+    last_changed_at: string | null;
   };
   const existing = new Map<string, Existing>();
   const citationsByReg = new Map<string, Set<string>>();
@@ -59,7 +61,7 @@ export async function persistItems(items: NormalisedItem[]): Promise<PersistResu
       const slice = cits.slice(i, i + 100);
       const { data: rows, error: exErr } = await supabase
         .from("regulatory_items")
-        .select("citation, body_text, body_html, summary")
+        .select("citation, body_text, body_html, summary, enrichment_status, last_changed_at")
         .eq("regulator_id", rid)
         .in("citation", slice);
       if (exErr) {
@@ -71,6 +73,8 @@ export async function persistItems(items: NormalisedItem[]): Promise<PersistResu
           body_text: (r.body_text as string | null) ?? null,
           body_html: (r.body_html as string | null) ?? null,
           summary: (r.summary as string | null) ?? null,
+          enrichment_status: (r.enrichment_status as string | null) ?? null,
+          last_changed_at: (r.last_changed_at as string | null) ?? null,
         });
       }
     }
@@ -108,6 +112,18 @@ export async function persistItems(items: NormalisedItem[]): Promise<PersistResu
       continue;
     }
     const ex = existing.get(`${regulator_id}::${item.citation}`);
+    // Preserve enrichment status for unchanged items. Re-crawling an unchanged,
+    // already-enriched regulation must NOT reset it to 'pending' — that caused
+    // a costly re-enrichment churn loop (every crawl re-enriched the whole
+    // lookback window). Only (re-)enrich genuinely new items, or ones whose
+    // source last_changed_at advanced (i.e. the regulation actually changed).
+    let enrichment_status = "pending";
+    if (ex) {
+      const changed =
+        ex.last_changed_at == null ||
+        new Date(item.last_changed_at).getTime() > new Date(ex.last_changed_at).getTime();
+      enrichment_status = changed ? "pending" : (ex.enrichment_status ?? "pending");
+    }
     rows.push({
       regulator_id,
       citation: item.citation,
@@ -129,7 +145,7 @@ export async function persistItems(items: NormalisedItem[]): Promise<PersistResu
       topics: item.topics ?? [],
       substances_cas: item.substances_cas ?? [],
       naics_codes: item.naics_codes ?? [],
-      enrichment_status: "pending",
+      enrichment_status,
     });
   }
 
